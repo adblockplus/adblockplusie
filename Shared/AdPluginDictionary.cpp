@@ -226,11 +226,11 @@ void CAdPluginDictionary::Create()
 		    m_dictionary["UPDATE_DO_YOU_WISH_TO_DOWNLOAD"] = "Do you wish to download it now?";
 
             // Download update dialog
-		    m_dictionary["DOWNLOAD_TITLE"] = "Download Simple Adblock";
+		    m_dictionary["DOWNLOAD_UPDATE_TITLE"] = "Download Simple Adblock";
 		    m_dictionary["DOWNLOAD_UPDATE_BUTTON"] = "Update";
-		    m_dictionary["DOWNLOAD_PROGRESS_TEXT"] = "Please wait...";
-		    m_dictionary["DOWNLOAD_DOWNLOAD_ERROR_TEXT"] = "Error downloading installer";
-		    m_dictionary["DOWNLOAD_POST_DOWNLOAD_TEXT"] = "If you choose to update Simple Adblock, your Internet Explorer will close before installation";
+		    m_dictionary["DOWNLOAD_PLEASE_WAIT"] = "Please wait...";
+		    m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
+		    m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update Simple Adblock, your Internet Explorer will close before installation";
 
 #elif (defined PRODUCT_DOWNLOADHELPER)
 
@@ -252,14 +252,18 @@ void CAdPluginDictionary::Create()
 		    m_dictionary["UPDATE_DO_YOU_WISH_TO_DOWNLOAD"] = "Do you wish to download it now?";
 
             // Download update dialog
-		    m_dictionary["DOWNLOAD_TITLE"] = "Download IE Download Helper";
+		    m_dictionary["DOWNLOAD_UPDATE_TITLE"] = "Download IE Download Helper";
 		    m_dictionary["DOWNLOAD_UPDATE_BUTTON"] = "Update";
-		    m_dictionary["DOWNLOAD_PROGRESS_TEXT"] = "Please wait...";
-		    m_dictionary["DOWNLOAD_DOWNLOAD_ERROR_TEXT"] = "Error downloading installer";
-		    m_dictionary["DOWNLOAD_POST_DOWNLOAD_TEXT"] = "If you choose to update IE Download Helper, your Internet Explorer will close before installation";
+		    m_dictionary["DOWNLOAD_PLEASE_WAIT"] = "Please wait...";
+		    m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
+		    m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update IE Download Helper, your Internet Explorer will close before installation";
 
+			// File download
+		    m_dictionary["DOWNLOAD_FILE_TITLE"] = "Download Manager";
+		    m_dictionary["DOWNLOAD_FILE_PROGRESS_TEXT"] = "Please wait...";
+			m_dictionary["SAVE_FILE"] = "Save file";
+			m_dictionary["NO_DOWNLOAD_FILES"] = "No files to download";
 #endif
-
             // General texts
 		    m_dictionary["YES"] = "Yes";
 		    m_dictionary["NO"] = "No";
