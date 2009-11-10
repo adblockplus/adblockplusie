@@ -199,28 +199,29 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
             
             pos = contentType.FindOneOf("; \n\r");
             if (pos > 0)
-            {
-				int fileSize = 0;
-
-				// Find length
-		        CStringA contentLength = szResponseHeaders;
-
-				int posLength = contentLength.Find("Content-Length: ");
-				if (posLength > 0)
-				{
-					contentLength = contentLength.Mid(posLength + 16);
-		            
-					posLength = contentLength.FindOneOf("; \n\r");
-					if (posLength > 0)
-		            {
-						fileSize = atoi(contentLength.Left(posLength).GetBuffer());
-					}
-				}
-				
+            {				
 				SDownloadFileProperties downloadFileProperties;
-                if (config->GetDownloadProperties(contentType.Left(pos), downloadFileProperties))
+
+				if (config->GetDownloadProperties(contentType.Left(pos), downloadFileProperties))
                 {
-                    client->AddDownloadFile(m_url, fileSize, downloadFileProperties);
+					int fileSize = 0;
+
+					// Find length
+					CStringA contentLength = szResponseHeaders;
+
+					int posLength = contentLength.Find("Content-Length: ");
+					if (posLength > 0)
+					{
+						contentLength = contentLength.Mid(posLength + 16);
+			            
+						posLength = contentLength.FindOneOf("; \n\r");
+						if (posLength > 0)
+						{
+							fileSize = atoi(contentLength.Left(posLength).GetBuffer());
+						}
+					}
+					
+					client->AddDownloadFile(m_url, fileSize, downloadFileProperties);
                 }
             }
         }
