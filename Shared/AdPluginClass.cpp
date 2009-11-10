@@ -1303,12 +1303,15 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
                 OPENFILENAME ofn;
                 
 		        TCHAR szFile[1024] = L"";
+		        TCHAR szFilter[1024] = L"";
 
 		        CString extension = CString(downloadFile.properties.extension);
-		        CString filters = CString(downloadFile.properties.description) + L" (*." + extension + L")\0*." + extension + L"\0\0";
 		        CString title = dictionary->Lookup("SAVE_FILE");
-		        
-                wcscpy(szFile, downloadFile.downloadFile);
+				CString description = downloadFile.properties.description;
+
+				wsprintf(szFilter, L"%s (*.%s)\0.%s\0\0", description.GetBuffer(), extension.GetBuffer(), extension.GetBuffer());
+
+		        wcscpy(szFile, downloadFile.downloadFile);
 
                 ::ZeroMemory(&ofn, sizeof(ofn));
                 ofn.lStructSize = sizeof(OPENFILENAME);
@@ -1317,7 +1320,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
                 ofn.nMaxFile = 1024;
                 ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
                 ofn.lpstrTitle = title;
-                ofn.lpstrFilter = filters;
+                ofn.lpstrFilter = szFilter;
                 ofn.lpstrDefExt = extension;
 
                 if (!::GetSaveFileName(&ofn))

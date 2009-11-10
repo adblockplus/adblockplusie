@@ -88,7 +88,7 @@ void CAdPluginConfig::Read()
     CAdPluginConfigLock lock;
     if (lock.IsLocked())
     {
-        CAdPluginIniFile iniFile(CAdPluginSettings::GetDataPath(CONFIG_INI_FILE));
+        CAdPluginIniFile iniFile(CAdPluginSettings::GetDataPath(CONFIG_INI_FILE), true);
 
         if (!iniFile.Read())
         {
@@ -98,34 +98,25 @@ void CAdPluginConfig::Read()
 
         s_criticalSection.Lock();
 	    {
-		    CAdPluginIniFile::TSectionData data = iniFile.GetSectionData("Rules");
-
-            int count = 0;
-            bool bContinue = true;
-
             m_downloadFileProperties.clear();
 
-            do
-            {
-                CStringA countStr;
-                countStr.Format("%d", ++count);
-                
-                CAdPluginIniFile::TSectionData::iterator typeIt = data.find(countStr + "_type");
-                CAdPluginIniFile::TSectionData::iterator extIt  = data.find(countStr + "_ext");
-                CAdPluginIniFile::TSectionData::iterator descIt  = data.find(countStr + "_desc");
+			const CAdPluginIniFile::TSectionNames& names = iniFile.GetSectionNames();
 
-                if (bContinue = (typeIt != data.end() && extIt != data.end() && descIt != data.end()))
-                {
+			for (CAdPluginIniFile::TSectionNames::const_iterator it = names.begin(); it != names.end(); ++it)
+			{
+				if (it->Left(6) == L"format")
+				{
+					CAdPluginIniFile::TSectionData data = iniFile.GetSectionData(*it);
+
                     SDownloadFileProperties properties;
                     
-                    properties.content = typeIt->second;
-                    properties.extension = extIt->second;
-                    properties.description = descIt->second;
-                    
-                    m_downloadFileProperties[typeIt->second] = properties;
-                }
+                    properties.content = data["type"];
+                    properties.extension = data["extension"];
+                    properties.description = data["descriptor"];
 
-            } while (bContinue);
+                    m_downloadFileProperties[properties.content] = properties;
+				}
+			}
 	    }
         s_criticalSection.Unlock();
     }
@@ -139,7 +130,7 @@ void CAdPluginConfig::Create()
     CAdPluginConfigLock lock;
     if (lock.IsLocked())
     {
-        CAdPluginIniFile iniFile(CAdPluginSettings::GetDataPath(CONFIG_INI_FILE));
+        CAdPluginIniFile iniFile(CAdPluginSettings::GetDataPath(CONFIG_INI_FILE), true);
 
         CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
 
@@ -150,22 +141,31 @@ void CAdPluginConfig::Create()
 
         s_criticalSection.Lock();
 	    {
-    	    CAdPluginIniFile::TSectionData data;
+    	    CAdPluginIniFile::TSectionData formatFlv;
 
-		    data["1_type"] = "video/x-flv";
-		    data["1_ext"]  = "flv";
-		    data["1_desc"]  = "Flash Video";
+		    formatFlv["type"] = "video/x-flv";
+		    formatFlv["extension"]  = "flv";
+		    formatFlv["descriptor"]  = "Flash Video";
 
-		    data["2_type"] = "video/x-ms-wmv";
-		    data["2_ext"]  = "wmv";
-		    data["2_desc"]  = "Windows Media Video";
+	        iniFile.UpdateSection("formatFlv", formatFlv);
 
-		    data["3_type"] = "video/x-ms-asf";
-		    data["3_ext"]  = "asf";
-		    data["3_desc"]  = "Advanced Systems Format";
+    	    CAdPluginIniFile::TSectionData formatWmv;
+
+		    formatWmv["type"] = "video/x-ms-wmv";
+		    formatWmv["extension"] = "wmv";
+		    formatWmv["descriptor"] = "Windows Media Video";
+
+	        iniFile.UpdateSection("formatWmv", formatWmv);
+
+    	    CAdPluginIniFile::TSectionData formatAsf;
+
+		    formatAsf["type"] = "video/x-ms-asf";
+		    formatAsf["extension"] = "asf";
+		    formatAsf["descriptor"] = "Advanced Systems Format";
+
+	        iniFile.UpdateSection("formatAsf", formatAsf);
 
 // Windows Media Audio - WMA
-	        iniFile.UpdateSection("Rules", data);
 	    }
         s_criticalSection.Unlock();
 
@@ -252,7 +252,7 @@ bool CAdPluginConfig::GetDownloadProperties(const CStringA& contentType, SDownlo
         {
             properties = it->second;
             isValid = true;
-        }
+		}
     }
     s_criticalSection.Unlock();
 
