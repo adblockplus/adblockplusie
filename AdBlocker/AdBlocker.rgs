@@ -1,0 +1,50 @@
+HKCR
+{
+	SimpleAdblock.SimpleAdblock.1 = s 'SimpleAdblock Class'
+	{
+		CLSID = s '{FFCB3198-32F3-4E8B-9539-4324694ED664}'
+	}
+	SimpleAdblock.SimpleAdblock = s 'SimpleAdblock Class'
+	{
+		CLSID = s '{FFCB3198-32F3-4E8B-9539-4324694ED664}'
+		CurVer = s 'SimpleAdblock.SimpleAdblock.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {FFCB3198-32F3-4E8B-9539-4324694ED664} = s 'SimpleAdblock Class'
+		{
+			ProgID = s 'SimpleAdblock.SimpleAdblock.1'
+			VersionIndependentProgID = s 'SimpleAdblock.SimpleAdblock'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+			'TypeLib' = s '{7cd37f36-0bef-11dc-8314-0800200c9a67}'
+		}
+	}
+}
+
+HKLM
+{
+	SOFTWARE
+	{
+		Microsoft
+		{
+			Windows
+			{
+				CurrentVersion
+				{
+					Explorer
+					{
+						'Browser Helper Objects'
+						{
+							{FFCB3198-32F3-4E8B-9539-4324694ED664}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+

@@ -1,0 +1,26 @@
+HKCR
+{
+	IEAdblock.IEAdblockListener.1 = s 'IEAdblockListener Class'
+	{
+		CLSID = s '{34BD87D7-5BF7-4DAB-A213-BDA20E746898}'
+	}
+	IEAdblock.IEAdblockListener = s 'IEAdblockListener Class'
+	{
+		CLSID = s '{34BD87D7-5BF7-4DAB-A213-BDA20E746898}'
+		CurVer = s 'IEAdblock.IEAdblockListener.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {34BD87D7-5BF7-4DAB-A213-BDA20E746898} = s 'IEAdblockListener Class'
+		{
+			ProgID = s 'IEAdblock.IEAdblockListener.1'
+			VersionIndependentProgID = s 'IEAdblock.IEAdblockListener'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{7cd37f36-0bef-11dc-8314-0800200c9a67}'
+		}
+	}
+}

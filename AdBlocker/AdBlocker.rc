@@ -1,0 +1,166 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "Resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+#include "winres.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_ADPLUGIN_CLASS      REGISTRY                "AdBlocker.rgs"
+IDR_ADPLUGIN_LISTENER   REGISTRY                "AdBlockerListener.rgs"
+IDR_ADPLUGIN_MIMEFILTER REGISTRY                "AdBlockerMimeFilter.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,1,0,0
+ PRODUCTVERSION 0,1,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Simple Adblock"
+            VALUE "FileDescription", "Simple Adblock Module"
+            VALUE "FileVersion", "0, 1, 0, 0"
+            VALUE "InternalName", "Simple Adblock"
+            VALUE "LegalCopyright", "Copyright 2009"
+            VALUE "OriginalFilename", "SimpleAdblock.dll"
+            VALUE "ProductName", "Simple AdBlock"
+            VALUE "ProductVersion", "0, 1, 0, 0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON_DEACTIVATED    ICON                    "res\\deactivated.ico"
+IDI_ICON_ENABLED        ICON                    "res\\blocking.ico"
+IDI_ICON_DISABLED       ICON                    "res\\not-blocking.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU 
+BEGIN
+    POPUP "Popup"
+    BEGIN
+        MENUITEM "Update Simple Adblock",       ID_PLUGIN_UPDATE
+        MENUITEM "Activate Simple Adblock",     ID_PLUGIN_ACTIVATE
+        MENUITEM "About Simple Adblock",        ID_ABOUT
+        MENUITEM SEPARATOR
+        MENUITEM "FAQ",                         ID_FAQ
+        MENUITEM "Feedback",                    ID_FEEDBACK
+        MENUITEM "Invite friends",              ID_INVITEFRIENDS
+        MENUITEM SEPARATOR
+        MENUITEM "Settings",                    ID_SETTINGS
+        MENUITEM SEPARATOR
+        MENUITEM "Enable plugin",               ID_PLUGIN_ENABLE
+        MENUITEM "Disable plugin",              ID_WHITELISTDOMAIN
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_UPDATEDIALOG DIALOGEX 0, 0, 159, 86
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "Update Simple Adblock"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDOK,22,65,50,14
+    PUSHBUTTON      "No",IDCANCEL,82,65,50,14
+    LTEXT           "A new version of Simple Adblock is available for download",IDC_UPDATETEXT,7,10,142,17
+    LTEXT           "Do you wish to download it now?",IDC_DOYOU,7,39,145,8
+END
+
+IDD_DOWNLOADDIALOG DIALOGEX 0, 0, 259, 68
+STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+CAPTION "Download Simple Adblock"
+FONT 8, "Microsoft Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,202,47,50,14
+    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,7,28,245,12
+    LTEXT           "Please wait ...",IDC_INSTALLMSG,7,7,245,17
+    PUSHBUTTON      "Install new Plugin",IDC_INSTALLBTN,7,47,75,14,WS_DISABLED
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_UPDATEDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 152
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 79
+    END
+
+    IDD_DOWNLOADDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 252
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 61
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_PROJNAME            "Simple Adblock"
+END
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+1 TYPELIB "SimpleAdblock.tlb"
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
