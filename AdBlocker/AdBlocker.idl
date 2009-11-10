@@ -1,0 +1,39 @@
+// AdBlocker.idl : IDL source for AdBlocker.dll
+//
+
+#include "AdBlockerGuids.h"
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(GUUID_IPRODUCT),
+	dual,
+	helpstring("SimpleAdblock Interface"),
+	pointer_default(unique)
+]
+interface IIEPlugin : IDispatch
+{
+};
+
+[
+	uuid(GUUID_TYPELIB),
+	version(1.0),
+	helpstring("SimpleAdblock 1.0 Type Library")
+]
+
+library AdPluginLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(GUUID_CLASS_PRODUCT),
+		helpstring("SimpleAdblock Class")
+	]
+	coclass AdPluginClass
+	{
+		[default] interface IIEPlugin;
+	};
+};
