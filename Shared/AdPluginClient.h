@@ -159,7 +159,7 @@ public:
 #ifdef SUPPORT_FILE_DOWNLOAD
     TDownloadFiles m_downloadFiles;
     
-    void AddDownloadFile(const CStringA& url, const SDownloadFileProperties& properties);
+    void AddDownloadFile(const CStringA& url, int fileSize, const SDownloadFileProperties& properties);
     TDownloadFiles GetDownloadFiles() const;
     bool HasDownloadFiles() const;
 #endif

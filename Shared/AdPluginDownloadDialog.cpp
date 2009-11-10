@@ -34,10 +34,10 @@ LRESULT CDownloadDialog::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 
 		CString text;
 
-		text = dictionary->Lookup("DOWNLOAD_TITLE");
+		text = dictionary->Lookup("DOWNLOAD_UPDATE_TITLE");
 	    this->SetWindowTextW(text);
 		
-		text = dictionary->Lookup("DOWNLOAD_PROGRESS_TEXT");
+		text = dictionary->Lookup("DOWNLOAD_PLEASE_WAIT");
 		SetDlgItemText(IDC_INSTALLMSG, text);
 
 		text = dictionary->Lookup("DOWNLOAD_UPDATE_BUTTON");
@@ -46,8 +46,8 @@ LRESULT CDownloadDialog::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 		text = dictionary->Lookup("CANCEL");
 		SetDlgItemText(IDCANCEL, text);
 
-		m_errorText = dictionary->Lookup("DOWNLOAD_DOWNLOAD_ERROR_TEXT");
-		m_postText = dictionary->Lookup("DOWNLOAD_POST_DOWNLOAD_TEXT");
+		m_errorText = dictionary->Lookup("DOWNLOAD_UPDATE_ERROR_TEXT");
+		m_postText = dictionary->Lookup("DOWNLOAD_UPDATE_SUCCESS_TEXT");
 	}
 	catch(std::runtime_error&) 
 	{

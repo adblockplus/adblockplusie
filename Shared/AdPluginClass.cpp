@@ -1306,7 +1306,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 
 		        CString extension = CString(downloadFile.properties.extension);
 		        CString filters = CString(downloadFile.properties.description) + L" (*." + extension + L")\0*." + extension + L"\0\0";
-		        CString title = dictionary->Lookup("SAVE_AS");
+		        CString title = dictionary->Lookup("SAVE_FILE");
 		        
                 wcscpy(szFile, downloadFile.downloadFile);
 
@@ -1315,7 +1315,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
                 ofn.hwndOwner = ::GetDesktopWindow();
                 ofn.lpstrFile = szFile;
                 ofn.nMaxFile = 1024;
-                ofn.Flags = OFN_EXPLORER | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+                ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
                 ofn.lpstrTitle = title;
                 ofn.lpstrFilter = filters;
                 ofn.lpstrDefExt = extension;
@@ -1659,13 +1659,32 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
         {
             for (std::map<CStringA,SDownloadFile>::iterator it = downloadFiles.begin(); it != downloadFiles.end() && index < WM_DOWNLOAD_FILE_MAX; ++it)
             {
+				CString fileItem;
+
+				if (it->second.fileSize > 1024000L)
+				{
+					fileItem.Format(L"%s (%.1f Mb)", it->second.downloadFile.GetBuffer(), (float)it->second.fileSize / (float)1024000L);
+				}
+				else if (it->second.fileSize > 1024L)
+				{
+					fileItem.Format(L"%s (%.1f Kb)", it->second.downloadFile.GetBuffer(), (float)it->second.fileSize / (float)1024L);
+				}
+				else if (it->second.fileSize > 0)
+				{
+					fileItem.Format(L"%s (%u bytes)", it->second.downloadFile.GetBuffer(), it->second.fileSize);
+				}
+				else
+				{
+					fileItem = it->second.downloadFile;
+				}
+
 	            MENUITEMINFO smii;
 	            memset(&smii, 0, sizeof(MENUITEMINFO));
 	            smii.cbSize = sizeof(MENUITEMINFO);
         		
 	            smii.fMask = MIIM_STRING | MIIM_ID;
-	            smii.dwTypeData = it->second.downloadFile.GetBuffer();
-	            smii.cch = it->second.downloadFile.GetLength();
+	            smii.dwTypeData = fileItem.GetBuffer();
+	            smii.cch = fileItem.GetLength();
 	            smii.wID = index;
 
 	            InsertMenuItem(hMenu, index, FALSE, &smii);

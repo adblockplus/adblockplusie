@@ -29,9 +29,10 @@ struct SDownloadFile
     CStringW downloadFile;
     CStringA downloadUrl;
     int fileType;
+	int fileSize;
     SDownloadFileProperties properties;
 
-    SDownloadFile() : fileType(0)
+    SDownloadFile() : fileType(0), fileSize(0)
     {
     }
 
@@ -40,6 +41,7 @@ struct SDownloadFile
         downloadFile = org.downloadFile;
         downloadUrl = org.downloadUrl;
         fileType = org.fileType;
+        fileSize = org.fileSize;
         properties = org.properties;
     }
 };
