@@ -213,10 +213,13 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 						if (posLength > 0)
 						{
 							fileSize = atoi(contentLength.Left(posLength).GetBuffer());
+							if (fileSize > 0)
+							{
+								client->AddDownloadFile(m_url, fileSize, downloadFileProperties);
+							}
 						}
 					}
 					
-					client->AddDownloadFile(m_url, fileSize, downloadFileProperties);
                 }
             }
         }

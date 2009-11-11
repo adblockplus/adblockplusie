@@ -721,13 +721,14 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 
 	case DISPID_DOWNLOADBEGIN:
 		{
+/*
 			CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 			if (client)
 			{
 				client->SetDocumentUrl(GetDocumentUrl());
 				client->SetDocumentDomain(GetDocumentDomain());
 			}
-
+*/
 			DEBUG_NAVI("Navi::Download Begin")
 		}
 		break;
@@ -769,7 +770,14 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 						    if (url != GetDocumentUrl())
 						    {
 							    SetDocumentUrl(url);
-						    }
+
+								CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
+								if (client)
+								{
+									client->SetDocumentUrl(GetDocumentUrl());
+									client->SetDocumentDomain(GetDocumentDomain());
+								}
+							}
 
 						    m_isRefresh = true;			
 					    }
@@ -1347,7 +1355,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
                 }
                 else
                 {
-                    STARTUPINFO si;
+					STARTUPINFO si;
                     ::ZeroMemory(&si, sizeof(si));
                     si.cb = sizeof(si);
 
@@ -1366,17 +1374,22 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 					checksum.Add("/url", downloadFile.downloadUrl);
 					checksum.Add(L"/file", CString(szFile));
 
-#ifdef ADPRODUCT_TEST_MODE
-					CString args = CString(L"\"..\\DownloadHelperApp\\DownloadHelper.exe\" /url:") + CString(downloadFile.downloadUrl) + " /file:" + szFile + " /checksum:" + CString(checksum.GetAsString());
-#else
 					CString args = CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + CString(downloadFile.downloadUrl) + " /file:" + szFile + " /checksum:" + CString(checksum.GetAsString());
-#endif
-	                LPWSTR szCmdline = _wcsdup(args);
+
+					LPWSTR szCmdline = _wcsdup(args);
 
                     if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, CREATE_PRESERVE_CODE_AUTHZ_LEVEL, NULL, NULL, &si, &pi))
                     {
-						DEBUG_ERROR_LOG(::CommDlgExtendedError(), PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
-                    }
+						DWORD dwError = ::CommDlgExtendedError();
+						DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
+
+#ifdef ADPLUGIN_TEST_MODE
+						CString error;
+						error.Format(L"Error: %u", dwError);
+
+						::MessageBox(::GetDesktopWindow(), error, L"Create process", MB_OK);
+#endif
+					}
 
 					::CloseHandle(pi.hProcess);
 					::CloseHandle(pi.hThread);
