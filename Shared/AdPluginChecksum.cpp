@@ -4,18 +4,18 @@
 #include "AdPluginClient.h"
 
 
-CAdPluginChecksum::CAdPluginChecksum()
+CPluginChecksum::CPluginChecksum()
 {
     Clear();
 }
 
 
-CAdPluginChecksum::~CAdPluginChecksum()
+CPluginChecksum::~CPluginChecksum()
 {
 }
 
 
-void CAdPluginChecksum::Clear() 
+void CPluginChecksum::Clear() 
 { 
     m_sum = 0; 
     m_r = 55665; 
@@ -24,13 +24,13 @@ void CAdPluginChecksum::Clear()
 }
 
 
-DWORD CAdPluginChecksum::Get() const
+DWORD CPluginChecksum::Get() const
 { 
     return m_sum; 
 }
 
 
-CStringA CAdPluginChecksum::GetAsString() const
+CStringA CPluginChecksum::GetAsString() const
 { 
 	CStringA checksum;
 
@@ -40,7 +40,7 @@ CStringA CAdPluginChecksum::GetAsString() const
 }
 
 
-void CAdPluginChecksum::Add(BYTE value)
+void CPluginChecksum::Add(BYTE value)
 {
     if (value)
     {
@@ -64,7 +64,7 @@ void CAdPluginChecksum::Add(BYTE value)
 }
 
 
-void CAdPluginChecksum::Add(const CStringA& s)
+void CPluginChecksum::Add(const CStringA& s)
 {
     for (int i = 0; i < s.GetLength(); i++)
     {
@@ -79,7 +79,7 @@ void CAdPluginChecksum::Add(const CStringA& s)
 #endif
 }
 
-void CAdPluginChecksum::Add(const CStringW& s)
+void CPluginChecksum::Add(const CStringW& s)
 {
     for (int i = 0; i < s.GetLength(); i++)
     {
@@ -97,7 +97,7 @@ void CAdPluginChecksum::Add(const CStringW& s)
 #endif
 }
 
-void CAdPluginChecksum::Add(const CStringA& s1, const CStringA& s2)
+void CPluginChecksum::Add(const CStringA& s1, const CStringA& s2)
 {
     if (!s1.IsEmpty() && !s2.IsEmpty())
     {
@@ -106,7 +106,7 @@ void CAdPluginChecksum::Add(const CStringA& s1, const CStringA& s2)
     }
 }
 
-void CAdPluginChecksum::Add(const CStringW& s1, const CStringW& s2)
+void CPluginChecksum::Add(const CStringW& s1, const CStringW& s2)
 {
     if (!s1.IsEmpty() && !s2.IsEmpty())
     {

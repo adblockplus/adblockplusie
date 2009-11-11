@@ -1,5 +1,5 @@
-#ifndef _ADPLUGIN_TYPEDEF_H_
-#define _ADPLUGIN_TYPEDEF_H_
+#ifndef _PLUGIN_TYPEDEF_H_
+#define _PLUGIN_TYPEDEF_H_
 
 
 #ifdef SUPPORT_FILE_DOWNLOAD
@@ -85,4 +85,4 @@ typedef std::map<CStringA,SDownloadFileProperties> TDownloadFileProperties;
 #endif
 
 
-#endif // _ADPLUGIN_TYPEDEF_H_
+#endif // _PLUGIN_TYPEDEF_H_

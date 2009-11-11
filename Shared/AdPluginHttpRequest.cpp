@@ -55,26 +55,26 @@ public:
 };
 
 
-CAdPluginHttpRequest::CAdPluginHttpRequest(const CStringA& script, bool addChecksum) :
+CPluginHttpRequest::CPluginHttpRequest(const CStringA& script, bool addChecksum) :
 	m_script(script), m_urlPrefix("?"), m_addChecksum(addChecksum)
 {
-    m_checksum = std::auto_ptr<CAdPluginChecksum>(new CAdPluginChecksum());
+    m_checksum = std::auto_ptr<CPluginChecksum>(new CPluginChecksum());
     m_checksum->Add(script);
 
-	m_responseFile = std::auto_ptr<CAdPluginIniFile>(new CAdPluginIniFile("", true));
+	m_responseFile = std::auto_ptr<CPluginIniFile>(new CPluginIniFile("", true));
 
     m_url = CStringA(USERS_PATH) + script;
 }
 
 
-CAdPluginHttpRequest::~CAdPluginHttpRequest()
+CPluginHttpRequest::~CPluginHttpRequest()
 {
 }
 
 
-void CAdPluginHttpRequest::AddPluginId()
+void CPluginHttpRequest::AddPluginId()
 {
-	CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+	CPluginSettings* settings = CPluginSettings::GetInstance();
 	
     if (settings->Has(SETTING_PLUGIN_ID))
     {
@@ -90,7 +90,7 @@ void CAdPluginHttpRequest::AddPluginId()
     Add("version", IEPLUGIN_VERSION);
 }
 
-void CAdPluginHttpRequest::AddOsInfo()
+void CPluginHttpRequest::AddOsInfo()
 {
 	DWORD osVersion = ::GetVersion();
 
@@ -98,7 +98,7 @@ void CAdPluginHttpRequest::AddOsInfo()
     Add("os2", (HIBYTE(LOWORD(osVersion))));
 }
 
-bool CAdPluginHttpRequest::Send(bool checkResponse)
+bool CPluginHttpRequest::Send(bool checkResponse)
 {
     if (m_addChecksum)
     {
@@ -117,7 +117,7 @@ bool CAdPluginHttpRequest::Send(bool checkResponse)
 	return isOk;
 }
 
-void CAdPluginHttpRequest::Add(const CStringA& arg, const CStringA& value, bool addToChecksum)
+void CPluginHttpRequest::Add(const CStringA& arg, const CStringA& value, bool addToChecksum)
 {
     if (!arg.IsEmpty() && !value.IsEmpty())
     {
@@ -148,7 +148,7 @@ void CAdPluginHttpRequest::Add(const CStringA& arg, const CStringA& value, bool 
     }
 }
 
-void CAdPluginHttpRequest::Add(const CStringA& arg, unsigned int value, bool addToChecksum)
+void CPluginHttpRequest::Add(const CStringA& arg, unsigned int value, bool addToChecksum)
 {
     CStringA valueStr;
     valueStr.Format("%u", value);
@@ -156,7 +156,7 @@ void CAdPluginHttpRequest::Add(const CStringA& arg, unsigned int value, bool add
     Add(arg, valueStr, addToChecksum);    
 }
 
-CStringA CAdPluginHttpRequest::GetUrl()
+CStringA CPluginHttpRequest::GetUrl()
 {
     if (m_addChecksum)
     {
@@ -168,9 +168,9 @@ CStringA CAdPluginHttpRequest::GetUrl()
 }
 
 
-CStringA CAdPluginHttpRequest::GetStandardUrl(const CStringA& script)
+CStringA CPluginHttpRequest::GetStandardUrl(const CStringA& script)
 {
-    CAdPluginHttpRequest httpRequest(script);
+    CPluginHttpRequest httpRequest(script);
 
     httpRequest.AddPluginId();
 
@@ -178,17 +178,17 @@ CStringA CAdPluginHttpRequest::GetStandardUrl(const CStringA& script)
 }
 
 
-CStringA CAdPluginHttpRequest::GetResponseText() const
+CStringA CPluginHttpRequest::GetResponseText() const
 {
     return m_responseText;
 }
 
-const std::auto_ptr<CAdPluginIniFile>& CAdPluginHttpRequest::GetResponseFile() const
+const std::auto_ptr<CPluginIniFile>& CPluginHttpRequest::GetResponseFile() const
 {
 	return m_responseFile;
 }
 
-bool CAdPluginHttpRequest::IsValidResponse() const
+bool CPluginHttpRequest::IsValidResponse() const
 {
 	m_responseFile->Clear();
 	m_responseFile->SetInitialChecksumString(m_script);
@@ -196,8 +196,8 @@ bool CAdPluginHttpRequest::IsValidResponse() const
 	bool isValidResponse = m_responseFile->ReadString(m_responseText);
     if (isValidResponse && m_responseFile->IsValidChecksum())
     {
-        CAdPluginIniFile::TSectionData status = m_responseFile->GetSectionData(_T("Status"));
-        CAdPluginIniFile::TSectionData::iterator it;
+        CPluginIniFile::TSectionData status = m_responseFile->GetSectionData(_T("Status"));
+        CPluginIniFile::TSectionData::iterator it;
         
         it = status.find(_T("status"));
         if (it != status.end())
@@ -213,7 +213,7 @@ bool CAdPluginHttpRequest::IsValidResponse() const
 	return isValidResponse;
 }
 
-BOOL CAdPluginHttpRequest::GetProxySettings(CString& proxyName, CString& proxyBypass)
+BOOL CPluginHttpRequest::GetProxySettings(CString& proxyName, CString& proxyBypass)
 {
     BOOL bResult = TRUE;
 
@@ -251,7 +251,7 @@ BOOL CAdPluginHttpRequest::GetProxySettings(CString& proxyName, CString& proxyBy
 	return bResult;
 }
 
-bool CAdPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCSTR file, CStringA* response, WORD nServerPort)
+bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCSTR file, CStringA* response, WORD nServerPort)
 {
     USES_CONVERSION;
 
@@ -274,7 +274,7 @@ bool CAdPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCSTR file, CStringA
 	CString proxyName;
 	CString proxyBypass;
 	
-	CAdPluginHttpRequest::GetProxySettings(proxyName, proxyBypass);
+	CPluginHttpRequest::GetProxySettings(proxyName, proxyBypass);
 		
 	// If there is is proxy setting, use it.
 	if (proxyName.IsEmpty())

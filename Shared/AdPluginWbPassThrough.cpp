@@ -35,7 +35,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     
     m_url = src;
 
-	LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
 	if (client)
 	{	    
 		// Page is identical to document => don't block
@@ -43,7 +43,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		{
 			// fall through
 		}
-		else if (CAdPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsDocumentWhiteListed())
+		else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsDocumentWhiteListed())
 		{
 	        CStringA domain= client->GetDocumentDomain();
 
@@ -116,7 +116,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 	            else if (contentType == CFilter::contentTypeStyleSheet) type = "css";
 	            else type = "???";
 
-                CAdPluginDebug::DebugResultIgnoring(type, src);
+                CPluginDebug::DebugResultIgnoring(type, src);
             }
 #endif // ENABLE_DEBUG_RESULT_IGNORED
 		}
@@ -185,10 +185,10 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 
 #ifdef SUPPORT_FILE_DOWNLOAD
 
-    LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+    LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
     if (client)
     {	    
-        CAdPluginConfig* config = CAdPluginConfig::GetInstance();
+        CPluginConfig* config = CPluginConfig::GetInstance();
         
         CStringA contentType = szResponseHeaders;
 

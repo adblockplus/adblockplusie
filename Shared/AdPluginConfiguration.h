@@ -1,17 +1,17 @@
-#ifndef _ADPLUGIN_CONFIGURATION_H_
-#define _ADPLUGIN_CONFIGURATION_H_
+#ifndef _PLUGIN_CONFIGURATION_H_
+#define _PLUGIN_CONFIGURATION_H_
 
 
 #include "AdPluginTypedef.h"
 
 
-class CAdPluginConfiguration
+class CPluginConfiguration
 {
 
 public:
 
 	// Inject the userid and version id into the class when constructing
-	CAdPluginConfiguration();
+	CPluginConfiguration();
 
     // Refresh (download) configuration
     bool Download();
@@ -121,4 +121,4 @@ private:
 };
 
 
-#endif // _ADPLUGIN_CONFIGURATION_H_
+#endif // _PLUGIN_CONFIGURATION_H_

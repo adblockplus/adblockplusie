@@ -11,9 +11,9 @@
 // REGISTRY
 //
 
-IDR_ADPLUGIN_CLASS      REGISTRY                "AdBlocker.rgs"
-IDR_ADPLUGIN_LISTENER   REGISTRY                "AdBlockerListener.rgs"
-IDR_ADPLUGIN_MIMEFILTER REGISTRY                "AdBlockerMimeFilter.rgs"
+IDR_PLUGIN_CLASS      REGISTRY                "AdBlocker.rgs"
+IDR_PLUGIN_LISTENER   REGISTRY                "AdBlockerListener.rgs"
+IDR_PLUGIN_MIMEFILTER REGISTRY                "AdBlockerMimeFilter.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -6,29 +6,30 @@
 #include "AdPluginChecksum.h"
 
 
-class CAdPluginDictionary
+class CPluginDictionary
 {
 
 private:
 
-	static CAdPluginDictionary* s_instance;
+	static CPluginDictionary* s_instance;
 
     static CComAutoCriticalSection s_criticalSectionDictionary;
 
-	CAdPluginIniFileW::TSectionData m_dictionary;
+	CPluginIniFileW::TSectionData m_dictionary;
 	CStringA m_dictionaryLanguage;
+	std::map<CString,CString> m_dictionaryConversions;
 
 	// private constructor used by the singleton pattern
-	CAdPluginDictionary();
+	CPluginDictionary();
 	
 	void Create();
 
 public:
 	
-	~CAdPluginDictionary();
+	~CPluginDictionary();
 	
 	// Returns an instance of the Dictionary
-	static CAdPluginDictionary* GetInstance(); 
+	static CPluginDictionary* GetInstance(); 
 
 	// Initializes the Dictionary. Should be called before any thing else
 	void SetLanguage(const CStringA& lang);

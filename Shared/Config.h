@@ -123,89 +123,89 @@
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_GENERAL)
  #undef  DEBUG_GENERAL
  #if (defined ENABLE_DEBUG_SELFTEST)
-  #define DEBUG_GENERAL(x) CAdPluginDebug::Debug(x);CAdPluginSelftest::AddText(x);
+  #define DEBUG_GENERAL(x) CPluginDebug::Debug(x);CPluginSelftest::AddText(x);
  #else
-  #define DEBUG_GENERAL(x) CAdPluginDebug::Debug(x);
+  #define DEBUG_GENERAL(x) CPluginDebug::Debug(x);
  #endif
 #endif
 
 #if (defined ENABLE_DEBUG_INFO)
  #undef  DEBUG
- #define DEBUG(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_BLOCKER)
  #undef  DEBUG_BLOCKER
- #define DEBUG_BLOCKER(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_BLOCKER(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_FILTER)
  #undef  DEBUG_FILTER
- #define DEBUG_FILTER(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_FILTER(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_SETTINGS)
  #undef  DEBUG_SETTINGS
- #define DEBUG_SETTINGS(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_SETTINGS(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_THREAD)
  #undef  DEBUG_THREAD
- #define DEBUG_THREAD(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_THREAD(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_NAVI)
  #undef  DEBUG_NAVI
- #define DEBUG_NAVI(x) CAdPluginDebug::Debug(x);
+ #define DEBUG_NAVI(x) CPluginDebug::Debug(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_CHECKSUM)
  #undef  DEBUG_CHECKSUM
- #define DEBUG_CHECKSUM(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_CHECKSUM(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_DICTIONARY)
  #undef  DEBUG_DICTIONARY
- #define DEBUG_DICTIONARY(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_DICTIONARY(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_INI)
  #undef  DEBUG_INI
- #define DEBUG_INI(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_INI(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_MUTEX)
  #undef  DEBUG_MUTEX
- #define DEBUG_MUTEX(x) CAdPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_MUTEX(x) CPluginDebug::Debug((CStringA)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_HIDE_EL)
  #undef  DEBUG_HIDE_EL
- #define DEBUG_HIDE_EL(x) CAdPluginDebug::Debug(x);
+ #define DEBUG_HIDE_EL(x) CPluginDebug::Debug(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_WHITELIST)
  #undef  DEBUG_WHITELIST
- #define DEBUG_WHITELIST(x) CAdPluginDebug::Debug(x);
+ #define DEBUG_WHITELIST(x) CPluginDebug::Debug(x);
 #endif
 
 #if (defined ENABLE_DEBUG_SELFTEST)
  #undef  DEBUG_SELFTEST
- #define DEBUG_SELFTEST(x) CAdPluginSelftest::AddText(x);
+ #define DEBUG_SELFTEST(x) CPluginSelftest::AddText(x);
 
  #if (!defined ENABLE_DEBUG_INFO || !defined ENABLE_DEBUG_GENERAL)
   #undef  DEBUG_GENERAL
-  #define DEBUG_GENERAL(x) CAdPluginSelftest::AddText(x);
+  #define DEBUG_GENERAL(x) CPluginSelftest::AddText(x);
  #endif
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_ERROR || defined ENABLE_DEBUG_SELFTEST)
  #undef  DEBUG_ERROR
- #define DEBUG_ERROR(x) CAdPluginDebug::DebugError("!!! Error:" + CStringA(x));
+ #define DEBUG_ERROR(x) CPluginDebug::DebugError("!!! Error:" + CStringA(x));
  #undef  DEBUG_ERROR_CODE
- #define DEBUG_ERROR_CODE(err, x) CAdPluginDebug::DebugErrorCode(err, "!!! Error:" + CStringA(x));
+ #define DEBUG_ERROR_CODE(err, x) CPluginDebug::DebugErrorCode(err, "!!! Error:" + CStringA(x));
  #undef  DEBUG_ERROR_CODE_EX
- #define DEBUG_ERROR_CODE_EX(err, x, process, thread) CAdPluginDebug::DebugErrorCode(err, "!!! Error:" + CStringA(x), process, thread);
+ #define DEBUG_ERROR_CODE_EX(err, x, process, thread) CPluginDebug::DebugErrorCode(err, "!!! Error:" + CStringA(x), process, thread);
 #endif
 
 #undef  DEBUG_ERROR_LOG
@@ -226,7 +226,7 @@
  #undef  SUPPORT_CONFIG
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #undef  SUPPORT_FILTER
- #define SUPPORT_WHITELIST
+ #undef  SUPPORT_WHITELIST
  #define SUPPORT_FILE_DOWNLOAD
  #define SUPPORT_CONFIG
 #elif (defined PRODUCT_DOWNLOADHELPER_APP)

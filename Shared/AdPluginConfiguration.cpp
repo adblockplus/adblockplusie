@@ -7,13 +7,13 @@
 #include "AdPluginHttpRequest.h"
 
 
-CAdPluginConfiguration::CAdPluginConfiguration() : m_pluginInfoPanel(0)
+CPluginConfiguration::CPluginConfiguration() : m_pluginInfoPanel(0)
 {
     Invalidate();
 }
 
 
-void CAdPluginConfiguration::Invalidate()
+void CPluginConfiguration::Invalidate()
 {
     m_isValid = false;
     m_isValidUserId = false;
@@ -35,15 +35,15 @@ void CAdPluginConfiguration::Invalidate()
 }
 
 
-bool CAdPluginConfiguration::Download()
+bool CPluginConfiguration::Download()
 {
     bool isOk = true;
 
     m_isValid = false;
 
-    CAdPluginHttpRequest httpRequest(USERS_SCRIPT_SETTINGS);
+    CPluginHttpRequest httpRequest(USERS_SCRIPT_SETTINGS);
 
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
     
     settings->RefreshTab();
 
@@ -131,7 +131,7 @@ bool CAdPluginConfiguration::Download()
 	    return false;
 	}
 
-	const std::auto_ptr<CAdPluginIniFile>& iniFile = httpRequest.GetResponseFile();
+	const std::auto_ptr<CPluginIniFile>& iniFile = httpRequest.GetResponseFile();
 
 #ifdef SUPPORT_WHITELIST
 
@@ -144,8 +144,8 @@ bool CAdPluginConfiguration::Download()
 #endif // SUPPORT_WHITELIST
 
     // Unpack settings
-    CAdPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
-    CAdPluginIniFile::TSectionData::iterator it;
+    CPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
+    CPluginIniFile::TSectionData::iterator it;
 
     it = settingsData.find("pluginupdate");
     if (it != settingsData.end())
@@ -262,7 +262,7 @@ bool CAdPluginConfiguration::Download()
             m_filterVersion = atoi(it->second);
         }
 
-        CAdPluginIniFile::TSectionData filters = iniFile->GetSectionData("Filters");
+        CPluginIniFile::TSectionData filters = iniFile->GetSectionData("Filters");
 
         int filterCount = 0;
         bool bContinue = true;
@@ -274,8 +274,8 @@ bool CAdPluginConfiguration::Download()
             CStringA filterCountStr;
             filterCountStr.Format("%d", ++filterCount);
             
-            CAdPluginIniFile::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
-            CAdPluginIniFile::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
+            CPluginIniFile::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
+            CPluginIniFile::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
 
             if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
             {
@@ -293,7 +293,7 @@ bool CAdPluginConfiguration::Download()
     m_isValidWhiteList = iniFile->HasSection("Whitelist");
     if (m_isValidWhiteList)
     {
-        CAdPluginIniFile::TSectionData whitelist = iniFile->GetSectionData("Whitelist");        
+        CPluginIniFile::TSectionData whitelist = iniFile->GetSectionData("Whitelist");        
 
         int domainCount = 0;
         bool bContinue = true;
@@ -305,8 +305,8 @@ bool CAdPluginConfiguration::Download()
             CStringA domainCountStr;
             domainCountStr.Format("%d", ++domainCount);
             
-            CAdPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
-            CAdPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
+            CPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
+            CPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
 
             if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
             {
@@ -324,74 +324,74 @@ bool CAdPluginConfiguration::Download()
 }
 
 
-bool CAdPluginConfiguration::IsValid() const
+bool CPluginConfiguration::IsValid() const
 {
    return m_isValid;
 }
 
 
-bool CAdPluginConfiguration::IsValidUserId() const
+bool CPluginConfiguration::IsValidUserId() const
 {
    return m_isValidUserId;
 }
 
 
-bool CAdPluginConfiguration::IsValidPluginActivated() const
+bool CPluginConfiguration::IsValidPluginActivated() const
 {
    return m_isValidPluginActivated;
 }
 
 
-bool CAdPluginConfiguration::IsValidPluginActivateEnabled() const
+bool CPluginConfiguration::IsValidPluginActivateEnabled() const
 {
    return m_isValidPluginActivateEnabled;
 }
 
 
-bool CAdPluginConfiguration::IsValidPluginExpired() const
+bool CPluginConfiguration::IsValidPluginExpired() const
 {
    return m_isValidPluginExpired;
 }
 
 
-bool CAdPluginConfiguration::IsValidPluginUpdate() const
+bool CPluginConfiguration::IsValidPluginUpdate() const
 {
    return m_isValidPluginUpdate;
 }
 
 
-bool CAdPluginConfiguration::IsValidDictionary() const
+bool CPluginConfiguration::IsValidDictionary() const
 {
    return m_isValidDictionary;
 }
 
 
-bool CAdPluginConfiguration::IsPluginActivated() const
+bool CPluginConfiguration::IsPluginActivated() const
 {
     return m_isPluginActivated;
 }
 
 
-bool CAdPluginConfiguration::IsPluginActivateEnabled() const
+bool CPluginConfiguration::IsPluginActivateEnabled() const
 {
     return m_isPluginActivateEnabled;
 }
 
 
-bool CAdPluginConfiguration::IsPluginExpired() const
+bool CPluginConfiguration::IsPluginExpired() const
 {
     return m_isPluginExpired;
 }
 
 
-bool CAdPluginConfiguration::IsValidPluginInfoPanel() const
+bool CPluginConfiguration::IsValidPluginInfoPanel() const
 {
    return m_isValidPluginInfoPanel;
 }
 
 #ifdef SUPPORT_WHITELIST
 
-bool CAdPluginConfiguration::IsValidWhiteList() const
+bool CPluginConfiguration::IsValidWhiteList() const
 {
    return m_isValidWhiteList;
 }
@@ -400,7 +400,7 @@ bool CAdPluginConfiguration::IsValidWhiteList() const
 
 #ifdef SUPPORT_FILTER
 
-bool CAdPluginConfiguration::IsValidFilter() const
+bool CPluginConfiguration::IsValidFilter() const
 {
    return m_isValidFilter;
 }
@@ -409,44 +409,44 @@ bool CAdPluginConfiguration::IsValidFilter() const
 
 #ifdef SUPPORT_CONFIG
 
-bool CAdPluginConfiguration::IsValidConfig() const
+bool CPluginConfiguration::IsValidConfig() const
 {
     return m_isValidConfig;
 }
 
 #endif // SUPPORT_CONFIG
 
-CStringA CAdPluginConfiguration::GetUserId() const
+CStringA CPluginConfiguration::GetUserId() const
 {
 	return m_userId;
 }
 
 
-int CAdPluginConfiguration::GetPluginInfoPanel() const
+int CPluginConfiguration::GetPluginInfoPanel() const
 {
 	return m_pluginInfoPanel;
 }
 
 
-CStringA CAdPluginConfiguration::GetPluginUpdateUrl() const
+CStringA CPluginConfiguration::GetPluginUpdateUrl() const
 {
 	return m_pluginUpdateUrl;
 }
 
 
-CStringA CAdPluginConfiguration::GetPluginUpdateVersion() const
+CStringA CPluginConfiguration::GetPluginUpdateVersion() const
 {
 	return m_pluginUpdateVersion;
 }
 
 
-int CAdPluginConfiguration::GetDictionaryVersion() const
+int CPluginConfiguration::GetDictionaryVersion() const
 {
 	return m_dictionaryVersion;
 }
 
 
-CStringA CAdPluginConfiguration::GetDictionaryUrl() const
+CStringA CPluginConfiguration::GetDictionaryUrl() const
 {
 	return m_dictionaryUrl;
 }
@@ -454,13 +454,13 @@ CStringA CAdPluginConfiguration::GetDictionaryUrl() const
 
 #ifdef SUPPORT_FILTER
 
-int CAdPluginConfiguration::GetFilterVersion() const
+int CPluginConfiguration::GetFilterVersion() const
 {
 	return m_filterVersion;
 }
 
 
-TFilterUrlList CAdPluginConfiguration::GetFilterUrlList() const
+TFilterUrlList CPluginConfiguration::GetFilterUrlList() const
 {
 	return m_filterUrlList;
 }
@@ -469,7 +469,7 @@ TFilterUrlList CAdPluginConfiguration::GetFilterUrlList() const
 
 #ifdef SUPPORT_WHITELIST
 
-TDomainList CAdPluginConfiguration::GetWhiteList() const
+TDomainList CPluginConfiguration::GetWhiteList() const
 {
 	return m_whiteList;
 }
@@ -478,12 +478,12 @@ TDomainList CAdPluginConfiguration::GetWhiteList() const
 
 #ifdef SUPPORT_CONFIG
 
-CStringA CAdPluginConfiguration::GetConfigUrl() const
+CStringA CPluginConfiguration::GetConfigUrl() const
 {
 	return m_configUrl;
 }
 
-int CAdPluginConfiguration::GetConfigVersion() const
+int CPluginConfiguration::GetConfigVersion() const
 {
 	return m_configVersion;
 }
@@ -492,7 +492,7 @@ int CAdPluginConfiguration::GetConfigVersion() const
 
 
 #ifdef PRODUCT_AIDOINLINE
-CStringA CAdPluginConfiguration::GetCollectedStatus() const
+CStringA CPluginConfiguration::GetCollectedStatus() const
 {
 	return m_collectedStatus;
 }

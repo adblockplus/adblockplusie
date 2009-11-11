@@ -22,14 +22,14 @@
 #include "ProtocolCF.h"
 
 
-HANDLE CAdPluginClass::s_hTabThread = NULL;
-bool CAdPluginClass::s_isTabThreadDone = false;
+HANDLE CPluginClass::s_hTabThread = NULL;
+bool CPluginClass::s_isTabThreadDone = false;
 
 
-DWORD WINAPI CAdPluginClass::TabThreadProc(LPVOID pParam)
+DWORD WINAPI CPluginClass::TabThreadProc(LPVOID pParam)
 {
     // Force loading/creation of settings
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
 
     settings->SetWorkingThreadId();
 
@@ -49,7 +49,7 @@ DWORD WINAPI CAdPluginClass::TabThreadProc(LPVOID pParam)
 	LocalClient* client = NULL;
         
     // Force loading/creation of dictionary
-    CAdPluginDictionary::GetInstance();
+    CPluginDictionary::GetInstance();
 
 	// --------------------------------------------------------------------
 	// Initialize local client
@@ -70,7 +70,7 @@ DWORD WINAPI CAdPluginClass::TabThreadProc(LPVOID pParam)
 
 		    try 
 		    {
-			    client = CAdPluginClientFactory::GetClientInstance();
+			    client = CPluginClientFactory::GetClientInstance();
 			    // The client has been initialized, we can continue
 			    break;
 		    }
@@ -175,7 +175,7 @@ DWORD WINAPI CAdPluginClass::TabThreadProc(LPVOID pParam)
 	    while (!IsTabThreadDone(hTabThread) && !s_isTabActivated && (++loopCount % (TIMER_THREAD_SLEEP_TAB_LOOP / 50)) != 0)
 	    {
             // Post async plugin error
-            CAdPluginError pluginError;
+            CPluginError pluginError;
             if (LocalClient::PopFirstPluginError(pluginError))
             {
                 LocalClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
@@ -192,7 +192,7 @@ DWORD WINAPI CAdPluginClass::TabThreadProc(LPVOID pParam)
 }
 
 
-HANDLE CAdPluginClass::GetTabThreadHandle()
+HANDLE CPluginClass::GetTabThreadHandle()
 {
     HANDLE handle = NULL;
 
@@ -206,7 +206,7 @@ HANDLE CAdPluginClass::GetTabThreadHandle()
 }
 
 
-bool CAdPluginClass::IsTabThreadDone(HANDLE tabThread)
+bool CPluginClass::IsTabThreadDone(HANDLE tabThread)
 {
     bool isDone = false;
 

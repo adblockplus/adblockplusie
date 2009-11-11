@@ -2,8 +2,8 @@
 * http://msdn.microsoft.com/en-us/library/bb250436.aspx
 */
 
-#ifndef _ADPLUGIN_CLASS_H_
-#define _ADPLUGIN_CLASS_H_
+#ifndef _PLUGIN_CLASS_H_
+#define _PLUGIN_CLASS_H_
 
 
 #include "AdPluginTypedef.h"
@@ -56,29 +56,29 @@ public:
 // method is called when the window is created, and the object asks to receive events.
 // When an event occurs, the Invoke method is called with details.
 
-class ATL_NO_VTABLE CAdPluginClass : 
+class ATL_NO_VTABLE CPluginClass : 
 	public CComObjectRootEx<CComMultiThreadModel>,
-	public CComCoClass<CAdPluginClass, &CLSID_AdPluginClass>,
-	public IObjectWithSiteImpl<CAdPluginClass>,
+	public CComCoClass<CPluginClass, &CLSID_AdPluginClass>,
+	public IObjectWithSiteImpl<CPluginClass>,
 	public IDispatchImpl<IIEPlugin, &IID_IIEPlugin, &LIBID_AdPluginLib>,
 	public IOleCommandTarget
 {
 
 public:
 
-	DECLARE_REGISTRY_RESOURCEID(IDR_ADPLUGIN_CLASS)
+	DECLARE_REGISTRY_RESOURCEID(IDR_PLUGIN_CLASS)
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	BEGIN_COM_MAP(CAdPluginClass)
+	BEGIN_COM_MAP(CPluginClass)
 		COM_INTERFACE_ENTRY(IIEPlugin)
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY_IMPL(IObjectWithSite)
 		COM_INTERFACE_ENTRY(IOleCommandTarget)
 	END_COM_MAP()
 	
-	CAdPluginClass();
-	~CAdPluginClass();
+	CPluginClass();
+	~CPluginClass();
 	
 	HRESULT FinalConstruct();
 	void FinalRelease();
@@ -131,7 +131,7 @@ private:
 
 	static HICON GetStatusBarButton(const CStringA& url);	
 	static void LaunchUpdater(const CString& path);
-	static CAdPluginClass* FindInstance(HWND hStatusBarWnd);
+	static CPluginClass* FindInstance(HWND hStatusBarWnd);
 	static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -197,7 +197,7 @@ private:
 	static DWORD WINAPI TabThreadProc(LPVOID pParam);
 
 	static HINSTANCE s_hUxtheme;
-	static CSimpleArray<CAdPluginClass*> s_instances;
+	static CSimpleArray<CPluginClass*> s_instances;
 
     // Is plugin to be updated?
     static bool s_isPluginToBeUpdated;
@@ -241,7 +241,7 @@ private:
 #endif
 };
 
-OBJECT_ENTRY_AUTO(__uuidof(AdPluginClass), CAdPluginClass)
+OBJECT_ENTRY_AUTO(__uuidof(AdPluginClass), CPluginClass)
 
 
-#endif // _ADPLUGIN_CLASS_H_
+#endif // _PLUGIN_CLASS_H_

@@ -21,46 +21,46 @@ class TSettings
 };
 
 
-class CAdPluginSettingsLock : public CAdPluginMutex
+class CPluginSettingsLock : public CPluginMutex
 {
 public:
-    CAdPluginSettingsLock() : CAdPluginMutex("SettingsFile", PLUGIN_ERROR_MUTEX_SETTINGS_FILE) {}
-    ~CAdPluginSettingsLock() {}
+    CPluginSettingsLock() : CPluginMutex("SettingsFile", PLUGIN_ERROR_MUTEX_SETTINGS_FILE) {}
+    ~CPluginSettingsLock() {}
 
 };
 
 
-class CAdPluginSettingsTabLock : public CAdPluginMutex
+class CPluginSettingsTabLock : public CPluginMutex
 {
 public:
-    CAdPluginSettingsTabLock() : CAdPluginMutex("SettingsFileTab", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_TAB) {}
-    ~CAdPluginSettingsTabLock() {}
+    CPluginSettingsTabLock() : CPluginMutex("SettingsFileTab", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_TAB) {}
+    ~CPluginSettingsTabLock() {}
 };
 
 #ifdef SUPPORT_WHITELIST
 
-class CAdPluginSettingsWhitelistLock : public CAdPluginMutex
+class CPluginSettingsWhitelistLock : public CPluginMutex
 {
 public:
-    CAdPluginSettingsWhitelistLock() : CAdPluginMutex("SettingsFileWhitelist", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_WHITELIST) {}
-    ~CAdPluginSettingsWhitelistLock() {}
+    CPluginSettingsWhitelistLock() : CPluginMutex("SettingsFileWhitelist", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_WHITELIST) {}
+    ~CPluginSettingsWhitelistLock() {}
 };
 
 #endif
 
-char* CAdPluginSettings::s_dataPath = NULL;
-CAdPluginSettings* CAdPluginSettings::s_instance = NULL;
+char* CPluginSettings::s_dataPath = NULL;
+CPluginSettings* CPluginSettings::s_instance = NULL;
 
-CComAutoCriticalSection CAdPluginSettings::s_criticalSectionLocal;
+CComAutoCriticalSection CPluginSettings::s_criticalSectionLocal;
 #ifdef SUPPORT_FILTER
-CComAutoCriticalSection CAdPluginSettings::s_criticalSectionFilters;
+CComAutoCriticalSection CPluginSettings::s_criticalSectionFilters;
 #endif
 #ifdef SUPPORT_WHITELIST
-CComAutoCriticalSection CAdPluginSettings::s_criticalSectionDomainHistory;
+CComAutoCriticalSection CPluginSettings::s_criticalSectionDomainHistory;
 #endif
 
 
-CAdPluginSettings::CAdPluginSettings() : 
+CPluginSettings::CPluginSettings() : 
     m_settingsVersion("1"), m_isDirty(false), m_isPluginSelftestEnabled(true), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
     m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
@@ -68,10 +68,10 @@ CAdPluginSettings::CAdPluginSettings() :
     m_isDirtyWhitelist = false;
 #endif
 
-    m_settingsFile = std::auto_ptr<CAdPluginIniFile>(new CAdPluginIniFile(GetDataPath(SETTINGS_INI_FILE), true));
-    m_settingsFileTab = std::auto_ptr<CAdPluginIniFile>(new CAdPluginIniFile(GetDataPath(SETTINGS_INI_FILE_TAB), true));
+    m_settingsFile = std::auto_ptr<CPluginIniFile>(new CPluginIniFile(GetDataPath(SETTINGS_INI_FILE), true));
+    m_settingsFileTab = std::auto_ptr<CPluginIniFile>(new CPluginIniFile(GetDataPath(SETTINGS_INI_FILE_TAB), true));
 #ifdef SUPPORT_WHITELIST
-    m_settingsFileWhitelist = std::auto_ptr<CAdPluginIniFile>(new CAdPluginIniFile(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
+    m_settingsFileWhitelist = std::auto_ptr<CPluginIniFile>(new CPluginIniFile(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
 #endif
 
     Clear();
@@ -83,7 +83,7 @@ CAdPluginSettings::CAdPluginSettings() :
     // Check existence of settings file
     bool isFileExisting = false;
     {
-        CAdPluginSettingsLock lock;
+        CPluginSettingsLock lock;
         if (lock.IsLocked())
         {
             std::ifstream is;
@@ -115,15 +115,15 @@ CAdPluginSettings::CAdPluginSettings() :
 }
 
 
-CAdPluginSettings* CAdPluginSettings::GetInstance() 
+CPluginSettings* CPluginSettings::GetInstance() 
 {
-	CAdPluginSettings* instance = NULL;
+	CPluginSettings* instance = NULL;
 
 	s_criticalSectionLocal.Lock();
 	{
 		if (!s_instance)
 		{
-			s_instance = new CAdPluginSettings();
+			s_instance = new CPluginSettings();
 		}
 
 		instance = s_instance;
@@ -134,7 +134,7 @@ CAdPluginSettings* CAdPluginSettings::GetInstance()
 }
 
 
-bool CAdPluginSettings::HasInstance() 
+bool CPluginSettings::HasInstance() 
 {
 	bool hasInstance = true;
 
@@ -148,7 +148,7 @@ bool CAdPluginSettings::HasInstance()
 }
 
 
-bool CAdPluginSettings::Read(bool bDebug)
+bool CPluginSettings::Read(bool bDebug)
 {
     bool isRead = true;
 
@@ -159,7 +159,7 @@ bool CAdPluginSettings::Read(bool bDebug)
             DEBUG_GENERAL("*** Loading settings:" + m_settingsFile->GetFilePath());
         }
 
-        CAdPluginSettingsLock lock;
+        CPluginSettingsLock lock;
         if (lock.IsLocked())
         {
             isRead = m_settingsFile->Read();        
@@ -217,7 +217,7 @@ bool CAdPluginSettings::Read(bool bDebug)
 
 #ifdef SUPPORT_FILTER            	    
                     // Unpack filter URLs
-                    CAdPluginIniFile::TSectionData filters = m_settingsFile->GetSectionData("Filters");
+                    CPluginIniFile::TSectionData filters = m_settingsFile->GetSectionData("Filters");
                     int filterCount = 0;
                     bool bContinue = true;
 
@@ -230,8 +230,8 @@ bool CAdPluginSettings::Read(bool bDebug)
 				            CStringA filterCountStr;
 				            filterCountStr.Format("%d", ++filterCount);
             	            
-				            CAdPluginIniFile::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
-				            CAdPluginIniFile::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
+				            CPluginIniFile::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
+				            CPluginIniFile::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
 
 				            if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
 				            {
@@ -281,7 +281,7 @@ bool CAdPluginSettings::Read(bool bDebug)
 }
 
 
-void CAdPluginSettings::Clear()
+void CPluginSettings::Clear()
 {
 	// Default settings
 	s_criticalSectionLocal.Lock();
@@ -312,7 +312,7 @@ void CAdPluginSettings::Clear()
 }
 
 
-CStringA CAdPluginSettings::GetDataPathParent()
+CStringA CPluginSettings::GetDataPathParent()
 {
 	char* lpData = new char[1024];
 
@@ -347,7 +347,7 @@ CStringA CAdPluginSettings::GetDataPathParent()
 }
 
 
-CStringA CAdPluginSettings::GetDataPath(const CStringA& filename)
+CStringA CPluginSettings::GetDataPath(const CStringA& filename)
 {
 	if (s_dataPath == NULL) 
 	{
@@ -401,7 +401,7 @@ CStringA CAdPluginSettings::GetDataPath(const CStringA& filename)
 }
 
 
-CStringA CAdPluginSettings::GetTempPath(const CStringA& filename)
+CStringA CPluginSettings::GetTempPath(const CStringA& filename)
 {
     char lpPathBuffer[512] = "";
 
@@ -414,7 +414,7 @@ CStringA CAdPluginSettings::GetTempPath(const CStringA& filename)
 	return lpPathBuffer + filename;
 }
 
-CStringA CAdPluginSettings::GetTempFile(const CStringA& prefix)
+CStringA CPluginSettings::GetTempFile(const CStringA& prefix)
 {
     char lpNameBuffer[512] = "";
     CStringA tempPath;
@@ -435,7 +435,7 @@ CStringA CAdPluginSettings::GetTempFile(const CStringA& prefix)
 }
 
 
-bool CAdPluginSettings::Has(const CStringA& key) const
+bool CPluginSettings::Has(const CStringA& key) const
 {
 	bool hasKey;
 
@@ -449,7 +449,7 @@ bool CAdPluginSettings::Has(const CStringA& key) const
 }
 
 
-void CAdPluginSettings::Remove(const CStringA& key)
+void CPluginSettings::Remove(const CStringA& key)
 {
     s_criticalSectionLocal.Lock();
 	{    
@@ -464,7 +464,7 @@ void CAdPluginSettings::Remove(const CStringA& key)
 }
 
 
-CStringA CAdPluginSettings::GetString(const CStringA& key, const CStringA& defaultValue) const
+CStringA CPluginSettings::GetString(const CStringA& key, const CStringA& defaultValue) const
 {
 	CStringA val = defaultValue;
 
@@ -484,7 +484,7 @@ CStringA CAdPluginSettings::GetString(const CStringA& key, const CStringA& defau
 }
 
 
-void CAdPluginSettings::SetString(const CStringA& key, const CStringA& value)
+void CPluginSettings::SetString(const CStringA& key, const CStringA& value)
 {
     if (value.IsEmpty()) return;
 
@@ -510,7 +510,7 @@ void CAdPluginSettings::SetString(const CStringA& key, const CStringA& value)
 
 
 
-int CAdPluginSettings::GetValue(const CStringA& key, int defaultValue) const
+int CPluginSettings::GetValue(const CStringA& key, int defaultValue) const
 {
 	int val = defaultValue;
 
@@ -534,7 +534,7 @@ int CAdPluginSettings::GetValue(const CStringA& key, int defaultValue) const
 }
 
 
-void CAdPluginSettings::SetValue(const CStringA& key, int value)
+void CPluginSettings::SetValue(const CStringA& key, int value)
 {
     CStringA sValue;
     sValue.Format("%d", value);
@@ -559,7 +559,7 @@ void CAdPluginSettings::SetValue(const CStringA& key, int value)
 }
 
 
-bool CAdPluginSettings::GetBool(const CStringA& key, bool defaultValue) const
+bool CPluginSettings::GetBool(const CStringA& key, bool defaultValue) const
 {
 	bool value = defaultValue;
 
@@ -580,18 +580,18 @@ bool CAdPluginSettings::GetBool(const CStringA& key, bool defaultValue) const
 }
 
 
-void CAdPluginSettings::SetBool(const CStringA& key, bool value)
+void CPluginSettings::SetBool(const CStringA& key, bool value)
 {
     SetString(key, value ? "true":"false");
 }
 
 
-bool CAdPluginSettings::IsPluginEnabled() const
+bool CPluginSettings::IsPluginEnabled() const
 {
     return m_isPluginEnabledTab && !GetBool(SETTING_PLUGIN_EXPIRED, false);
 }
 
-bool CAdPluginSettings::IsPluginSelftestEnabled()
+bool CPluginSettings::IsPluginSelftestEnabled()
 {
     if (m_isPluginSelftestEnabled)
     {
@@ -604,7 +604,7 @@ bool CAdPluginSettings::IsPluginSelftestEnabled()
 
 #ifdef SUPPORT_FILTER
 
-void CAdPluginSettings::SetFilterUrlList(const TFilterUrlList& filters) 
+void CPluginSettings::SetFilterUrlList(const TFilterUrlList& filters) 
 {
     DEBUG_SETTINGS("Settings::SetFilterUrlList")
 
@@ -620,7 +620,7 @@ void CAdPluginSettings::SetFilterUrlList(const TFilterUrlList& filters)
 }
 
 
-TFilterUrlList CAdPluginSettings::GetFilterUrlList() const
+TFilterUrlList CPluginSettings::GetFilterUrlList() const
 {
 	TFilterUrlList filterUrlList;
 
@@ -634,7 +634,7 @@ TFilterUrlList CAdPluginSettings::GetFilterUrlList() const
 }
 
 
-void CAdPluginSettings::AddFilterUrl(const CStringA& url, int version) 
+void CPluginSettings::AddFilterUrl(const CStringA& url, int version) 
 {
 	s_criticalSectionFilters.Lock();
 	{
@@ -650,7 +650,7 @@ void CAdPluginSettings::AddFilterUrl(const CStringA& url, int version)
 
 #endif // SUPPORT_FILTER
 
-bool CAdPluginSettings::Write(bool isDebug)
+bool CPluginSettings::Write(bool isDebug)
 {
 	bool isWritten = true;
 
@@ -664,13 +664,13 @@ bool CAdPluginSettings::Write(bool isDebug)
 		DEBUG_GENERAL("*** Writing changed settings")
 	}
 
-    CAdPluginSettingsLock lock;
+    CPluginSettingsLock lock;
     if (lock.IsLocked())
     {
         m_settingsFile->Clear();
 
         // Properties
-        CAdPluginIniFile::TSectionData settings;        
+        CPluginIniFile::TSectionData settings;        
 
         s_criticalSectionLocal.Lock();
         {
@@ -687,7 +687,7 @@ bool CAdPluginSettings::Write(bool isDebug)
 #ifdef SUPPORT_FILTER
 
         int filterCount = 0;
-        CAdPluginIniFile::TSectionData filters;        
+        CPluginIniFile::TSectionData filters;        
 
         s_criticalSectionFilters.Lock();
 	    {
@@ -730,7 +730,7 @@ bool CAdPluginSettings::Write(bool isDebug)
 
 #ifdef SUPPORT_WHITELIST
 
-void CAdPluginSettings::AddDomainToHistory(const CStringA& domain)
+void CPluginSettings::AddDomainToHistory(const CStringA& domain)
 {
 	if (!LocalClient::IsValidDomain(domain))
     {
@@ -778,7 +778,7 @@ void CAdPluginSettings::AddDomainToHistory(const CStringA& domain)
 }
 
 
-TDomainHistory CAdPluginSettings::GetDomainHistory() const
+TDomainHistory CPluginSettings::GetDomainHistory() const
 {
 	TDomainHistory domainHistory;
 
@@ -794,7 +794,7 @@ TDomainHistory CAdPluginSettings::GetDomainHistory() const
 #endif // SUPPORT_WHITELIST
 
 
-bool CAdPluginSettings::IsPluginUpdateAvailable() const
+bool CPluginSettings::IsPluginUpdateAvailable() const
 {
 	bool isAvailable = Has(SETTING_PLUGIN_UPDATE_VERSION);
 	if (isAvailable)
@@ -822,7 +822,7 @@ bool CAdPluginSettings::IsPluginUpdateAvailable() const
 	return isAvailable;
 }
 
-bool CAdPluginSettings::IsMainProcess(DWORD dwProcessId) const
+bool CPluginSettings::IsMainProcess(DWORD dwProcessId) const
 {
     if (dwProcessId == 0)
     {
@@ -831,12 +831,12 @@ bool CAdPluginSettings::IsMainProcess(DWORD dwProcessId) const
     return m_dwMainProcessId == dwProcessId;
 }
 
-void CAdPluginSettings::SetMainProcessId()
+void CPluginSettings::SetMainProcessId()
 {
     m_dwMainProcessId = ::GetCurrentProcessId();
 }
 
-bool CAdPluginSettings::IsMainThread(DWORD dwThreadId) const
+bool CPluginSettings::IsMainThread(DWORD dwThreadId) const
 {
     if (dwThreadId == 0)
     {
@@ -845,12 +845,12 @@ bool CAdPluginSettings::IsMainThread(DWORD dwThreadId) const
     return m_dwMainThreadId == dwThreadId;
 }
 
-void CAdPluginSettings::SetMainThreadId()
+void CPluginSettings::SetMainThreadId()
 {
     m_dwMainThreadId = ::GetCurrentThreadId();
 }
 
-bool CAdPluginSettings::IsWorkingThread(DWORD dwThreadId) const
+bool CPluginSettings::IsWorkingThread(DWORD dwThreadId) const
 {
     if (dwThreadId == 0)
     {
@@ -859,32 +859,32 @@ bool CAdPluginSettings::IsWorkingThread(DWORD dwThreadId) const
     return m_dwWorkingThreadId == dwThreadId;
 }
 
-void CAdPluginSettings::SetWorkingThreadId()
+void CPluginSettings::SetWorkingThreadId()
 {
     m_dwWorkingThreadId = ::GetCurrentThreadId();
 }
 
-void CAdPluginSettings::SetFirstRun()
+void CPluginSettings::SetFirstRun()
 {
     m_isFirstRun = true;
 }
 
-bool CAdPluginSettings::IsFirstRun() const
+bool CPluginSettings::IsFirstRun() const
 {
     return m_isFirstRun;
 }
 
-void CAdPluginSettings::SetFirstRunUpdate()
+void CPluginSettings::SetFirstRunUpdate()
 {
     m_isFirstRunUpdate = true;
 }
 
-bool CAdPluginSettings::IsFirstRunUpdate() const
+bool CPluginSettings::IsFirstRunUpdate() const
 {
     return m_isFirstRunUpdate;
 }
 
-bool CAdPluginSettings::IsFirstRunAny() const
+bool CPluginSettings::IsFirstRunAny() const
 {
     return m_isFirstRun || m_isFirstRunUpdate;
 }
@@ -893,7 +893,7 @@ bool CAdPluginSettings::IsFirstRunAny() const
 // Tab settings
 // ============================================================================
 
-void CAdPluginSettings::ClearTab()
+void CPluginSettings::ClearTab()
 {
     s_criticalSectionLocal.Lock();
 	{
@@ -909,7 +909,7 @@ void CAdPluginSettings::ClearTab()
 }
 
 
-bool CAdPluginSettings::ReadTab(bool bDebug)
+bool CPluginSettings::ReadTab(bool bDebug)
 {
     bool isRead = true;
 
@@ -966,7 +966,7 @@ bool CAdPluginSettings::ReadTab(bool bDebug)
     return isRead;
 }
 
-bool CAdPluginSettings::WriteTab(bool isDebug)
+bool CPluginSettings::WriteTab(bool isDebug)
 {
 	bool isWritten = true;
 
@@ -983,8 +983,8 @@ bool CAdPluginSettings::WriteTab(bool isDebug)
     m_settingsFileTab->Clear();
 
     // Properties & errors
-    CAdPluginIniFile::TSectionData settings;        
-    CAdPluginIniFile::TSectionData errors;        
+    CPluginIniFile::TSectionData settings;        
+    CPluginIniFile::TSectionData errors;        
 
     s_criticalSectionLocal.Lock();
     {
@@ -1016,7 +1016,7 @@ bool CAdPluginSettings::WriteTab(bool isDebug)
 }
 
 
-void CAdPluginSettings::EraseTab()
+void CPluginSettings::EraseTab()
 {
     ClearTab();
     
@@ -1025,11 +1025,11 @@ void CAdPluginSettings::EraseTab()
     WriteTab();
 }
 
-bool CAdPluginSettings::IncrementTabCount()
+bool CPluginSettings::IncrementTabCount()
 {
     int tabCount = 1;
 
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         SYSTEMTIME systemTime;
@@ -1085,7 +1085,7 @@ bool CAdPluginSettings::IncrementTabCount()
 }
 
 
-CStringA CAdPluginSettings::GetTabNumber() const
+CStringA CPluginSettings::GetTabNumber() const
 {
     CStringA tabNumber;
     
@@ -1099,11 +1099,11 @@ CStringA CAdPluginSettings::GetTabNumber() const
 }
 
 
-bool CAdPluginSettings::DecrementTabCount()
+bool CPluginSettings::DecrementTabCount()
 {
     int tabCount = 0;
 
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         ReadTab(false);
@@ -1148,9 +1148,9 @@ bool CAdPluginSettings::DecrementTabCount()
 }
 
 
-void CAdPluginSettings::TogglePluginEnabled()
+void CPluginSettings::TogglePluginEnabled()
 {
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         ReadTab(false);
@@ -1168,17 +1168,17 @@ void CAdPluginSettings::TogglePluginEnabled()
 }
 
 
-bool CAdPluginSettings::GetPluginEnabled() const
+bool CPluginSettings::GetPluginEnabled() const
 {
     return m_isPluginEnabledTab;
 }
 
 
-void CAdPluginSettings::AddError(const CStringA& error, const CStringA& errorCode)
+void CPluginSettings::AddError(const CStringA& error, const CStringA& errorCode)
 {
     DEBUG_SETTINGS("SettingsTab::AddError error:" + error + " code:" + errorCode)
 
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         ReadTab(false);
@@ -1198,7 +1198,7 @@ void CAdPluginSettings::AddError(const CStringA& error, const CStringA& errorCod
 }
 
 
-CStringA CAdPluginSettings::GetErrorList() const
+CStringA CPluginSettings::GetErrorList() const
 {
     CStringA errors;
 
@@ -1220,9 +1220,9 @@ CStringA CAdPluginSettings::GetErrorList() const
 }
 
 
-void CAdPluginSettings::RemoveErrors()
+void CPluginSettings::RemoveErrors()
 {
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         ReadTab(false);
@@ -1242,11 +1242,11 @@ void CAdPluginSettings::RemoveErrors()
 }
 
 
-bool CAdPluginSettings::GetForceConfigurationUpdateOnStart() const
+bool CPluginSettings::GetForceConfigurationUpdateOnStart() const
 {
     bool isUpdating = false;
 
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         s_criticalSectionLocal.Lock();
@@ -1260,9 +1260,9 @@ bool CAdPluginSettings::GetForceConfigurationUpdateOnStart() const
 }
 
 
-void CAdPluginSettings::ForceConfigurationUpdateOnStart(bool isUpdating)
+void CPluginSettings::ForceConfigurationUpdateOnStart(bool isUpdating)
 {
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         ReadTab(false);
@@ -1305,9 +1305,9 @@ void CAdPluginSettings::ForceConfigurationUpdateOnStart(bool isUpdating)
     }
 }
 
-void CAdPluginSettings::RemoveForceConfigurationUpdateOnStart()
+void CPluginSettings::RemoveForceConfigurationUpdateOnStart()
 {
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         ReadTab(false);
@@ -1329,9 +1329,9 @@ void CAdPluginSettings::RemoveForceConfigurationUpdateOnStart()
     }
 }
 
-void CAdPluginSettings::RefreshTab()
+void CPluginSettings::RefreshTab()
 {
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         ReadTab();
@@ -1339,7 +1339,7 @@ void CAdPluginSettings::RefreshTab()
 }
 
 
-int CAdPluginSettings::GetTabVersion(const CStringA& key) const
+int CPluginSettings::GetTabVersion(const CStringA& key) const
 {
     int version = 0;
 
@@ -1356,9 +1356,9 @@ int CAdPluginSettings::GetTabVersion(const CStringA& key) const
     return version;
 }
 
-void CAdPluginSettings::IncrementTabVersion(const CStringA& key)
+void CPluginSettings::IncrementTabVersion(const CStringA& key)
 {
-    CAdPluginSettingsTabLock lock;
+    CPluginSettingsTabLock lock;
     if (lock.IsLocked())
     {
         ReadTab(false);
@@ -1393,7 +1393,7 @@ void CAdPluginSettings::IncrementTabVersion(const CStringA& key)
 
 #ifdef SUPPORT_WHITELIST
 
-void CAdPluginSettings::ClearWhitelist()
+void CPluginSettings::ClearWhitelist()
 {
     s_criticalSectionLocal.Lock();
 	{
@@ -1404,7 +1404,7 @@ void CAdPluginSettings::ClearWhitelist()
 }
 
 
-bool CAdPluginSettings::ReadWhitelist(bool isDebug)
+bool CPluginSettings::ReadWhitelist(bool isDebug)
 {
     bool isRead = true;
 
@@ -1415,7 +1415,7 @@ bool CAdPluginSettings::ReadWhitelist(bool isDebug)
         DEBUG_GENERAL("*** Loading whitelist settings:" + m_settingsFileWhitelist->GetFilePath());
     }
 
-    CAdPluginSettingsWhitelistLock lock;
+    CPluginSettingsWhitelistLock lock;
     if (lock.IsLocked())
     {
         isRead = m_settingsFileWhitelist->Read();        
@@ -1428,7 +1428,7 @@ bool CAdPluginSettings::ReadWhitelist(bool isDebug)
                 s_criticalSectionLocal.Lock();
 	            {
                     // Unpack white list
-                    CAdPluginIniFile::TSectionData whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist");
+                    CPluginIniFile::TSectionData whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist");
                     int domainCount = 0;
                     bool bContinue = true;
 
@@ -1437,8 +1437,8 @@ bool CAdPluginSettings::ReadWhitelist(bool isDebug)
 			            CStringA domainCountStr;
 			            domainCountStr.Format("%d", ++domainCount);
         	            
-			            CAdPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
-			            CAdPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
+			            CPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
+			            CPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
 
 			            if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
 			            {
@@ -1457,8 +1457,8 @@ bool CAdPluginSettings::ReadWhitelist(bool isDebug)
 			            CStringA domainCountStr;
 			            domainCountStr.Format("%d", ++domainCount);
         	            
-			            CAdPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
-			            CAdPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
+			            CPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
+			            CPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
 
 			            if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
 			            {
@@ -1499,7 +1499,7 @@ bool CAdPluginSettings::ReadWhitelist(bool isDebug)
 }
 
 
-bool CAdPluginSettings::WriteWhitelist(bool isDebug)
+bool CPluginSettings::WriteWhitelist(bool isDebug)
 {
 	bool isWritten = true;
 
@@ -1513,7 +1513,7 @@ bool CAdPluginSettings::WriteWhitelist(bool isDebug)
 		DEBUG_GENERAL("*** Writing changed whitelist settings")
 	}
 
-    CAdPluginSettingsWhitelistLock lock;
+    CPluginSettingsWhitelistLock lock;
     if (lock.IsLocked())
     {
         m_settingsFileWhitelist->Clear();
@@ -1522,7 +1522,7 @@ bool CAdPluginSettings::WriteWhitelist(bool isDebug)
 	    {
             // White list
             int whitelistCount = 0;
-            CAdPluginIniFile::TSectionData whitelist;
+            CPluginIniFile::TSectionData whitelist;
 
 		    for (TDomainList::iterator it = m_whitelist.begin(); it != m_whitelist.end(); ++it)
 		    {
@@ -1583,14 +1583,14 @@ bool CAdPluginSettings::WriteWhitelist(bool isDebug)
 }
 
 
-void CAdPluginSettings::AddWhiteListedDomain(const CStringA& domain, int reason, bool isToGo)
+void CPluginSettings::AddWhiteListedDomain(const CStringA& domain, int reason, bool isToGo)
 {
     DEBUG_SETTINGS("SettingsWhitelist::AddWhiteListedDomain domain:" + domain)
 
     bool isNewVersion = false;
     bool isForcingUpdateOnStart = false;
 
-    CAdPluginSettingsWhitelistLock lock;
+    CPluginSettingsWhitelistLock lock;
     if (lock.IsLocked())
     {
         ReadWhitelist(false);
@@ -1669,7 +1669,7 @@ void CAdPluginSettings::AddWhiteListedDomain(const CStringA& domain, int reason,
 }
 
 
-bool CAdPluginSettings::IsWhiteListedDomain(const CStringA& domain) const
+bool CPluginSettings::IsWhiteListedDomain(const CStringA& domain) const
 {
 	bool bIsWhiteListed;
 
@@ -1687,7 +1687,7 @@ bool CAdPluginSettings::IsWhiteListedDomain(const CStringA& domain) const
     return bIsWhiteListed;
 }
 
-int CAdPluginSettings::GetWhiteListedDomainCount() const
+int CPluginSettings::GetWhiteListedDomainCount() const
 {
 	int count = 0;
 
@@ -1701,7 +1701,7 @@ int CAdPluginSettings::GetWhiteListedDomainCount() const
 }
 
 
-TDomainList CAdPluginSettings::GetWhiteListedDomainList(bool isToGo) const
+TDomainList CPluginSettings::GetWhiteListedDomainList(bool isToGo) const
 {
 	TDomainList domainList;
 
@@ -1722,9 +1722,9 @@ TDomainList CAdPluginSettings::GetWhiteListedDomainList(bool isToGo) const
 }
 
 
-void CAdPluginSettings::ReplaceWhiteListedDomains(const TDomainList& domains)
+void CPluginSettings::ReplaceWhiteListedDomains(const TDomainList& domains)
 {
-    CAdPluginSettingsWhitelistLock lock;
+    CPluginSettingsWhitelistLock lock;
     if (lock.IsLocked())
     {
         ReadWhitelist(false);
@@ -1764,9 +1764,9 @@ void CAdPluginSettings::ReplaceWhiteListedDomains(const TDomainList& domains)
 }
 
 
-void CAdPluginSettings::RemoveWhiteListedDomainsToGo(const TDomainList& domains)
+void CPluginSettings::RemoveWhiteListedDomainsToGo(const TDomainList& domains)
 {
-    CAdPluginSettingsWhitelistLock lock;
+    CPluginSettingsWhitelistLock lock;
     if (lock.IsLocked())
     {
         ReadWhitelist(false);
@@ -1793,9 +1793,9 @@ void CAdPluginSettings::RemoveWhiteListedDomainsToGo(const TDomainList& domains)
 }
 
 
-bool CAdPluginSettings::RefreshWhitelist()
+bool CPluginSettings::RefreshWhitelist()
 {
-    CAdPluginSettingsWhitelistLock lock;
+    CPluginSettingsWhitelistLock lock;
     if (lock.IsLocked())
     {
         ReadWhitelist(true);

@@ -6,30 +6,30 @@
 #include "AdPluginMutex.h"
 
 
-class CAdPluginConfigLock : public CAdPluginMutex
+class CPluginConfigLock : public CPluginMutex
 {
 public:
-    CAdPluginConfigLock() : CAdPluginMutex("ConfigFile", PLUGIN_ERROR_MUTEX_CONFIG_FILE) {}
-    ~CAdPluginConfigLock() {}
+    CPluginConfigLock() : CPluginMutex("ConfigFile", PLUGIN_ERROR_MUTEX_CONFIG_FILE) {}
+    ~CPluginConfigLock() {}
 };
 
 
-CAdPluginConfig* CAdPluginConfig::s_instance = NULL;
+CPluginConfig* CPluginConfig::s_instance = NULL;
 
-CComAutoCriticalSection CAdPluginConfig::s_criticalSection;
+CComAutoCriticalSection CPluginConfig::s_criticalSection;
 
 
-CAdPluginConfig::CAdPluginConfig()
+CPluginConfig::CPluginConfig()
 {
 	DEBUG_GENERAL("*** Initializing config")
 
     bool isExisting = true;
     {
-        CAdPluginConfigLock lock;
+        CPluginConfigLock lock;
         if (lock.IsLocked())
         {
 	        std::ifstream is;
-	        is.open(CAdPluginSettings::GetDataPath(CONFIG_INI_FILE), std::ios_base::in);
+	        is.open(CPluginSettings::GetDataPath(CONFIG_INI_FILE), std::ios_base::in);
 	        if (!is.is_open())
 	        {
 	            isExisting = false;
@@ -52,7 +52,7 @@ CAdPluginConfig::CAdPluginConfig()
 }
 
 
-CAdPluginConfig::~CAdPluginConfig()
+CPluginConfig::~CPluginConfig()
 {
     s_criticalSection.Lock();
 	{
@@ -62,15 +62,15 @@ CAdPluginConfig::~CAdPluginConfig()
 }
 
 
-CAdPluginConfig* CAdPluginConfig::GetInstance() 
+CPluginConfig* CPluginConfig::GetInstance() 
 {
-	CAdPluginConfig* instance = NULL;
+	CPluginConfig* instance = NULL;
 
     s_criticalSection.Lock();
 	{
 		if (!s_instance)
 		{
-			s_instance = new CAdPluginConfig();
+			s_instance = new CPluginConfig();
 		}
 
 		instance = s_instance;
@@ -81,14 +81,14 @@ CAdPluginConfig* CAdPluginConfig::GetInstance()
 }
 
 
-void CAdPluginConfig::Read()
+void CPluginConfig::Read()
 {
-	DEBUG_GENERAL("*** Loading config:" + CAdPluginSettings::GetDataPath(CONFIG_INI_FILE))
+	DEBUG_GENERAL("*** Loading config:" + CPluginSettings::GetDataPath(CONFIG_INI_FILE))
 
-    CAdPluginConfigLock lock;
+    CPluginConfigLock lock;
     if (lock.IsLocked())
     {
-        CAdPluginIniFile iniFile(CAdPluginSettings::GetDataPath(CONFIG_INI_FILE), true);
+        CPluginIniFile iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), true);
 
         if (!iniFile.Read())
         {
@@ -100,13 +100,13 @@ void CAdPluginConfig::Read()
 	    {
             m_downloadFileProperties.clear();
 
-			const CAdPluginIniFile::TSectionNames& names = iniFile.GetSectionNames();
+			const CPluginIniFile::TSectionNames& names = iniFile.GetSectionNames();
 
-			for (CAdPluginIniFile::TSectionNames::const_iterator it = names.begin(); it != names.end(); ++it)
+			for (CPluginIniFile::TSectionNames::const_iterator it = names.begin(); it != names.end(); ++it)
 			{
 				if (it->Left(6) == L"format")
 				{
-					CAdPluginIniFile::TSectionData data = iniFile.GetSectionData(*it);
+					CPluginIniFile::TSectionData data = iniFile.GetSectionData(*it);
 
                     SDownloadFileProperties properties;
                     
@@ -123,16 +123,16 @@ void CAdPluginConfig::Read()
 }
 
 
-void CAdPluginConfig::Create()
+void CPluginConfig::Create()
 {
-	DEBUG_GENERAL("*** Creating config:" + CAdPluginSettings::GetDataPath(CONFIG_INI_FILE));
+	DEBUG_GENERAL("*** Creating config:" + CPluginSettings::GetDataPath(CONFIG_INI_FILE));
 
-    CAdPluginConfigLock lock;
+    CPluginConfigLock lock;
     if (lock.IsLocked())
     {
-        CAdPluginIniFile iniFile(CAdPluginSettings::GetDataPath(CONFIG_INI_FILE), true);
+        CPluginIniFile iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), true);
 
-        CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+        CPluginSettings* settings = CPluginSettings::GetInstance();
 
         if (iniFile.Exists() || !settings->IsMainProcess())
         {
@@ -141,7 +141,7 @@ void CAdPluginConfig::Create()
 
         s_criticalSection.Lock();
 	    {
-    	    CAdPluginIniFile::TSectionData formatFlv;
+    	    CPluginIniFile::TSectionData formatFlv;
 
 		    formatFlv["type"] = "video/x-flv";
 		    formatFlv["extension"]  = "flv";
@@ -149,7 +149,7 @@ void CAdPluginConfig::Create()
 
 	        iniFile.UpdateSection("formatFlv", formatFlv);
 
-    	    CAdPluginIniFile::TSectionData formatWmv;
+    	    CPluginIniFile::TSectionData formatWmv;
 
 		    formatWmv["type"] = "video/x-ms-wmv";
 		    formatWmv["extension"] = "wmv";
@@ -157,7 +157,7 @@ void CAdPluginConfig::Create()
 
 	        iniFile.UpdateSection("formatWmv", formatWmv);
 
-    	    CAdPluginIniFile::TSectionData formatAsf;
+    	    CPluginIniFile::TSectionData formatAsf;
 
 		    formatAsf["type"] = "video/x-ms-asf";
 		    formatAsf["extension"] = "asf";
@@ -171,7 +171,7 @@ void CAdPluginConfig::Create()
 
         if (iniFile.Write())
         {
-            CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+            CPluginSettings* settings = CPluginSettings::GetInstance();
             
             settings->SetValue(SETTING_CONFIG_VERSION, 1);
             settings->Write();
@@ -183,9 +183,9 @@ void CAdPluginConfig::Create()
     }
 }
 
-bool CAdPluginConfig::Download(const CStringA& url, const CStringA& filename)
+bool CPluginConfig::Download(const CStringA& url, const CStringA& filename)
 {
-    CStringA tempFile = CAdPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
+    CStringA tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
 
     DEBUG_GENERAL("*** Downloading config:" + filename +  " (to " + tempFile + ")");
 
@@ -196,18 +196,18 @@ bool CAdPluginConfig::Download(const CStringA& url, const CStringA& filename)
 	    HRESULT hr = ::URLDownloadToFileA(NULL, url, tempFile, 0, NULL);
         if (SUCCEEDED(hr))
         {
-            CAdPluginConfigLock lock;
+            CPluginConfigLock lock;
             if (lock.IsLocked())
             {
                 // Move the temporary file to the new text file.
-                if (!::MoveFileExA(tempFile, CAdPluginSettings::GetDataPath(CONFIG_INI_FILE), MOVEFILE_REPLACE_EXISTING))
+                if (!::MoveFileExA(tempFile, CPluginSettings::GetDataPath(CONFIG_INI_FILE), MOVEFILE_REPLACE_EXISTING))
                 {
                     DWORD dwError = ::GetLastError();
 
                     // Not same device? copy/delete instead
                     if (dwError == ERROR_NOT_SAME_DEVICE)
                     {
-                        if (!::CopyFileA(tempFile, CAdPluginSettings::GetDataPath(CONFIG_INI_FILE), FALSE))
+                        if (!::CopyFileA(tempFile, CPluginSettings::GetDataPath(CONFIG_INI_FILE), FALSE))
                         {
                             DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_CONFIG, PLUGIN_ERROR_CONFIG_COPY_FILE, "Config::Download - CopyFile(" + filename + ")")
 
@@ -241,7 +241,7 @@ bool CAdPluginConfig::Download(const CStringA& url, const CStringA& filename)
 }
 
 
-bool CAdPluginConfig::GetDownloadProperties(const CStringA& contentType, SDownloadFileProperties& properties) const
+bool CPluginConfig::GetDownloadProperties(const CStringA& contentType, SDownloadFileProperties& properties) const
 {
     bool isValid = false;
 

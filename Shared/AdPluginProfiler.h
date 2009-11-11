@@ -1,8 +1,8 @@
-#ifndef _ADPLUGIN_PROFILER_H_
-#define _ADPLUGIN_PROFILER_H_
+#ifndef _PLUGIN_PROFILER_H_
+#define _PLUGIN_PROFILER_H_
 
 
-class CAdPluginProfiler
+class CPluginProfiler
 {
 
 private:
@@ -13,8 +13,8 @@ private:
     
 public:
 
-    CAdPluginProfiler();
-    ~CAdPluginProfiler();
+    CPluginProfiler();
+    ~CPluginProfiler();
 
     void StartTimer();
     void StopTimer();
@@ -24,4 +24,4 @@ public:
 };
 
 
-#endif // _ADPLUGIN_PROFILER_H_
+#endif // _PLUGIN_PROFILER_H_

@@ -1,14 +1,14 @@
-#ifndef _ADPLUGIN_CLIENT_H_
-#define _ADPLUGIN_CLIENT_H_
+#ifndef _PLUGIN_CLIENT_H_
+#define _PLUGIN_CLIENT_H_
 
 
 #include "AdPluginTypedef.h"
 
 
-class CAdPluginClientFactory;
-class CAdPluginFilter;
+class CPluginClientFactory;
+class CPluginFilter;
 
-class CAdPluginError
+class CPluginError
 {
 private:
 
@@ -21,17 +21,17 @@ private:
     
 public:
 
-    CAdPluginError(int errorId, int errorSubid, DWORD errorCode, const CStringA& errorDesc) : 
+    CPluginError(int errorId, int errorSubid, DWORD errorCode, const CStringA& errorDesc) : 
         m_errorId(errorId), m_errorSubid(errorSubid), m_errorCode(errorCode), m_errorDescription(errorDesc)
     {
         m_processId = ::GetCurrentProcessId();
         m_threadId = ::GetCurrentThreadId();
     }
 
-    CAdPluginError() : 
+    CPluginError() : 
         m_errorId(0), m_errorSubid(0), m_errorCode(0), m_processId(0), m_threadId(0) {}
 
-    CAdPluginError(const CAdPluginError& org) : 
+    CPluginError(const CPluginError& org) : 
         m_errorId(org.m_errorId), m_errorSubid(org.m_errorSubid), m_errorCode(org.m_errorCode), m_errorDescription(org.m_errorDescription), m_processId(org.m_processId), m_threadId(org.m_threadId) {}
 
     int GetErrorId() const { return m_errorId; }
@@ -45,7 +45,7 @@ public:
 
 class LocalClient
 {
-	friend class CAdPluginClientFactory;
+	friend class CPluginClientFactory;
 
 private:
 
@@ -56,13 +56,13 @@ private:
 	static CComAutoCriticalSection s_criticalSectionFilter;
 #endif
 
-    static std::vector<CAdPluginError> s_pluginErrors;
+    static std::vector<CPluginError> s_pluginErrors;
 
 	CStringA m_documentDomain;
 	CStringA m_documentUrl;
 
 #ifdef SUPPORT_FILTER
-	std::auto_ptr<CAdPluginFilter> m_filter;
+	std::auto_ptr<CPluginFilter> m_filter;
 	TFilterFileList m_filterDownloads;
 #endif
 
@@ -134,7 +134,7 @@ public:
     static bool SendFtpFile(LPCTSTR server, LPCTSTR inputFile, LPCTSTR outputFile);
 
     static void PostPluginError(int errorId, int errorSubid, DWORD errorCode, const CStringA& errorDescription);
-    static bool PopFirstPluginError(CAdPluginError& pluginError);
+    static bool PopFirstPluginError(CPluginError& pluginError);
 
     // Cache
 	CComAutoCriticalSection m_criticalSectionCache;
@@ -165,4 +165,4 @@ public:
 #endif
 };
 
-#endif // _ADPLUGIN_CLIENT_H_
+#endif // _PLUGIN_CLIENT_H_

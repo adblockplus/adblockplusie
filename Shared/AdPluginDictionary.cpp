@@ -6,30 +6,50 @@
 #include "AdPluginMutex.h"
 
 
-class CAdPluginDictionaryLock : public CAdPluginMutex
+class CPluginDictionaryLock : public CPluginMutex
 {
 public:
-    CAdPluginDictionaryLock() : CAdPluginMutex("DictionaryFile", PLUGIN_ERROR_MUTEX_DICTIONARY_FILE) {}
-    ~CAdPluginDictionaryLock() {}
+    CPluginDictionaryLock() : CPluginMutex("DictionaryFile", PLUGIN_ERROR_MUTEX_DICTIONARY_FILE) {}
+    ~CPluginDictionaryLock() {}
 };
 
 
-CAdPluginDictionary* CAdPluginDictionary::s_instance = NULL;
+CPluginDictionary* CPluginDictionary::s_instance = NULL;
 
-CComAutoCriticalSection CAdPluginDictionary::s_criticalSectionDictionary;
+CComAutoCriticalSection CPluginDictionary::s_criticalSectionDictionary;
 
 
-CAdPluginDictionary::CAdPluginDictionary() : m_dictionaryLanguage("en")
+CPluginDictionary::CPluginDictionary() : m_dictionaryLanguage("en")
 {
 	DEBUG_GENERAL("*** Initializing dictionary")
 
+	m_dictionaryConversions[L"UPDATE"]			= L"MENU_UPDATE";
+	m_dictionaryConversions[L"ABOUT"]			= L"MENU_ABOUT";
+	m_dictionaryConversions[L"ACTIVATE"]		= L"MENU_ACTIVATE";
+	m_dictionaryConversions[L"FAQ"]				= L"MENU_FAQ";
+	m_dictionaryConversions[L"FEEDBACK"]		= L"MENU_FEEDBACK";
+	m_dictionaryConversions[L"INVITE_FRIENDS"]	= L"MENU_INVITE_FRIENDS";
+	m_dictionaryConversions[L"SETTINGS"]		= L"MENU_SETTINGS";
+	m_dictionaryConversions[L"ENABLE"]			= L"MENU_ENABLE";
+	m_dictionaryConversions[L"DISABLE"]			= L"MENU_DISABLE";
+	m_dictionaryConversions[L"DISABLE_ON"]		= L"MENU_DISABLE_ON";
+
+	m_dictionaryConversions[L"DOWNLOAD_TITLE"]				= L"DOWNLOAD_UPDATE_TITLE";
+	m_dictionaryConversions[L"DOWNLOAD_PROGRESS_TEXT"]		= L"DOWNLOAD_PLEASE_WAIT";
+	m_dictionaryConversions[L"DOWNLOAD_DOWNLOAD_ERROR_TEXT"]= L"DOWNLOAD_UPDATE_ERROR_TEXT";
+	m_dictionaryConversions[L"DOWNLOAD_POST_DOWNLOAD_TEXT"]	= L"DOWNLOAD_UPDATE_SUCCESS_TEXT";
+
+	m_dictionaryConversions[L"YES"]		= L"GENERAL_YES";
+	m_dictionaryConversions[L"NO"]		= L"GENERAL_NO";
+	m_dictionaryConversions[L"CANCEL"]	= L"GENERAL_CANCEL";
+
     bool isExisting = true;
     {
-        CAdPluginDictionaryLock lock;
+        CPluginDictionaryLock lock;
         if (lock.IsLocked())
         {
 	        std::ifstream is;
-	        is.open(CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE), std::ios_base::in);
+	        is.open(CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), std::ios_base::in);
 	        if (!is.is_open())
 	        {
 	            DEBUG_DICTIONARY("Dictionary::Constructor - Exists:no")
@@ -50,7 +70,7 @@ CAdPluginDictionary::CAdPluginDictionary() : m_dictionaryLanguage("en")
 }
 
 
-CAdPluginDictionary::~CAdPluginDictionary()
+CPluginDictionary::~CPluginDictionary()
 {
     s_criticalSectionDictionary.Lock();
 	{
@@ -60,16 +80,16 @@ CAdPluginDictionary::~CAdPluginDictionary()
 }
 
 
-CAdPluginDictionary* CAdPluginDictionary::GetInstance() 
+CPluginDictionary* CPluginDictionary::GetInstance() 
 {
-	CAdPluginDictionary* instance = NULL;
+	CPluginDictionary* instance = NULL;
 
     s_criticalSectionDictionary.Lock();
 	{
 		if (!s_instance)
 		{
 	        DEBUG_DICTIONARY("Dictionary::GetInstance - creating")
-			s_instance = new CAdPluginDictionary();
+			s_instance = new CPluginDictionary();
 		}
 
 		instance = s_instance;
@@ -80,14 +100,14 @@ CAdPluginDictionary* CAdPluginDictionary::GetInstance()
 }
 
 
-bool CAdPluginDictionary::IsLanguageSupported(const CStringA& lang) 
+bool CPluginDictionary::IsLanguageSupported(const CStringA& lang) 
 {
     bool hasLanguage = false;
 
-    CAdPluginDictionaryLock lock;
+    CPluginDictionaryLock lock;
     if (lock.IsLocked())
     {
-        CAdPluginIniFileW iniFile(CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE));
+        CPluginIniFileW iniFile(CPluginSettings::GetDataPath(DICTIONARY_INI_FILE));
 
         iniFile.Read();
             
@@ -99,14 +119,14 @@ bool CAdPluginDictionary::IsLanguageSupported(const CStringA& lang)
 }
 
 
-void CAdPluginDictionary::SetLanguage(const CStringA& lang)
+void CPluginDictionary::SetLanguage(const CStringA& lang)
 {
-	DEBUG_GENERAL("*** Loading dictionary:" + CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
+	DEBUG_GENERAL("*** Loading dictionary:" + CPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
 
-    CAdPluginDictionaryLock lock;
+    CPluginDictionaryLock lock;
     if (lock.IsLocked())
     {
-        CAdPluginIniFileW iniFile(CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE));
+        CPluginIniFileW iniFile(CPluginSettings::GetDataPath(DICTIONARY_INI_FILE));
 
         if (!iniFile.Read())
         {
@@ -141,8 +161,18 @@ void CAdPluginDictionary::SetLanguage(const CStringA& lang)
     		    DEBUG_GENERAL("*** Using dictionary section [en] instead of [" + lang + "] - " + dicEl + " elements")
 		    }
 
+			// Dictionary conversions
+			for (std::map<CString,CString>::iterator it = m_dictionaryConversions.begin(); it != m_dictionaryConversions.end(); ++it)
+			{
+				CPluginIniFileW::TSectionData::iterator itDic = m_dictionary.find(it->first);
+				if (itDic != m_dictionary.end())
+				{
+					m_dictionary[it->second] = itDic->second;
+				}
+			}
+
 #ifdef ENABLE_DEBUG_DICTIONARY
-            for (CAdPluginIniFileW::TSectionData::iterator it = m_dictionary.begin(); it != m_dictionary.end(); ++it)
+            for (CPluginIniFileW::TSectionData::iterator it = m_dictionary.begin(); it != m_dictionary.end(); ++it)
             {
     		    DEBUG_DICTIONARY("- " + it->first + " -> " + it->second)
             }
@@ -153,13 +183,13 @@ void CAdPluginDictionary::SetLanguage(const CStringA& lang)
 }
 
 
-CString CAdPluginDictionary::Lookup(const CString& key) 
+CString CPluginDictionary::Lookup(const CString& key) 
 {
     CString value = key;
 
     s_criticalSectionDictionary.Lock();
 	{
-		CAdPluginIniFileW::TSectionData::iterator it = m_dictionary.find(key);
+		CPluginIniFileW::TSectionData::iterator it = m_dictionary.find(key);
 		if (it != m_dictionary.end())
 		{
 			value = it->second;
@@ -186,16 +216,16 @@ CString CAdPluginDictionary::Lookup(const CString& key)
 }
 
 
-void CAdPluginDictionary::Create()
+void CPluginDictionary::Create()
 {
-	DEBUG_GENERAL("*** Creating dictionary:" + CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
+	DEBUG_GENERAL("*** Creating dictionary:" + CPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
 
-    CAdPluginDictionaryLock lock;
+    CPluginDictionaryLock lock;
     if (lock.IsLocked())
     {
-        CAdPluginIniFileW iniFile(CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE));
+        CPluginIniFileW iniFile(CPluginSettings::GetDataPath(DICTIONARY_INI_FILE));
 
-        CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+        CPluginSettings* settings = CPluginSettings::GetInstance();
 
         if (iniFile.Exists() || !settings->IsMainProcess())
         {
@@ -209,16 +239,16 @@ void CAdPluginDictionary::Create()
 #if (defined PRODUCT_ADBLOCKER)
 
             // Popup menu
-		    m_dictionary["UPDATE"] = "Update Simple Adblock to newest version";
-		    m_dictionary["ABOUT"] = "About Simple Adblock";
-		    m_dictionary["ACTIVATE"] = "Activate Simple Adblock";
-		    m_dictionary["FAQ"] = "Frequently Asked Questions";
-		    m_dictionary["FEEDBACK"] = "Feedback";
-		    m_dictionary["INVITE_FRIENDS"] = "Invite friends";
-		    m_dictionary["SETTINGS"] = "Settings";
-		    m_dictionary["ENABLE"] = "Enable Simple Adblock";
-		    m_dictionary["DISABLE"] = "Disable Simple Adblock";
-		    m_dictionary["DISABLE_ON"] = "Disable Simple Adblock on...";
+		    m_dictionary["MENU_UPDATE"] = "Update Simple Adblock to newest version";
+		    m_dictionary["MENU_ABOUT"] = "About Simple Adblock";
+		    m_dictionary["MENU_ACTIVATE"] = "Activate Simple Adblock";
+		    m_dictionary["MENU_FAQ"] = "Frequently Asked Questions";
+		    m_dictionary["MENU_FEEDBACK"] = "Feedback";
+		    m_dictionary["MENU_INVITE_FRIENDS"] = "Invite friends";
+		    m_dictionary["MENU_SETTINGS"] = "Settings";
+		    m_dictionary["MENU_ENABLE"] = "Enable Simple Adblock";
+		    m_dictionary["MENU_DISABLE"] = "Disable Simple Adblock";
+		    m_dictionary["MENU_DISABLE_ON"] = "Disable Simple Adblock on...";
 
             // Update dialog
 		    m_dictionary["UPDATE_TITLE"] = "Update Simple Adblock";
@@ -235,16 +265,16 @@ void CAdPluginDictionary::Create()
 #elif (defined PRODUCT_DOWNLOADHELPER)
 
             // Popup menu
-		    m_dictionary["UPDATE"] = "Update IE Download Helper to newest version";
-		    m_dictionary["ABOUT"] = "About IE Download Helper";
-		    m_dictionary["ACTIVATE"] = "Activate IE Download Helper";
-		    m_dictionary["FAQ"] = "Frequently Asked Questions";
-		    m_dictionary["FEEDBACK"] = "Feedback";
-		    m_dictionary["INVITE_FRIENDS"] = "Invite friends";
-		    m_dictionary["SETTINGS"] = "Settings";
-		    m_dictionary["ENABLE"] = "Enable IE Download Helper";
-		    m_dictionary["DISABLE"] = "Disable IE Download Helper";
-		    m_dictionary["DISABLE_ON"] = "Disable IE Download Helper on...";
+		    m_dictionary["MENU_UPDATE"] = "Update IE Download Helper to newest version";
+		    m_dictionary["MENU_ABOUT"] = "About IE Download Helper";
+		    m_dictionary["MENU_ACTIVATE"] = "Activate IE Download Helper";
+		    m_dictionary["MENU_FAQ"] = "Frequently Asked Questions";
+		    m_dictionary["MENU_FEEDBACK"] = "Feedback";
+		    m_dictionary["MENU_INVITE_FRIENDS"] = "Invite friends";
+		    m_dictionary["MENU_SETTINGS"] = "Settings";
+		    m_dictionary["MENU_ENABLE"] = "Enable IE Download Helper";
+		    m_dictionary["MENU_DISABLE"] = "Disable IE Download Helper";
+		    m_dictionary["MENU_DISABLE_ON"] = "Disable IE Download Helper on...";
 
             // Update dialog
 		    m_dictionary["UPDATE_TITLE"] = "Update IE Download Helper";
@@ -256,18 +286,20 @@ void CAdPluginDictionary::Create()
 		    m_dictionary["DOWNLOAD_UPDATE_BUTTON"] = "Update";
 		    m_dictionary["DOWNLOAD_PLEASE_WAIT"] = "Please wait...";
 		    m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
-		    m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update IE Download Helper, your Internet Explorer will close before installation";
+			m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update IE Download Helper, your Internet Explorer will close before installation";
 
 			// File download
 		    m_dictionary["DOWNLOAD_FILE_TITLE"] = "Download Manager";
-		    m_dictionary["DOWNLOAD_FILE_PROGRESS_TEXT"] = "Please wait...";
-			m_dictionary["SAVE_FILE"] = "Save file";
-			m_dictionary["NO_DOWNLOAD_FILES"] = "No files to download";
+			m_dictionary["DOWNLOAD_FILE_SAVE_TITLE"] = "Save file";
+			m_dictionary["DOWNLOAD_FILE_NO_FILES"] = "No files to download";
+
+			m_dictionary["GENERAL_DOWNLOAD"] = "Download";
+
 #endif
             // General texts
-		    m_dictionary["YES"] = "Yes";
-		    m_dictionary["NO"] = "No";
-		    m_dictionary["CANCEL"] = "Cancel";
+		    m_dictionary["GENERAL_YES"] = "Yes";
+		    m_dictionary["GENERAL_NO"] = "No";
+		    m_dictionary["GENERAL_CANCEL"] = "Cancel";
 
 	        iniFile.UpdateSection("en", m_dictionary);
 	    }
@@ -275,7 +307,7 @@ void CAdPluginDictionary::Create()
 
         if (iniFile.Write())
         {
-            CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+            CPluginSettings* settings = CPluginSettings::GetInstance();
             
             settings->SetValue(SETTING_DICTIONARY_VERSION, 1);
             settings->Write();
@@ -286,13 +318,13 @@ void CAdPluginDictionary::Create()
         }
 
         // Delete old
-        ::DeleteFileA(CAdPluginSettings::GetDataPath("dictionary.ini"));
+        ::DeleteFileA(CPluginSettings::GetDataPath("dictionary.ini"));
     }
 }
 
-bool CAdPluginDictionary::Download(const CStringA& url, const CStringA& filename)
+bool CPluginDictionary::Download(const CStringA& url, const CStringA& filename)
 {
-    CStringA tempFile = CAdPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
+    CStringA tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
 
     DEBUG_GENERAL("*** Downloading dictionary:" + filename +  " (to " + tempFile + ")");
 
@@ -303,18 +335,18 @@ bool CAdPluginDictionary::Download(const CStringA& url, const CStringA& filename
 	    HRESULT hr = ::URLDownloadToFileA(NULL, url, tempFile, 0, NULL);
         if (SUCCEEDED(hr))
         {
-            CAdPluginDictionaryLock lock;
+            CPluginDictionaryLock lock;
             if (lock.IsLocked())
             {
                 // Move the temporary file to the new text file.
-                if (!::MoveFileExA(tempFile, CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE), MOVEFILE_REPLACE_EXISTING))
+                if (!::MoveFileExA(tempFile, CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), MOVEFILE_REPLACE_EXISTING))
                 {
                     DWORD dwError = ::GetLastError();
 
                     // Not same device? copy/delete instead
                     if (dwError == ERROR_NOT_SAME_DEVICE)
                     {
-                        if (!::CopyFileA(tempFile, CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE), FALSE))
+                        if (!::CopyFileA(tempFile, CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), FALSE))
                         {
                             DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_COPY_FILE, "Dictionary::Download - CopyFile(" + filename + ")")
 

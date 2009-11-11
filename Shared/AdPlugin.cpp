@@ -26,36 +26,36 @@
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_AdPluginClass, CAdPluginClass)
+	OBJECT_ENTRY(CLSID_AdPluginClass, CPluginClass)
 END_OBJECT_MAP()
 
 
-class CAdPluginApp : public CWinApp
+class CPluginApp : public CWinApp
 {
 
 public:
 
-	CAdPluginApp();
+	CPluginApp();
 
 	virtual BOOL InitInstance();
 
 	DECLARE_MESSAGE_MAP()
 };
 
-BEGIN_MESSAGE_MAP(CAdPluginApp, CWinApp)
+BEGIN_MESSAGE_MAP(CPluginApp, CWinApp)
 END_MESSAGE_MAP()
 
 
 
-CAdPluginApp theApp;
+CPluginApp theApp;
 
-CAdPluginApp::CAdPluginApp()
+CPluginApp::CPluginApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 }
 
-BOOL CAdPluginApp::InitInstance()
+BOOL CPluginApp::InitInstance()
 {
 	TCHAR szFilename[MAX_PATH];
 	GetModuleFileName(NULL, szFilename, MAX_PATH);
@@ -97,7 +97,7 @@ STDAPI DllUnregisterServer(void)
 // Called from installer
 EXTERN_C void STDAPICALLTYPE OnInstall(void)
 {
-    CStringA datapath = CAdPluginSettings::GetDataPathParent();
+    CStringA datapath = CPluginSettings::GetDataPathParent();
 
     // Rename IEAdblock folder to Simple Adblock
 #ifdef PRODUCT_ADBLOCKER
@@ -107,7 +107,7 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
     }
 #endif
 
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
 
     settings->EraseTab();
 
@@ -116,8 +116,8 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
     settings->Write();
 
 #if (defined ENABLE_DEBUG_SELFTEST)
-    CAdPluginSelftest::Clear();
-    CAdPluginSelftest::SetSupported(true);
+    CPluginSelftest::Clear();
+    CPluginSelftest::SetSupported(true);
 #endif
 
     DEBUG_GENERAL(
@@ -128,16 +128,16 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
     // Create default filters
 #ifdef SUPPORT_FILTER
     DEBUG_GENERAL("*** Generating default filters")
-    CAdPluginFilter::CreateFilters();
+    CPluginFilter::CreateFilters();
 #endif
 
     // Create default dictionary
-    CAdPluginDictionary::GetInstance();   
+    CPluginDictionary::GetInstance();   
 
     // Create default config file
 #ifdef SUPPORT_CONFIG
     DEBUG_GENERAL("*** Generating config file")
-    CAdPluginConfig::GetInstance();
+    CPluginConfig::GetInstance();
 #endif
 
     // Create ini file
@@ -147,9 +147,9 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
 	{
 	    if (::PathAppendA(path, UNINSTALL_INI_FILE))
 	    {
-	        CAdPluginIniFile iniFile(path);
+	        CPluginIniFile iniFile(path);
 
-            CAdPluginIniFile::TSectionData data;
+            CPluginIniFile::TSectionData data;
             data.insert(std::make_pair("pluginid", LocalClient::GeneratePluginId()));
 
             iniFile.UpdateSection("Settings", data);
@@ -169,7 +169,7 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
 	}
 
     // Post async plugin error
-    CAdPluginError pluginError;
+    CPluginError pluginError;
     while (LocalClient::PopFirstPluginError(pluginError))
     {
         LocalClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
@@ -179,7 +179,7 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
 // Called from updater
 EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 {
-    CStringA datapath = CAdPluginSettings::GetDataPathParent();
+    CStringA datapath = CPluginSettings::GetDataPathParent();
 
     // Rename IEAdblock folder to Simple Adblock
 #ifdef PRODUCT_ADBLOCKER
@@ -189,7 +189,7 @@ EXTERN_C void STDAPICALLTYPE OnUpdate(void)
     }
 #endif
 
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
     
     settings->EraseTab();
 
@@ -198,8 +198,8 @@ EXTERN_C void STDAPICALLTYPE OnUpdate(void)
     settings->Write();
 
 #if (defined ENABLE_DEBUG_SELFTEST)
-    CAdPluginSelftest::Clear();
-    CAdPluginSelftest::SetSupported(true);
+    CPluginSelftest::Clear();
+    CPluginSelftest::SetSupported(true);
 #endif
 
     DEBUG_GENERAL(
@@ -210,16 +210,16 @@ EXTERN_C void STDAPICALLTYPE OnUpdate(void)
     // Create default filters
 #ifdef SUPPORT_FILTER
     DEBUG_GENERAL("*** Generating default filters")
-    CAdPluginFilter::CreateFilters();
+    CPluginFilter::CreateFilters();
 #endif
 
     // Create default dictionary
-    CAdPluginDictionary::GetInstance();   
+    CPluginDictionary::GetInstance();   
 
     // Create default config file
 #ifdef SUPPORT_CONFIG
     DEBUG_GENERAL("*** Generating config file")
-    CAdPluginConfig::GetInstance();
+    CPluginConfig::GetInstance();
 #endif
 
     // Create ini file
@@ -229,9 +229,9 @@ EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 	{
 	    if (::PathAppendA(path, UNINSTALL_INI_FILE))
 	    {
-	        CAdPluginIniFile iniFile(path);
+	        CPluginIniFile iniFile(path);
 
-            CAdPluginIniFile::TSectionData data;
+            CPluginIniFile::TSectionData data;
             data.insert(std::make_pair("pluginid", LocalClient::GeneratePluginId()));
 
             iniFile.UpdateSection("Settings", data);
@@ -251,7 +251,7 @@ EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 	}
 
     // Post async plugin error
-    CAdPluginError pluginError;
+    CPluginError pluginError;
     while (LocalClient::PopFirstPluginError(pluginError))
     {
         LocalClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());

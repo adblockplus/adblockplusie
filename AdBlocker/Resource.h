@@ -3,9 +3,9 @@
 // Used by AdBlocker.rc
 //
 
-#define IDR_ADPLUGIN_CLASS				101
-#define IDR_ADPLUGIN_LISTENER			102
-#define IDR_ADPLUGIN_MIMEFILTER			103
+#define IDR_PLUGIN_CLASS				101
+#define IDR_PLUGIN_LISTENER			102
+#define IDR_PLUGIN_MIMEFILTER			103
 
 #define IDS_PROJNAME					110
 

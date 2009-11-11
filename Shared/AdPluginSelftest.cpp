@@ -9,7 +9,7 @@
 #if (defined ENABLE_DEBUG_SELFTEST)
 
 
-class CAdPluginSelftestLock : public CAdPluginMutex
+class CPluginSelftestLock : public CPluginMutex
 {
 
 private:
@@ -18,44 +18,44 @@ private:
 
 public:
 
-    CAdPluginSelftestLock() : CAdPluginMutex("SelftestFile", PLUGIN_ERROR_MUTEX_SELFTEST_FILE)
+    CPluginSelftestLock() : CPluginMutex("SelftestFile", PLUGIN_ERROR_MUTEX_SELFTEST_FILE)
     {
         s_criticalSectionSelftestLock.Lock();
     }
 
-    ~CAdPluginSelftestLock()
+    ~CPluginSelftestLock()
     {
         s_criticalSectionSelftestLock.Unlock();
     }
 };
 
-CComAutoCriticalSection CAdPluginSelftestLock::s_criticalSectionSelftestLock;
+CComAutoCriticalSection CPluginSelftestLock::s_criticalSectionSelftestLock;
 
 
-bool CAdPluginSelftest::s_isSupported = false;
+bool CPluginSelftest::s_isSupported = false;
 
 
-CAdPluginSelftest::CAdPluginSelftest()
+CPluginSelftest::CPluginSelftest()
 {
 }
 
-CAdPluginSelftest::~CAdPluginSelftest()
+CPluginSelftest::~CPluginSelftest()
 {
 }
 
 
-void CAdPluginSelftest::SetSupported(bool isSupported)
+void CPluginSelftest::SetSupported(bool isSupported)
 {
     s_isSupported = isSupported;
 }
 
 
-void CAdPluginSelftest::AddText(const CStringA& text)
+void CPluginSelftest::AddText(const CStringA& text)
 {
     // Prevent circular references
-    if (s_isSupported && CAdPluginSettings::HasInstance())
+    if (s_isSupported && CPluginSettings::HasInstance())
     {
-	    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+	    CPluginSettings* settings = CPluginSettings::GetInstance();
     	
         CStringA processor;
         CStringA thread;
@@ -77,12 +77,12 @@ void CAdPluginSelftest::AddText(const CStringA& text)
         CStringA sysTime;
         sysTime.Format("%2.2d:%2.2d:%2.2d.%3.3d - ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
-        CAdPluginSelftestLock lock;;
+        CPluginSelftestLock lock;;
         if (lock.IsLocked())
         {
             std::ofstream selftestFile;
 
-            selftestFile.open(CAdPluginSettings::GetDataPath("selftest.txt"), std::ios::app);
+            selftestFile.open(CPluginSettings::GetDataPath("selftest.txt"), std::ios::app);
 
             int pos = 0;
             CStringA line = text.Tokenize("\n\r", pos);
@@ -104,24 +104,24 @@ void CAdPluginSelftest::AddText(const CStringA& text)
     }
 }
 
-void CAdPluginSelftest::Clear()
+void CPluginSelftest::Clear()
 {
-    CAdPluginSelftestLock lock;;
+    CPluginSelftestLock lock;;
     if (lock.IsLocked())
     {
-        ::DeleteFileA(CAdPluginSettings::GetDataPath("selftest.txt"));
+        ::DeleteFileA(CPluginSettings::GetDataPath("selftest.txt"));
     }
 }
 
 /*
-bool CAdPluginSelftest::Send()
+bool CPluginSelftest::Send()
 {
     bool bResult;
     
-    CAdPluginSelftestLock lock;;
+    CPluginSelftestLock lock;;
     if (lock.IsLocked())
     {
-	    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+	    CPluginSettings* settings = CPluginSettings::GetInstance();
 
         USES_CONVERSION;
         CString outputFile = CString(IEPLUGIN_VERSION) + _T("_") + A2T(settings->GetString(SETTING_PLUGIN_ID));
@@ -136,42 +136,42 @@ bool CAdPluginSelftest::Send()
 
         DEBUG_GENERAL("*** Sending selftest file:" + CStringA(outputFile));
 
-        bResult = LocalClient::SendFtpFile(_T("ftp.ieadblocker.com"), CString(CAdPluginSettings::GetDataPath("selftest.txt")), outputFile);
+        bResult = LocalClient::SendFtpFile(_T("ftp.ieadblocker.com"), CString(CPluginSettings::GetDataPath("selftest.txt")), outputFile);
     }
 
     return bResult;
 }
 */
 
-bool CAdPluginSelftest::Send()
+bool CPluginSelftest::Send()
 {
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
 
     // Move file to temp file    
-    CStringA tempFile = CAdPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
+    CStringA tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
 
     bool bResult = !tempFile.IsEmpty();
     if (bResult)
     {
         // Move the temporary file to the new text file.
-        CAdPluginSelftestLock lock;;
+        CPluginSelftestLock lock;;
         if (lock.IsLocked())
         {
-            if (!::MoveFileExA(CAdPluginSettings::GetDataPath("selftest.txt"), tempFile, MOVEFILE_REPLACE_EXISTING))
+            if (!::MoveFileExA(CPluginSettings::GetDataPath("selftest.txt"), tempFile, MOVEFILE_REPLACE_EXISTING))
             {
                 DWORD dwError = ::GetLastError();
 
                 // Not same device? copy/delete instead
                 if (dwError == ERROR_NOT_SAME_DEVICE)
                 {
-                    if (!::CopyFileA(CAdPluginSettings::GetDataPath("selftest.txt"), tempFile, FALSE))
+                    if (!::CopyFileA(CPluginSettings::GetDataPath("selftest.txt"), tempFile, FALSE))
                     {
                         DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SELFTEST, PLUGIN_ERROR_SELFTEST_COPY_FILE, "Selftest::Send - CopyFile")
 
                         bResult = false;
                     }
 
-                    ::DeleteFileA(CAdPluginSettings::GetDataPath("selftest.txt"));
+                    ::DeleteFileA(CPluginSettings::GetDataPath("selftest.txt"));
                 }
                 else
                 {
@@ -208,14 +208,14 @@ bool CAdPluginSelftest::Send()
     return bResult;
 }
 
-bool CAdPluginSelftest::IsFileTooLarge()
+bool CPluginSelftest::IsFileTooLarge()
 {
     bool isTooLarge = false;
 
-    CAdPluginSelftestLock lock;
+    CPluginSelftestLock lock;
     if (lock.IsLocked())
     {
-        HANDLE hFile = ::CreateFileA(CAdPluginSettings::GetDataPath("selftest.txt"), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        HANDLE hFile = ::CreateFileA(CPluginSettings::GetDataPath("selftest.txt"), GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (hFile)
         {
             LARGE_INTEGER liFileSize;

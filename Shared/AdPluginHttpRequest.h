@@ -1,17 +1,17 @@
-#ifndef _ADPLUGIN_HTTP_REQUEST_H_
-#define _ADPLUGIN_HTTP_REQUEST_H_
+#ifndef _PLUGIN_HTTP_REQUEST_H_
+#define _PLUGIN_HTTP_REQUEST_H_
 
 
-class CAdPluginChecksum;
-class CAdPluginIniFile;
+class CPluginChecksum;
+class CPluginIniFile;
 
-class CAdPluginHttpRequest
+class CPluginHttpRequest
 {
 
 public:
 
-    CAdPluginHttpRequest(const CStringA& script, bool addChecksum=true);
-    ~CAdPluginHttpRequest();
+    CPluginHttpRequest(const CStringA& script, bool addChecksum=true);
+    ~CPluginHttpRequest();
 
     bool Send(bool checkResponse=true);
 
@@ -23,7 +23,7 @@ public:
 
     CStringA GetUrl();
     CStringA GetResponseText() const;
-	const std::auto_ptr<CAdPluginIniFile>& GetResponseFile() const;
+	const std::auto_ptr<CPluginIniFile>& GetResponseFile() const;
 	bool IsValidResponse() const;
 
     static CStringA GetStandardUrl(const CStringA& script);
@@ -40,9 +40,9 @@ protected:
     CStringA m_responseText;
     bool m_addChecksum;
 
-	std::auto_ptr<CAdPluginChecksum> m_checksum;    
-	std::auto_ptr<CAdPluginIniFile> m_responseFile;
+	std::auto_ptr<CPluginChecksum> m_checksum;    
+	std::auto_ptr<CPluginIniFile> m_responseFile;
 };
 
 
-#endif // _ADPLUGIN_HTTP_REQUEST_H_
+#endif // _PLUGIN_HTTP_REQUEST_H_

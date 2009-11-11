@@ -1,14 +1,14 @@
-#ifndef _ADPLUGIN_CHECKSUM_H_
-#define _ADPLUGIN_CHECKSUM_H_
+#ifndef _PLUGIN_CHECKSUM_H_
+#define _PLUGIN_CHECKSUM_H_
 
 
-class CAdPluginChecksum 
+class CPluginChecksum 
 {
 
 public:
 
-    CAdPluginChecksum();
-    ~CAdPluginChecksum();
+    CPluginChecksum();
+    ~CPluginChecksum();
 
     void Clear();
 
@@ -30,4 +30,4 @@ protected:
 };
 
 
-#endif // _ADPLUGIN_CHECKSUM_H_
+#endif // _PLUGIN_CHECKSUM_H_

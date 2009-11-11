@@ -1,5 +1,5 @@
-#ifndef _ADPLUGIN_CONFIG_H_
-#define _ADPLUGIN_CONFIG_H_
+#ifndef _PLUGIN_CONFIG_H_
+#define _PLUGIN_CONFIG_H_
 
 
 #include "AdPluginTypedef.h"
@@ -7,28 +7,28 @@
 #include "AdPluginChecksum.h"
 
 
-class CAdPluginConfig
+class CPluginConfig
 {
 
 private:
 
-	static CAdPluginConfig* s_instance;
+	static CPluginConfig* s_instance;
 
     static CComAutoCriticalSection s_criticalSection;
 
 	TDownloadFileProperties m_downloadFileProperties;
 
 	// private constructor used by the singleton pattern
-	CAdPluginConfig();
+	CPluginConfig();
 	
 	void Create();
 
 public:
 	
-	~CAdPluginConfig();
+	~CPluginConfig();
 	
 	// Returns an instance of the Dictionary
-	static CAdPluginConfig* GetInstance(); 
+	static CPluginConfig* GetInstance(); 
 
     static bool Download(const CStringA& url, const CStringA& filename);
     bool GetDownloadProperties(const CStringA& headers, SDownloadFileProperties& properties) const;
@@ -37,4 +37,4 @@ public:
 };
 
 
-#endif // _ADPLUGIN_CONFIG_H_
+#endif // _PLUGIN_CONFIG_H_
