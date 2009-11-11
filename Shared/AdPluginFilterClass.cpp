@@ -13,7 +13,7 @@
 
 #if (defined PRODUCT_ADBLOCKER)
 
-class CAdPluginFilterLock : public CAdPluginMutex
+class CPluginFilterLock : public CPluginMutex
 {
 
 private:
@@ -22,25 +22,25 @@ private:
 
 public:
 
-    CAdPluginFilterLock(const CStringA& filterFile) : CAdPluginMutex("FilterFile" + CString(filterFile), PLUGIN_ERROR_MUTEX_FILTER_FILE)
+    CPluginFilterLock(const CStringA& filterFile) : CPluginMutex("FilterFile" + CString(filterFile), PLUGIN_ERROR_MUTEX_FILTER_FILE)
     {
         s_criticalSectionFilterLock.Lock();
     }
 
-    ~CAdPluginFilterLock()
+    ~CPluginFilterLock()
     {
         s_criticalSectionFilterLock.Unlock();
     }
 };
 
-CComAutoCriticalSection CAdPluginFilterLock::s_criticalSectionFilterLock;
+CComAutoCriticalSection CPluginFilterLock::s_criticalSectionFilterLock;
 
 #endif
 
 
 // The filters are described at http://adblockplus.org/en/filters
 
-CComAutoCriticalSection CAdPluginFilter::s_criticalSectionFilterMap;
+CComAutoCriticalSection CPluginFilter::s_criticalSectionFilterMap;
 
 
 // ============================================================================
@@ -129,10 +129,10 @@ CFilter::CFilter() : m_isMatchCase(false), m_isFirstParty(false), m_isThirdParty
 
 
 // ============================================================================
-// CAdPluginFilter
+// CPluginFilter
 // ============================================================================
 
-CAdPluginFilter::CAdPluginFilter(const TFilterFileList& list, const CStringA& dataPath) : m_dataPath(dataPath)
+CPluginFilter::CPluginFilter(const TFilterFileList& list, const CStringA& dataPath) : m_dataPath(dataPath)
 {
     m_contentMap["document"] = CFilter::contentTypeDocument;
     m_contentMap["subdocument"] = CFilter::contentTypeSubdocument;
@@ -163,12 +163,12 @@ CAdPluginFilter::CAdPluginFilter(const TFilterFileList& list, const CStringA& da
 }
 
 
-CAdPluginFilter::CAdPluginFilter(const CStringA& dataPath) : m_dataPath(dataPath)
+CPluginFilter::CPluginFilter(const CStringA& dataPath) : m_dataPath(dataPath)
 {
 }
 
 
-bool CAdPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFile)
+bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFile)
 {
     int delimiterPos = filterText.Find("#");
     if (delimiterPos < 0 || filterText.GetLength() <= delimiterPos + 1)
@@ -466,7 +466,7 @@ bool CAdPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterF
 }
 
 
-bool CAdPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CStringA& domain) const
+bool CPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CStringA& domain) const
 {
     bool isHidden = true;
 
@@ -584,7 +584,7 @@ bool CAdPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter,
 }
 
 
-bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, const CStringA& domain, const CStringA& indent) const
+bool CPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, const CStringA& domain, const CStringA& indent) const
 {
     bool isHidden = false;
 
@@ -633,22 +633,22 @@ bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, co
                                 if (!id.IsEmpty() && !classNames.IsEmpty())
                                 {
                                     DEBUG_HIDE_EL(indent + "HideEl::Found (domain) filter:" + filterIt->second.m_filterText)
-                                    CAdPluginDebug::DebugResultHiding(tag, "id:" + id + " class:" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
+                                    CPluginDebug::DebugResultHiding(tag, "id:" + id + " class:" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
                                 }
                                 else if (!id.IsEmpty())
                                 {
                                     DEBUG_HIDE_EL(indent + "HideEl::Found (domain) filter:" + filterIt->second.m_filterText)
-                                    CAdPluginDebug::DebugResultHiding(tag, "id:" + id, filterIt->second.m_filterText, filterIt->second.m_filterFile);
+                                    CPluginDebug::DebugResultHiding(tag, "id:" + id, filterIt->second.m_filterText, filterIt->second.m_filterFile);
                                 }
                                 else if (!classNames.IsEmpty())
                                 {
                                     DEBUG_HIDE_EL(indent + "HideEl::Found (domain) filter:" + filterIt->second.m_filterText)
-                                    CAdPluginDebug::DebugResultHiding(tag, "class:" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
+                                    CPluginDebug::DebugResultHiding(tag, "class:" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
                                 }
                                 else
                                 {
                                     DEBUG_HIDE_EL(indent + "HideEl::Found (domain) filter:" + filterIt->second.m_filterText)
-                                    CAdPluginDebug::DebugResultHiding(tag, "-" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
+                                    CPluginDebug::DebugResultHiding(tag, "-" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
                                 }
                             }
 #endif
@@ -671,12 +671,12 @@ bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, co
                                         if (!id.IsEmpty())
                                         {
                                             DEBUG_HIDE_EL(indent + "HideEl::Found (domain) filter:" + filterIt->second.m_filterText)
-                                            CAdPluginDebug::DebugResultHiding(tag, "id:" + id + " class:" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
+                                            CPluginDebug::DebugResultHiding(tag, "id:" + id + " class:" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
                                         }
                                         else
                                         {
                                             DEBUG_HIDE_EL(indent + "HideEl::Found (domain) filter:" + filterIt->second.m_filterText)
-                                            CAdPluginDebug::DebugResultHiding(tag, "-" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
+                                            CPluginDebug::DebugResultHiding(tag, "-" + classNames, filterIt->second.m_filterText, filterIt->second.m_filterFile);
                                         }
                                     }
 #endif
@@ -711,7 +711,7 @@ bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, co
                 if (isHidden)
                 {
                     DEBUG_HIDE_EL(indent + "HideEl::Found (tag/id) filter:" + idIt->second.m_filterText)
-                    CAdPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText, idIt->second.m_filterFile);
+                    CPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText, idIt->second.m_filterFile);
                 }
 #endif
             }
@@ -727,7 +727,7 @@ bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, co
                     if (isHidden)
                     {
                         DEBUG_HIDE_EL(indent + "HideEl::Found (?/id) filter:" + idIt->second.m_filterText)
-                        CAdPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText, idIt->second.m_filterFile);
+                        CPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText, idIt->second.m_filterFile);
                     }
 #endif
                 }
@@ -750,7 +750,7 @@ bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, co
                     if (isHidden)
                     {
                         DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
-                        CAdPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText, classIt->second.m_filterFile);
+                        CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText, classIt->second.m_filterFile);
                     }
 #endif
                 }
@@ -766,7 +766,7 @@ bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, co
                         if (isHidden)
                         {
                             DEBUG_HIDE_EL(indent + "HideEl::Found (?/class) filter:" + classIt->second.m_filterText)
-                            CAdPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText, classIt->second.m_filterFile);
+                            CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText, classIt->second.m_filterFile);
                         }
 #endif
                     }
@@ -788,7 +788,7 @@ bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, co
                 if (isHidden)
                 {
                     DEBUG_HIDE_EL(indent + "HideEl::Found (tag) filter:" + tagIt->second.m_filterText)
-                    CAdPluginDebug::DebugResultHiding(tag, "-", tagIt->second.m_filterText, tagIt->second.m_filterFile);
+                    CPluginDebug::DebugResultHiding(tag, "-", tagIt->second.m_filterText, tagIt->second.m_filterFile);
                 }
 #endif
             }
@@ -800,7 +800,7 @@ bool CAdPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, co
 }
 
 
-void CAdPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int filterType)
+void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int filterType)
 {
     CStringA raw = filterString;
     
@@ -1116,9 +1116,9 @@ void CAdPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int 
 
 #ifdef PRODUCT_ADBLOCKER
 
-bool CAdPluginFilter::DownloadFilterFile(const CStringA& url, const CStringA& filename)
+bool CPluginFilter::DownloadFilterFile(const CStringA& url, const CStringA& filename)
 {
-    CStringA tempFile = CAdPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
+    CStringA tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
 
     DEBUG_GENERAL("*** Downloading filter file:" + filename + " (to " + tempFile + ")");
 
@@ -1129,18 +1129,18 @@ bool CAdPluginFilter::DownloadFilterFile(const CStringA& url, const CStringA& fi
 	    HRESULT hr = ::URLDownloadToFileA(NULL, url, tempFile, 0, NULL);
         if (SUCCEEDED(hr))
         {
-            CAdPluginFilterLock lock(filename);
+            CPluginFilterLock lock(filename);
             if (lock.IsLocked())
             {
                 // Move the temporary file to the new text file.
-                if (!::MoveFileExA(tempFile, CAdPluginSettings::GetDataPath(filename), MOVEFILE_REPLACE_EXISTING))
+                if (!::MoveFileExA(tempFile, CPluginSettings::GetDataPath(filename), MOVEFILE_REPLACE_EXISTING))
                 {
                     DWORD dwError = ::GetLastError();
 
                     // Not same device? copy/delete instead
                     if (dwError == ERROR_NOT_SAME_DEVICE)
                     {
-                        if (!::CopyFileA(tempFile, CAdPluginSettings::GetDataPath(filename), FALSE))
+                        if (!::CopyFileA(tempFile, CPluginSettings::GetDataPath(filename), FALSE))
                         {
                             DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_FILTER, PLUGIN_ERROR_FILTER_COPY_FILE, "Filter::Unable to copy file:" + filename)
 
@@ -1175,19 +1175,19 @@ bool CAdPluginFilter::DownloadFilterFile(const CStringA& url, const CStringA& fi
 
 #endif
 
-bool CAdPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloadPath)
+bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloadPath)
 {
     bool isRead = false;
 
 #ifdef PRODUCT_ADBLOCKER
-    LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+    LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
     if (client)
 #endif
 	{
         CStringA fileContent;
 
 #ifdef PRODUCT_ADBLOCKER
-        CAdPluginFilterLock lock(filename);
+        CPluginFilterLock lock(filename);
         if (lock.IsLocked())
         {
 #endif
@@ -1209,7 +1209,7 @@ bool CAdPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downl
                     else if (filename == PERSONAL_FILTER_FILE)
                     {
                         // Open new file
-                        HANDLE hPersonalFile = ::CreateFileA(CAdPluginSettings::GetDataPath(PERSONAL_FILTER_FILE), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
+                        HANDLE hPersonalFile = ::CreateFileA(CPluginSettings::GetDataPath(PERSONAL_FILTER_FILE), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
                         if (hPersonalFile)
                         {
                             // Build filter string
@@ -1334,7 +1334,7 @@ bool CAdPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downl
     return isRead;
 }
 
-void CAdPluginFilter::ParseFilters(const TFilterFileList& list)
+void CPluginFilter::ParseFilters(const TFilterFileList& list)
 {
     // Clear filter maps
     s_criticalSectionFilterMap.Lock();    
@@ -1357,7 +1357,7 @@ void CAdPluginFilter::ParseFilters(const TFilterFileList& list)
 
     // Load the files
 #ifdef PRODUCT_ADBLOCKER
-    LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+    LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
     if (client)
 #endif
 	{
@@ -1381,7 +1381,7 @@ void CAdPluginFilter::ParseFilters(const TFilterFileList& list)
 }
 
 
-bool CAdPluginFilter::IsMatchFilter(const CFilter& filter, CStringA src, const CStringA& srcDomain, const CStringA& domain) const
+bool CPluginFilter::IsMatchFilter(const CFilter& filter, CStringA src, const CStringA& srcDomain, const CStringA& domain) const
 {
     // Initial checks
 
@@ -1505,7 +1505,7 @@ bool CAdPluginFilter::IsMatchFilter(const CFilter& filter, CStringA src, const C
 }
 
 
-const CFilter* CAdPluginFilter::MatchFilter(int filterType, const CStringA& src, int contentType, const CStringA& domain) const
+const CFilter* CPluginFilter::MatchFilter(int filterType, const CStringA& src, int contentType, const CStringA& domain) const
 {
 	const CFilter* filter = NULL;
 
@@ -1648,7 +1648,7 @@ const CFilter* CAdPluginFilter::MatchFilter(int filterType, const CStringA& src,
 }
 
 
-bool CAdPluginFilter::ShouldWhiteList(CStringA src) const
+bool CPluginFilter::ShouldWhiteList(CStringA src) const
 {
 	// We should not block the empty string, so all filtering does not make sense
 	// Therefore we just return
@@ -1663,7 +1663,7 @@ bool CAdPluginFilter::ShouldWhiteList(CStringA src) const
 }
 
 
-bool CAdPluginFilter::ShouldBlock(CStringA src, int contentType, const CStringA& domain, bool addDebug) const
+bool CPluginFilter::ShouldBlock(CStringA src, int contentType, const CStringA& domain, bool addDebug) const
 {
     // We should not block the empty string, so all filtering does not make sense
 	// Therefore we just return
@@ -1701,7 +1701,7 @@ bool CAdPluginFilter::ShouldBlock(CStringA src, int contentType, const CStringA&
 			DEBUG_FILTER("Filter::ShouldBlock " + type + " YES src:" + src + " - \"" + blockFilter->m_filterText + "\"")
 
 #ifdef ENABLE_DEBUG_RESULT
-            CAdPluginDebug::DebugResultBlocking(type, src, blockFilter->m_filterText, blockFilter->m_filterFile);
+            CPluginDebug::DebugResultBlocking(type, src, blockFilter->m_filterText, blockFilter->m_filterFile);
 #endif
 		}
 	}
@@ -1713,7 +1713,7 @@ bool CAdPluginFilter::ShouldBlock(CStringA src, int contentType, const CStringA&
 	return blockFilter ? true : false;
 }
 
-int CAdPluginFilter::FindMatch(const CStringA& src, CStringA filterPart, int srcStartPos) const
+int CPluginFilter::FindMatch(const CStringA& src, CStringA filterPart, int srcStartPos) const
 {
     int filterCurrentPos = filterPart.Find('^');
     if (filterCurrentPos >= 0)
@@ -1840,7 +1840,7 @@ int CAdPluginFilter::FindMatch(const CStringA& src, CStringA filterPart, int src
     }
 }
 
-bool CAdPluginFilter::IsSpecialChar(char testChar) const
+bool CPluginFilter::IsSpecialChar(char testChar) const
 {
     if (isalnum(testChar) || testChar == '.' || testChar == '-' || testChar == '%')
     {
@@ -1850,7 +1850,7 @@ bool CAdPluginFilter::IsSpecialChar(char testChar) const
     return true;
 }
 
-bool CAdPluginFilter::IsSubdomain(const CStringA& subdomain, const CStringA& domain) const
+bool CPluginFilter::IsSubdomain(const CStringA& subdomain, const CStringA& domain) const
 {
     int pos = subdomain.Find(domain);
     
@@ -1867,14 +1867,14 @@ bool CAdPluginFilter::IsSubdomain(const CStringA& subdomain, const CStringA& dom
 
 #ifdef PRODUCT_ADBLOCKER
 
-void CAdPluginFilter::CreateFilters()
+void CPluginFilter::CreateFilters()
 {
-    CAdPluginFilterLock lock("easylist.txt");
+    CPluginFilterLock lock("easylist.txt");
     if (lock.IsLocked())
     {
         // Check file existence
         std::ifstream is;
-	    is.open(CAdPluginSettings::GetDataPath("easylist.txt"), std::ios_base::in);
+	    is.open(CPluginSettings::GetDataPath("easylist.txt"), std::ios_base::in);
 	    if (is.is_open())
 	    {
             is.close();
@@ -1882,7 +1882,7 @@ void CAdPluginFilter::CreateFilters()
         }
 
         // Open file
-        HANDLE hFile = ::CreateFileA(CAdPluginSettings::GetDataPath("easylist.txt"), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
+        HANDLE hFile = ::CreateFileA(CPluginSettings::GetDataPath("easylist.txt"), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
         if (hFile == INVALID_HANDLE_VALUE)
         {
 		    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_FILTER, PLUGIN_ERROR_FILTER_CREATE_FILE_OPEN, "Filter::Create - CreateFile");
@@ -3328,7 +3328,7 @@ void CAdPluginFilter::CreateFilters()
             if (::WriteFile(hFile, line.GetBuffer(), line.GetLength(), &dwBytesWritten, NULL) && dwBytesWritten == line.GetLength())
             {
 		        // Set correct version
-                CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+                CPluginSettings* settings = CPluginSettings::GetInstance();
 
                 settings->AddFilterUrl(CStringA(FILTERS_PROTOCOL) + CStringA(FILTERS_HOST) + "/easylist.txt", 1);
 		        settings->Write();
@@ -3352,7 +3352,7 @@ void CAdPluginFilter::CreateFilters()
 
 #ifdef PRODUCT_ADBLOCKER
 
-bool CAdPluginFilter::IsAlive() const
+bool CPluginFilter::IsAlive() const
 {
     bool isAlive;
 

@@ -25,14 +25,14 @@
 #include "ProtocolCF.h"
 
 
-HANDLE CAdPluginClass::s_hMainThread = NULL;
-bool CAdPluginClass::s_isMainThreadDone = false;
+HANDLE CPluginClass::s_hMainThread = NULL;
+bool CPluginClass::s_isMainThreadDone = false;
 
 
-DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
+DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 {
     // Force loading/creation of settings
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
 
     settings->SetMainThreadId();
 
@@ -64,7 +64,7 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
     CString proxyName;
     CString proxyBypass;
     
-    if (CAdPluginHttpRequest::GetProxySettings(proxyName, proxyBypass))
+    if (CPluginHttpRequest::GetProxySettings(proxyName, proxyBypass))
     {
         if (!proxyName.IsEmpty())
         {
@@ -90,11 +90,11 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
 	LocalClient* client = NULL;
         
     // Force loading/creation of dictionary
-    CAdPluginDictionary* dictionary = CAdPluginDictionary::GetInstance();
+    CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
 
 #ifdef SUPPORT_CONFIG
     // Force loading/creation of config
-    CAdPluginConfig* config = CAdPluginConfig::GetInstance();
+    CPluginConfig* config = CPluginConfig::GetInstance();
 #endif // SUPPORT_CONFIG
 
     // Timer settings for retrieving server client (settings from server)
@@ -106,7 +106,7 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
     
     bool isConfigutationLoaded = false;
     
-    std::auto_ptr<CAdPluginConfiguration> configuration = std::auto_ptr<CAdPluginConfiguration>(new CAdPluginConfiguration);
+    std::auto_ptr<CPluginConfiguration> configuration = std::auto_ptr<CPluginConfiguration>(new CPluginConfiguration);
 
 	// --------------------------------------------------------------------
 	// Initialize local client
@@ -125,7 +125,7 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
 	    {
 		    try 
 		    {
-			    client = CAdPluginClientFactory::GetClientInstance();
+			    client = CPluginClientFactory::GetClientInstance();
 			    // The client has been initialized, we can continue
 			    break;
 		    }
@@ -502,7 +502,7 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
                 // Update dictionary
                 if (isNewDictionaryVersion)
                 {
-                    if (dictionary->Download(configuration->GetDictionaryUrl(), CAdPluginSettings::GetDataPath(DICTIONARY_INI_FILE)))
+                    if (dictionary->Download(configuration->GetDictionaryUrl(), CPluginSettings::GetDataPath(DICTIONARY_INI_FILE)))
                     {
                         settings->SetValue(SETTING_DICTIONARY_VERSION, configuration->GetDictionaryVersion());
                         settings->Write();
@@ -517,7 +517,7 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
                 // Update config file
                 if (isNewConfig)
                 {
-                    if (config->Download(configuration->GetConfigUrl(), CAdPluginSettings::GetDataPath(CONFIG_INI_FILE)))
+                    if (config->Download(configuration->GetConfigUrl(), CPluginSettings::GetDataPath(CONFIG_INI_FILE)))
                     {
                         settings->SetValue(SETTING_CONFIG_VERSION, configuration->GetConfigVersion());
                         settings->Write();
@@ -545,7 +545,7 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
                         TFilterUrlList::const_iterator fi = currentFilterUrlList.find(downloadFilterName);
                         if (fi == currentFilterUrlList.end() || fi->second != version)
                         {
-                            CAdPluginFilter::DownloadFilterFile(downloadFilterName, filename);
+                            CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
                         }
                     }
 
@@ -593,18 +593,18 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
 #if (defined ENABLE_DEBUG_SELFTEST)
         if (!IsMainThreadDone(hMainThread) && settings->IsPluginSelftestEnabled())
         {
-            if (CAdPluginSelftest::IsFileTooLarge())
+            if (CPluginSelftest::IsFileTooLarge())
             {
                 DEBUG_THREAD("Thread::Erase selftest file");
 
-                if (settings->IsFirstRunAny() && CAdPluginSelftest::Send())
+                if (settings->IsFirstRunAny() && CPluginSelftest::Send())
                 {
                     settings->SetBool(SETTING_PLUGIN_SELFTEST, false);
                     settings->Write();
                 }
 
-                CAdPluginSelftest::Clear();                
-                CAdPluginSelftest::SetSupported(false);
+                CPluginSelftest::Clear();                
+                CPluginSelftest::SetSupported(false);
             }
         }
 #endif
@@ -619,13 +619,13 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
         {
             if (settings->IsPluginSelftestEnabled())
             {
-                if (CAdPluginSelftest::Send())
+                if (CPluginSelftest::Send())
                 {
                     settings->SetBool(SETTING_PLUGIN_SELFTEST, false);
                     settings->Write();
 
-                    CAdPluginSelftest::Clear();
-                    CAdPluginSelftest::SetSupported(false);
+                    CPluginSelftest::Clear();
+                    CPluginSelftest::SetSupported(false);
                 }
 	        }                
         }
@@ -644,7 +644,7 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
             try
             {
                 CString updateUrl = settings->GetString(SETTING_PLUGIN_UPDATE_URL);
-		        CString updatePath = CAdPluginSettings::GetTempPath(INSTALL_MSI_FILE);
+		        CString updatePath = CPluginSettings::GetTempPath(INSTALL_MSI_FILE);
 		        
 		        CDownloadDialog dlDlg;
 		        
@@ -698,7 +698,7 @@ DWORD WINAPI CAdPluginClass::MainThreadProc(LPVOID pParam)
 }
 
 
-HANDLE CAdPluginClass::GetMainThreadHandle()
+HANDLE CPluginClass::GetMainThreadHandle()
 {
     HANDLE handle = NULL;
 
@@ -712,7 +712,7 @@ HANDLE CAdPluginClass::GetMainThreadHandle()
 }
 
 
-bool CAdPluginClass::IsMainThreadDone(HANDLE mainThread)
+bool CPluginClass::IsMainThreadDone(HANDLE mainThread)
 {
     bool isDone = false;
 

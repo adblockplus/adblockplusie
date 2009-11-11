@@ -1,15 +1,11 @@
-#ifndef _ADPLUGIN_INI_FILE_H_
-#define _ADPLUGIN_INI_FILE_H_
-
-#if _MSC_VER > 1000
- #pragma once
-#endif // _MSC_VER > 1000
+#ifndef _PLUGIN_INI_FILE_H_
+#define _PLUGIN_INI_FILE_H_
 
 
-class CAdPluginChecksum;
+class CPluginChecksum;
 
 
-class CAdPluginIniFile
+class CPluginIniFile
 {
 
 public:
@@ -17,7 +13,7 @@ public:
     typedef std::map<CStringA, CStringA> TSectionData;
     typedef std::set<CStringA> TSectionNames;
 
-	CAdPluginIniFile(const CStringA& filename, bool hasChecksum=false);
+	CPluginIniFile(const CStringA& filename, bool hasChecksum=false);
 
     CStringA GetFilePath() const;
 
@@ -28,9 +24,9 @@ public:
     bool Write();
 
 	// methods to return the lists of section data and section names
-	CAdPluginIniFile::TSectionData GetSectionData(const CStringA& section) const;
+	CPluginIniFile::TSectionData GetSectionData(const CStringA& section) const;
 
-	const CAdPluginIniFile::TSectionNames& GetSectionNames() const;
+	const CPluginIniFile::TSectionNames& GetSectionNames() const;
 
 	void SetInitialChecksumString(const CStringA& str);
 	bool IsValidChecksum() const;
@@ -43,7 +39,7 @@ public:
 	bool SetValue(const CStringA& section, const CStringA& key, const CStringA& value);
     bool SetValue(const CStringA& section, const CStringA& key, int value);
 
-    void UpdateSection(const CStringA& section, const CAdPluginIniFile::TSectionData& data);
+    void UpdateSection(const CStringA& section, const CPluginIniFile::TSectionData& data);
 
 	// give the value for the specified key of a section
 	CStringA GetValue(const CStringA& section, const CStringA& key) const;
@@ -52,7 +48,7 @@ public:
 
 private:
 
-    typedef std::map<CStringA, CAdPluginIniFile::TSectionData> TData;
+    typedef std::map<CStringA, CPluginIniFile::TSectionData> TData;
 
 	CStringA m_filename;
 	bool m_isDirty;
@@ -61,10 +57,10 @@ private:
 	unsigned int m_lastError;
 
 	CStringA m_checksumInit;
-	CAdPluginIniFile::TData m_data;
-    CAdPluginIniFile::TSectionNames m_sectionNames;
+	CPluginIniFile::TData m_data;
+    CPluginIniFile::TSectionNames m_sectionNames;
     
-    std::auto_ptr<CAdPluginChecksum> m_checksum;
+    std::auto_ptr<CPluginChecksum> m_checksum;
 };
 
-#endif // _ADPLUGIN_INI_FILE_H_
+#endif // _PLUGIN_INI_FILE_H_

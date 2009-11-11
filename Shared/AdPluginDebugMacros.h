@@ -1,5 +1,5 @@
-#ifndef _ADPLUGIN_DEBUG_MACROS_H_
-#define _ADPLUGIN_DEBUG_MACROS_H_
+#ifndef _PLUGIN_DEBUG_MACROS_H_
+#define _PLUGIN_DEBUG_MACROS_H_
 
 
 #undef  DEBUG_INFO
@@ -44,4 +44,4 @@
 #define DEBUG(x)
 
 
-#endif // _ADPLUGIN_DEBUG_MACROS_H_
+#endif // _PLUGIN_DEBUG_MACROS_H_

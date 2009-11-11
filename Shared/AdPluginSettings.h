@@ -4,8 +4,8 @@
  * Exception errors are tested by calls to ExceptionsTest from: Main ...
  */
 
-#ifndef _ADPLUGIN_SETTINGS_H_
-#define _ADPLUGIN_SETTINGS_H_
+#ifndef _PLUGIN_SETTINGS_H_
+#define _PLUGIN_SETTINGS_H_
 
 
 #include "AdPluginTypedef.h"
@@ -58,10 +58,10 @@
 #endif
 
 
-class CAdPluginIniFile;
+class CPluginIniFile;
 
 
-class CAdPluginSettings
+class CPluginSettings
 {
 
 public:
@@ -84,19 +84,19 @@ private:
 	TDomainHistory m_domainHistory;
 #endif
 	
-	CAdPluginSettings::TProperties m_properties;
+	CPluginSettings::TProperties m_properties;
 
 	bool m_isDirty;
 
 #ifdef SUPPORT_FILTER
-	CAdPluginSettings::TFilterUrlList m_filterUrlList;
+	CPluginSettings::TFilterUrlList m_filterUrlList;
 #endif
 
 	CStringA m_settingsVersion;
-    std::auto_ptr<CAdPluginIniFile> m_settingsFile;
+    std::auto_ptr<CPluginIniFile> m_settingsFile;
 
 	static char* s_dataPath;
-	static CAdPluginSettings* s_instance;
+	static CPluginSettings* s_instance;
 
 	static CComAutoCriticalSection s_criticalSectionLocal;
 #ifdef SUPPORT_FILTER
@@ -111,14 +111,14 @@ private:
     void Clear();
 
 	// Private constructor used by the singleton pattern
-	CAdPluginSettings();	
+	CPluginSettings();	
 
 public:
 
-	~CAdPluginSettings();
+	~CPluginSettings();
 
     static bool HasInstance();
-    static CAdPluginSettings* GetInstance();
+    static CPluginSettings* GetInstance();
  
     bool Read(bool bDebug=true);
 	bool Write(bool bDebug=true);
@@ -186,10 +186,10 @@ private:
 	bool m_isDirtyTab;
 	bool m_isPluginEnabledTab;
 
-	CAdPluginSettings::TProperties m_propertiesTab;
-	CAdPluginSettings::TProperties m_errorsTab;
+	CPluginSettings::TProperties m_propertiesTab;
+	CPluginSettings::TProperties m_errorsTab;
 
-    std::auto_ptr<CAdPluginIniFile> m_settingsFileTab;
+    std::auto_ptr<CPluginIniFile> m_settingsFileTab;
 
     void ClearTab();
 
@@ -231,7 +231,7 @@ private:
 	TDomainList m_whitelist;
 	TDomainList m_whitelistToGo;
 
-    std::auto_ptr<CAdPluginIniFile> m_settingsFileWhitelist;
+    std::auto_ptr<CPluginIniFile> m_settingsFileWhitelist;
     
     void ClearWhitelist();
 
@@ -254,4 +254,4 @@ public:
 };
 
 
-#endif // _ADPLUGIN_SETTINGS_H_
+#endif // _PLUGIN_SETTINGS_H_

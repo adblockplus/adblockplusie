@@ -5,13 +5,13 @@
 #include "AdPluginClient.h"
 
 
-LocalClient* CAdPluginClientFactory::s_localInstance = NULL;
-MimeFilterClient* CAdPluginClientFactory::s_mimeFilterInstance = NULL;
+LocalClient* CPluginClientFactory::s_localInstance = NULL;
+MimeFilterClient* CPluginClientFactory::s_mimeFilterInstance = NULL;
 
-CComAutoCriticalSection CAdPluginClientFactory::s_criticalSection;
+CComAutoCriticalSection CPluginClientFactory::s_criticalSection;
 
 
-LocalClient* CAdPluginClientFactory::GetLazyClientInstance()
+LocalClient* CPluginClientFactory::GetLazyClientInstance()
 {
     LocalClient* client;
 
@@ -24,7 +24,7 @@ LocalClient* CAdPluginClientFactory::GetLazyClientInstance()
 	return client;	
 }
 
-LocalClient* CAdPluginClientFactory::GetClientInstance() 
+LocalClient* CPluginClientFactory::GetClientInstance() 
 {
     LocalClient* client;
 
@@ -47,7 +47,7 @@ LocalClient* CAdPluginClientFactory::GetClientInstance()
 }
 
 
-MimeFilterClient* CAdPluginClientFactory ::GetMimeFilterClientInstance() 
+MimeFilterClient* CPluginClientFactory ::GetMimeFilterClientInstance() 
 {
     MimeFilterClient* localInstance = NULL;
 

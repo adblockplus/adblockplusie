@@ -24,46 +24,46 @@ typedef HRESULT (WINAPI *DRAWTHEMEBACKGROUND)(HANDLE, HDC, INT, INT, LPRECT, LPR
 typedef HRESULT (WINAPI *CLOSETHEMEDATA)(HANDLE);
 
 
-HICON CAdPluginClass::s_hIcons[ICON_MAX] = { NULL, NULL, NULL };
-DWORD CAdPluginClass::s_hIconTypes[ICON_MAX] = { IDI_ICON_DISABLED, IDI_ICON_ENABLED, IDI_ICON_DEACTIVATED };
+HICON CPluginClass::s_hIcons[ICON_MAX] = { NULL, NULL, NULL };
+DWORD CPluginClass::s_hIconTypes[ICON_MAX] = { IDI_ICON_DISABLED, IDI_ICON_ENABLED, IDI_ICON_DEACTIVATED };
 
 CLOSETHEMEDATA pfnClose = NULL;
 DRAWTHEMEBACKGROUND pfnDrawThemeBackground = NULL; 
 OPENTHEMEDATA pfnOpenThemeData = NULL;
 
-ATOM CAdPluginClass::s_atomPaneClass = NULL;
-HINSTANCE CAdPluginClass::s_hUxtheme = NULL;
-CSimpleArray<CAdPluginClass*> CAdPluginClass::s_instances;
+ATOM CPluginClass::s_atomPaneClass = NULL;
+HINSTANCE CPluginClass::s_hUxtheme = NULL;
+CSimpleArray<CPluginClass*> CPluginClass::s_instances;
 
-CComAutoCriticalSection CAdPluginClass::s_criticalSectionLocal;
-CComAutoCriticalSection CAdPluginClass::s_criticalSectionBrowser;
+CComAutoCriticalSection CPluginClass::s_criticalSectionLocal;
+CComAutoCriticalSection CPluginClass::s_criticalSectionBrowser;
 
-CComQIPtr<IWebBrowser2> CAdPluginClass::s_asyncWebBrowser2;
+CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
 
 #ifdef SUPPORT_WHITELIST
-std::map<UINT,CString> CAdPluginClass::s_menuDomains;
+std::map<UINT,CString> CPluginClass::s_menuDomains;
 #endif
 
 #ifdef SUPPORT_FILE_DOWNLOAD
-TMenuDownloadFiles CAdPluginClass::s_menuDownloadFiles;
+TMenuDownloadFiles CPluginClass::s_menuDownloadFiles;
 #endif
 
-bool CAdPluginClass::s_isPluginToBeUpdated = false;
-bool CAdPluginClass::s_isTabActivated = true;
+bool CPluginClass::s_isPluginToBeUpdated = false;
+bool CPluginClass::s_isTabActivated = true;
 
-int CAdPluginClass::s_dictionaryVersion = 0;
-int CAdPluginClass::s_settingsVersion = 1;
+int CPluginClass::s_dictionaryVersion = 0;
+int CPluginClass::s_settingsVersion = 1;
 #ifdef SUPPORT_FILTER
-int CAdPluginClass::s_filterVersion = 0;
+int CPluginClass::s_filterVersion = 0;
 #endif
 #ifdef SUPPORT_WHITELIST
-int CAdPluginClass::s_whitelistVersion = 0;
+int CPluginClass::s_whitelistVersion = 0;
 #endif
 #ifdef SUPPORT_CONFIG
-int CAdPluginClass::s_configVersion = 0;
+int CPluginClass::s_configVersion = 0;
 #endif
 
-CAdPluginClass::CAdPluginClass()
+CPluginClass::CPluginClass()
 {
     m_isRefresh = true;
     m_isAdviced = false;
@@ -83,7 +83,7 @@ CAdPluginClass::CAdPluginClass()
 #endif
 
     // Load / create settings
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
 
     bool isMainTab = settings->IncrementTabCount();
 
@@ -154,22 +154,22 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://simple-adblock.com/downlo
 #ifdef ENABLE_DEBUG_SELFTEST
         if (info == 0 || info > 2)
         {
-            CAdPluginSelftest::Clear();
+            CPluginSelftest::Clear();
         }
         else
         {
-            CAdPluginSelftest::SetSupported();
+            CPluginSelftest::SetSupported();
         }
 #endif // ENABLE_DEBUG_SELFTEST
 
 #ifdef ENABLE_DEBUG_RESULT
-        CAdPluginDebug::DebugResultClear();
+        CPluginDebug::DebugResultClear();
 #endif
 
 #ifdef ENABLE_DEBUG_INFO
         if (info == 0 || info > 2)
         {
-            CAdPluginDebug::DebugClear();
+            CPluginDebug::DebugClear();
         }
 #endif // ENABLE_DEBUG_INFO
 
@@ -177,13 +177,13 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://simple-adblock.com/downlo
     }
 }
 
-CAdPluginClass::~CAdPluginClass()
+CPluginClass::~CPluginClass()
 {
 #ifdef SUPPORT_FILTER
     delete [] m_cacheElements;
 #endif
 
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
     
     settings->DecrementTabCount();
 }
@@ -192,12 +192,12 @@ CAdPluginClass::~CAdPluginClass()
 /////////////////////////////////////////////////////////////////////////////
 // Initialization
 
-HRESULT CAdPluginClass::FinalConstruct()
+HRESULT CPluginClass::FinalConstruct()
 {
 	return S_OK;
 }
 
-void CAdPluginClass::FinalRelease()
+void CPluginClass::FinalRelease()
 {
     s_criticalSectionBrowser.Lock();
     {
@@ -209,7 +209,7 @@ void CAdPluginClass::FinalRelease()
 
 // This method tries to get a 'connection point' from the stored browser, which can be
 // used to attach or detach from the stream of browser events
-CComPtr<IConnectionPoint> CAdPluginClass::GetConnectionPoint()
+CComPtr<IConnectionPoint> CPluginClass::GetConnectionPoint()
 {
 	CComQIPtr<IConnectionPointContainer, &IID_IConnectionPointContainer> pContainer(GetBrowser());
 	if (!pContainer)
@@ -230,7 +230,7 @@ CComPtr<IConnectionPoint> CAdPluginClass::GetConnectionPoint()
 
 // This method tries to get a 'connection point' from the stored browser, which can be
 // used to attach or detach from the stream of browser events
-CComPtr<IConnectionPoint> CAdPluginClass::GetConnectionPointPropSink()
+CComPtr<IConnectionPoint> CPluginClass::GetConnectionPointPropSink()
 {
 	CComQIPtr<IConnectionPointContainer, &IID_IConnectionPointContainer> pContainer(GetBrowser());
 	if (!pContainer)
@@ -250,7 +250,7 @@ CComPtr<IConnectionPoint> CAdPluginClass::GetConnectionPointPropSink()
 }
 
 
-HWND CAdPluginClass::GetBrowserHWND() const
+HWND CPluginClass::GetBrowserHWND() const
 {
 	SHANDLE_PTR hBrowserWndHandle = NULL;
 
@@ -267,7 +267,7 @@ HWND CAdPluginClass::GetBrowserHWND() const
 	return (HWND)hBrowserWndHandle;
 }
 
-CStringA CAdPluginClass::GetDocumentUrl() const
+CStringA CPluginClass::GetDocumentUrl() const
 {
     CStringA url;
 
@@ -280,7 +280,7 @@ CStringA CAdPluginClass::GetDocumentUrl() const
 	return url;
 }
 
-void CAdPluginClass::SetDocumentUrl(const CStringA& url)
+void CPluginClass::SetDocumentUrl(const CStringA& url)
 {
     CStringA domain;
 
@@ -294,11 +294,11 @@ void CAdPluginClass::SetDocumentUrl(const CStringA& url)
     s_criticalSectionLocal.Unlock();
 
 #ifdef SUPPORT_WHITELIST
-	CAdPluginSettings::GetInstance()->AddDomainToHistory(domain);
+	CPluginSettings::GetInstance()->AddDomainToHistory(domain);
 #endif
 }
 
-CStringA CAdPluginClass::GetDocumentDomain() const
+CStringA CPluginClass::GetDocumentDomain() const
 {
     CStringA domain;
 
@@ -311,7 +311,7 @@ CStringA CAdPluginClass::GetDocumentDomain() const
 	return domain;
 }
 
-CComQIPtr<IWebBrowser2> CAdPluginClass::GetBrowser() const
+CComQIPtr<IWebBrowser2> CPluginClass::GetBrowser() const
 {
     CComQIPtr<IWebBrowser2> browser;
     
@@ -325,7 +325,7 @@ CComQIPtr<IWebBrowser2> CAdPluginClass::GetBrowser() const
 }
 
 
-CComQIPtr<IWebBrowser2> CAdPluginClass::GetAsyncBrowser()
+CComQIPtr<IWebBrowser2> CPluginClass::GetAsyncBrowser()
 {
     CComQIPtr<IWebBrowser2> browser;
     
@@ -338,7 +338,7 @@ CComQIPtr<IWebBrowser2> CAdPluginClass::GetAsyncBrowser()
     return browser;
 }
 
-CStringA CAdPluginClass::GetBrowserUrl() const
+CStringA CPluginClass::GetBrowserUrl() const
 {
 	CStringA url;
 
@@ -361,24 +361,19 @@ CStringA CAdPluginClass::GetBrowserUrl() const
 	return url;
 }
 
-void CAdPluginClass::LaunchUpdater(const CString& strPath)
+void CPluginClass::LaunchUpdater(const CString& strPath)
 {
 	PROCESS_INFORMATION pi;
-	STARTUPINFO si;
-
-	::ZeroMemory(&si, sizeof(si));
-	si.cb = sizeof(si);
 	::ZeroMemory(&pi, sizeof(pi));
 
+	STARTUPINFO si;
+	::ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
 	si.wShowWindow = FALSE;
 
 	CString cpath = _T("\"msiexec.exe\" /i \"") + strPath + _T("\""); 
 
-	BOOL bResult = ::CreateProcess(NULL, cpath.GetBuffer(), NULL, NULL, FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL, &si, &pi);
-
-    cpath.ReleaseBuffer();	
-	
-	if (!bResult)
+	if (!::CreateProcess(NULL, cpath.GetBuffer(), NULL, NULL, FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL, &si, &pi))
 	{
 		DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UPDATER, PLUGIN_ERROR_UPDATER_CREATE_PROCESS, "Class::Updater - Failed to start process");
 		return;
@@ -400,9 +395,9 @@ void CAdPluginClass::LaunchUpdater(const CString& strPath)
 // interface that represents the browser for the window. 
 // it is also called when a tab is closed, this unknownSite will be null
 // so we should handle that it is called this way several times during a session
-STDMETHODIMP CAdPluginClass::SetSite(IUnknown* unknownSite)
+STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
 
 	if (unknownSite) 
 	{
@@ -433,15 +428,15 @@ STDMETHODIMP CAdPluginClass::SetSite(IUnknown* unknownSite)
 		//and only mimefilter
 		//on some few computers the mimefilter does not get properly registered when it is done on another thread
 
-		CAdPluginClientFactory::GetMimeFilterClientInstance(); 
-		{
-            s_criticalSectionLocal.Lock();
-            {
-			    s_asyncWebBrowser2 = unknownSite;
-			    s_instances.Add(this);
-		    }
-            s_criticalSectionLocal.Unlock();
-		}
+		CPluginClientFactory::GetMimeFilterClientInstance(); 
+
+		s_criticalSectionLocal.Lock();
+        {
+		    s_asyncWebBrowser2 = unknownSite;
+		    s_instances.Add(this);
+	    }
+        s_criticalSectionLocal.Unlock();
+
 		try 
 		{
 			// Check if loaded as BHO
@@ -584,11 +579,11 @@ STDMETHODIMP CAdPluginClass::SetSite(IUnknown* unknownSite)
 		::CoUninitialize();
 	}
 
-	return IObjectWithSiteImpl<CAdPluginClass>::SetSite(unknownSite);
+	return IObjectWithSiteImpl<CPluginClass>::SetSite(unknownSite);
 }
 
 
-void CAdPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
+void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 {
 	if (pDispParams->cArgs < 7)
 	{
@@ -623,7 +618,7 @@ void CAdPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	}
 
     // If webbrowser2 is equal to top level browser (as set in SetSite), we are navigating new page
-	LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
 	if (client)
 	{
 		if (GetBrowser().IsEqualObject(WebBrowser2Ptr))
@@ -633,7 +628,7 @@ void CAdPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
             DEBUG_GENERAL("================================================================================\nBegin main navigation url:" + url + "\n================================================================================")
 
 #if (defined ENABLE_DEBUG_RESULT)
-            CAdPluginDebug::DebugResultDomain(url);
+            CPluginDebug::DebugResultDomain(url);
 #endif
 			m_isRefresh = false;
 			
@@ -655,7 +650,7 @@ void CAdPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 
 
 // This gets called whenever there's a browser event
-STDMETHODIMP CAdPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, 
+STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, 
 									 WORD wFlags, DISPPARAMS* pDispParams, 
 									 VARIANT* pvarResult, EXCEPINFO*  pExcepInfo,
 									 UINT* puArgErr)
@@ -721,7 +716,7 @@ STDMETHODIMP CAdPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 
 	case DISPID_DOWNLOADBEGIN:
 		{
-			LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+			LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
 			if (client)
 			{
 				client->SetDocumentUrl(GetDocumentUrl());
@@ -807,7 +802,7 @@ STDMETHODIMP CAdPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 	return S_OK;
 }
 
-bool CAdPluginClass::InitObject(bool bBHO)
+bool CPluginClass::InitObject(bool bBHO)
 {
 	// Load theme module
 	s_criticalSectionLocal.Lock();
@@ -883,7 +878,7 @@ bool CAdPluginClass::InitObject(bool bBHO)
 		}
 	}
 
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
     
     if (GetMainThreadHandle() == NULL && settings->IsMainProcess())
     {
@@ -917,7 +912,7 @@ bool CAdPluginClass::InitObject(bool bBHO)
 	return true;
 }
 
-bool CAdPluginClass::CreateStatusBarPane()
+bool CPluginClass::CreateStatusBarPane()
 {
 	TCHAR szClassName[MAX_PATH];
 
@@ -1070,7 +1065,7 @@ bool CAdPluginClass::CreateStatusBarPane()
 /////////////////////////////////////////////////////////////////////////////
 // Implementation
 
-void CAdPluginClass::CloseTheme()
+void CPluginClass::CloseTheme()
 {
 	if (m_hTheme)
 	{
@@ -1083,7 +1078,7 @@ void CAdPluginClass::CloseTheme()
 	}
 }
 
-void CAdPluginClass::UpdateTheme()
+void CPluginClass::UpdateTheme()
 {
 	CloseTheme();		
 
@@ -1097,9 +1092,9 @@ void CAdPluginClass::UpdateTheme()
 }
 
 
-CAdPluginClass* CAdPluginClass::FindInstance(HWND hStatusBarWnd)
+CPluginClass* CPluginClass::FindInstance(HWND hStatusBarWnd)
 {
-    CAdPluginClass* instance = NULL;
+    CPluginClass* instance = NULL;
 
     s_criticalSectionLocal.Lock();
     {
@@ -1118,7 +1113,7 @@ CAdPluginClass* CAdPluginClass::FindInstance(HWND hStatusBarWnd)
 }
 
 
-STDMETHODIMP CAdPluginClass::QueryStatus(const GUID* pguidCmdGroup, ULONG cCmds, OLECMD prgCmds[], OLECMDTEXT* pCmdText)
+STDMETHODIMP CPluginClass::QueryStatus(const GUID* pguidCmdGroup, ULONG cCmds, OLECMD prgCmds[], OLECMDTEXT* pCmdText)
 {
 	if (cCmds == 0) return E_INVALIDARG;
 	if (prgCmds == 0) return E_POINTER;
@@ -1128,7 +1123,7 @@ STDMETHODIMP CAdPluginClass::QueryStatus(const GUID* pguidCmdGroup, ULONG cCmds,
 	return S_OK;
 }
 
-HMENU CAdPluginClass::CreatePluginMenu(const CStringA& url)
+HMENU CPluginClass::CreatePluginMenu(const CStringA& url)
 {
 	HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 
@@ -1142,9 +1137,9 @@ HMENU CAdPluginClass::CreatePluginMenu(const CStringA& url)
 }
 
 
-void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags)
+void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags)
 {
-	LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
 	if (!client)
 	{
 	    return;
@@ -1189,14 +1184,14 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 
 	case ID_PLUGIN_ACTIVATE:
 		{
-			url = CAdPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ACTIVATE);
+			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ACTIVATE);
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_ACTIVATE;
 		}        
 		break;
 
 	case ID_PLUGIN_ENABLE:
 		{
-	        CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+	        CPluginSettings* settings = CPluginSettings::GetInstance();
 
 			settings->TogglePluginEnabled();
 		}        
@@ -1205,11 +1200,11 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 	case ID_SETTINGS:
 		{
 		    // Update settings server side on next IE start, as they have possibly changed
-	        CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+	        CPluginSettings* settings = CPluginSettings::GetInstance();
 
 			settings->ForceConfigurationUpdateOnStart();
 
-            CAdPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
+            CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
             
             httpRequest.AddPluginId();
             httpRequest.Add("username", LocalClient::GetUserName(), false);
@@ -1222,21 +1217,21 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 
 	case ID_INVITEFRIENDS:
 		{
-			url = CAdPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_INVITATION);
+			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_INVITATION);
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_INVITATION;
 		}
 		break;
 
 	case ID_FAQ:
         {
-			url = CAdPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_FAQ);
+			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_FAQ);
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_FAQ;
         }
         break;
 
     case ID_FEEDBACK:
         {
-            CAdPluginHttpRequest httpRequest(USERS_SCRIPT_FEEDBACK);
+            CPluginHttpRequest httpRequest(USERS_SCRIPT_FEEDBACK);
             
             httpRequest.AddPluginId();
 			httpRequest.Add("reason", 0);
@@ -1249,7 +1244,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 
 	case ID_ABOUT:
 		{
-			url = CAdPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ABOUT);
+			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ABOUT);
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_ABOUT;
 		}
 		break;
@@ -1260,7 +1255,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
         {
             if (nCommand >= WM_WHITELIST_DOMAIN && nCommand <= WM_WHITELIST_DOMAIN_MAX)
 		    {
-	            CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+	            CPluginSettings* settings = CPluginSettings::GetInstance();
 
 			    CStringA domain;
     		
@@ -1296,7 +1291,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 			    }
 			    s_criticalSectionLocal.Unlock();
 
-                CAdPluginDictionary* dictionary = CAdPluginDictionary::GetInstance();
+                CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
 
                 // http://msdn.microsoft.com/en-us/library/ms646839(VS.85).aspx
                 //#include <cderr.h>
@@ -1306,7 +1301,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 		        TCHAR szFilter[1024] = L"";
 
 		        CString extension = CString(downloadFile.properties.extension);
-		        CString title = dictionary->Lookup("SAVE_FILE");
+		        CString title = dictionary->Lookup("DOWNLOAD_FILE_SAVE_TITLE");
 				CString description = downloadFile.properties.description;
 
 				wsprintf(szFilter, L"%s (*.%s)\0.%s\0\0", description.GetBuffer(), extension.GetBuffer(), extension.GetBuffer());
@@ -1343,7 +1338,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 						DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_PROGRAM_FILES, "Download::program files folder retrieval failed");
 			        }
 
-					CAdPluginChecksum checksum;
+					CPluginChecksum checksum;
 
 					checksum.Add("/url", downloadFile.downloadUrl);
 					checksum.Add(L"/file", CString(szFile));
@@ -1355,11 +1350,14 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 #endif
 	                LPWSTR szCmdline = _wcsdup(args);
 
-                    if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+                    if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, CREATE_PRESERVE_CODE_AUTHZ_LEVEL, NULL, NULL, &si, &pi))
                     {
 						DEBUG_ERROR_LOG(::CommDlgExtendedError(), PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
                     }
-                }
+
+					::CloseHandle(pi.hProcess);
+					::CloseHandle(pi.hThread);
+				}
 		    }
         }
 #endif // SUPPORT_FILE_DOWNLOAD
@@ -1392,7 +1390,7 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 }
 
 
-bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url) 
+bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url) 
 {
 	CString ctext;
 
@@ -1407,7 +1405,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	}
 	s_criticalSectionLocal.Unlock();
 
-    CAdPluginDictionary* dictionary = CAdPluginDictionary::GetInstance();
+    CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
 
 	MENUITEMINFO fmii;
 	memset(&fmii, 0, sizeof(MENUITEMINFO));
@@ -1419,9 +1417,9 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	miiSep.fMask = MIIM_TYPE | MIIM_FTYPE;
 	miiSep.fType = MFT_SEPARATOR;
 
-	LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
 
-    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
     
     settings->RefreshTab();
 
@@ -1441,7 +1439,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
     // Plugin activate
     if (settings->GetBool(SETTING_PLUGIN_ACTIVATE_ENABLED,false) && !settings->GetBool(SETTING_PLUGIN_ACTIVATED,false))
     {
-        ctext = dictionary->Lookup("ACTIVATE");
+        ctext = dictionary->Lookup("MENU_ACTIVATE");
 	    fmii.fMask  = MIIM_STATE | MIIM_STRING;
 	    fmii.fState = MFS_ENABLED;
         fmii.dwTypeData = ctext.GetBuffer();
@@ -1456,7 +1454,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
     // Plugin update
     if (settings->IsPluginUpdateAvailable())
     {
-        ctext = dictionary->Lookup("UPDATE");
+        ctext = dictionary->Lookup("MENU_UPDATE");
 	    fmii.fMask  = MIIM_STATE | MIIM_STRING;
 	    fmii.fState = MFS_ENABLED;
         fmii.dwTypeData = ctext.GetBuffer();
@@ -1471,7 +1469,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
     #ifdef SUPPORT_WHITELIST
     {
 	    // White list domain
-	    ctext = dictionary->Lookup("DISABLE_ON");
+	    ctext = dictionary->Lookup("MENU_DISABLE_ON");
         fmii.fMask = MIIM_STRING | MIIM_STATE;
         fmii.fState = MFS_DISABLED;
 	    fmii.dwTypeData = ctext.GetBuffer();
@@ -1582,10 +1580,14 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 
 	    ::SetMenuItemInfo(hMenu, ID_WHITELISTDOMAIN, FALSE, &fmii);
     }
+	#else
+	{
+	    ::DeleteMenu(hMenu, ID_WHITELISTDOMAIN, FALSE);
+	}
     #endif // SUPPORT_WHITELIST
 
 	// Invite friends
-    ctext = dictionary->Lookup("INVITE_FRIENDS");
+	ctext = dictionary->Lookup("MENU_INVITE_FRIENDS");
 	fmii.fMask  = MIIM_STATE | MIIM_STRING;
 	fmii.fState = MFS_ENABLED;
 	fmii.dwTypeData = ctext.GetBuffer();
@@ -1593,7 +1595,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	::SetMenuItemInfo(hMenu, ID_INVITEFRIENDS, FALSE, &fmii);
 
 	// FAQ
-    ctext = dictionary->Lookup("FAQ");
+    ctext = dictionary->Lookup("MENU_FAQ");
 	fmii.fMask  = MIIM_STATE | MIIM_STRING;
 	fmii.fState = MFS_ENABLED;
 	fmii.dwTypeData = ctext.GetBuffer();
@@ -1601,7 +1603,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	::SetMenuItemInfo(hMenu, ID_FAQ, FALSE, &fmii);
     
 	// About
-	ctext = dictionary->Lookup("ABOUT");
+	ctext = dictionary->Lookup("MENU_ABOUT");
 	fmii.fMask = MIIM_STATE | MIIM_STRING;
 	fmii.fState = MFS_ENABLED;
 	fmii.dwTypeData = ctext.GetBuffer();
@@ -1609,7 +1611,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	::SetMenuItemInfo(hMenu, ID_ABOUT, FALSE, &fmii);
 
 	// Feedback
-    ctext = dictionary->Lookup("FEEDBACK");
+    ctext = dictionary->Lookup("MENU_FEEDBACK");
 	fmii.fMask = MIIM_STATE | MIIM_STRING;
 	fmii.fState = MFS_ENABLED;
 	fmii.dwTypeData = ctext.GetBuffer();
@@ -1617,7 +1619,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	::SetMenuItemInfo(hMenu, ID_FEEDBACK, FALSE, &fmii);
 
 	// Settings
-	ctext = dictionary->Lookup("SETTINGS");
+	ctext = dictionary->Lookup("MENU_SETTINGS");
 	fmii.fMask  = MIIM_STATE | MIIM_STRING;
 	fmii.fState = hasUser ? MFS_ENABLED : MFS_DISABLED;
 	fmii.dwTypeData = ctext.GetBuffer();
@@ -1627,11 +1629,11 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	// Plugin enable
     if (settings->GetPluginEnabled())
     {
-        ctext = dictionary->Lookup("DISABLE");
+        ctext = dictionary->Lookup("MENU_DISABLE");
     }
     else
     {
-        ctext = dictionary->Lookup("ENABLE");
+        ctext = dictionary->Lookup("MENU_ENABLE");
     }
     fmii.fMask  = MIIM_STATE | MIIM_STRING;
     fmii.fState = client ? MFS_ENABLED : MFS_DISABLED;
@@ -1647,7 +1649,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
         std::map<CStringA,SDownloadFile> downloadFiles = client->GetDownloadFiles();
         if (downloadFiles.empty())
         {
-	        ctext = dictionary->Lookup("NO_DOWNLOAD_FILES");
+	        ctext = dictionary->Lookup("DOWNLOAD_FILE_NO_FILES");
 
             MENUITEMINFO smii;
             memset(&smii, 0, sizeof(MENUITEMINFO));
@@ -1666,22 +1668,23 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
             for (std::map<CStringA,SDownloadFile>::iterator it = downloadFiles.begin(); it != downloadFiles.end() && index < WM_DOWNLOAD_FILE_MAX; ++it)
             {
 				CString fileItem;
+				CString download = dictionary->Lookup("GENERAL_DOWNLOAD");
 
 				if (it->second.fileSize > 1024000L)
 				{
-					fileItem.Format(L"%s (%.1f Mb)", it->second.downloadFile.GetBuffer(), (float)it->second.fileSize / (float)1024000L);
+					fileItem.Format(L"%s %s (%.1f Mb)", download.GetBuffer(), it->second.downloadFile.GetBuffer(), (float)it->second.fileSize / (float)1024000L);
 				}
 				else if (it->second.fileSize > 1024L)
 				{
-					fileItem.Format(L"%s (%.1f Kb)", it->second.downloadFile.GetBuffer(), (float)it->second.fileSize / (float)1024L);
+					fileItem.Format(L"%s %s (%.1f Kb)", download.GetBuffer(), it->second.downloadFile.GetBuffer(), (float)it->second.fileSize / (float)1024L);
 				}
 				else if (it->second.fileSize > 0)
 				{
-					fileItem.Format(L"%s (%u bytes)", it->second.downloadFile.GetBuffer(), it->second.fileSize);
+					fileItem.Format(L"%s %s (%u bytes)", download.GetBuffer(), it->second.downloadFile.GetBuffer(), it->second.fileSize);
 				}
 				else
 				{
-					fileItem = it->second.downloadFile;
+					fileItem.Format(L"%s %s", download.GetBuffer(), it->second.downloadFile.GetBuffer());
 				}
 
 	            MENUITEMINFO smii;
@@ -1711,7 +1714,7 @@ bool CAdPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 }
 
 
-STDMETHODIMP CAdPluginClass::Exec(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG*)
+STDMETHODIMP CPluginClass::Exec(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG*)
 {
 	HWND hBrowserWnd = GetBrowserHWND();
 	if (!hBrowserWnd)
@@ -1796,10 +1799,10 @@ STDMETHODIMP CAdPluginClass::Exec(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*,
 /////////////////////////////////////////////////////////////////////////////
 // Window procedures
 
-LRESULT CALLBACK CAdPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// Find tab
-	CAdPluginClass *pClass = FindInstance(hWnd);
+	CPluginClass *pClass = FindInstance(hWnd);
 	if (!pClass)
 	{
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -1871,27 +1874,33 @@ LRESULT CALLBACK CAdPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM w
 }
 
 
-HICON CAdPluginClass::GetStatusBarButton(const CStringA& url)
+HICON CPluginClass::GetStatusBarButton(const CStringA& url)
 {
-	LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
 
 	// use the disable icon as defualt, if the client doesn't exists
 	HICON hIcon = GetIcon(ICON_PLUGIN_DEACTIVATED);
 
 #if (defined PRODUCT_ADBLOCKER)
-    if (!CAdPluginSettings::GetInstance()->IsPluginEnabled())
+    if (!CPluginSettings::GetInstance()->IsPluginEnabled())
 	{
     }
+#ifdef SUPPORT_WHITELIST
 	else if (client && client->IsUrlWhiteListed(url))
 	{
 		hIcon = GetIcon(ICON_PLUGIN_DISABLED);
 	}
+#endif
 	else if (client)
 	{
 		hIcon = GetIcon(ICON_PLUGIN_ENABLED);
 	}
 #elif (defined PRODUCT_DOWNLOADHELPER)
-    if (CAdPluginSettings::GetInstance()->IsPluginEnabled() && client && !client->IsUrlWhiteListed(url))
+ #ifdef SUPPORT_WHITELIST
+    if (CPluginSettings::GetInstance()->IsPluginEnabled() && client && !client->IsUrlWhiteListed(url))
+ #else
+    if (CPluginSettings::GetInstance()->IsPluginEnabled())
+ #endif
 	{
 	    if (client->HasDownloadFiles())
 	    {
@@ -1908,10 +1917,10 @@ HICON CAdPluginClass::GetStatusBarButton(const CStringA& url)
 }	
 
 
-LRESULT CALLBACK CAdPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	// Find tab
-	CAdPluginClass *pClass = FindInstance(GetParent(hWnd));
+	CPluginClass *pClass = FindInstance(GetParent(hWnd));
 	if (!pClass) 
 	{
 		return ::DefWindowProc(hWnd, message, wParam, lParam);
@@ -1978,7 +1987,7 @@ LRESULT CALLBACK CAdPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM 
 			}
 
 			// Draw icon
-			if (CAdPluginClientFactory::GetLazyClientInstance())
+			if (CPluginClientFactory::GetLazyClientInstance())
 			{
 				HICON hIcon = GetStatusBarButton(pClass->GetDocumentUrl());
 
@@ -2056,9 +2065,9 @@ LRESULT CALLBACK CAdPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM 
 		                browser->put_StatusBar(TRUE);
 	                }
 
-                    CAdPluginSettings* settings = CAdPluginSettings::GetInstance();
+                    CPluginSettings* settings = CPluginSettings::GetInstance();
 
-                    CAdPluginHttpRequest httpRequest(USERS_SCRIPT_WELCOME);
+                    CPluginHttpRequest httpRequest(USERS_SCRIPT_WELCOME);
 
                     httpRequest.AddPluginId();
                     httpRequest.Add("username", LocalClient::GetUserName(), false);
@@ -2080,7 +2089,7 @@ LRESULT CALLBACK CAdPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM 
                 CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
                 if (browser)
                 {
-                    CAdPluginHttpRequest httpRequest(USERS_SCRIPT_INFO);
+                    CPluginHttpRequest httpRequest(USERS_SCRIPT_INFO);
                     
                     httpRequest.AddPluginId();
     			    httpRequest.Add("info", wParam);
@@ -2119,7 +2128,7 @@ LRESULT CALLBACK CAdPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM 
 }
 
 
-void CAdPluginClass::UpdateStatusBar()
+void CPluginClass::UpdateStatusBar()
 {
     DEBUG_GENERAL("*** Updating statusbar")
 
@@ -2134,7 +2143,7 @@ void CAdPluginClass::UpdateStatusBar()
 }
 
 
-void CAdPluginClass::Unadvice()
+void CPluginClass::Unadvice()
 {
     s_criticalSectionLocal.Lock();
     {
@@ -2156,7 +2165,7 @@ void CAdPluginClass::Unadvice()
     s_criticalSectionLocal.Unlock();
 }
 
-HICON CAdPluginClass::GetIcon(int type)
+HICON CPluginClass::GetIcon(int type)
 {
     HICON icon = NULL;
 
@@ -2178,7 +2187,7 @@ HICON CAdPluginClass::GetIcon(int type)
     return icon;
 }
 
-ATOM CAdPluginClass::GetAtomPaneClass()
+ATOM CPluginClass::GetAtomPaneClass()
 {
     return s_atomPaneClass;
 }
@@ -2189,7 +2198,7 @@ ATOM CAdPluginClass::GetAtomPaneClass()
 
 #ifdef SUPPORT_FILTER
 
-void CAdPluginClass::HideElement(IHTMLElement* pEl, const CStringA& type, const CStringA& url, bool isDebug, CStringA& indent)
+void CPluginClass::HideElement(IHTMLElement* pEl, const CStringA& type, const CStringA& url, bool isDebug, CStringA& indent)
 {
 	CComPtr<IHTMLStyle> pStyle;
 
@@ -2217,7 +2226,7 @@ void CAdPluginClass::HideElement(IHTMLElement* pEl, const CStringA& type, const 
 #ifdef ENABLE_DEBUG_RESULT
             if (isDebug)
             {
-                CAdPluginDebug::DebugResultHiding(type, url, "-", "-");
+                CPluginDebug::DebugResultHiding(type, url, "-", "-");
             }
 #endif
 		}
@@ -2225,7 +2234,7 @@ void CAdPluginClass::HideElement(IHTMLElement* pEl, const CStringA& type, const 
 }
 
 
-void CAdPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, const CStringA& docName, const CStringA& domain, CStringA& indent, bool isCached)
+void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, const CStringA& docName, const CStringA& domain, CStringA& indent, bool isCached)
 {
     int  cacheIndex = -1;
     long cacheAllElementsCount = -1;
@@ -2316,7 +2325,7 @@ void CAdPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser,
     tag.MakeLower();
 
     // Check if element is hidden
-    LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+    LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
 
     m_cacheElements[cacheIndex].m_isHidden = client->IsElementHidden(tag, pEl, domain, indent);
 
@@ -2441,11 +2450,11 @@ void CAdPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser,
     }
 }
 
-void CAdPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CStringA& docName, const CStringA& domain, CStringA indent)
+void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CStringA& docName, const CStringA& domain, CStringA indent)
 {
-	LocalClient* client = CAdPluginClientFactory::GetLazyClientInstance();
+	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
 
-	if (!client || !CAdPluginSettings::GetInstance()->IsPluginEnabled() || client->IsUrlWhiteListed(domain))
+	if (!client || !CPluginSettings::GetInstance()->IsPluginEnabled() || client->IsUrlWhiteListed(domain))
 	{
 	    return;
 	}
@@ -2455,7 +2464,7 @@ void CAdPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const 
 
     indent += "  ";
 
-    CAdPluginProfiler profiler;
+    CPluginProfiler profiler;
 #endif
 
     VARIANT_BOOL isBusy;    
@@ -2651,7 +2660,7 @@ void CAdPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const 
 
 }
 
-void CAdPluginClass::ClearElementHideCache()
+void CPluginClass::ClearElementHideCache()
 {
     m_criticalSectionHideElement.Lock();
     {

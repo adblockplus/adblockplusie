@@ -1,10 +1,10 @@
-#ifndef _ADPLUGIN_SELFTEST_H_
-#define _ADPLUGIN_SELFTEST_H_
+#ifndef _PLUGIN_SELFTEST_H_
+#define _PLUGIN_SELFTEST_H_
 
 
 #if (defined ENABLE_DEBUG_SELFTEST)
 
-class CAdPluginSelftest
+class CPluginSelftest
 {
 
 private:
@@ -14,11 +14,11 @@ private:
 	static bool s_isSupported;
 
 	// Private constructor used by the singleton pattern
-	CAdPluginSelftest();
+	CPluginSelftest();
 
 public:
 
-	~CAdPluginSelftest();
+	~CPluginSelftest();
 
     static void AddText(const CStringA& text);
     static void Clear();
@@ -30,4 +30,4 @@ public:
 
 #endif // ENABLE_DEBUG_SELFTEST
 
-#endif // _ADPLUGIN_SELFTEST_H_
+#endif // _PLUGIN_SELFTEST_H_

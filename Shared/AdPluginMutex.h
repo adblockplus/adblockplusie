@@ -1,8 +1,8 @@
-#ifndef _ADPLUGIN_MUTEX_H_
-#define _ADPLUGIN_MUTEX_H_
+#ifndef _PLUGIN_MUTEX_H_
+#define _PLUGIN_MUTEX_H_
 
 
-class CAdPluginMutex
+class CPluginMutex
 {
 
 private:
@@ -13,11 +13,11 @@ private:
 
 public:
 
-	CAdPluginMutex(const CString& name, int errorSubidBase);
-	~CAdPluginMutex();
+	CPluginMutex(const CString& name, int errorSubidBase);
+	~CPluginMutex();
 
     bool IsLocked() const;
 };
 
 
-#endif // _ADPLUGIN_MUTEX_H_
+#endif // _PLUGIN_MUTEX_H_

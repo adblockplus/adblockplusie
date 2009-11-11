@@ -1,12 +1,12 @@
-#ifndef _ADPLUGIN_CLIENT_FACTORY_H_
-#define _ADPLUGIN_CLIENT_FACTORY_H_
+#ifndef _PLUGIN_CLIENT_FACTORY_H_
+#define _PLUGIN_CLIENT_FACTORY_H_
 
 
 class LocalClient;
 class MimeFilterClient;
 
 
-class CAdPluginClientFactory 
+class CPluginClientFactory 
 {
 
 public:
@@ -29,4 +29,4 @@ private:
 };
 
 
-#endif // _ADPLUGIN_CLIENT_FACTORY_H_
+#endif // _PLUGIN_CLIENT_FACTORY_H_

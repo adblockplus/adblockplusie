@@ -1,5 +1,5 @@
-#ifndef _ADPLUGIN_FILTER_H_
-#define _ADPLUGIN_FILTER_H_
+#ifndef _PLUGIN_FILTER_H_
+#define _PLUGIN_FILTER_H_
 
 
 #include "AdPluginTypedef.h"
@@ -110,10 +110,10 @@ public:
 };
 
 // ============================================================================
-// CAdPluginFilter
+// CPluginFilter
 // ============================================================================
 
-class CAdPluginFilter
+class CPluginFilter
 {
 
 private:
@@ -157,8 +157,8 @@ private:
 
 public:
 
-	CAdPluginFilter(const TFilterFileList& urlList, const CStringA& dataPath);
-	CAdPluginFilter(const CStringA& dataPath = "");
+	CPluginFilter(const TFilterFileList& urlList, const CStringA& dataPath);
+	CPluginFilter(const CStringA& dataPath = "");
 
     bool ReadFilter(const CStringA& filename, const CStringA& downloadPath="");
 
@@ -183,4 +183,4 @@ public:
 };
 
 
-#endif // _ADPLUGIN_FILTER_H_
+#endif // _PLUGIN_FILTER_H_

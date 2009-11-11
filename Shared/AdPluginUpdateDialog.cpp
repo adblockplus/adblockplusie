@@ -22,7 +22,7 @@ LRESULT CUpdateDialog::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 
 	try
 	{
-	    CAdPluginDictionary* dictionary = CAdPluginDictionary::GetInstance();
+	    CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
 
 		CString text;
 
@@ -35,10 +35,10 @@ LRESULT CUpdateDialog::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 		text = dictionary->Lookup("UPDATE_DO_YOU_WISH_TO_DOWNLOAD");
 		SetDlgItemText(IDC_DOYOU, text);
 
-		text = dictionary->Lookup("YES");
+		text = dictionary->Lookup("GENERAL_YES");
 		SetDlgItemText(IDOK, text);
 
-		text = dictionary->Lookup("NO");
+		text = dictionary->Lookup("GENERAL_NO");
 		SetDlgItemText(IDNO, text);
 	}
 	catch (std::runtime_error&)

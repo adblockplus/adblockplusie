@@ -4,7 +4,7 @@
 #include "AdPluginClient.h"
 
 
-CAdPluginMutex::CAdPluginMutex(const CString& name, int errorSubidBase) : m_isLocked(false), m_errorSubidBase(errorSubidBase)
+CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked(false), m_errorSubidBase(errorSubidBase)
 {
     if (m_errorSubidBase != PLUGIN_ERROR_MUTEX_DEBUG_FILE)
     {
@@ -38,7 +38,7 @@ CAdPluginMutex::CAdPluginMutex(const CString& name, int errorSubidBase) : m_isLo
     }
 }
 
-CAdPluginMutex::~CAdPluginMutex()
+CPluginMutex::~CPluginMutex()
 {
     if (m_errorSubidBase != PLUGIN_ERROR_MUTEX_DEBUG_FILE)
     {
@@ -61,7 +61,7 @@ CAdPluginMutex::~CAdPluginMutex()
     m_hMutex = NULL;
 }
 
-bool CAdPluginMutex::IsLocked() const
+bool CPluginMutex::IsLocked() const
 {
     return m_isLocked;
 }

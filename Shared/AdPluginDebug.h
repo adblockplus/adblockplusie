@@ -1,8 +1,8 @@
-#ifndef _ADPLUGIN_DEBUG_H_
-#define _ADPLUGIN_DEBUG_H_
+#ifndef _PLUGIN_DEBUG_H_
+#define _PLUGIN_DEBUG_H_
 
 
-class CAdPluginDebug
+class CPluginDebug
 {
 
 public:
@@ -31,4 +31,4 @@ public:
 };
 
 
-#endif // _ADPLUGIN_DEBUG_H_
+#endif // _PLUGIN_DEBUG_H_

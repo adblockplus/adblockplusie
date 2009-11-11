@@ -30,7 +30,7 @@ LRESULT CDownloadDialog::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 
 	try 
 	{	    
-	    CAdPluginDictionary* dictionary = CAdPluginDictionary::GetInstance();
+	    CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
 
 		CString text;
 
@@ -43,7 +43,7 @@ LRESULT CDownloadDialog::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, B
 		text = dictionary->Lookup("DOWNLOAD_UPDATE_BUTTON");
 		SetDlgItemText(IDC_INSTALLBTN, text);
 
-		text = dictionary->Lookup("CANCEL");
+		text = dictionary->Lookup("GENERAL_CANCEL");
 		SetDlgItemText(IDCANCEL, text);
 
 		m_errorText = dictionary->Lookup("DOWNLOAD_UPDATE_ERROR_TEXT");
