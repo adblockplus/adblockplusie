@@ -732,7 +732,7 @@ bool CPluginSettings::Write(bool isDebug)
 
 void CPluginSettings::AddDomainToHistory(const CStringA& domain)
 {
-	if (!LocalClient::IsValidDomain(domain))
+	if (!CPluginClient::IsValidDomain(domain))
     {
 	    return;
     }

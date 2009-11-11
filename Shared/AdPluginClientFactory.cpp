@@ -5,41 +5,41 @@
 #include "AdPluginClient.h"
 
 
-LocalClient* CPluginClientFactory::s_localInstance = NULL;
-MimeFilterClient* CPluginClientFactory::s_mimeFilterInstance = NULL;
+CPluginClient* CPluginClientFactory::s_clientInstance = NULL;
+CPluginMimeFilterClient* CPluginClientFactory::s_mimeFilterInstance = NULL;
 
 CComAutoCriticalSection CPluginClientFactory::s_criticalSection;
 
 
-LocalClient* CPluginClientFactory::GetLazyClientInstance()
+CPluginClient* CPluginClientFactory::GetLazyClientInstance()
 {
-    LocalClient* client;
+    CPluginClient* client;
 
     s_criticalSection.Lock();
     {
-        client = s_localInstance;
+        client = s_clientInstance;
     }
     s_criticalSection.Unlock();
 
 	return client;	
 }
 
-LocalClient* CPluginClientFactory::GetClientInstance() 
+CPluginClient* CPluginClientFactory::GetClientInstance() 
 {
-    LocalClient* client;
+    CPluginClient* client;
 
     s_criticalSection.Lock();
     {
-	    if (!s_localInstance)
+	    if (!s_clientInstance)
 	    {
 		    // We cannot copy the client directly into the instance variable
 		    // If the constructor throws we do not want to alter instance
-		    LocalClient* localInstance = new LocalClient();
+		    CPluginClient* localInstance = new CPluginClient();
 
-		    s_localInstance = localInstance;
+		    s_clientInstance = localInstance;
 	    }
 	    
-	    client = s_localInstance;
+	    client = s_clientInstance;
     }
     s_criticalSection.Unlock();
 
@@ -47,9 +47,9 @@ LocalClient* CPluginClientFactory::GetClientInstance()
 }
 
 
-MimeFilterClient* CPluginClientFactory ::GetMimeFilterClientInstance() 
+CPluginMimeFilterClient* CPluginClientFactory ::GetMimeFilterClientInstance() 
 {
-    MimeFilterClient* localInstance = NULL;
+    CPluginMimeFilterClient* localInstance = NULL;
 
 	s_criticalSection.Lock();
 	{
@@ -57,7 +57,7 @@ MimeFilterClient* CPluginClientFactory ::GetMimeFilterClientInstance()
 	    {
 		    //we cannot copy the client directly into the instance variable
 		    //if the constructor throws we do not want to alter instance
-		    localInstance = new MimeFilterClient();
+		    localInstance = new CPluginMimeFilterClient();
 
 		    s_mimeFilterInstance = localInstance;
 	    }
@@ -70,3 +70,15 @@ MimeFilterClient* CPluginClientFactory ::GetMimeFilterClientInstance()
 
 	return localInstance;
 }
+
+void CPluginClientFactory::ReleaseMimeFilterClientInstance() 
+{
+	s_criticalSection.Lock();
+	{
+	    delete s_mimeFilterInstance;
+
+		s_mimeFilterInstance = NULL;
+    }
+    s_criticalSection.Unlock();
+}
+	

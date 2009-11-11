@@ -43,7 +43,7 @@ public:
 };
 
 
-class LocalClient
+class CPluginClient
 {
 	friend class CPluginClientFactory;
 
@@ -71,11 +71,11 @@ private:
 	static CStringA s_pluginId;
 
 	// Private constructor used by the singleton pattern
-	LocalClient();
+	CPluginClient();
 
 public:
 
-	~LocalClient();
+	~CPluginClient();
 
 	static void SetLocalization();
 	

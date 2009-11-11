@@ -150,7 +150,7 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
 	        CPluginIniFile iniFile(path);
 
             CPluginIniFile::TSectionData data;
-            data.insert(std::make_pair("pluginid", LocalClient::GeneratePluginId()));
+            data.insert(std::make_pair("pluginid", CPluginClient::GeneratePluginId()));
 
             iniFile.UpdateSection("Settings", data);
             if (!iniFile.Write())
@@ -170,9 +170,9 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
 
     // Post async plugin error
     CPluginError pluginError;
-    while (LocalClient::PopFirstPluginError(pluginError))
+    while (CPluginClient::PopFirstPluginError(pluginError))
     {
-        LocalClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
+        CPluginClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
     }
 }
 
@@ -232,7 +232,7 @@ EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 	        CPluginIniFile iniFile(path);
 
             CPluginIniFile::TSectionData data;
-            data.insert(std::make_pair("pluginid", LocalClient::GeneratePluginId()));
+            data.insert(std::make_pair("pluginid", CPluginClient::GeneratePluginId()));
 
             iniFile.UpdateSection("Settings", data);
             if (!iniFile.Write())
@@ -252,8 +252,8 @@ EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 
     // Post async plugin error
     CPluginError pluginError;
-    while (LocalClient::PopFirstPluginError(pluginError))
+    while (CPluginClient::PopFirstPluginError(pluginError))
     {
-        LocalClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
+        CPluginClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
     }
 }

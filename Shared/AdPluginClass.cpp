@@ -27,6 +27,8 @@ typedef HRESULT (WINAPI *CLOSETHEMEDATA)(HANDLE);
 HICON CPluginClass::s_hIcons[ICON_MAX] = { NULL, NULL, NULL };
 DWORD CPluginClass::s_hIconTypes[ICON_MAX] = { IDI_ICON_DISABLED, IDI_ICON_ENABLED, IDI_ICON_DEACTIVATED };
 
+CPluginMimeFilterClient* CPluginClass::s_mimeFilter = NULL;
+
 CLOSETHEMEDATA pfnClose = NULL;
 DRAWTHEMEBACKGROUND pfnDrawThemeBackground = NULL; 
 OPENTHEMEDATA pfnOpenThemeData = NULL;
@@ -102,7 +104,7 @@ CPluginClass::CPluginClass()
         // First run or deleted settings file)
         if (!settings->Has(SETTING_PLUGIN_ID))
         {
-            settings->SetString(SETTING_PLUGIN_ID, LocalClient::GetPluginId());
+            settings->SetString(SETTING_PLUGIN_ID, CPluginClient::GetPluginId());
             settings->SetFirstRun();
         }
 /*        
@@ -287,7 +289,7 @@ void CPluginClass::SetDocumentUrl(const CStringA& url)
     s_criticalSectionLocal.Lock();
     {
 	    m_documentUrl = url;
-	    m_documentDomain = LocalClient::ExtractDomain(url);
+	    m_documentDomain = CPluginClient::ExtractDomain(url);
     	
 	    domain = m_documentDomain;
     }
@@ -350,7 +352,7 @@ CStringA CPluginClass::GetBrowserUrl() const
 	    if (SUCCEEDED(browser->get_LocationURL(&bstrURL)))
 	    {
 		    url = bstrURL;
-		    LocalClient::UnescapeUrl(url);
+		    CPluginClient::UnescapeUrl(url);
 	    }
     }
     else
@@ -428,11 +430,14 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 		//and only mimefilter
 		//on some few computers the mimefilter does not get properly registered when it is done on another thread
 
-		CPluginClientFactory::GetMimeFilterClientInstance(); 
-
 		s_criticalSectionLocal.Lock();
         {
-		    s_asyncWebBrowser2 = unknownSite;
+			if (settings->GetPluginEnabled())
+			{
+				s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
+			}
+
+			s_asyncWebBrowser2 = unknownSite;
 		    s_instances.Add(this);
 	    }
         s_criticalSectionLocal.Unlock();
@@ -609,7 +614,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	if (vt == VT_BYREF + VT_VARIANT)
 	{
         url = pDispParams->rgvarg[5].pvarVal->bstrVal;
-        LocalClient::UnescapeUrl(url);
+        CPluginClient::UnescapeUrl(url);
 	}
 	else
 	{
@@ -618,7 +623,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	}
 
     // If webbrowser2 is equal to top level browser (as set in SetSite), we are navigating new page
-	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 	if (client)
 	{
 		if (GetBrowser().IsEqualObject(WebBrowser2Ptr))
@@ -716,7 +721,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 
 	case DISPID_DOWNLOADBEGIN:
 		{
-			LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+			CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 			if (client)
 			{
 				client->SetDocumentUrl(GetDocumentUrl());
@@ -757,7 +762,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 					if (SUCCEEDED(pBrowser->get_LocationURL(&bstrUrl)) && ::SysStringLen(bstrUrl) > 0)
 					{
 						url = bstrUrl;
-						LocalClient::UnescapeUrl(url);
+						CPluginClient::UnescapeUrl(url);
 
 					    if (browser.IsEqualObject(pBrowser))
 					    {
@@ -1139,7 +1144,7 @@ HMENU CPluginClass::CreatePluginMenu(const CStringA& url)
 
 void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags)
 {
-	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 	if (!client)
 	{
 	    return;
@@ -1194,7 +1199,25 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 	        CPluginSettings* settings = CPluginSettings::GetInstance();
 
 			settings->TogglePluginEnabled();
-		}        
+
+			// Enable / disable mime filter
+			s_criticalSectionLocal.Lock();
+			{
+				if (settings->GetPluginEnabled())
+				{
+					s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
+				}
+				else
+				{
+					s_mimeFilter = NULL;
+
+					CPluginClientFactory::ReleaseMimeFilterClientInstance();
+				}
+			}
+			s_criticalSectionLocal.Unlock();
+
+			client->ClearCache();
+		}
 		break;
 
 	case ID_SETTINGS:
@@ -1207,7 +1230,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
             CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
             
             httpRequest.AddPluginId();
-            httpRequest.Add("username", LocalClient::GetUserName(), false);
+            httpRequest.Add("username", CPluginClient::GetUserName(), false);
 			
 			url = httpRequest.GetUrl();
 
@@ -1417,7 +1440,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	miiSep.fMask = MIIM_TYPE | MIIM_FTYPE;
 	miiSep.fType = MFT_SEPARATOR;
 
-	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 
     CPluginSettings* settings = CPluginSettings::GetInstance();
     
@@ -1486,7 +1509,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
     		
 		    CStringA documentDomain = GetDocumentDomain();
 
-		    if (LocalClient::IsValidDomain(documentDomain))
+		    if (CPluginClient::IsValidDomain(documentDomain))
 		    {
     		    CString documentDomainT = documentDomain;
 
@@ -1876,7 +1899,7 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 
 HICON CPluginClass::GetStatusBarButton(const CStringA& url)
 {
-	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 
 	// use the disable icon as defualt, if the client doesn't exists
 	HICON hIcon = GetIcon(ICON_PLUGIN_DEACTIVATED);
@@ -2070,7 +2093,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
                     CPluginHttpRequest httpRequest(USERS_SCRIPT_WELCOME);
 
                     httpRequest.AddPluginId();
-                    httpRequest.Add("username", LocalClient::GetUserName(), false);
+                    httpRequest.Add("username", CPluginClient::GetUserName(), false);
                     httpRequest.Add("errors", settings->GetErrorList());
 
 			        HRESULT hr = browser->Navigate(CComBSTR(httpRequest.GetUrl()), NULL, NULL, NULL, NULL);
@@ -2325,7 +2348,7 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
     tag.MakeLower();
 
     // Check if element is hidden
-    LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+    CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 
     m_cacheElements[cacheIndex].m_isHidden = client->IsElementHidden(tag, pEl, domain, indent);
 
@@ -2345,7 +2368,7 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
 		if (SUCCEEDED(pEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
 		{
 		    CStringA src = vAttr.bstrVal;
-		    LocalClient::UnescapeUrl(src);
+		    CPluginClient::UnescapeUrl(src);
 
 			// If src should be blocked, set style display:none on image
 		    m_cacheElements[cacheIndex].m_isHidden = client->ShouldBlock(src, CFilter::contentTypeImage, domain);
@@ -2452,7 +2475,7 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
 
 void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CStringA& docName, const CStringA& domain, CStringA indent)
 {
-	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 
 	if (!client || !CPluginSettings::GetInstance()->IsPluginEnabled() || client->IsUrlWhiteListed(domain))
 	{
@@ -2571,7 +2594,7 @@ void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CS
                     if (SUCCEEDED(pFrameBrowser->get_LocationURL(&bstrSrc)))
                     {
                         src = bstrSrc;
-				        LocalClient::UnescapeUrl(src);
+				        CPluginClient::UnescapeUrl(src);
                     }
 
                     if (!src.IsEmpty())
@@ -2624,7 +2647,7 @@ void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CS
 			                src = "http://" + domain + src;
 		                }
 		                
-		                LocalClient::UnescapeUrl(src);
+		                CPluginClient::UnescapeUrl(src);
 
 			            // If src should be blocked, set style display:none on iframe
                         if (client->ShouldBlock(src, CFilter::contentTypeSubdocument, domain))

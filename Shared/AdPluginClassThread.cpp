@@ -46,13 +46,13 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     debugText += "\n================================================================================";
 
     debugText += "\nPlugin version:    " + CStringA(IEPLUGIN_VERSION);
-    debugText += "\nPlugin id:         " + LocalClient::GetPluginId();
-    debugText += "\nMAC address:       " + LocalClient::GetMacId(true);
-    debugText += "\nComputer name:     " + LocalClient::GetComputerName();
+    debugText += "\nPlugin id:         " + CPluginClient::GetPluginId();
+    debugText += "\nMAC address:       " + CPluginClient::GetMacId(true);
+    debugText += "\nComputer name:     " + CPluginClient::GetComputerName();
     debugText += "\nUser id:           " + settings->GetString(SETTING_USER_ID, "N/A");
-    debugText += "\nUser name:         " + LocalClient::GetUserName();
-    debugText += "\nBrowser version:   " + LocalClient::GetBrowserVersion();
-    debugText += "\nBrowser language:  " + LocalClient::GetBrowserLanguage();
+    debugText += "\nUser name:         " + CPluginClient::GetUserName();
+    debugText += "\nBrowser version:   " + CPluginClient::GetBrowserVersion();
+    debugText += "\nBrowser language:  " + CPluginClient::GetBrowserLanguage();
 
     DWORD osVersion = ::GetVersion();
 
@@ -87,7 +87,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 	// in each initialization we loop until we are succesful or the browser exits
 	// then after both initializations has succeeded, the normal work of the thread can start
 
-	LocalClient* client = NULL;
+	CPluginClient* client = NULL;
         
     // Force loading/creation of dictionary
     CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
@@ -483,7 +483,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 #endif // SUPPORT_WHITELIST
 
                 // Check pluginID
-                CStringA newPluginId = LocalClient::GetPluginId();
+                CStringA newPluginId = CPluginClient::GetPluginId();
         	    
                 if (newPluginId != settings->GetString(SETTING_PLUGIN_ID))
                 {
@@ -509,7 +509,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
                         settings->IncrementTabVersion(SETTING_TAB_DICTIONARY_VERSION);
                             
-                        LocalClient::SetLocalization();
+                        CPluginClient::SetLocalization();
                     }
                 }
 

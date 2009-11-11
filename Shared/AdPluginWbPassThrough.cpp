@@ -24,18 +24,13 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     bool isBlocked = false;
 
     CStringA src = szUrl;
-    LocalClient::UnescapeUrl(src);
+    CPluginClient::UnescapeUrl(src);
     
     m_url = src;
 
 #ifdef SUPPORT_FILTER
 
-    CStringA src = szUrl;
-    LocalClient::UnescapeUrl(src);
-    
-    m_url = src;
-
-	LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 	if (client)
 	{	    
 		// Page is identical to document => don't block
@@ -185,7 +180,7 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 
 #ifdef SUPPORT_FILE_DOWNLOAD
 
-    LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+    CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
     if (client)
     {	    
         CPluginConfig* config = CPluginConfig::GetInstance();

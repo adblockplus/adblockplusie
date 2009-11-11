@@ -82,7 +82,7 @@ void CPluginHttpRequest::AddPluginId()
     }
     else
     {
-	    Add("plugin", LocalClient::GetPluginId());
+	    Add("plugin", CPluginClient::GetPluginId());
     }
     Add("user", settings->GetString(SETTING_USER_ID));
     Add("password", settings->GetString(SETTING_PLUGIN_PASSWORD));
@@ -478,7 +478,7 @@ bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCSTR file, CStringA* 
 
 /*
 //not tested - currently work in progress
-bool LocalClient::SendHttpRequestAsyncronous(LPCWSTR server, LPCSTR file, INTERNET_PORT nServerPort)
+bool CPluginClient::SendHttpRequestAsyncronous(LPCWSTR server, LPCSTR file, INTERNET_PORT nServerPort)
 {
 	USES_CONVERSION;
 

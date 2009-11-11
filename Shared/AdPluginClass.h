@@ -52,6 +52,10 @@ public:
 
 #endif
 
+
+class CPluginMimeFilterClient;
+
+
 // This class implements an object that's created for every browser window. The SetSite
 // method is called when the window is created, and the object asks to receive events.
 // When an event occurs, the Invoke method is called with details.
@@ -116,6 +120,8 @@ private:
 	void SetDocumentUrl(const CStringA& url);
 	CStringA GetDocumentUrl() const;
 	CStringA GetDocumentDomain() const;
+
+	static CPluginMimeFilterClient* s_mimeFilter;
 
 #ifdef SUPPORT_FILTER
     void HideElement(IHTMLElement* pEl, const CStringA& type, const CStringA& url, bool isDebug, CStringA& indent);

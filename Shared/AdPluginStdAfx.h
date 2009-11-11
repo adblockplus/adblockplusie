@@ -67,7 +67,7 @@ extern CComModule _Module;
 #endif
 
 #if (defined PRODUCT_ADBLOCKER)
- #include "..\ABlocker\Version.h"
+ #include "..\AdBlocker\Version.h"
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #include "..\DownloadHelper\Version.h"
 #elif (defined PRODUCT_DOWNLOADHELPER_APP)
@@ -75,7 +75,7 @@ extern CComModule _Module;
 #endif
 
 #if (defined PRODUCT_ADBLOCKER)
- #include "..\ABlocker\Resource.h"
+ #include "..\AdBlocker\Resource.h"
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #include "..\DownloadHelper\Resource.h"
 #elif (defined PRODUCT_DOWNLOADHELPER_APP)

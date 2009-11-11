@@ -46,7 +46,7 @@ DWORD WINAPI CPluginClass::TabThreadProc(LPVOID pParam)
 
     HANDLE hTabThread = GetTabThreadHandle();
 
-	LocalClient* client = NULL;
+	CPluginClient* client = NULL;
         
     // Force loading/creation of dictionary
     CPluginDictionary::GetInstance();
@@ -176,9 +176,9 @@ DWORD WINAPI CPluginClass::TabThreadProc(LPVOID pParam)
 	    {
             // Post async plugin error
             CPluginError pluginError;
-            if (LocalClient::PopFirstPluginError(pluginError))
+            if (CPluginClient::PopFirstPluginError(pluginError))
             {
-                LocalClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
+                CPluginClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
             }
 
 		    // Non-hanging sleep
