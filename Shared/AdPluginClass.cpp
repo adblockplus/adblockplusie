@@ -1348,8 +1348,11 @@ void CAdPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt,
 					checksum.Add("/url", downloadFile.downloadUrl);
 					checksum.Add(L"/file", CString(szFile));
 
+#ifdef ADPRODUCT_TEST_MODE
+					CString args = CString(L"\"..\\DownloadHelperApp\\DownloadHelper.exe\" /url:") + CString(downloadFile.downloadUrl) + " /file:" + szFile + " /checksum:" + CString(checksum.GetAsString());
+#else
 					CString args = CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + CString(downloadFile.downloadUrl) + " /file:" + szFile + " /checksum:" + CString(checksum.GetAsString());
-
+#endif
 	                LPWSTR szCmdline = _wcsdup(args);
 
                     if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
