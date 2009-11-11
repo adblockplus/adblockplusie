@@ -9,7 +9,7 @@
 typedef PassthroughAPP::CMetaFactory<PassthroughAPP::CComClassFactoryProtocol,WBPassthru> MetaFactory;
 
 
-MimeFilterClient::MimeFilterClient() : m_classFactory(NULL), m_spCFHTTP(NULL)
+CPluginMimeFilterClient::CPluginMimeFilterClient() : m_classFactory(NULL), m_spCFHTTP(NULL)
 {
 	// Should only be called once
 	// We register mime filters here
@@ -38,7 +38,7 @@ MimeFilterClient::MimeFilterClient() : m_classFactory(NULL), m_spCFHTTP(NULL)
 }
 
 
-MimeFilterClient::~MimeFilterClient()
+CPluginMimeFilterClient::~CPluginMimeFilterClient()
 {
 	CComPtr<IInternetSession> spSession;
 

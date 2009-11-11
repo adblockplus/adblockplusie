@@ -2,8 +2,8 @@
 #define _PLUGIN_CLIENT_FACTORY_H_
 
 
-class LocalClient;
-class MimeFilterClient;
+class CPluginClient;
+class CPluginMimeFilterClient;
 
 
 class CPluginClientFactory 
@@ -11,19 +11,21 @@ class CPluginClientFactory
 
 public:
 
-	static LocalClient* GetClientInstance();
-	static MimeFilterClient* GetMimeFilterClientInstance();
-	
+	static CPluginClient* GetClientInstance();
+
+	static CPluginMimeFilterClient* GetMimeFilterClientInstance();
+	static void ReleaseMimeFilterClientInstance();
+
 	// returns a client instance if initialized, otherwise it is null
-	static LocalClient* GetLazyClientInstance();
+	static CPluginClient* GetLazyClientInstance();
 
 private:
 	
 	// the client for the process
 	// if this variable is not null, it means that the client has been succesfully initialize
 	// otherwise initialization has not happened, or it has failed
-	static LocalClient* s_localInstance;
-	static MimeFilterClient* s_mimeFilterInstance;
+	static CPluginClient* s_clientInstance;
+	static CPluginMimeFilterClient* s_mimeFilterInstance;
 	
 	static CComAutoCriticalSection s_criticalSection;
 };

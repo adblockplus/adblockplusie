@@ -212,7 +212,7 @@
 #if (defined PRODUCT_DOWNLOADHELPER_APP)
  #define DEBUG_ERROR_LOG(err, id, subid, description)
 #else
- #define DEBUG_ERROR_LOG(err, id, subid, description) LocalClient::LogPluginError(err, id, subid, description);
+ #define DEBUG_ERROR_LOG(err, id, subid, description) CPluginClient::LogPluginError(err, id, subid, description);
 #endif
 
 // ----------------------------------------------------------------------------

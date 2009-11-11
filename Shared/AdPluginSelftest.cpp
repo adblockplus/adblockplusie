@@ -136,7 +136,7 @@ bool CPluginSelftest::Send()
 
         DEBUG_GENERAL("*** Sending selftest file:" + CStringA(outputFile));
 
-        bResult = LocalClient::SendFtpFile(_T("ftp.ieadblocker.com"), CString(CPluginSettings::GetDataPath("selftest.txt")), outputFile);
+        bResult = CPluginClient::SendFtpFile(_T("ftp.ieadblocker.com"), CString(CPluginSettings::GetDataPath("selftest.txt")), outputFile);
     }
 
     return bResult;
@@ -202,7 +202,7 @@ bool CPluginSelftest::Send()
 
         DEBUG_GENERAL("*** Sending selftest file:" + CStringA(outputFile));
 
-        bResult = LocalClient::SendFtpFile(_T("ftp.ieadblocker.com"), CString(tempFile), outputFile);
+        bResult = CPluginClient::SendFtpFile(_T("ftp.ieadblocker.com"), CString(tempFile), outputFile);
     }
     
     return bResult;

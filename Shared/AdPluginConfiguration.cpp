@@ -55,15 +55,15 @@ bool CPluginConfiguration::Download()
 
     httpRequest.Add("enabled", settings->GetPluginEnabled() ? "true":"false");
     httpRequest.Add("lang", settings->GetString(SETTING_LANGUAGE, "err"));
-	httpRequest.Add("ie", LocalClient::GetBrowserVersion());
-	httpRequest.Add("ielang", LocalClient::GetBrowserLanguage());
+	httpRequest.Add("ie", CPluginClient::GetBrowserVersion());
+	httpRequest.Add("ielang", CPluginClient::GetBrowserLanguage());
 
 	httpRequest.AddOsInfo();
 
-    httpRequest.Add("pc", LocalClient::GetComputerName(), false);
-    httpRequest.Add("username", LocalClient::GetUserName(), false);
+    httpRequest.Add("pc", CPluginClient::GetComputerName(), false);
+    httpRequest.Add("username", CPluginClient::GetUserName(), false);
 
-    CStringA newPluginId = LocalClient::GetPluginId();
+    CStringA newPluginId = CPluginClient::GetPluginId();
     if (newPluginId != settings->GetString(SETTING_PLUGIN_ID))
     {
         httpRequest.Add("newplugin", newPluginId);

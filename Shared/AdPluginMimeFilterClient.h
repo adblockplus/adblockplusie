@@ -1,16 +1,18 @@
-#ifndef _MIME_FILTER_CLIENT_H
-#define _MIME_FILTER_CLIENT_H
+#ifndef _PLUGIN_MIME_FILTER_CLIENT_H
+#define _PLUGIN_MIME_FILTER_CLIENT_H
 
-class MimeFilterClient
+
+class CPluginMimeFilterClient
 {
 
 public:
 
-	MimeFilterClient();
-	~MimeFilterClient();
+	CPluginMimeFilterClient();
+	~CPluginMimeFilterClient();
 
 	CComPtr<IClassFactory> m_classFactory;
 	CComPtr<IClassFactory> m_spCFHTTP;
 };
 
-#endif
+
+#endif // _PLUGIN_MIME_FILTER_CLIENT_H

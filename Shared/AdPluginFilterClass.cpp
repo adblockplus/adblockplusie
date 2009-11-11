@@ -1180,7 +1180,7 @@ bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloa
     bool isRead = false;
 
 #ifdef PRODUCT_ADBLOCKER
-    LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+    CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
     if (client)
 #endif
 	{
@@ -1357,7 +1357,7 @@ void CPluginFilter::ParseFilters(const TFilterFileList& list)
 
     // Load the files
 #ifdef PRODUCT_ADBLOCKER
-    LocalClient* client = CPluginClientFactory::GetLazyClientInstance();
+    CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
     if (client)
 #endif
 	{
