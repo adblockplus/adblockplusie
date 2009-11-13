@@ -55,7 +55,7 @@ public:
 };
 
 
-CPluginHttpRequest::CPluginHttpRequest(const CStringA& script, bool addChecksum) :
+CPluginHttpRequest::CPluginHttpRequest(const CString& script, bool addChecksum) :
 	m_script(script), m_urlPrefix("?"), m_addChecksum(addChecksum)
 {
     m_checksum = std::auto_ptr<CPluginChecksum>(new CPluginChecksum());
@@ -63,7 +63,7 @@ CPluginHttpRequest::CPluginHttpRequest(const CStringA& script, bool addChecksum)
 
 	m_responseFile = std::auto_ptr<CPluginIniFile>(new CPluginIniFile("", true));
 
-    m_url = CStringA(USERS_PATH) + script;
+    m_url = CString(USERS_PATH) + script;
 }
 
 
@@ -103,7 +103,8 @@ bool CPluginHttpRequest::Send(bool checkResponse)
     if (m_addChecksum)
     {
         m_url += m_urlPrefix + "checksum=" + m_checksum->GetAsString();
-        m_urlPrefix = "&";
+
+		m_urlPrefix = "&";
     }
 
     DEBUG_GENERAL("*** Sending HTTP request:" + m_url)
@@ -117,14 +118,14 @@ bool CPluginHttpRequest::Send(bool checkResponse)
 	return isOk;
 }
 
-void CPluginHttpRequest::Add(const CStringA& arg, const CStringA& value, bool addToChecksum)
+void CPluginHttpRequest::Add(const CString& arg, const CString& value, bool addToChecksum)
 {
     if (!arg.IsEmpty() && !value.IsEmpty())
     {
-        CStringA valueEncoded;
+        CString valueEncoded;
         DWORD cb = 2048;
         
-        HRESULT hr = ::UrlEscapeA(value, (char*)valueEncoded.GetBufferSetLength(cb), &cb, URL_ESCAPE_SEGMENT_ONLY);
+        HRESULT hr = ::UrlEscape(value, valueEncoded.GetBufferSetLength(cb), &cb, URL_ESCAPE_SEGMENT_ONLY);
 		if (SUCCEEDED(hr))
 		{
 	        valueEncoded.Truncate(cb);
@@ -148,15 +149,15 @@ void CPluginHttpRequest::Add(const CStringA& arg, const CStringA& value, bool ad
     }
 }
 
-void CPluginHttpRequest::Add(const CStringA& arg, unsigned int value, bool addToChecksum)
+void CPluginHttpRequest::Add(const CString& arg, unsigned int value, bool addToChecksum)
 {
-    CStringA valueStr;
-    valueStr.Format("%u", value);
+    CString valueStr;
+    valueStr.Format(L"%u", value);
 
     Add(arg, valueStr, addToChecksum);    
 }
 
-CStringA CPluginHttpRequest::GetUrl()
+CString CPluginHttpRequest::GetUrl()
 {
     if (m_addChecksum)
     {
@@ -164,11 +165,11 @@ CStringA CPluginHttpRequest::GetUrl()
         m_urlPrefix = "&";
     }
 
-    return CStringA(USERS_HOST) + m_url;
+    return CString(USERS_HOST) + m_url;
 }
 
 
-CStringA CPluginHttpRequest::GetStandardUrl(const CStringA& script)
+CString CPluginHttpRequest::GetStandardUrl(const CString& script)
 {
     CPluginHttpRequest httpRequest(script);
 
@@ -251,17 +252,15 @@ BOOL CPluginHttpRequest::GetProxySettings(CString& proxyName, CString& proxyBypa
 	return bResult;
 }
 
-bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCSTR file, CStringA* response, WORD nServerPort)
+bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCWSTR file, CStringA* response, WORD nServerPort)
 {
-    USES_CONVERSION;
-
     // Prepare url
 	DWORD cb = 2049;
-	CStringA url;
-	HRESULT hr = ::UrlCanonicalizeA(file,(char*)url.GetBufferSetLength(cb), &cb, URL_ESCAPE_UNSAFE);
+	CString url;
+	HRESULT hr = ::UrlCanonicalize(file, url.GetBufferSetLength(cb), &cb, URL_ESCAPE_UNSAFE);
 	if (FAILED(hr))
 	{
-		DEBUG_ERROR_CODE(hr, "HttpRequest::SendHttpRequest::UrlCanonicalize failed on " + CString(file))		
+		DEBUG_ERROR_CODE(hr, "HttpRequest::SendHttpRequest::UrlCanonicalize failed on " + CString(file))
 		return false;
 	}
 
@@ -284,10 +283,7 @@ bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCSTR file, CStringA* 
 	// Use WinHttpOpen to obtain a session handle.
 	else
 	{
-	    CStringW proxyNameW = proxyName;
-	    CStringW proxyBypassW = proxyBypass;
-
-		hSession = ::WinHttpOpen(BHO_NAME, WINHTTP_ACCESS_TYPE_NAMED_PROXY, proxyNameW, proxyBypassW, 0);
+		hSession = ::WinHttpOpen(BHO_NAME, WINHTTP_ACCESS_TYPE_NAMED_PROXY, proxyName, proxyBypass, 0);
 	}
 
 	// Specify an HTTP server.
@@ -305,12 +301,12 @@ bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCSTR file, CStringA* 
 	{		
 	    if (nServerPort == INTERNET_DEFAULT_HTTPS_PORT)
 		{
-			hRequest = ::WinHttpOpenRequest(*hConnect, L"GET", A2W(url),
+			hRequest = ::WinHttpOpenRequest(*hConnect, L"GET", url,
 				NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
 		}
 		else
 		{
-			hRequest = ::WinHttpOpenRequest(*hConnect, L"GET", A2W(url),
+			hRequest = ::WinHttpOpenRequest(*hConnect, L"GET", url,
 				NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 		}
 	}

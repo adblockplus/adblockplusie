@@ -30,8 +30,8 @@ public:
 	// Returns an instance of the Dictionary
 	static CPluginConfig* GetInstance(); 
 
-    static bool Download(const CStringA& url, const CStringA& filename);
-    bool GetDownloadProperties(const CStringA& headers, SDownloadFileProperties& properties) const;
+    static bool Download(const CString& url, const CString& filename);
+    bool GetDownloadProperties(const CString& headers, SDownloadFileProperties& properties) const;
     
     void Read();
 };

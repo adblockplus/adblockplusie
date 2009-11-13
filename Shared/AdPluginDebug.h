@@ -8,25 +8,25 @@ class CPluginDebug
 public:
 
 #if (defined ENABLE_DEBUG_INFO)
-    static void Debug(const CStringA& error, DWORD dwProcessId=0, DWORD dwThreadId=0);
+    static void Debug(const CString& error, DWORD dwProcessId=0, DWORD dwThreadId=0);
     static void DebugClear();
 #endif
 
 #if (defined ENABLE_DEBUG_INFO || defined ENABLE_DEBUG_SELFTEST)
-    static void DebugError(const CStringA& error);
-    static void DebugErrorCode(DWORD errorCode, const CStringA& error, DWORD dwProcessId=0, DWORD dwThreadId=0);
+    static void DebugError(const CString& error);
+    static void DebugErrorCode(DWORD errorCode, const CString& error, DWORD dwProcessId=0, DWORD dwThreadId=0);
 #endif
 
 #if (defined ENABLE_DEBUG_RESULT)
-    static void DebugResult(const CStringA& text);
-    static void DebugResultDomain(const CStringA& domain);
-    static void DebugResultBlocking(const CStringA& type, const CStringA& src, const CStringA& filter, const CStringA& filterFile);
-    static void DebugResultHiding(const CStringA& tag, const CStringA& id, const CStringA& filter, const CStringA& filterFile);
+    static void DebugResult(const CString& text);
+    static void DebugResultDomain(const CString& domain);
+    static void DebugResultBlocking(const CString& type, const CString& src, const CString& filter, const CString& filterFile);
+    static void DebugResultHiding(const CString& tag, const CString& id, const CString& filter, const CString& filterFile);
     static void DebugResultClear();
 #endif
 
 #if (defined ENABLE_DEBUG_RESULT_IGNORED)
-    static void DebugResultIgnoring(const CStringA& type, const CStringA& src);
+    static void DebugResultIgnoring(const CString& type, const CString& src);
 #endif
 };
 

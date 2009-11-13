@@ -41,17 +41,17 @@ public:
 	bool IsPluginActivateEnabled() const;
 	bool IsPluginExpired() const;
 
-	CStringA GetUserId() const;
+	CString GetUserId() const;
 
 	// Does there exists a new version, that can be downloaded and installed
-	CStringA GetPluginUpdateVersion() const;
-	CStringA GetPluginUpdateUrl() const;
+	CString GetPluginUpdateVersion() const;
+	CString GetPluginUpdateUrl() const;
 
 	int GetPluginInfoPanel() const;
 
 	// Dictionary information
 	int GetDictionaryVersion() const;	
-	CStringA GetDictionaryUrl() const;	
+	CString GetDictionaryUrl() const;	
 
 #ifdef SUPPORT_FILTER
 	int GetFilterVersion() const;	
@@ -63,7 +63,7 @@ public:
 #endif // SUPPORT_WHITELIST
 
 #ifdef SUPPORT_CONFIG
-    CStringA GetConfigUrl() const;
+    CString GetConfigUrl() const;
     int GetConfigVersion() const;
 #endif // SUPPORT_CONFIG
 
@@ -93,15 +93,15 @@ private:
 	bool m_isPluginExpired;
 
     // User registration
-	CStringA m_userId;
+	CString m_userId;
 
 	// The version that currently can be downloaded from the server
-	CStringA m_pluginUpdateVersion;
-	CStringA m_pluginUpdateUrl;
+	CString m_pluginUpdateVersion;
+	CString m_pluginUpdateUrl;
 
 	// Dictionary that currently can be downloaded from the server
 	int m_dictionaryVersion;
-	CStringA m_dictionaryUrl;
+	CString m_dictionaryUrl;
 
 	int m_pluginInfoPanel;
 
@@ -115,7 +115,7 @@ private:
 #endif // SUPPORT_WHITELIST
 
 #ifdef SUPPORT_CONFIG
-    CStringA m_configUrl;
+    CString m_configUrl;
     int m_configVersion;
 #endif // SUPPORT_CONFIG
 };

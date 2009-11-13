@@ -107,7 +107,7 @@
  #undef  ENABLE_DEBUG_NAVI
  #undef  ENABLE_DEBUG_DICTIONARY
  #undef  ENABLE_DEBUG_CHECKSUM
- #undef  ENABLE_DEBUG_INI
+#define ENABLE_DEBUG_INI
  #undef  ENABLE_DEBUG_MUTEX
  #undef  ENABLE_DEBUG_HIDE_EL
  #undef  ENABLE_DEBUG_WHITELIST
@@ -131,27 +131,27 @@
 
 #if (defined ENABLE_DEBUG_INFO)
  #undef  DEBUG
- #define DEBUG(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_BLOCKER)
  #undef  DEBUG_BLOCKER
- #define DEBUG_BLOCKER(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_BLOCKER(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_FILTER)
  #undef  DEBUG_FILTER
- #define DEBUG_FILTER(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_FILTER(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_SETTINGS)
  #undef  DEBUG_SETTINGS
- #define DEBUG_SETTINGS(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_SETTINGS(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_THREAD)
  #undef  DEBUG_THREAD
- #define DEBUG_THREAD(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_THREAD(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_NAVI)
@@ -161,22 +161,22 @@
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_CHECKSUM)
  #undef  DEBUG_CHECKSUM
- #define DEBUG_CHECKSUM(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_CHECKSUM(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_DICTIONARY)
  #undef  DEBUG_DICTIONARY
- #define DEBUG_DICTIONARY(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_DICTIONARY(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_INI)
  #undef  DEBUG_INI
- #define DEBUG_INI(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_INI(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_MUTEX)
  #undef  DEBUG_MUTEX
- #define DEBUG_MUTEX(x) CPluginDebug::Debug((CStringA)(x));
+ #define DEBUG_MUTEX(x) CPluginDebug::Debug((CString)(x));
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_HIDE_EL)
@@ -201,11 +201,11 @@
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_ERROR || defined ENABLE_DEBUG_SELFTEST)
  #undef  DEBUG_ERROR
- #define DEBUG_ERROR(x) CPluginDebug::DebugError("!!! Error:" + CStringA(x));
+ #define DEBUG_ERROR(x) CPluginDebug::DebugError("!!! Error:" + CString(x));
  #undef  DEBUG_ERROR_CODE
- #define DEBUG_ERROR_CODE(err, x) CPluginDebug::DebugErrorCode(err, "!!! Error:" + CStringA(x));
+ #define DEBUG_ERROR_CODE(err, x) CPluginDebug::DebugErrorCode(err, "!!! Error:" + CString(x));
  #undef  DEBUG_ERROR_CODE_EX
- #define DEBUG_ERROR_CODE_EX(err, x, process, thread) CPluginDebug::DebugErrorCode(err, "!!! Error:" + CStringA(x), process, thread);
+ #define DEBUG_ERROR_CODE_EX(err, x, process, thread) CPluginDebug::DebugErrorCode(err, "!!! Error:" + CString(x), process, thread);
 #endif
 
 #undef  DEBUG_ERROR_LOG

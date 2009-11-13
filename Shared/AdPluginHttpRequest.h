@@ -10,7 +10,7 @@ class CPluginHttpRequest
 
 public:
 
-    CPluginHttpRequest(const CStringA& script, bool addChecksum=true);
+    CPluginHttpRequest(const CString& script, bool addChecksum=true);
     ~CPluginHttpRequest();
 
     bool Send(bool checkResponse=true);
@@ -18,25 +18,25 @@ public:
     void AddPluginId();
 	void AddOsInfo();
 
-    void Add(const CStringA& arg, const CStringA& value, bool addToChecksum=true);
-    void Add(const CStringA& arg, unsigned int value, bool addToChecksum=true);
+    void Add(const CString& arg, const CString& value, bool addToChecksum=true);
+    void Add(const CString& arg, unsigned int value, bool addToChecksum=true);
 
-    CStringA GetUrl();
+    CString GetUrl();
     CStringA GetResponseText() const;
 	const std::auto_ptr<CPluginIniFile>& GetResponseFile() const;
 	bool IsValidResponse() const;
 
-    static CStringA GetStandardUrl(const CStringA& script);
+    static CString GetStandardUrl(const CString& script);
 
     static BOOL GetProxySettings(CString& proxyName, CString& proxyBypass);
 
-    static bool SendHttpRequest(LPCWSTR server, LPCSTR file, CStringA* response, WORD nServerPort);
+    static bool SendHttpRequest(LPCWSTR server, LPCWSTR file, CStringA* response, WORD nServerPort);
 
 protected:
 
-    CStringA m_url;
-    CStringA m_urlPrefix;
-    CStringA m_script;
+    CString m_url;
+    CString m_urlPrefix;
+    CString m_script;
     CStringA m_responseText;
     bool m_addChecksum;
 

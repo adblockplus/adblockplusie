@@ -36,30 +36,30 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
     settings->SetMainThreadId();
 
-    CStringA debugText;
+    CString debugText;
 
-    CStringA threadInfo;
-    threadInfo.Format("%d.%d", ::GetCurrentProcessId(), ::GetCurrentThreadId());
+    CString threadInfo;
+    threadInfo.Format(L"%d.%d", ::GetCurrentProcessId(), ::GetCurrentThreadId());
     
-    debugText += "================================================================================";
-    debugText += "\nMAIN THREAD " + threadInfo + " Plugin version:" + CStringA(IEPLUGIN_VERSION);
-    debugText += "\n================================================================================";
+    debugText += L"================================================================================";
+    debugText += L"\nMAIN THREAD " + threadInfo + L" Plugin version:" + CString(IEPLUGIN_VERSION);
+    debugText += L"\n================================================================================";
 
-    debugText += "\nPlugin version:    " + CStringA(IEPLUGIN_VERSION);
-    debugText += "\nPlugin id:         " + CPluginClient::GetPluginId();
-    debugText += "\nMAC address:       " + CPluginClient::GetMacId(true);
-    debugText += "\nComputer name:     " + CPluginClient::GetComputerName();
-    debugText += "\nUser id:           " + settings->GetString(SETTING_USER_ID, "N/A");
-    debugText += "\nUser name:         " + CPluginClient::GetUserName();
-    debugText += "\nBrowser version:   " + CPluginClient::GetBrowserVersion();
-    debugText += "\nBrowser language:  " + CPluginClient::GetBrowserLanguage();
+    debugText += L"\nPlugin version:    " + CString(IEPLUGIN_VERSION);
+    debugText += L"\nPlugin id:         " + CPluginClient::GetPluginId();
+    debugText += L"\nMAC address:       " + CPluginClient::GetMacId(true);
+    debugText += L"\nComputer name:     " + CPluginClient::GetComputerName();
+    debugText += L"\nUser id:           " + settings->GetString(SETTING_USER_ID, "N/A");
+    debugText += L"\nUser name:         " + CPluginClient::GetUserName();
+    debugText += L"\nBrowser version:   " + CPluginClient::GetBrowserVersion();
+    debugText += L"\nBrowser language:  " + CPluginClient::GetBrowserLanguage();
 
     DWORD osVersion = ::GetVersion();
 
-    CStringA ver;
-    ver.Format("%d.%d", LOBYTE(LOWORD(osVersion)), HIBYTE(LOWORD(osVersion)));
+    CString ver;
+    ver.Format(L"%d.%d", LOBYTE(LOWORD(osVersion)), HIBYTE(LOWORD(osVersion)));
 
-    debugText += "\nWindows version:   " + ver;
+    debugText += L"\nWindows version:   " + ver;
     
     CString proxyName;
     CString proxyBypass;
@@ -68,15 +68,15 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     {
         if (!proxyName.IsEmpty())
         {
-            debugText += "\nHTTP proxy name:   " + CStringA(proxyName);
+            debugText += L"\nHTTP proxy name:   " + proxyName;
         }
         if (!proxyBypass.IsEmpty())
         {
-            debugText += "\nHTTP proxy bypass: " + CStringA(proxyBypass);
+            debugText += L"\nHTTP proxy bypass: " + proxyBypass;
         }
     }
 
-    debugText += "\n================================================================================";
+    debugText += L"\n================================================================================";
 
 	DEBUG_GENERAL(debugText)
 
@@ -131,11 +131,11 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 		    }
 		    catch (std::runtime_error)
 		    {
-    		    DEBUG_ERROR("Thread::Init local client failed")
+    		    DEBUG_ERROR(L"Thread::Init local client failed")
 		    }
 		    catch (...)
 		    {
-    		    DEBUG_ERROR("Thread::Init local client failed")
+    		    DEBUG_ERROR(L"Thread::Init local client failed")
 		    }
 
 		    Sleep(50); 
@@ -196,11 +196,11 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 	{
 	    HKEY hKey;
 
-        CStringA debugText;
+        CString debugText;
         
-        debugText += "--------------------------------------------------------------------------------";
-        debugText += "\nBHO list";
-        debugText += "\n--------------------------------------------------------------------------------";
+        debugText += L"--------------------------------------------------------------------------------";
+        debugText += L"\nBHO list";
+        debugText += L"\n--------------------------------------------------------------------------------";
 
 	    // Open the handler
 	    if ((::RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects"), 0, KEY_ENUMERATE_SUB_KEYS, &hKey)) == ERROR_SUCCESS)
@@ -216,7 +216,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 dwResult = ::RegEnumKeyEx(hKey, dwIndex++, szKeyName, &dwKeyNameSize, NULL, NULL, NULL, NULL);
                 if (dwResult == ERROR_SUCCESS || dwResult == ERROR_MORE_DATA)
                 {
-                    debugText += "\n" + CStringA(szKeyName);
+                    debugText += L"\n" + CString(szKeyName);
                 }
             }
             while (dwResult == ERROR_SUCCESS || dwResult == ERROR_MORE_DATA);
@@ -225,7 +225,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 	    }
 	    else
 	    {
-            debugText += "\nError opening registry";
+            debugText += L"\nError opening registry";
 	    }
 
         DEBUG_GENERAL(debugText)
@@ -237,7 +237,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
     if (!IsMainThreadDone(hMainThread) && settings->IsFirstRun())
     {
-        DEBUG_THREAD("Thread::Update status bar");
+        DEBUG_THREAD(L"Thread::Update status bar");
 
         UpdateStatusBar();
     }
@@ -248,20 +248,20 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
     if (!IsMainThreadDone(hMainThread) && settings->IsPluginUpdateAvailable())
     {
-        DEBUG_THREAD("Thread::Should update plugin");
+        DEBUG_THREAD(L"Thread::Should update plugin");
 
-	    CStringA lastUpdateStr = settings->GetString(SETTING_PLUGIN_UPDATE_TIME);
+	    CString lastUpdateStr = settings->GetString(SETTING_PLUGIN_UPDATE_TIME);
 
 	    std::time_t today = std::time(NULL);
-	    std::time_t lastUpdate = lastUpdateStr.IsEmpty() ? today : atoi(lastUpdateStr);
+	    std::time_t lastUpdate = lastUpdateStr.IsEmpty() ? today : _wtoi(lastUpdateStr.GetBuffer());
 
 	    if (today != (std::time_t)(-1) && lastUpdate != (std::time_t)(-1))
 	    {
 		    if (today == lastUpdate || std::difftime(today, lastUpdate) / (60 * 60 * 24) >= 5.0)
 		    {
-		        CStringA updateVersion = settings->GetString(SETTING_PLUGIN_UPDATE_VERSION);
+		        CString updateVersion = settings->GetString(SETTING_PLUGIN_UPDATE_VERSION);
 
-                DEBUG_GENERAL("*** Displaying update plugin dialog for version " + updateVersion);
+                DEBUG_GENERAL(L"*** Displaying update plugin dialog for version " + updateVersion);
 
 			    // Show update dialog
 			    CUpdateDialog uDlg;
@@ -293,14 +293,14 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 			
 	while (!IsMainThreadDone(hMainThread))
 	{
-	    CStringA sMainLoopIteration;
-	    sMainLoopIteration.Format("%u", mainLoopIteration);
+	    CString sMainLoopIteration;
+	    sMainLoopIteration.Format(L"%u", mainLoopIteration);
 
-        CStringA debugText;
+        CString debugText;
         
-        debugText += "--------------------------------------------------------------------------------";
-        debugText += "\nLoop iteration " + sMainLoopIteration;
-        debugText += "\n--------------------------------------------------------------------------------";
+        debugText += L"--------------------------------------------------------------------------------";
+        debugText += L"\nLoop iteration " + sMainLoopIteration;
+        debugText += L"\n--------------------------------------------------------------------------------";
 
         DEBUG_GENERAL(debugText)
         
@@ -483,11 +483,11 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 #endif // SUPPORT_WHITELIST
 
                 // Check pluginID
-                CStringA newPluginId = CPluginClient::GetPluginId();
+                CString newPluginId = CPluginClient::GetPluginId();
         	    
                 if (newPluginId != settings->GetString(SETTING_PLUGIN_ID))
                 {
-                    DEBUG_GENERAL("*** pluginId has changed from " + settings->GetString(SETTING_PLUGIN_ID) + " to " + newPluginId)
+                    DEBUG_GENERAL(L"*** pluginId has changed from " + settings->GetString(SETTING_PLUGIN_ID) + CString(L" to ") + newPluginId)
 
                     settings->SetString(SETTING_PLUGIN_ID, newPluginId);                
                 }
@@ -537,9 +537,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                     // Compare downloaded URL string with persistent URLs
                     for (TFilterUrlList::iterator it = filterUrlList.begin(); it != filterUrlList.end(); ++it) 
                     {
-                        CStringA downloadFilterName = it->first;
+                        CString downloadFilterName = it->first;
 
-                        CStringA filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
+                        CString filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
                         int version = it->second;
 
                         TFilterUrlList::const_iterator fi = currentFilterUrlList.find(downloadFilterName);
@@ -573,7 +573,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 	    // --------------------------------------------------------------------
 #ifdef SUPPORT_FILTER
 
-        DEBUG_THREAD("Thread::Check filters");
+        DEBUG_THREAD(L"Thread::Check filters");
 
         if (!IsMainThreadDone(hMainThread))
         {
@@ -637,7 +637,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
         if (!IsMainThreadDone(hMainThread) && s_isPluginToBeUpdated)
         {
-            DEBUG_GENERAL("*** Displaying download plugin dialog");
+            DEBUG_GENERAL(L"*** Displaying download plugin dialog");
 
             s_isPluginToBeUpdated = false;
 

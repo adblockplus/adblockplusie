@@ -23,9 +23,9 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 {
     bool isBlocked = false;
 
-    CStringA src = szUrl;
+    CString src = szUrl;
     CPluginClient::UnescapeUrl(src);
-    
+
     m_url = src;
 
 #ifdef SUPPORT_FILTER
@@ -185,14 +185,14 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
     {	    
         CPluginConfig* config = CPluginConfig::GetInstance();
         
-        CStringA contentType = szResponseHeaders;
+        CString contentType = szResponseHeaders;
 
-        int pos = contentType.Find("Content-Type: ");
+        int pos = contentType.Find(L"Content-Type: ");
         if (pos >= 0)
         {
             contentType = contentType.Mid(pos + 14);
             
-            pos = contentType.FindOneOf("; \n\r");
+            pos = contentType.FindOneOf(L"; \n\r");
             if (pos > 0)
             {				
 				SDownloadFileProperties downloadFileProperties;

@@ -97,13 +97,13 @@ STDAPI DllUnregisterServer(void)
 // Called from installer
 EXTERN_C void STDAPICALLTYPE OnInstall(void)
 {
-    CStringA datapath = CPluginSettings::GetDataPathParent();
-
     // Rename IEAdblock folder to Simple Adblock
 #ifdef PRODUCT_ADBLOCKER
-    if (::GetFileAttributesA(datapath + CStringA("IEAdblock")) != INVALID_FILE_ATTRIBUTES) 
+    CString datapath = CPluginSettings::GetDataPathParent();
+
+	if (::GetFileAttributes(datapath + CString("IEAdblock")) != INVALID_FILE_ATTRIBUTES) 
     {
-        ::MoveFileA(datapath + CStringA("IEAdblock"), datapath + CStringA("Simple Adblock"));
+        ::MoveFile(datapath + CString("IEAdblock"), CPluginSettings::GetDataPath());
     }
 #endif
 
@@ -121,13 +121,13 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
 #endif
 
     DEBUG_GENERAL(
-        "================================================================================\nINSTALLER " + 
-        CStringA(IEPLUGIN_VERSION) + 
-        "\n================================================================================")
+        L"================================================================================\nINSTALLER " + 
+        CString(IEPLUGIN_VERSION) + 
+        L"\n================================================================================")
 
     // Create default filters
 #ifdef SUPPORT_FILTER
-    DEBUG_GENERAL("*** Generating default filters")
+    DEBUG_GENERAL(L"*** Generating default filters")
     CPluginFilter::CreateFilters();
 #endif
 
@@ -143,6 +143,7 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
     // Create ini file
 	char path[MAX_PATH];
 
+    DEBUG_GENERAL("*** Generating ini file")
 	if (::SHGetSpecialFolderPathA(NULL, path, CSIDL_WINDOWS, TRUE))
 	{
 	    if (::PathAppendA(path, UNINSTALL_INI_FILE))
@@ -155,16 +156,23 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
             iniFile.UpdateSection("Settings", data);
             if (!iniFile.Write())
             {
+::MessageBox(::GetDesktopWindow(), L"failed write", L"ini", MB_OK);
                 DEBUG_ERROR_LOG(iniFile.GetLastError(), PLUGIN_ERROR_INSTALL, PLUGIN_ERROR_INSTALL_CREATE_INI_FILE, "Install::Create init file")
             }
+			else
+			{
+::MessageBox(::GetDesktopWindow(), L"ok write", L"ini", MB_OK);
+			}
         }
         else
         {
+::MessageBox(::GetDesktopWindow(), L"failed append path", L"ini", MB_OK);
             DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_INSTALL, PLUGIN_ERROR_INSTALL_APPEND_PATH, "Install::Append path")
         }
 	}
-	else
+else
 	{
+::MessageBox(::GetDesktopWindow(), L"failed get win dir", L"ini", MB_OK);
 		DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_INSTALL, PLUGIN_ERROR_INSTALL_GET_WINDOWS_PATH, "Install::SHGetSpecialFolderPathA failed");
 	}
 
@@ -179,13 +187,13 @@ EXTERN_C void STDAPICALLTYPE OnInstall(void)
 // Called from updater
 EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 {
-    CStringA datapath = CPluginSettings::GetDataPathParent();
-
     // Rename IEAdblock folder to Simple Adblock
 #ifdef PRODUCT_ADBLOCKER
-    if (::GetFileAttributesA(datapath + CStringA("IEAdblock")) != INVALID_FILE_ATTRIBUTES) 
+    CString datapath = CPluginSettings::GetDataPathParent();
+
+	if (::GetFileAttributes(datapath + CStringA("IEAdblock")) != INVALID_FILE_ATTRIBUTES) 
     {
-        ::MoveFileA(datapath + CStringA("IEAdblock"), datapath + CStringA("Simple Adblock"));
+        ::MoveFile(datapath + CStringA("IEAdblock"), CPluginSettings::GetDataPath());
     }
 #endif
 
@@ -203,13 +211,13 @@ EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 #endif
 
     DEBUG_GENERAL(
-        "================================================================================\nUPDATER " + 
-        CStringA(IEPLUGIN_VERSION) + " (UPDATED FROM " + settings->GetString(SETTING_PLUGIN_VERSION) + ")"
-        "\n================================================================================")
+        L"================================================================================\nUPDATER " + 
+        CString(IEPLUGIN_VERSION) + L" (UPDATED FROM " + settings->GetString(SETTING_PLUGIN_VERSION) + L")"
+        L"\n================================================================================")
 
     // Create default filters
 #ifdef SUPPORT_FILTER
-    DEBUG_GENERAL("*** Generating default filters")
+    DEBUG_GENERAL(L"*** Generating default filters")
     CPluginFilter::CreateFilters();
 #endif
 

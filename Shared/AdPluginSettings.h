@@ -13,52 +13,52 @@
 
 // Main settings
 
-#define SETTING_USER_ID                 "userid"
-#define SETTING_PLUGIN_ID	            "pluginuniqueid"
-#define SETTING_PLUGIN_INFO_PANEL	    "plugininfopanel"
-#define SETTING_PLUGIN_ACTIVATED        "pluginactivated"
-#define SETTING_PLUGIN_ACTIVATE_ENABLED "pluginactivateenabled"
-#define SETTING_PLUGIN_EXPIRED          "pluginexpired"
-#define SETTING_PLUGIN_PASSWORD         "pluginpassword"
-#define SETTING_PLUGIN_VERSION          "pluginversion"
-#define SETTING_PLUGIN_UPDATE_URL       "pluginupdateurl"
-#define SETTING_PLUGIN_UPDATE_VERSION   "pluginupdateversion"
-#define SETTING_PLUGIN_UPDATE_TIME      "pluginupdatetime"
-#define SETTING_PLUGIN_SELFTEST         "pluginselftest"
-#define SETTING_LANGUAGE                "language"
+#define SETTING_USER_ID                 L"userid"
+#define SETTING_PLUGIN_ID	            L"pluginuniqueid"
+#define SETTING_PLUGIN_INFO_PANEL	    L"plugininfopanel"
+#define SETTING_PLUGIN_ACTIVATED        L"pluginactivated"
+#define SETTING_PLUGIN_ACTIVATE_ENABLED L"pluginactivateenabled"
+#define SETTING_PLUGIN_EXPIRED          L"pluginexpired"
+#define SETTING_PLUGIN_PASSWORD         L"pluginpassword"
+#define SETTING_PLUGIN_VERSION          L"pluginversion"
+#define SETTING_PLUGIN_UPDATE_URL       L"pluginupdateurl"
+#define SETTING_PLUGIN_UPDATE_VERSION   L"pluginupdateversion"
+#define SETTING_PLUGIN_UPDATE_TIME      L"pluginupdatetime"
+#define SETTING_PLUGIN_SELFTEST         L"pluginselftest"
+#define SETTING_LANGUAGE                L"language"
 #ifdef SUPPORT_FILTER
-#define SETTING_FILTER_VERSION          "filterversion"
+#define SETTING_FILTER_VERSION          L"filterversion"
 #endif
 #ifdef SUPPORT_CONFIG
-#define SETTING_CONFIG_VERSION          "configversion"
+#define SETTING_CONFIG_VERSION          L"configversion"
 #endif
-#define SETTING_LAST_UPDATE_TIME        "lastupdatetime"
-#define SETTING_REG_DATE                "regdate"
-#define SETTING_REG_ATTEMPTS            "regattempts"
-#define SETTING_REG_SUCCEEDED           "regsucceeded"
-#define SETTING_DICTIONARY_VERSION      "dictionaryversion"
+#define SETTING_LAST_UPDATE_TIME        L"lastupdatetime"
+#define SETTING_REG_DATE                L"regdate"
+#define SETTING_REG_ATTEMPTS            L"regattempts"
+#define SETTING_REG_SUCCEEDED           L"regsucceeded"
+#define SETTING_DICTIONARY_VERSION      L"dictionaryversion"
 
 // Tab settings
 
-#define SETTING_TAB_PLUGIN_ENABLED          "pluginenabled"
-#define SETTING_TAB_COUNT                   "tabcount"
-#define SETTING_TAB_START_TIME              "tabstart"
-#define SETTING_TAB_UPDATE_ON_START         "updateonstart"
-#define SETTING_TAB_UPDATE_ON_START_REMOVE  "updateonstartremove"
-#define SETTING_TAB_DICTIONARY_VERSION      "dictionaryversion"
-#define SETTING_TAB_SETTINGS_VERSION        "settingsversion"
+#define SETTING_TAB_PLUGIN_ENABLED          L"pluginenabled"
+#define SETTING_TAB_COUNT                   L"tabcount"
+#define SETTING_TAB_START_TIME              L"tabstart"
+#define SETTING_TAB_UPDATE_ON_START         L"updateonstart"
+#define SETTING_TAB_UPDATE_ON_START_REMOVE  L"updateonstartremove"
+#define SETTING_TAB_DICTIONARY_VERSION      L"dictionaryversion"
+#define SETTING_TAB_SETTINGS_VERSION        L"settingsversion"
 #ifdef SUPPORT_FILTER
-#define SETTING_TAB_FILTER_VERSION          "filterversion"
+#define SETTING_TAB_FILTER_VERSION          L"filterversion"
 #endif
 #ifdef SUPPORT_WHITELIST
-#define SETTING_TAB_WHITELIST_VERSION       "whitelistversion"
+#define SETTING_TAB_WHITELIST_VERSION       L"whitelistversion"
 #endif
 #ifdef SUPPORT_CONFIG
-#define SETTING_TAB_CONFIG_VERSION          "configversion"
+#define SETTING_TAB_CONFIG_VERSION          L"configversion"
 #endif
 
 
-class CPluginIniFile;
+class CPluginIniFileW;
 
 
 class CPluginSettings
@@ -66,7 +66,7 @@ class CPluginSettings
 
 public:
 
-    typedef std::map<CStringA, CStringA> TProperties;
+    typedef std::map<CString, CString> TProperties;
 
 private:
 
@@ -77,7 +77,7 @@ private:
     DWORD m_dwMainThreadId;
     DWORD m_dwWorkingThreadId;
     
-    CStringA m_tabNumber;
+    CString m_tabNumber;
 	
 #ifdef SUPPORT_WHITELIST
 	TDomainList m_domainList;
@@ -92,10 +92,12 @@ private:
 	CPluginSettings::TFilterUrlList m_filterUrlList;
 #endif
 
-	CStringA m_settingsVersion;
-    std::auto_ptr<CPluginIniFile> m_settingsFile;
+	CString m_settingsVersion;
+    std::auto_ptr<CPluginIniFileW> m_settingsFile;
 
-	static char* s_dataPath;
+	static WCHAR* s_dataPath;
+	static WCHAR* s_dataPathParent;
+
 	static CPluginSettings* s_instance;
 
 	static CComAutoCriticalSection s_criticalSectionLocal;
@@ -123,25 +125,25 @@ public:
     bool Read(bool bDebug=true);
 	bool Write(bool bDebug=true);
 
-	static CStringA GetDataPathParent();
-	static CStringA GetDataPath(const CStringA& filename="");
+	static CString GetDataPathParent();
+	static CString GetDataPath(const CString& filename="");
 
-	static CStringA GetTempPath(const CStringA& filename="");
-    static CStringA GetTempFile(const CStringA& prefix);
+	static CString GetTempPath(const CString& filename="");
+    static CString GetTempFile(const CString& prefix);
 
-    bool Has(const CStringA& key) const;
-    void Remove(const CStringA& key);
+    bool Has(const CString& key) const;
+    void Remove(const CString& key);
 
-    CStringA GetPluginId();
+    CString GetPluginId();
 
-	CStringA GetString(const CStringA& key, const CStringA& defaultValue="") const;
-	void SetString(const CStringA& key, const CStringA& value);
+	CString GetString(const CString& key, const CString& defaultValue="") const;
+	void SetString(const CString& key, const CString& value);
 
-	int GetValue(const CStringA& key, int defaultValue=0) const;
-	void SetValue(const CStringA& key, int value);
+	int GetValue(const CString& key, int defaultValue=0) const;
+	void SetValue(const CString& key, int value);
 
-	bool GetBool(const CStringA& key, bool defaultValue) const;
-	void SetBool(const CStringA& key, bool value);
+	bool GetBool(const CString& key, bool defaultValue) const;
+	void SetBool(const CString& key, bool value);
 
     bool IsPluginEnabled() const;
 	bool IsPluginUpdateAvailable() const;
@@ -153,12 +155,12 @@ public:
 	void SetFilterUrlList(const TFilterUrlList& filters);
 	TFilterUrlList GetFilterUrlList() const;
 
-    void AddFilterUrl(const CStringA& url, int version);
+    void AddFilterUrl(const CString& url, int version);
 #endif // SUPPORT_FILTER
 
 #ifdef SUPPORT_WHITELIST
 	
-    void AddDomainToHistory(const CStringA& domain);
+    void AddDomainToHistory(const CString& domain);
     TDomainHistory GetDomainHistory() const;
 
 #endif // SUPPORT_WHITELIST
@@ -189,7 +191,7 @@ private:
 	CPluginSettings::TProperties m_propertiesTab;
 	CPluginSettings::TProperties m_errorsTab;
 
-    std::auto_ptr<CPluginIniFile> m_settingsFileTab;
+    std::auto_ptr<CPluginIniFileW> m_settingsFileTab;
 
     void ClearTab();
 
@@ -200,7 +202,7 @@ public:
 
     void EraseTab();
 
-	CStringA GetTabNumber() const;
+	CString GetTabNumber() const;
 
     bool IncrementTabCount();
     bool DecrementTabCount();
@@ -208,8 +210,8 @@ public:
     void TogglePluginEnabled();
     bool GetPluginEnabled() const;
 
-    void AddError(const CStringA& error, const CStringA& errorCode);
-    CStringA GetErrorList() const;
+    void AddError(const CString& error, const CString& errorCode);
+    CString GetErrorList() const;
     void RemoveErrors();
 
     bool GetForceConfigurationUpdateOnStart() const;
@@ -218,8 +220,8 @@ public:
 
     void RefreshTab();
 
-    int GetTabVersion(const CStringA& key) const;
-    void IncrementTabVersion(const CStringA& key);
+    int GetTabVersion(const CString& key) const;
+    void IncrementTabVersion(const CString& key);
 
     // Settings whitelist
 #ifdef SUPPORT_WHITELIST
@@ -231,7 +233,7 @@ private:
 	TDomainList m_whitelist;
 	TDomainList m_whitelistToGo;
 
-    std::auto_ptr<CPluginIniFile> m_settingsFileWhitelist;
+    std::auto_ptr<CPluginIniFileW> m_settingsFileWhitelist;
     
     void ClearWhitelist();
 
@@ -240,10 +242,10 @@ private:
 
 public:
 
-	void AddWhiteListedDomain(const CStringA& domain, int reason=1, bool isToGo=false);
+	void AddWhiteListedDomain(const CString& domain, int reason=1, bool isToGo=false);
     void RemoveWhiteListedDomainsToGo(const TDomainList& domains);
     void ReplaceWhiteListedDomains(const TDomainList& domains);
-	bool IsWhiteListedDomain(const CStringA& domain) const;
+	bool IsWhiteListedDomain(const CString& domain) const;
 	int GetWhiteListedDomainCount() const;
 	TDomainList GetWhiteListedDomainList(bool isToGo=false) const;
 

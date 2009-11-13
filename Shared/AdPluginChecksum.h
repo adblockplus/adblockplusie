@@ -13,7 +13,7 @@ public:
     void Clear();
 
     DWORD Get() const;
-	CStringA GetAsString() const;
+	CString GetAsString() const;
 
     void Add(const CStringA& s);
     void Add(const CStringW& s);

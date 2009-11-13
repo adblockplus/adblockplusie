@@ -2,7 +2,7 @@
 
 #include <Wbemidl.h>
 
-#include "AdPluginIniFile.h"
+#include "AdPluginIniFileW.h"
 #include "AdPluginSettings.h"
 #include "AdPluginDictionary.h"
 #include "AdPluginClient.h"
@@ -12,6 +12,10 @@
 #endif
 #include "AdPluginMutex.h"
 
+// IE functions
+#pragma comment(lib, "iepmapi.lib")
+
+#include <knownfolders.h>
 
 class TSettings
 {
@@ -48,7 +52,9 @@ public:
 
 #endif
 
-char* CPluginSettings::s_dataPath = NULL;
+WCHAR* CPluginSettings::s_dataPath;
+WCHAR* CPluginSettings::s_dataPathParent;
+
 CPluginSettings* CPluginSettings::s_instance = NULL;
 
 CComAutoCriticalSection CPluginSettings::s_criticalSectionLocal;
@@ -68,10 +74,10 @@ CPluginSettings::CPluginSettings() :
     m_isDirtyWhitelist = false;
 #endif
 
-    m_settingsFile = std::auto_ptr<CPluginIniFile>(new CPluginIniFile(GetDataPath(SETTINGS_INI_FILE), true));
-    m_settingsFileTab = std::auto_ptr<CPluginIniFile>(new CPluginIniFile(GetDataPath(SETTINGS_INI_FILE_TAB), true));
+    m_settingsFile = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE), true));
+    m_settingsFileTab = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_TAB), true));
 #ifdef SUPPORT_WHITELIST
-    m_settingsFileWhitelist = std::auto_ptr<CPluginIniFile>(new CPluginIniFile(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
+    m_settingsFileWhitelist = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
 #endif
 
     Clear();
@@ -152,11 +158,11 @@ bool CPluginSettings::Read(bool bDebug)
 {
     bool isRead = true;
 
-    DEBUG_SETTINGS("Settings::Read")
+    DEBUG_SETTINGS(L"Settings::Read")
     {
         if (bDebug)
         {
-            DEBUG_GENERAL("*** Loading settings:" + m_settingsFile->GetFilePath());
+            DEBUG_GENERAL(L"*** Loading settings:" + m_settingsFile->GetFilePath());
         }
 
         CPluginSettingsLock lock;
@@ -217,7 +223,7 @@ bool CPluginSettings::Read(bool bDebug)
 
 #ifdef SUPPORT_FILTER            	    
                     // Unpack filter URLs
-                    CPluginIniFile::TSectionData filters = m_settingsFile->GetSectionData("Filters");
+                    CPluginIniFileW::TSectionData filters = m_settingsFile->GetSectionData("Filters");
                     int filterCount = 0;
                     bool bContinue = true;
 
@@ -230,8 +236,8 @@ bool CPluginSettings::Read(bool bDebug)
 				            CStringA filterCountStr;
 				            filterCountStr.Format("%d", ++filterCount);
             	            
-				            CPluginIniFile::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
-				            CPluginIniFile::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
+				            CPluginIniFileW::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
+				            CPluginIniFileW::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
 
 				            if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
 				            {
@@ -304,7 +310,7 @@ void CPluginSettings::Clear()
 	s_criticalSectionFilters.Lock();
 	{
 	    m_filterUrlList.clear();
-		m_filterUrlList[CStringA(FILTERS_PROTOCOL) + CStringA(FILTERS_HOST) + "/easylist.txt"] = 1;
+		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
 	}
 	s_criticalSectionFilters.Unlock();
 
@@ -312,46 +318,11 @@ void CPluginSettings::Clear()
 }
 
 
-CStringA CPluginSettings::GetDataPathParent()
+CString CPluginSettings::GetDataPathParent()
 {
-	char* lpData = new char[1024];
-
-    lpData[0] = 0;
-
-	OSVERSIONINFO osVersionInfo;
-	::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
-
-	osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-	::GetVersionEx(&osVersionInfo);
-
-	//Windows Vista				- 6.0 
-	//Windows Server 2003 R2	- 5.2 
-	//Windows Server 2003		- 5.2 
-	//Windows XP				- 5.1 
-	if (osVersionInfo.dwMajorVersion >= 6)
+	if (s_dataPathParent == NULL) 
 	{
-		if (::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
-		{
-			strcat(lpData, "Low");
-		}
-	}
-	else
-	{
-		::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_APPDATA, TRUE);
-	}
-
-    ::PathAddBackslashA(lpData);
-
-    return lpData;
-}
-
-
-CStringA CPluginSettings::GetDataPath(const CStringA& filename)
-{
-	if (s_dataPath == NULL) 
-	{
-		char* lpData = new char[1024];
+		WCHAR* lpData = new WCHAR[MAX_PATH];
 
 		OSVERSIONINFO osVersionInfo;
 		::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
@@ -366,9 +337,9 @@ CStringA CPluginSettings::GetDataPath(const CStringA& filename)
 		//Windows XP				- 5.1 
 		if (osVersionInfo.dwMajorVersion >= 6)
 		{
-			if (::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
+			if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
 			{
-				strcat(lpData, "Low");
+				wcscat(lpData, L"Low");
 			}
 			else
 			{
@@ -377,17 +348,17 @@ CStringA CPluginSettings::GetDataPath(const CStringA& filename)
 		}
 		else
 		{
-			if (!SHGetSpecialFolderPathA(NULL, lpData, CSIDL_APPDATA, TRUE))
+			if (!SHGetSpecialFolderPath(NULL, lpData, CSIDL_APPDATA, TRUE))
 			{
 				DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER, "Settings::GetDataPath failed");
 			}
 		}
 
-	    ::PathAddBackslashA(lpData);
+	    ::PathAddBackslash(lpData);
 
-	    s_dataPath = lpData;
+	    s_dataPathParent = lpData;
 
-    	if (!::CreateDirectoryA(s_dataPath + CStringA(USER_DIR), NULL))
+    	if (!::CreateDirectory(s_dataPathParent, NULL))
 		{
 			DWORD errorCode = ::GetLastError();
 			if (errorCode != ERROR_ALREADY_EXISTS)
@@ -396,30 +367,93 @@ CStringA CPluginSettings::GetDataPath(const CStringA& filename)
 			}
 		}
 	}
-	
-	return s_dataPath + CStringA(USER_DIR) + filename;
+
+    return s_dataPathParent;
+}
+
+CString CPluginSettings::GetDataPath(const CString& filename)
+{
+	if (s_dataPath == NULL) 
+	{
+		WCHAR* lpData = new WCHAR[MAX_PATH];
+
+		OSVERSIONINFO osVersionInfo;
+		::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
+
+		osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+
+		::GetVersionEx(&osVersionInfo);
+
+		//Windows Vista				- 6.0 
+		//Windows Server 2003 R2	- 5.2 
+		//Windows Server 2003		- 5.2 
+		//Windows XP				- 5.1 
+		if (osVersionInfo.dwMajorVersion >= 6)
+		{
+			if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
+			{
+				wcscat(lpData, L"Low");
+			}
+			else
+			{
+				DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_LOCAL, "Settings::GetDataPath failed");
+			}
+		}
+		else
+		{
+			if (!SHGetSpecialFolderPath(NULL, lpData, CSIDL_APPDATA, TRUE))
+			{
+				DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER, "Settings::GetDataPath failed");
+			}
+		}
+
+	    ::PathAddBackslash(lpData);
+
+	    s_dataPath = lpData;
+
+    	if (!::CreateDirectory(s_dataPath + CString(USER_DIR), NULL))
+		{
+			DWORD errorCode = ::GetLastError();
+			if (errorCode != ERROR_ALREADY_EXISTS)
+			{
+				DEBUG_ERROR_LOG(errorCode, PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_CREATE_FOLDER, "Settings::CreateDirectory failed");
+			}
+		}
+	}
+
+    return s_dataPath + CString(USER_DIR) + filename;
 }
 
 
-CStringA CPluginSettings::GetTempPath(const CStringA& filename)
+CString CPluginSettings::GetTempPath(const CString& filename)
 {
-    char lpPathBuffer[512] = "";
+	CString tempPath;
 
-    DWORD dwRetVal = ::GetTempPathA(512, lpPathBuffer);
-    if (dwRetVal == 0)
+	LPWSTR pwszCacheDir = NULL;
+ 
+	HRESULT hr = ::IEGetWriteableFolderPath(FOLDERID_InternetCache, &pwszCacheDir);
+ 
+	if (SUCCEEDED(hr))
     {
-	    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_PATH, "Settings::GetTempPath failed");
+		tempPath = pwszCacheDir;
+    }
+	else
+    {
+	    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_PATH, "Settings::GetTempPath failed");
     }
 
-	return lpPathBuffer + filename;
+	::CoTaskMemFree(pwszCacheDir);
+
+	return tempPath + filename;
 }
 
-CStringA CPluginSettings::GetTempFile(const CStringA& prefix)
+CString CPluginSettings::GetTempFile(const CString& prefix)
 {
-    char lpNameBuffer[512] = "";
-    CStringA tempPath;
+    WCHAR lpNameBuffer[MAX_PATH] = L"";
+
+	CString tempPath;
  
-    DWORD dwRetVal = ::GetTempFileNameA(GetTempPath(), prefix, 0, lpNameBuffer);
+    DWORD dwRetVal = ::GetTempFileName(GetTempPath(), prefix, 0, lpNameBuffer);
     if (dwRetVal == 0)
     {
 	    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_FILE, "Settings::GetTempFileName failed");
@@ -435,7 +469,7 @@ CStringA CPluginSettings::GetTempFile(const CStringA& prefix)
 }
 
 
-bool CPluginSettings::Has(const CStringA& key) const
+bool CPluginSettings::Has(const CString& key) const
 {
 	bool hasKey;
 
@@ -449,7 +483,7 @@ bool CPluginSettings::Has(const CStringA& key) const
 }
 
 
-void CPluginSettings::Remove(const CStringA& key)
+void CPluginSettings::Remove(const CString& key)
 {
     s_criticalSectionLocal.Lock();
 	{    
@@ -464,9 +498,9 @@ void CPluginSettings::Remove(const CStringA& key)
 }
 
 
-CStringA CPluginSettings::GetString(const CStringA& key, const CStringA& defaultValue) const
+CString CPluginSettings::GetString(const CString& key, const CString& defaultValue) const
 {
-	CStringA val = defaultValue;
+	CString val = defaultValue;
 
     s_criticalSectionLocal.Lock();
 	{
@@ -484,7 +518,7 @@ CStringA CPluginSettings::GetString(const CStringA& key, const CStringA& default
 }
 
 
-void CPluginSettings::SetString(const CStringA& key, const CStringA& value)
+void CPluginSettings::SetString(const CString& key, const CString& value)
 {
     if (value.IsEmpty()) return;
 
@@ -508,14 +542,12 @@ void CPluginSettings::SetString(const CStringA& key, const CStringA& value)
 }
 
 
-
-
-int CPluginSettings::GetValue(const CStringA& key, int defaultValue) const
+int CPluginSettings::GetValue(const CString& key, int defaultValue) const
 {
 	int val = defaultValue;
 
-    CStringA sValue;
-    sValue.Format("%d", defaultValue);
+    CString sValue;
+    sValue.Format(L"%d", defaultValue);
 
     s_criticalSectionLocal.Lock();
 	{
@@ -523,7 +555,7 @@ int CPluginSettings::GetValue(const CStringA& key, int defaultValue) const
 		if (it != m_properties.end())
 		{
 		    sValue = it->second;
-			val = atoi(it->second);
+			val = _wtoi(it->second);
 		}
 	}
     s_criticalSectionLocal.Unlock();
@@ -534,10 +566,10 @@ int CPluginSettings::GetValue(const CStringA& key, int defaultValue) const
 }
 
 
-void CPluginSettings::SetValue(const CStringA& key, int value)
+void CPluginSettings::SetValue(const CString& key, int value)
 {
-    CStringA sValue;
-    sValue.Format("%d", value);
+    CString sValue;
+    sValue.Format(L"%d", value);
 
     DEBUG_SETTINGS("Settings::SetValue key:" + key + " value:" + sValue)
 
@@ -559,7 +591,7 @@ void CPluginSettings::SetValue(const CStringA& key, int value)
 }
 
 
-bool CPluginSettings::GetBool(const CStringA& key, bool defaultValue) const
+bool CPluginSettings::GetBool(const CString& key, bool defaultValue) const
 {
 	bool value = defaultValue;
 
@@ -580,7 +612,7 @@ bool CPluginSettings::GetBool(const CStringA& key, bool defaultValue) const
 }
 
 
-void CPluginSettings::SetBool(const CStringA& key, bool value)
+void CPluginSettings::SetBool(const CString& key, bool value)
 {
     SetString(key, value ? "true":"false");
 }
@@ -606,7 +638,7 @@ bool CPluginSettings::IsPluginSelftestEnabled()
 
 void CPluginSettings::SetFilterUrlList(const TFilterUrlList& filters) 
 {
-    DEBUG_SETTINGS("Settings::SetFilterUrlList")
+    DEBUG_SETTINGS(L"Settings::SetFilterUrlList")
 
 	s_criticalSectionFilters.Lock();
 	{
@@ -634,7 +666,7 @@ TFilterUrlList CPluginSettings::GetFilterUrlList() const
 }
 
 
-void CPluginSettings::AddFilterUrl(const CStringA& url, int version) 
+void CPluginSettings::AddFilterUrl(const CString& url, int version) 
 {
 	s_criticalSectionFilters.Lock();
 	{
@@ -661,7 +693,7 @@ bool CPluginSettings::Write(bool isDebug)
 
     if (isDebug)
     {
-		DEBUG_GENERAL("*** Writing changed settings")
+		DEBUG_GENERAL(L"*** Writing changed settings")
 	}
 
     CPluginSettingsLock lock;
@@ -670,7 +702,7 @@ bool CPluginSettings::Write(bool isDebug)
         m_settingsFile->Clear();
 
         // Properties
-        CPluginIniFile::TSectionData settings;        
+        CPluginIniFileW::TSectionData settings;        
 
         s_criticalSectionLocal.Lock();
         {
@@ -687,7 +719,7 @@ bool CPluginSettings::Write(bool isDebug)
 #ifdef SUPPORT_FILTER
 
         int filterCount = 0;
-        CPluginIniFile::TSectionData filters;        
+        CPluginIniFileW::TSectionData filters;        
 
         s_criticalSectionFilters.Lock();
 	    {
@@ -730,7 +762,7 @@ bool CPluginSettings::Write(bool isDebug)
 
 #ifdef SUPPORT_WHITELIST
 
-void CPluginSettings::AddDomainToHistory(const CStringA& domain)
+void CPluginSettings::AddDomainToHistory(const CString& domain)
 {
 	if (!CPluginClient::IsValidDomain(domain))
     {
@@ -799,21 +831,21 @@ bool CPluginSettings::IsPluginUpdateAvailable() const
 	bool isAvailable = Has(SETTING_PLUGIN_UPDATE_VERSION);
 	if (isAvailable)
 	{
-		CStringA newVersion = GetString(SETTING_PLUGIN_UPDATE_VERSION);
-	    CStringA curVersion = IEPLUGIN_VERSION;
+		CString newVersion = GetString(SETTING_PLUGIN_UPDATE_VERSION);
+	    CString curVersion = IEPLUGIN_VERSION;
 
 		isAvailable = newVersion != curVersion;
 		if (isAvailable)
 		{
 			int curPos = 0;
-			int curMajor = atoi(curVersion.Tokenize(".", curPos));
-			int curMinor = atoi(curVersion.Tokenize(".", curPos));
-			int curDev   = atoi(curVersion.Tokenize(".", curPos));
+			int curMajor = _wtoi(curVersion.Tokenize(L".", curPos));
+			int curMinor = _wtoi(curVersion.Tokenize(L".", curPos));
+			int curDev   = _wtoi(curVersion.Tokenize(L".", curPos));
 
 			int newPos = 0;
-			int newMajor = atoi(newVersion.Tokenize(".", newPos));
-			int newMinor = newPos > 0 ? atoi(newVersion.Tokenize(".", newPos)) : 0;
-			int newDev   = newPos > 0 ? atoi(newVersion.Tokenize(".", newPos)) : 0;
+			int newMajor = _wtoi(newVersion.Tokenize(L".", newPos));
+			int newMinor = newPos > 0 ? _wtoi(newVersion.Tokenize(L".", newPos)) : 0;
+			int newDev   = newPos > 0 ? _wtoi(newVersion.Tokenize(L".", newPos)) : 0;
 
 			isAvailable = newMajor > curMajor || newMajor == curMajor && newMinor > curMinor || newMajor == curMajor && newMinor == curMinor && newDev > curDev;
 		}
@@ -913,11 +945,11 @@ bool CPluginSettings::ReadTab(bool bDebug)
 {
     bool isRead = true;
 
-    DEBUG_SETTINGS("SettingsTab::Read tab")
+    DEBUG_SETTINGS(L"SettingsTab::Read tab")
 
     if (bDebug)
     {
-        DEBUG_GENERAL("*** Loading tab settings:" + m_settingsFileTab->GetFilePath());
+        DEBUG_GENERAL(L"*** Loading tab settings:" + m_settingsFileTab->GetFilePath());
     }
 
     isRead = m_settingsFileTab->Read();        
@@ -977,14 +1009,14 @@ bool CPluginSettings::WriteTab(bool isDebug)
 
     if (isDebug)
     {
-		DEBUG_GENERAL("*** Writing changed tab settings")
+		DEBUG_GENERAL(L"*** Writing changed tab settings")
 	}
 
     m_settingsFileTab->Clear();
 
     // Properties & errors
-    CPluginIniFile::TSectionData settings;        
-    CPluginIniFile::TSectionData errors;        
+    CPluginIniFileW::TSectionData settings;        
+    CPluginIniFileW::TSectionData errors;        
 
     s_criticalSectionLocal.Lock();
     {
@@ -1035,8 +1067,8 @@ bool CPluginSettings::IncrementTabCount()
         SYSTEMTIME systemTime;
         ::GetSystemTime(&systemTime);
 
-        CStringA today;
-        today.Format("%d-%d-%d", systemTime.wYear, systemTime.wMonth, systemTime.wDay);
+        CString today;
+        today.Format(L"%d-%d-%d", systemTime.wYear, systemTime.wMonth, systemTime.wDay);
 
         ReadTab(false);
         
@@ -1045,7 +1077,7 @@ bool CPluginSettings::IncrementTabCount()
             TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_COUNT);
             if (it != m_propertiesTab.end())
             {        
-                tabCount = atoi(it->second) + 1;
+                tabCount = _wtoi(it->second) + 1;
             }
 
             it = m_propertiesTab.find(SETTING_TAB_START_TIME);
@@ -1053,7 +1085,7 @@ bool CPluginSettings::IncrementTabCount()
             {
                 tabCount = 1;        
             }
-            m_tabNumber.Format("%d", tabCount);
+            m_tabNumber.Format(L"%d", tabCount);
         
             m_propertiesTab[SETTING_TAB_COUNT] = m_tabNumber;
             m_propertiesTab[SETTING_TAB_START_TIME] = today;
@@ -1085,9 +1117,9 @@ bool CPluginSettings::IncrementTabCount()
 }
 
 
-CStringA CPluginSettings::GetTabNumber() const
+CString CPluginSettings::GetTabNumber() const
 {
-    CStringA tabNumber;
+    CString tabNumber;
     
     s_criticalSectionLocal.Lock();
     {
@@ -1113,11 +1145,11 @@ bool CPluginSettings::DecrementTabCount()
             TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_COUNT);
             if (it != m_propertiesTab.end())
             {
-                tabCount = max(atoi(it->second) - 1, 0);
+                tabCount = max(_wtoi(it->second) - 1, 0);
 
                 if (tabCount > 0)
                 {
-                    m_tabNumber.Format("%d", tabCount);
+                    m_tabNumber.Format(L"%d", tabCount);
                 
                     m_propertiesTab[SETTING_TAB_COUNT] = m_tabNumber;
                 }
@@ -1174,9 +1206,9 @@ bool CPluginSettings::GetPluginEnabled() const
 }
 
 
-void CPluginSettings::AddError(const CStringA& error, const CStringA& errorCode)
+void CPluginSettings::AddError(const CString& error, const CString& errorCode)
 {
-    DEBUG_SETTINGS("SettingsTab::AddError error:" + error + " code:" + errorCode)
+    DEBUG_SETTINGS(L"SettingsTab::AddError error:" + error + " code:" + errorCode)
 
     CPluginSettingsTabLock lock;
     if (lock.IsLocked())
@@ -1198,9 +1230,9 @@ void CPluginSettings::AddError(const CStringA& error, const CStringA& errorCode)
 }
 
 
-CStringA CPluginSettings::GetErrorList() const
+CString CPluginSettings::GetErrorList() const
 {
-    CStringA errors;
+    CString errors;
 
     s_criticalSectionLocal.Lock();
     {
@@ -1339,7 +1371,7 @@ void CPluginSettings::RefreshTab()
 }
 
 
-int CPluginSettings::GetTabVersion(const CStringA& key) const
+int CPluginSettings::GetTabVersion(const CString& key) const
 {
     int version = 0;
 
@@ -1348,7 +1380,7 @@ int CPluginSettings::GetTabVersion(const CStringA& key) const
         TProperties::const_iterator it = m_propertiesTab.find(key);
         if (it != m_propertiesTab.end())
         {
-            version = atoi(it->second);
+            version = _wtoi(it->second);
         }
     }
     s_criticalSectionLocal.Unlock();
@@ -1356,7 +1388,7 @@ int CPluginSettings::GetTabVersion(const CStringA& key) const
     return version;
 }
 
-void CPluginSettings::IncrementTabVersion(const CStringA& key)
+void CPluginSettings::IncrementTabVersion(const CString& key)
 {
     CPluginSettingsTabLock lock;
     if (lock.IsLocked())
@@ -1370,11 +1402,11 @@ void CPluginSettings::IncrementTabVersion(const CStringA& key)
             TProperties::iterator it = m_propertiesTab.find(key);
             if (it != m_propertiesTab.end())
             {
-                version = atoi(it->second) + 1;
+                version = _wtoi(it->second) + 1;
             }
 
-            CStringA versionString;
-            versionString.Format("%d", version);
+            CString versionString;
+            versionString.Format(L"%d", version);
         
             m_propertiesTab[key] = versionString;
         }
@@ -1428,7 +1460,7 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
                 s_criticalSectionLocal.Lock();
 	            {
                     // Unpack white list
-                    CPluginIniFile::TSectionData whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist");
+                    CPluginIniFileW::TSectionData whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist");
                     int domainCount = 0;
                     bool bContinue = true;
 
@@ -1437,8 +1469,8 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
 			            CStringA domainCountStr;
 			            domainCountStr.Format("%d", ++domainCount);
         	            
-			            CPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
-			            CPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
+			            CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
+			            CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
 
 			            if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
 			            {
@@ -1457,8 +1489,8 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
 			            CStringA domainCountStr;
 			            domainCountStr.Format("%d", ++domainCount);
         	            
-			            CPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
-			            CPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
+			            CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
+			            CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
 
 			            if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
 			            {
@@ -1522,7 +1554,7 @@ bool CPluginSettings::WriteWhitelist(bool isDebug)
 	    {
             // White list
             int whitelistCount = 0;
-            CPluginIniFile::TSectionData whitelist;
+            CPluginIniFileW::TSectionData whitelist;
 
 		    for (TDomainList::iterator it = m_whitelist.begin(); it != m_whitelist.end(); ++it)
 		    {
@@ -1583,7 +1615,7 @@ bool CPluginSettings::WriteWhitelist(bool isDebug)
 }
 
 
-void CPluginSettings::AddWhiteListedDomain(const CStringA& domain, int reason, bool isToGo)
+void CPluginSettings::AddWhiteListedDomain(const CString& domain, int reason, bool isToGo)
 {
     DEBUG_SETTINGS("SettingsWhitelist::AddWhiteListedDomain domain:" + domain)
 
@@ -1669,7 +1701,7 @@ void CPluginSettings::AddWhiteListedDomain(const CStringA& domain, int reason, b
 }
 
 
-bool CPluginSettings::IsWhiteListedDomain(const CStringA& domain) const
+bool CPluginSettings::IsWhiteListedDomain(const CString& domain) const
 {
 	bool bIsWhiteListed;
 

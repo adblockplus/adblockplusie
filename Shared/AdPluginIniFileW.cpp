@@ -8,18 +8,18 @@
 #endif
 
 
-CPluginIniFileW::CPluginIniFileW(const CStringA& filename, bool hasChecksum) : 
+CPluginIniFileW::CPluginIniFileW(const CString& filename, bool hasChecksum) : 
     m_isValidChecksum(false), m_isDirty(false), m_filename(filename), m_hasChecksum(hasChecksum), m_lastError(0)
 {
     m_checksum = std::auto_ptr<CPluginChecksum>(new CPluginChecksum());
 }
 
-void CPluginIniFileW::SetInitialChecksumString(const CStringA& str)
+void CPluginIniFileW::SetInitialChecksumString(const CString& str)
 {
 	m_checksumInit = str;
 }
 
-CStringA CPluginIniFileW::GetFilePath() const
+CString CPluginIniFileW::GetFilePath() const
 {
     return m_filename;
 }
@@ -37,7 +37,7 @@ bool CPluginIniFileW::Exists()
 {
     bool isExisting = false;
     
-    HANDLE hFile = ::CreateFileA(m_filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
+    HANDLE hFile = ::CreateFile(m_filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
     if (hFile != INVALID_HANDLE_VALUE)
     {
         isExisting = true;
@@ -70,6 +70,9 @@ bool CPluginIniFileW::ReadString(const CStringW& memFile)
     {
         line = line.Right(line.GetLength() - 1);
     }
+	else
+	{
+	}
 
     while (pos >= 0)
     {
@@ -132,7 +135,7 @@ bool CPluginIniFileW::ReadString(const CStringW& memFile)
 	        }
 	        else
 	        {
-                DEBUG_INI("Ini::Read ignoring line::" + CStringA(line))
+                DEBUG_INI("Ini::Read ignoring line::" + CString(line))
             }
 	    }
 
@@ -158,7 +161,7 @@ bool CPluginIniFileW::Read()
     m_lastError = 0;
 
     // Read file
-    HANDLE hFile = ::CreateFileA(m_filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
+    HANDLE hFile = ::CreateFile(m_filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
     if (hFile == INVALID_HANDLE_VALUE)
     {
         m_lastError = ::GetLastError();
@@ -220,11 +223,11 @@ bool CPluginIniFileW::Write()
         m_checksum->Clear();
 
         // Create file
-        HANDLE hFile = ::CreateFileA(m_filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
+        HANDLE hFile = ::CreateFile(m_filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
         if (hFile == INVALID_HANDLE_VALUE)
         {
             m_lastError = ::GetLastError();
-            isWritten = true;
+            isWritten = false;
         }
         else
         {
@@ -275,7 +278,7 @@ bool CPluginIniFileW::Write()
             else
             {
                 m_lastError = ::GetLastError();
-                isWritten = true;
+                isWritten = false;
             }
 
             // Close file

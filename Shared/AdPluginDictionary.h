@@ -16,7 +16,7 @@ private:
     static CComAutoCriticalSection s_criticalSectionDictionary;
 
 	CPluginIniFileW::TSectionData m_dictionary;
-	CStringA m_dictionaryLanguage;
+	CString m_dictionaryLanguage;
 	std::map<CString,CString> m_dictionaryConversions;
 
 	// private constructor used by the singleton pattern
@@ -32,10 +32,10 @@ public:
 	static CPluginDictionary* GetInstance(); 
 
 	// Initializes the Dictionary. Should be called before any thing else
-	void SetLanguage(const CStringA& lang);
-	bool IsLanguageSupported(const CStringA& lang);
+	void SetLanguage(const CString& lang);
+	bool IsLanguageSupported(const CString& lang);
 
-    static bool Download(const CStringA& url, const CStringA& filename);
+    static bool Download(const CString& url, const CString& filename);
 
 	CString Lookup(const CString& key);
 };
