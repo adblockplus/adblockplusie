@@ -1321,78 +1321,39 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			    }
 			    s_criticalSectionLocal.Unlock();
 
-                CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
+				STARTUPINFO si;
+				::ZeroMemory(&si, sizeof(si));
+				si.cb = sizeof(si);
 
-                // http://msdn.microsoft.com/en-us/library/ms646839(VS.85).aspx
-                //#include <cderr.h>                
-		        TCHAR szFile[1024] = L"";
-		        TCHAR szFilter[1024] = L"";
+				PROCESS_INFORMATION pi;
+				::ZeroMemory(&pi, sizeof(pi));
 
-		        CString extension = CString(downloadFile.properties.extension);
-		        CString title = dictionary->Lookup("DOWNLOAD_FILE_SAVE_TITLE");
-				CString description = downloadFile.properties.description;
+	            char lpData[1024] = "";
 
-				wsprintf(szFilter, L"%s (*.%s)\0.%s\0\0", description.GetBuffer(), extension.GetBuffer(), extension.GetBuffer());
+		        if (!::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_PROGRAM_FILES, TRUE))
+		        {
+					DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_PROGRAM_FILES, "Download::program files folder retrieval failed");
+		        }
 
-		        wcscpy(szFile, downloadFile.downloadFile);
+				CPluginChecksum checksum;
 
-                OPENFILENAME ofn;
-                ::ZeroMemory(&ofn, sizeof(ofn));
+				checksum.Add("/url", downloadFile.downloadUrl);
+				checksum.Add("/type", downloadFile.properties.type);
+				checksum.Add("/file", downloadFile.downloadFile);
 
-                ofn.lStructSize = sizeof(OPENFILENAME);
-                ofn.hwndOwner = ::GetDesktopWindow();
-                ofn.lpstrFile = szFile;
-                ofn.nMaxFile = 1024;
-                ofn.Flags = OFN_NOTESTFILECREATE | OFN_OVERWRITEPROMPT | OFN_ENABLESIZING | OFN_HIDEREADONLY;
-                ofn.lpstrTitle = title;
-                ofn.lpstrFilter = szFilter;
-                ofn.lpstrDefExt = extension;
+				CString args = CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.type + " /file:" + downloadFile.downloadFile + " /checksum:" + checksum.GetAsString();
 
-				if (::GetOpenFileName(&ofn))
-				{
-					STARTUPINFO si;
-					::ZeroMemory(&si, sizeof(si));
-					si.cb = sizeof(si);
+				LPWSTR szCmdline = _wcsdup(args);
 
-					PROCESS_INFORMATION pi;
-					::ZeroMemory(&pi, sizeof(pi));
-
-		            char lpData[1024] = "";
-
-			        if (!::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_PROGRAM_FILES, TRUE))
-			        {
-						DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_PROGRAM_FILES, "Download::program files folder retrieval failed");
-			        }
-
-					CPluginChecksum checksum;
-
-					checksum.Add("/url", downloadFile.downloadUrl);
-					checksum.Add(L"/file", CString(szFile));
-
-					CString args = CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + CString(downloadFile.downloadUrl) + " /file:" + szFile + " /checksum:" + CString(checksum.GetAsString());
-
-					LPWSTR szCmdline = _wcsdup(args);
-
-                    if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, CREATE_PRESERVE_CODE_AUTHZ_LEVEL, NULL, NULL, &si, &pi))
-                    {
-						DWORD dwError = ::CommDlgExtendedError();
-						DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
-					}
-
-					::CloseHandle(pi.hProcess);
-					::CloseHandle(pi.hThread);
-				}
-				else
+                if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, CREATE_PRESERVE_CODE_AUTHZ_LEVEL, NULL, NULL, &si, &pi))
                 {
 					DWORD dwError = ::CommDlgExtendedError();
-					DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_OPEN_SAVE_DIALOG, "Download::opensave dialog failed");
+					DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
+				}
 
-#ifdef ADPLUGIN_TEST_MODE
-					CString error;
-					error.Format(L"Error: %u (0x%8.8x)", dwError, dwError);
-#endif
-                }
-		    }
+				::CloseHandle(pi.hProcess);
+				::CloseHandle(pi.hThread);
+			}
         }
 #endif // SUPPORT_FILE_DOWNLOAD
 
