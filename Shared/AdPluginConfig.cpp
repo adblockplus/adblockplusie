@@ -183,9 +183,9 @@ void CPluginConfig::Create()
     }
 }
 
-bool CPluginConfig::Download(const CStringA& url, const CStringA& filename)
+bool CPluginConfig::Download(const CString& url, const CString& filename)
 {
-    CStringA tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
+    CString tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
 
     DEBUG_GENERAL("*** Downloading config:" + filename +  " (to " + tempFile + ")");
 
@@ -193,28 +193,28 @@ bool CPluginConfig::Download(const CStringA& url, const CStringA& filename)
     if (bResult)
     {
 	    // if new filter urls are found download them and update the persistent data
-	    HRESULT hr = ::URLDownloadToFileA(NULL, url, tempFile, 0, NULL);
+	    HRESULT hr = ::URLDownloadToFile(NULL, url, tempFile, 0, NULL);
         if (SUCCEEDED(hr))
         {
             CPluginConfigLock lock;
             if (lock.IsLocked())
             {
                 // Move the temporary file to the new text file.
-                if (!::MoveFileExA(tempFile, CPluginSettings::GetDataPath(CONFIG_INI_FILE), MOVEFILE_REPLACE_EXISTING))
+                if (!::MoveFileEx(tempFile, CPluginSettings::GetDataPath(CONFIG_INI_FILE), MOVEFILE_REPLACE_EXISTING))
                 {
                     DWORD dwError = ::GetLastError();
 
                     // Not same device? copy/delete instead
                     if (dwError == ERROR_NOT_SAME_DEVICE)
                     {
-                        if (!::CopyFileA(tempFile, CPluginSettings::GetDataPath(CONFIG_INI_FILE), FALSE))
+                        if (!::CopyFile(tempFile, CPluginSettings::GetDataPath(CONFIG_INI_FILE), FALSE))
                         {
                             DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_CONFIG, PLUGIN_ERROR_CONFIG_COPY_FILE, "Config::Download - CopyFile(" + filename + ")")
 
                             bResult = false;
                         }
 
-                        ::DeleteFileA(tempFile);
+                        ::DeleteFile(tempFile);
                     }
                     else
                     {
@@ -231,7 +231,7 @@ bool CPluginConfig::Download(const CStringA& url, const CStringA& filename)
         }
         else
         {
-            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CONFIG, PLUGIN_ERROR_CONFIG_DOWNLOAD_FILE, "Config::Download - URLDownloadToFile(" + CStringA(CONFIG_INI_FILE) + ")");
+            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CONFIG, PLUGIN_ERROR_CONFIG_DOWNLOAD_FILE, "Config::Download - URLDownloadToFile(" + CString(CONFIG_INI_FILE) + ")");
 
             bResult = false;
         }
@@ -241,7 +241,7 @@ bool CPluginConfig::Download(const CStringA& url, const CStringA& filename)
 }
 
 
-bool CPluginConfig::GetDownloadProperties(const CStringA& contentType, SDownloadFileProperties& properties) const
+bool CPluginConfig::GetDownloadProperties(const CString& contentType, SDownloadFileProperties& properties) const
 {
     bool isValid = false;
 

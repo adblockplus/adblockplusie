@@ -33,14 +33,14 @@ DWORD WINAPI CPluginClass::TabThreadProc(LPVOID pParam)
 
     settings->SetWorkingThreadId();
 
-    CStringA threadInfo;
-    threadInfo.Format("%d.%d", ::GetCurrentProcessId(), ::GetCurrentThreadId());
+    CString threadInfo;
+    threadInfo.Format(L"%d.%d", ::GetCurrentProcessId(), ::GetCurrentThreadId());
     
-    CStringA debugText;
+    CString debugText;
     
-    debugText += "================================================================================";
-    debugText += "\nTAB THREAD " + threadInfo;
-    debugText += "\n================================================================================";
+    debugText += L"================================================================================";
+    debugText += L"\nTAB THREAD " + threadInfo;
+    debugText += L"\n================================================================================";
 
     DEBUG_GENERAL(debugText)
 

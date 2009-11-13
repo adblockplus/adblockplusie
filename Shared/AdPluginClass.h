@@ -103,8 +103,8 @@ public:
 
 private:
 
-	bool SetMenuBar(HMENU hMenu, const CStringA& url);	
-	HMENU CreatePluginMenu(const CStringA& url);
+	bool SetMenuBar(HMENU hMenu, const CString& url);	
+	HMENU CreatePluginMenu(const CString& url);
 
 	void DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags);
 	bool CreateStatusBarPane();
@@ -115,18 +115,18 @@ private:
 	HWND GetBrowserHWND() const;
     CComQIPtr<IWebBrowser2> GetBrowser() const;
 
-	CStringA GetBrowserUrl() const;
+	CString GetBrowserUrl() const;
 
-	void SetDocumentUrl(const CStringA& url);
-	CStringA GetDocumentUrl() const;
-	CStringA GetDocumentDomain() const;
+	void SetDocumentUrl(const CString& url);
+	CString GetDocumentUrl() const;
+	CString GetDocumentDomain() const;
 
 	static CPluginMimeFilterClient* s_mimeFilter;
 
 #ifdef SUPPORT_FILTER
-    void HideElement(IHTMLElement* pEl, const CStringA& type, const CStringA& url, bool isDebug, CStringA& indent);
-    void HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, const CStringA& docName, const CStringA& domain, CStringA& indent, bool isCached=true);
-	void HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CStringA& docName, const CStringA& domain, CStringA indent);
+    void HideElement(IHTMLElement* pEl, const CString& type, const CString& url, bool isDebug, CString& indent);
+    void HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, const CString& docName, const CString& domain, CString& indent, bool isCached=true);
+	void HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CString& docName, const CString& domain, CString indent);
 #endif // SUPPORT_FILTER
 
 	bool InitObject(bool bBHO);
@@ -135,7 +135,7 @@ private:
 
     static void UpdateStatusBar();
 
-	static HICON GetStatusBarButton(const CStringA& url);	
+	static HICON GetStatusBarButton(const CString& url);	
 	static void LaunchUpdater(const CString& path);
 	static CPluginClass* FindInstance(HWND hStatusBarWnd);
 	static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -155,8 +155,8 @@ private:
 	int m_nPaneWidth;
 	HANDLE m_hTheme;
 
-	CStringA m_documentUrl;
-	CStringA m_documentDomain;
+	CString m_documentUrl;
+	CString m_documentDomain;
 
 	bool m_isAdviced;
 	bool m_isRefresh;

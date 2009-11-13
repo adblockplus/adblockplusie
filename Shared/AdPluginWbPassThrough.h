@@ -11,7 +11,7 @@ class WBPassthruSink :
 
 private:
 
-    CStringA m_url;
+    CString m_url;
 
 public:
 

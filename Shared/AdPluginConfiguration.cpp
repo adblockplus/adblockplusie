@@ -63,7 +63,7 @@ bool CPluginConfiguration::Download()
     httpRequest.Add("pc", CPluginClient::GetComputerName(), false);
     httpRequest.Add("username", CPluginClient::GetUserName(), false);
 
-    CStringA newPluginId = CPluginClient::GetPluginId();
+    CString newPluginId = CPluginClient::GetPluginId();
     if (newPluginId != settings->GetString(SETTING_PLUGIN_ID))
     {
         httpRequest.Add("newplugin", newPluginId);
@@ -111,6 +111,9 @@ bool CPluginConfiguration::Download()
 
 #ifdef SUPPORT_FILTER
     httpRequest.Add("filterv", settings->GetValue(SETTING_FILTER_VERSION, 0));
+#endif
+#ifdef SUPPORT_CONFIG
+    httpRequest.Add("configv", settings->GetValue(SETTING_CONFIG_VERSION, 0));
 #endif
 
 	if (!isOk)
@@ -416,7 +419,7 @@ bool CPluginConfiguration::IsValidConfig() const
 
 #endif // SUPPORT_CONFIG
 
-CStringA CPluginConfiguration::GetUserId() const
+CString CPluginConfiguration::GetUserId() const
 {
 	return m_userId;
 }
@@ -428,13 +431,13 @@ int CPluginConfiguration::GetPluginInfoPanel() const
 }
 
 
-CStringA CPluginConfiguration::GetPluginUpdateUrl() const
+CString CPluginConfiguration::GetPluginUpdateUrl() const
 {
 	return m_pluginUpdateUrl;
 }
 
 
-CStringA CPluginConfiguration::GetPluginUpdateVersion() const
+CString CPluginConfiguration::GetPluginUpdateVersion() const
 {
 	return m_pluginUpdateVersion;
 }
@@ -446,7 +449,7 @@ int CPluginConfiguration::GetDictionaryVersion() const
 }
 
 
-CStringA CPluginConfiguration::GetDictionaryUrl() const
+CString CPluginConfiguration::GetDictionaryUrl() const
 {
 	return m_dictionaryUrl;
 }
@@ -478,7 +481,7 @@ TDomainList CPluginConfiguration::GetWhiteList() const
 
 #ifdef SUPPORT_CONFIG
 
-CStringA CPluginConfiguration::GetConfigUrl() const
+CString CPluginConfiguration::GetConfigUrl() const
 {
 	return m_configUrl;
 }
@@ -492,7 +495,7 @@ int CPluginConfiguration::GetConfigVersion() const
 
 
 #ifdef PRODUCT_AIDOINLINE
-CStringA CPluginConfiguration::GetCollectedStatus() const
+CString CPluginConfiguration::GetCollectedStatus() const
 {
 	return m_collectedStatus;
 }

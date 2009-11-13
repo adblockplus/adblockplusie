@@ -100,7 +100,7 @@ CPluginDictionary* CPluginDictionary::GetInstance()
 }
 
 
-bool CPluginDictionary::IsLanguageSupported(const CStringA& lang) 
+bool CPluginDictionary::IsLanguageSupported(const CString& lang) 
 {
     bool hasLanguage = false;
 
@@ -111,17 +111,16 @@ bool CPluginDictionary::IsLanguageSupported(const CStringA& lang)
 
         iniFile.Read();
             
-        USES_CONVERSION;
-        hasLanguage = iniFile.HasSection(A2W(lang));
+        hasLanguage = iniFile.HasSection(lang);
     }
         
 	return hasLanguage;
 }
 
 
-void CPluginDictionary::SetLanguage(const CStringA& lang)
+void CPluginDictionary::SetLanguage(const CString& lang)
 {
-	DEBUG_GENERAL("*** Loading dictionary:" + CPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
+	DEBUG_GENERAL(L"*** Loading dictionary:" + CPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
 
     CPluginDictionaryLock lock;
     if (lock.IsLocked())
@@ -136,29 +135,26 @@ void CPluginDictionary::SetLanguage(const CStringA& lang)
 
         s_criticalSectionDictionary.Lock();
 	    {
-            USES_CONVERSION;
-            CStringW langW = lang;
-
-		    if (iniFile.HasSection(langW))
+		    if (iniFile.HasSection(lang))
 		    {
 			    m_dictionaryLanguage = lang;
 
-			    m_dictionary = iniFile.GetSectionData(langW);
+			    m_dictionary = iniFile.GetSectionData(lang);
 
-		        CStringA dicEl;
-		        dicEl.Format("%d", m_dictionary.size());
+		        CString dicEl;
+		        dicEl.Format(L"%d", m_dictionary.size());
 		        
-    		    DEBUG_GENERAL("*** Using dictionary section [" + lang + "] - " + dicEl + " elements")
+    		    DEBUG_GENERAL(L"*** Using dictionary section [" + lang + "] - " + dicEl + L" elements")
 		    }
 		    else
 		    {
 			    m_dictionary = iniFile.GetSectionData(L"en");
-			    m_dictionaryLanguage = "en";
+			    m_dictionaryLanguage = L"en";
 
-		        CStringA dicEl;
-		        dicEl.Format("%d", m_dictionary.size());
+		        CString dicEl;
+		        dicEl.Format(L"%d", m_dictionary.size());
 
-    		    DEBUG_GENERAL("*** Using dictionary section [en] instead of [" + lang + "] - " + dicEl + " elements")
+    		    DEBUG_GENERAL(L"*** Using dictionary section [en] instead of [" + lang + "] - " + dicEl + L" elements")
 		    }
 
 			// Dictionary conversions
@@ -204,7 +200,7 @@ CString CPluginDictionary::Lookup(const CString& key)
             dwErrorCode |= key.GetAt(0) << 8;
             dwErrorCode |= key.GetAt(1);
 		    
-		    DEBUG_ERROR_LOG(dwErrorCode, PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_LOOKUP, "Dictionary::Lookup - " + CStringA(key))
+		    DEBUG_ERROR_LOG(dwErrorCode, PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_LOOKUP, L"Dictionary::Lookup - " + key)
 		}
 #endif
 	}
@@ -218,7 +214,7 @@ CString CPluginDictionary::Lookup(const CString& key)
 
 void CPluginDictionary::Create()
 {
-	DEBUG_GENERAL("*** Creating dictionary:" + CPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
+	DEBUG_GENERAL(L"*** Creating dictionary:" + CPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
 
     CPluginDictionaryLock lock;
     if (lock.IsLocked())
@@ -314,50 +310,50 @@ void CPluginDictionary::Create()
         }
         else
         {
-            DEBUG_ERROR_LOG(iniFile.GetLastError(), PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_CREATE_FILE, "Dictionary::Create - Write")
+            DEBUG_ERROR_LOG(iniFile.GetLastError(), PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_CREATE_FILE, L"Dictionary::Create - Write")
         }
 
         // Delete old
-        ::DeleteFileA(CPluginSettings::GetDataPath("dictionary.ini"));
+        ::DeleteFile(CPluginSettings::GetDataPath(L"dictionary.ini"));
     }
 }
 
-bool CPluginDictionary::Download(const CStringA& url, const CStringA& filename)
+bool CPluginDictionary::Download(const CString& url, const CString& filename)
 {
-    CStringA tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
+    CString tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
 
-    DEBUG_GENERAL("*** Downloading dictionary:" + filename +  " (to " + tempFile + ")");
+    DEBUG_GENERAL(L"*** Downloading dictionary:" + filename +  " (to " + tempFile + ")");
 
     bool bResult = !tempFile.IsEmpty();
     if (bResult)
     {
 	    // if new filter urls are found download them and update the persistent data
-	    HRESULT hr = ::URLDownloadToFileA(NULL, url, tempFile, 0, NULL);
+	    HRESULT hr = ::URLDownloadToFile(NULL, url, tempFile, 0, NULL);
         if (SUCCEEDED(hr))
         {
             CPluginDictionaryLock lock;
             if (lock.IsLocked())
             {
                 // Move the temporary file to the new text file.
-                if (!::MoveFileExA(tempFile, CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), MOVEFILE_REPLACE_EXISTING))
+                if (!::MoveFileEx(tempFile, CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), MOVEFILE_REPLACE_EXISTING))
                 {
                     DWORD dwError = ::GetLastError();
 
                     // Not same device? copy/delete instead
                     if (dwError == ERROR_NOT_SAME_DEVICE)
                     {
-                        if (!::CopyFileA(tempFile, CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), FALSE))
+                        if (!::CopyFile(tempFile, CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), FALSE))
                         {
-                            DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_COPY_FILE, "Dictionary::Download - CopyFile(" + filename + ")")
+                            DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_COPY_FILE, L"Dictionary::Download - CopyFile(" + filename + L")")
 
                             bResult = false;
                         }
 
-                        ::DeleteFileA(tempFile);
+                        ::DeleteFile(tempFile);
                     }
                     else
                     {
-                        DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_MOVE_FILE, "Dictionary::Download - MoveFileEx(" + filename + ")")
+                        DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_MOVE_FILE, L"Dictionary::Download - MoveFileEx(" + filename + L")")
 
                         bResult = false;
                     }
@@ -370,7 +366,7 @@ bool CPluginDictionary::Download(const CStringA& url, const CStringA& filename)
         }
         else
         {
-            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_DOWNLOAD_FILE, "Dictionary::Download - URLDownloadToFile(" + CStringA(DICTIONARY_INI_FILE) + ")")
+            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_DOWNLOAD_FILE, L"Dictionary::Download - URLDownloadToFile(" + CString(DICTIONARY_INI_FILE) + L")")
 
             bResult = false;
         }

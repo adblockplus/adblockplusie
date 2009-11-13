@@ -114,7 +114,7 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://simple-adblock.com/downlo
 #endif
 */
         // Update?
-        CStringA oldVersion = settings->GetString(SETTING_PLUGIN_VERSION);
+        CString oldVersion = settings->GetString(SETTING_PLUGIN_VERSION);
 	    if (settings->IsFirstRunUpdate() || settings->GetString(SETTING_PLUGIN_UPDATE_VERSION) == IEPLUGIN_VERSION || oldVersion != IEPLUGIN_VERSION)
         {
             settings->SetString(SETTING_PLUGIN_VERSION, IEPLUGIN_VERSION);
@@ -128,13 +128,13 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://simple-adblock.com/downlo
 	    }
 
         // Ensure max REGISTRATION_MAX_ATTEMPTS registration attempts today
-        CStringA regDate = settings->GetString(SETTING_REG_DATE);
+        CString regDate = settings->GetString(SETTING_REG_DATE);
 
         SYSTEMTIME systemTime;
         ::GetSystemTime(&systemTime);
 
-        CStringA today;
-        today.Format("%d-%d-%d", systemTime.wYear, systemTime.wMonth, systemTime.wDay);
+        CString today;
+        today.Format(L"%d-%d-%d", systemTime.wYear, systemTime.wMonth, systemTime.wDay);
         
         if (regDate != today)
         {
@@ -269,9 +269,9 @@ HWND CPluginClass::GetBrowserHWND() const
 	return (HWND)hBrowserWndHandle;
 }
 
-CStringA CPluginClass::GetDocumentUrl() const
+CString CPluginClass::GetDocumentUrl() const
 {
-    CStringA url;
+    CString url;
 
     s_criticalSectionLocal.Lock();
     {
@@ -282,9 +282,9 @@ CStringA CPluginClass::GetDocumentUrl() const
 	return url;
 }
 
-void CPluginClass::SetDocumentUrl(const CStringA& url)
+void CPluginClass::SetDocumentUrl(const CString& url)
 {
-    CStringA domain;
+    CString domain;
 
     s_criticalSectionLocal.Lock();
     {
@@ -300,9 +300,9 @@ void CPluginClass::SetDocumentUrl(const CStringA& url)
 #endif
 }
 
-CStringA CPluginClass::GetDocumentDomain() const
+CString CPluginClass::GetDocumentDomain() const
 {
-    CStringA domain;
+    CString domain;
 
     s_criticalSectionLocal.Lock();
     {
@@ -340,9 +340,9 @@ CComQIPtr<IWebBrowser2> CPluginClass::GetAsyncBrowser()
     return browser;
 }
 
-CStringA CPluginClass::GetBrowserUrl() const
+CString CPluginClass::GetBrowserUrl() const
 {
-	CStringA url;
+	CString url;
 
     CComQIPtr<IWebBrowser2> browser = GetBrowser();
 	if (browser)
@@ -405,13 +405,11 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 	{
         if (settings->IsMainProcess())
         {
-            DEBUG_GENERAL(
-                "================================================================================\nMAIN TAB UI\n================================================================================")
+            DEBUG_GENERAL(L"================================================================================\nMAIN TAB UI\n================================================================================")
         }
         else
         {
-            DEBUG_GENERAL(
-                "================================================================================\nNEW TAB UI\n================================================================================")
+            DEBUG_GENERAL(L"================================================================================\nNEW TAB UI\n================================================================================")
         }
 
 		HRESULT hr = ::CoInitialize(NULL);
@@ -609,11 +607,12 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	}
 
 	// Get the URL
-	CStringA url;
+	CString url;
 	vt = pDispParams->rgvarg[5].vt; 
 	if (vt == VT_BYREF + VT_VARIANT)
 	{
         url = pDispParams->rgvarg[5].pvarVal->bstrVal;
+
         CPluginClient::UnescapeUrl(url);
 	}
 	else
@@ -630,7 +629,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 		{
 			SetDocumentUrl(url);
 
-            DEBUG_GENERAL("================================================================================\nBegin main navigation url:" + url + "\n================================================================================")
+            DEBUG_GENERAL(L"================================================================================\nBegin main navigation url:" + url + "\n================================================================================")
 
 #if (defined ENABLE_DEBUG_RESULT)
             CPluginDebug::DebugResultDomain(url);
@@ -641,7 +640,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 		}
 		else
 		{
-			DEBUG_NAVI("Navi::Begin navigation url:" + url)
+			DEBUG_NAVI(L"Navi::Begin navigation url:" + url)
 
 #ifdef SUPPORT_WHITELIST
             client->AddCacheFrame(url);
@@ -741,7 +740,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 			if (browser)
 			{
 #ifdef SUPPORT_FILTER
-				HideElements(browser, true, GetDocumentUrl(), GetDocumentDomain(), CStringA(""));
+				HideElements(browser, true, GetDocumentUrl(), GetDocumentDomain(), CString(""));
 #endif
 			}
 		}
@@ -758,7 +757,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 				CComQIPtr<IWebBrowser2> pBrowser = pDispParams->rgvarg[1].pdispVal;
 				if (pBrowser)
 				{
-    				CStringA url;
+    				CString url;
 					CComBSTR bstrUrl;
 					if (SUCCEEDED(pBrowser->get_LocationURL(&bstrUrl)) && ::SysStringLen(bstrUrl) > 0)
 					{
@@ -785,7 +784,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 #ifdef SUPPORT_FILTER
                         if (url.Left(6) != "res://")
                         {
-    				        HideElements(pBrowser, url == GetDocumentUrl(), url, GetDocumentDomain(), CStringA(""));
+    				        HideElements(pBrowser, url == GetDocumentUrl(), url, GetDocumentDomain(), CString(""));
 				        }
 #endif
 			        }
@@ -802,10 +801,10 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 
 	default:
         {
-            CStringA did;
-            did.Format("DispId:%u", dispidMember);
+            CString did;
+            did.Format(L"DispId:%u", dispidMember);
             
-            DEBUG_NAVI("Navi::Default " + did)
+            DEBUG_NAVI(L"Navi::Default " + did)
         }
 
 		// do nothing
@@ -1136,7 +1135,7 @@ STDMETHODIMP CPluginClass::QueryStatus(const GUID* pguidCmdGroup, ULONG cCmds, O
 	return S_OK;
 }
 
-HMENU CPluginClass::CreatePluginMenu(const CStringA& url)
+HMENU CPluginClass::CreatePluginMenu(const CString& url)
 {
 	HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 
@@ -1158,7 +1157,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 	    return;
     }
 
-	CStringA url;
+	CString url;
 	int navigationErrorId = 0;
 
 	// Create menu parent window
@@ -1266,7 +1265,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
             
             httpRequest.AddPluginId();
 			httpRequest.Add("reason", 0);
-			httpRequest.Add("url", GetDocumentUrl(), false);
+			httpRequest.Add(L"url", GetDocumentUrl(), false);
 			
 			url = httpRequest.GetUrl();
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_FEEDBACK;
@@ -1288,7 +1287,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 		    {
 	            CPluginSettings* settings = CPluginSettings::GetInstance();
 
-			    CStringA domain;
+			    CString domain;
     		
 			    s_criticalSectionLocal.Lock();
 			    {
@@ -1325,9 +1324,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
                 CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
 
                 // http://msdn.microsoft.com/en-us/library/ms646839(VS.85).aspx
-                //#include <cderr.h>
-                OPENFILENAME ofn;
-                
+                //#include <cderr.h>                
 		        TCHAR szFile[1024] = L"";
 		        TCHAR szFilter[1024] = L"";
 
@@ -1339,28 +1336,26 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 		        wcscpy(szFile, downloadFile.downloadFile);
 
+                OPENFILENAME ofn;
                 ::ZeroMemory(&ofn, sizeof(ofn));
+
                 ofn.lStructSize = sizeof(OPENFILENAME);
                 ofn.hwndOwner = ::GetDesktopWindow();
                 ofn.lpstrFile = szFile;
                 ofn.nMaxFile = 1024;
-                ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
+                ofn.Flags = OFN_NOTESTFILECREATE | OFN_OVERWRITEPROMPT | OFN_ENABLESIZING | OFN_HIDEREADONLY;
                 ofn.lpstrTitle = title;
                 ofn.lpstrFilter = szFilter;
                 ofn.lpstrDefExt = extension;
 
-                if (!::GetSaveFileName(&ofn))
-                {
-					DEBUG_ERROR_LOG(::CommDlgExtendedError(), PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_OPEN_SAVE_DIALOG, "Download::opensave dialog failed");
-                }
-                else
-                {
+				if (::GetOpenFileName(&ofn))
+				{
 					STARTUPINFO si;
-                    ::ZeroMemory(&si, sizeof(si));
-                    si.cb = sizeof(si);
+					::ZeroMemory(&si, sizeof(si));
+					si.cb = sizeof(si);
 
-                    PROCESS_INFORMATION pi;
-                    ::ZeroMemory(&pi, sizeof(pi));
+					PROCESS_INFORMATION pi;
+					::ZeroMemory(&pi, sizeof(pi));
 
 		            char lpData[1024] = "";
 
@@ -1382,18 +1377,21 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
                     {
 						DWORD dwError = ::CommDlgExtendedError();
 						DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
-
-#ifdef ADPLUGIN_TEST_MODE
-						CString error;
-						error.Format(L"Error: %u", dwError);
-
-						::MessageBox(::GetDesktopWindow(), error, L"Create process", MB_OK);
-#endif
 					}
 
 					::CloseHandle(pi.hProcess);
 					::CloseHandle(pi.hThread);
 				}
+				else
+                {
+					DWORD dwError = ::CommDlgExtendedError();
+					DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_OPEN_SAVE_DIALOG, "Download::opensave dialog failed");
+
+#ifdef ADPLUGIN_TEST_MODE
+					CString error;
+					error.Format(L"Error: %u (0x%8.8x)", dwError, dwError);
+#endif
+                }
 		    }
         }
 #endif // SUPPORT_FILE_DOWNLOAD
@@ -1426,7 +1424,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 }
 
 
-bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url) 
+bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url) 
 {
 	CString ctext;
 
@@ -1469,8 +1467,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
             settings->Read();
         }
     }
-
-    bool hasUser = settings->Has(SETTING_USER_ID);
 
     // Plugin activate
     if (settings->GetBool(SETTING_PLUGIN_ACTIVATE_ENABLED,false) && !settings->GetBool(SETTING_PLUGIN_ACTIVATED,false))
@@ -1520,7 +1516,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 
 		    TDomainHistory domainHistory = settings->GetDomainHistory();
     		
-		    CStringA documentDomain = GetDocumentDomain();
+		    CString documentDomain = GetDocumentDomain();
 
 		    if (CPluginClient::IsValidDomain(documentDomain))
 		    {
@@ -1657,7 +1653,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
 	// Settings
 	ctext = dictionary->Lookup("MENU_SETTINGS");
 	fmii.fMask  = MIIM_STATE | MIIM_STRING;
-	fmii.fState = hasUser ? MFS_ENABLED : MFS_DISABLED;
+	fmii.fState = MFS_ENABLED;
 	fmii.dwTypeData = ctext.GetBuffer();
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_SETTINGS, FALSE, &fmii);
@@ -1682,7 +1678,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
     {
 	    UINT index = WM_DOWNLOAD_FILE;
 
-        std::map<CStringA,SDownloadFile> downloadFiles = client->GetDownloadFiles();
+        TDownloadFiles downloadFiles = client->GetDownloadFiles();
         if (downloadFiles.empty())
         {
 	        ctext = dictionary->Lookup("DOWNLOAD_FILE_NO_FILES");
@@ -1701,7 +1697,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CStringA& url)
         }
         else
         {
-            for (std::map<CStringA,SDownloadFile>::iterator it = downloadFiles.begin(); it != downloadFiles.end() && index < WM_DOWNLOAD_FILE_MAX; ++it)
+            for (TDownloadFiles::iterator it = downloadFiles.begin(); it != downloadFiles.end() && index < WM_DOWNLOAD_FILE_MAX; ++it)
             {
 				CString fileItem;
 				CString download = dictionary->Lookup("GENERAL_DOWNLOAD");
@@ -1910,7 +1906,7 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 }
 
 
-HICON CPluginClass::GetStatusBarButton(const CStringA& url)
+HICON CPluginClass::GetStatusBarButton(const CString& url)
 {
 	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 
@@ -2056,7 +2052,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
 		{
-			CStringA strURL = pClass->GetBrowserUrl();
+			CString strURL = pClass->GetBrowserUrl();
 			if (strURL != pClass->GetDocumentUrl())
 			{
 				pClass->SetDocumentUrl(strURL);
@@ -2234,7 +2230,7 @@ ATOM CPluginClass::GetAtomPaneClass()
 
 #ifdef SUPPORT_FILTER
 
-void CPluginClass::HideElement(IHTMLElement* pEl, const CStringA& type, const CStringA& url, bool isDebug, CStringA& indent)
+void CPluginClass::HideElement(IHTMLElement* pEl, const CString& type, const CString& url, bool isDebug, CString& indent)
 {
 	CComPtr<IHTMLStyle> pStyle;
 
@@ -2243,7 +2239,7 @@ void CPluginClass::HideElement(IHTMLElement* pEl, const CStringA& type, const CS
 #ifdef ENABLE_DEBUG_RESULT
         CComBSTR bstrDisplay;
 
-        if (SUCCEEDED(pStyle->get_display(&bstrDisplay)) && bstrDisplay && CStringA(bstrDisplay) == "none")
+        if (SUCCEEDED(pStyle->get_display(&bstrDisplay)) && bstrDisplay && CString(bstrDisplay) == L"none")
         {
             return;
         }
@@ -2253,7 +2249,7 @@ void CPluginClass::HideElement(IHTMLElement* pEl, const CStringA& type, const CS
 
 		if (SUCCEEDED(pStyle->put_display(sbstrNone)))
 		{
-            DEBUG_HIDE_EL(indent + "HideEl::Hiding " + type + " url:" + url)
+            DEBUG_HIDE_EL(indent + L"HideEl::Hiding " + type + L" url:" + url)
 
 #ifdef ENABLE_DEBUG_SELFTEST
 	        DEBUG_SELFTEST("*** Hiding " + type + " url:" + url)
@@ -2270,7 +2266,7 @@ void CPluginClass::HideElement(IHTMLElement* pEl, const CStringA& type, const CS
 }
 
 
-void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, const CStringA& docName, const CStringA& domain, CStringA& indent, bool isCached)
+void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, const CString& docName, const CString& domain, CString& indent, bool isCached)
 {
     int  cacheIndex = -1;
     long cacheAllElementsCount = -1;
@@ -2357,7 +2353,7 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
         return;
     }
 
-    CStringA tag = bstrTag;
+    CString tag = bstrTag;
     tag.MakeLower();
 
     // Check if element is hidden
@@ -2380,7 +2376,7 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
 
 		if (SUCCEEDED(pEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
 		{
-		    CStringA src = vAttr.bstrVal;
+		    CString src = vAttr.bstrVal;
 		    CPluginClient::UnescapeUrl(src);
 
 			// If src should be blocked, set style display:none on image
@@ -2399,8 +2395,8 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
 
 		if (SUCCEEDED(pEl->get_innerHTML(&bstrInnerHtml)) && bstrInnerHtml)
 		{
-			CStringA sObjectHtml = bstrInnerHtml;
-			CStringA src;
+			CString sObjectHtml = bstrInnerHtml;
+			CString src;
 
 		    int posBegin = sObjectHtml.Find("VALUE=\"");
 		    int posEnd = posBegin >= 0 ? sObjectHtml.Find('\"', posBegin + 7) : -1;
@@ -2486,7 +2482,7 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
     }
 }
 
-void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CStringA& docName, const CStringA& domain, CStringA indent)
+void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CString& docName, const CString& domain, CString indent)
 {
 	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 
@@ -2602,7 +2598,7 @@ void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CS
                 if (pFrameBrowser)
                 {
                     CComBSTR bstrSrc;
-                    CStringA src;
+                    CString src;
 
                     if (SUCCEEDED(pFrameBrowser->get_LocationURL(&bstrSrc)))
                     {
@@ -2645,19 +2641,19 @@ void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CS
 
                     if (SUCCEEDED(pFrameEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
                     {
-		                CStringA src = vAttr.bstrVal;
+		                CString src = vAttr.bstrVal;
 
 		                // Some times, domain is missing. Should this be added on image src's as well?''
             		    
 		                // eg. gadgetzone.com.au
-		                if (src.Left(2) == "//")
+		                if (src.Left(2) == L"//")
 		                {
-			                src = "http:" + src;
+			                src = L"http:" + src;
 		                }
 		                // eg. http://w3schools.com/html/html_examples.asp
-		                else if (src.Left(4) != "http" && src.Left(6) != "res://")
+		                else if (src.Left(4) != L"http" && src.Left(6) != L"res://")
 		                {
-			                src = "http://" + domain + src;
+			                src = L"http://" + domain + src;
 		                }
 		                
 		                CPluginClient::UnescapeUrl(src);
@@ -2685,7 +2681,7 @@ void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CS
     {
         profiler.StopTimer();
 
-        CStringA el;
+        CString el;
         el.Format("%u", m_cacheIndexLast);
 
         DEBUG_HIDE_EL(indent + "HideEl el:" + el + " time:" + profiler.GetElapsedTimeString(profileTime))

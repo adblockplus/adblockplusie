@@ -6,10 +6,10 @@
 
 struct SDownloadFileProperties
 {
-    CStringA extension;
-    CStringA type;
-    CStringA content;
-    CStringA description;
+    CString extension;
+    CString type;
+    CString content;
+    CString description;
     
     SDownloadFileProperties()
     {
@@ -26,8 +26,8 @@ struct SDownloadFileProperties
 
 struct SDownloadFile
 {
-    CStringW downloadFile;
-    CStringA downloadUrl;
+    CString downloadFile;
+    CString downloadUrl;
     int fileType;
 	int fileSize;
     SDownloadFileProperties properties;
@@ -52,10 +52,10 @@ struct SDownloadFile
 #ifdef SUPPORT_FILTER
 
 // Filter URL list (url -> version)
-typedef std::map<CStringA, int> TFilterUrlList;
+typedef std::map<CString, int> TFilterUrlList;
 
 // Filter file list (filename -> download path)
-typedef std::set<std::pair<CStringA,CStringA> > TFilterFileList;
+typedef std::set<std::pair<CString,CString> > TFilterFileList;
 
 #endif // SUPPORT_FILTER
 
@@ -63,10 +63,10 @@ typedef std::set<std::pair<CStringA,CStringA> > TFilterFileList;
 #ifdef SUPPORT_WHITELIST
 
 // Domain list (domain -> reason)
-typedef std::map<CStringA, int> TDomainList;
+typedef std::map<CString, int> TDomainList;
 
 // Domain history (domain -> reason)
-typedef std::vector<std::pair<CStringA, int> > TDomainHistory;
+typedef std::vector<std::pair<CString, int> > TDomainHistory;
 
 #endif // SUPPORT_WHITELIST
 
@@ -74,13 +74,13 @@ typedef std::vector<std::pair<CStringA, int> > TDomainHistory;
 #ifdef SUPPORT_FILE_DOWNLOAD
 
 // Download files (url -> struct)
-typedef std::map<CStringA,SDownloadFile> TDownloadFiles;
+typedef std::map<CString,SDownloadFile> TDownloadFiles;
 
 // Download files (menu ID -> struct)
 typedef std::map<UINT,SDownloadFile> TMenuDownloadFiles;
 
 // Download file properties (content type -> struct)
-typedef std::map<CStringA,SDownloadFileProperties> TDownloadFileProperties;
+typedef std::map<CString,SDownloadFileProperties> TDownloadFileProperties;
 
 #endif
 

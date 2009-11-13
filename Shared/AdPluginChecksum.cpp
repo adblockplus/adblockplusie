@@ -30,11 +30,11 @@ DWORD CPluginChecksum::Get() const
 }
 
 
-CStringA CPluginChecksum::GetAsString() const
+CString CPluginChecksum::GetAsString() const
 { 
-	CStringA checksum;
+	CString checksum;
 
-	checksum.Format("%lu", Get());
+	checksum.Format(L"%lu", Get());
 
 	return checksum;
 }

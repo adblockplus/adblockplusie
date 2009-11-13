@@ -13,9 +13,9 @@ public:
     typedef std::map<CStringA, CStringA> TSectionData;
     typedef std::set<CStringA> TSectionNames;
 
-	CPluginIniFile(const CStringA& filename, bool hasChecksum=false);
+	CPluginIniFile(const CString& filename, bool hasChecksum=false);
 
-    CStringA GetFilePath() const;
+    CString GetFilePath() const;
 
     void Clear();
     bool Exists();
@@ -28,7 +28,7 @@ public:
 
 	const CPluginIniFile::TSectionNames& GetSectionNames() const;
 
-	void SetInitialChecksumString(const CStringA& str);
+	void SetInitialChecksumString(const CString& str);
 	bool IsValidChecksum() const;
 
 	// check if the section exists in the file
@@ -50,13 +50,13 @@ private:
 
     typedef std::map<CStringA, CPluginIniFile::TSectionData> TData;
 
-	CStringA m_filename;
+	CString m_filename;
 	bool m_isDirty;
 	bool m_isValidChecksum;
 	bool m_hasChecksum;
 	unsigned int m_lastError;
 
-	CStringA m_checksumInit;
+	CString m_checksumInit;
 	CPluginIniFile::TData m_data;
     CPluginIniFile::TSectionNames m_sectionNames;
     

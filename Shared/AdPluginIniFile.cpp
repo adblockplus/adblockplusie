@@ -8,18 +8,18 @@
 #endif
 
 
-CPluginIniFile::CPluginIniFile(const CStringA& filename, bool hasChecksum) : 
+CPluginIniFile::CPluginIniFile(const CString& filename, bool hasChecksum) : 
     m_isValidChecksum(false), m_isDirty(false), m_filename(filename), m_hasChecksum(hasChecksum), m_lastError(0)
 {
     m_checksum = std::auto_ptr<CPluginChecksum>(new CPluginChecksum());
 }
 
-void CPluginIniFile::SetInitialChecksumString(const CStringA& str)
+void CPluginIniFile::SetInitialChecksumString(const CString& str)
 {
 	m_checksumInit = str;
 }
 
-CStringA CPluginIniFile::GetFilePath() const
+CString CPluginIniFile::GetFilePath() const
 {
     return m_filename;
 }
@@ -38,7 +38,7 @@ bool CPluginIniFile::Exists()
 {
     bool isExisting = false;
     
-    HANDLE hFile = ::CreateFileA(m_filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
+    HANDLE hFile = ::CreateFile(m_filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
     if (hFile != INVALID_HANDLE_VALUE)
     {
         isExisting = true;
@@ -159,7 +159,7 @@ bool CPluginIniFile::Read()
     m_lastError = 0;
 
     // Read file
-    HANDLE hFile = ::CreateFileA(m_filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
+    HANDLE hFile = ::CreateFile(m_filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
     if (hFile == INVALID_HANDLE_VALUE)
     {
         m_lastError = ::GetLastError();
@@ -225,11 +225,11 @@ bool CPluginIniFile::Write()
         m_checksum->Clear();
 
         // Create file
-        HANDLE hFile = ::CreateFileA(m_filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
+        HANDLE hFile = ::CreateFile(m_filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
         if (hFile == INVALID_HANDLE_VALUE)
         {
             m_lastError = ::GetLastError();
-            isWritten = true;
+            isWritten = false;
         }
         else
         {
@@ -280,7 +280,7 @@ bool CPluginIniFile::Write()
             else
             {
                 m_lastError = ::GetLastError();
-                isWritten = true;
+                isWritten = false;
             }
 
             // Close file
