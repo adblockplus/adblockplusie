@@ -233,7 +233,7 @@
  #undef  SUPPORT_FILTER
  #undef  SUPPORT_WHITELIST
  #define SUPPORT_FILE_DOWNLOAD
- #undef  SUPPORT_CONFIG
+ #define SUPPORT_CONFIG
 #endif
 
 // ----------------------------------------------------------------------------
@@ -304,7 +304,11 @@
 #endif
 
 // Dictionary filename
-#define DICTIONARY_INI_FILE "dictionary_w.ini"
+#if (defined PRODUCT_ADBLOCKER)
+ #define DICTIONARY_INI_FILE "dictionary_w.ini"
+#else
+ #define DICTIONARY_INI_FILE "dictionary.ini"
+#endif
 
 // Config filename
 #ifdef SUPPORT_CONFIG

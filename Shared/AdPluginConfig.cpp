@@ -110,11 +110,11 @@ void CPluginConfig::Read()
 
                     SDownloadFileProperties properties;
                     
-                    properties.content = data["type"];
+                    properties.type = data["type"];
                     properties.extension = data["extension"];
                     properties.description = data["descriptor"];
 
-                    m_downloadFileProperties[properties.content] = properties;
+                    m_downloadFileProperties[properties.type] = properties;
 				}
 			}
 	    }

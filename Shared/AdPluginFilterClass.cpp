@@ -22,7 +22,7 @@ private:
 
 public:
 
-    CPluginFilterLock(const CStringA& filterFile) : CPluginMutex("FilterFile" + CString(filterFile), PLUGIN_ERROR_MUTEX_FILTER_FILE)
+    CPluginFilterLock(const CString& filterFile) : CPluginMutex("FilterFile" + filterFile, PLUGIN_ERROR_MUTEX_FILTER_FILE)
     {
         s_criticalSectionFilterLock.Lock();
     }

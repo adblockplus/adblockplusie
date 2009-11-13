@@ -8,7 +8,6 @@ struct SDownloadFileProperties
 {
     CString extension;
     CString type;
-    CString content;
     CString description;
     
     SDownloadFileProperties()
@@ -19,7 +18,6 @@ struct SDownloadFileProperties
     {
         extension = org.extension;
         type = org.type;
-        content = org.content;
         description = org.description;
     }
 };
