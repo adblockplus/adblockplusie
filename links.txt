@@ -1,0 +1,3 @@
+Vista / IE protected mode
+
+http://www.codeproject.com/KB/vista-security/PMSurvivalGuide.aspx
