@@ -1330,9 +1330,9 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 	            char lpData[1024] = "";
 
-		        if (!::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_PROGRAM_FILES, TRUE))
+		        if (!::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_PROGRAM_FILES_COMMON, TRUE))
 		        {
-					DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_PROGRAM_FILES, "Download::program files folder retrieval failed");
+					DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_COMMON_FILES, "Download::common files folder retrieval failed");
 		        }
 
 				CPluginChecksum checksum;

@@ -285,7 +285,7 @@
 // Name of ini file in Windows directory for uninstall
 #if (defined PRODUCT_ADBLOCKER)
  #define UNINSTALL_INI_FILE "SimpleAdblock.ini"
-#elif (defined PRODUCT_DOWNLOADHELPER)
+#elif (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
  #define UNINSTALL_INI_FILE "DownloadHelper.ini"
 #endif
 

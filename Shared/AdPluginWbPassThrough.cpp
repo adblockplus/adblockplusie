@@ -215,6 +215,7 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 							fileSize = atoi(contentLength.Left(posLength).GetBuffer());
 							if (fileSize > 0)
 							{
+::MessageBox(::GetDesktopWindow(), m_url, L"Has file", MB_OK);
 								client->AddDownloadFile(m_url, fileSize, downloadFileProperties);
 							}
 						}
