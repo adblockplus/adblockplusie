@@ -76,7 +76,7 @@ CFilterElementHideAttrSelector::~CFilterElementHideAttrSelector()
 // CFilterElementHide
 // ============================================================================
 
-CFilterElementHide::CFilterElementHide(const CStringA& filterText, const CStringA& filterFile) : m_filterText(filterText), m_filterFile(filterFile)
+CFilterElementHide::CFilterElementHide(const CString& filterText, const CString& filterFile) : m_filterText(filterText), m_filterFile(filterFile)
 {
 }
 
@@ -132,7 +132,7 @@ CFilter::CFilter() : m_isMatchCase(false), m_isFirstParty(false), m_isThirdParty
 // CPluginFilter
 // ============================================================================
 
-CPluginFilter::CPluginFilter(const TFilterFileList& list, const CStringA& dataPath) : m_dataPath(dataPath)
+CPluginFilter::CPluginFilter(const TFilterFileList& list, const CString& dataPath) : m_dataPath(dataPath)
 {
     m_contentMap["document"] = CFilter::contentTypeDocument;
     m_contentMap["subdocument"] = CFilter::contentTypeSubdocument;
@@ -163,14 +163,14 @@ CPluginFilter::CPluginFilter(const TFilterFileList& list, const CStringA& dataPa
 }
 
 
-CPluginFilter::CPluginFilter(const CStringA& dataPath) : m_dataPath(dataPath)
+CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
 {
 }
 
 
-bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFile)
+bool CPluginFilter::AddFilterElementHide(CString filterText, CString filterFile)
 {
-    int delimiterPos = filterText.Find("#");
+    int delimiterPos = filterText.Find(L"#");
     if (delimiterPos < 0 || filterText.GetLength() <= delimiterPos + 1)
     {
         DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (no tag)")
@@ -188,8 +188,8 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
         // Create filter descriptor
         CFilterElementHide filter(filterText, filterFile);
 
-        CStringA filterDomains = filterText.Left(delimiterPos).MakeLower();
-        CStringA filterString  = filterText.Right(filterText.GetLength() - delimiterPos - (isOldFormat ? 1 : 2));
+        CString filterDomains = filterText.Left(delimiterPos).MakeLower();
+        CString filterString  = filterText.Right(filterText.GetLength() - delimiterPos - (isOldFormat ? 1 : 2));
 
         bool isDomainSpecific = delimiterPos > 0 && filterDomains.Find('~') < 0;
         
@@ -200,7 +200,7 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
 
             while ((endPos = filterDomains.Find(',')) >= 0 || !filterDomains.IsEmpty())
 	        {
-                CStringA domain;
+                CString domain;
 
 	            if (endPos == -1)
 	            {
@@ -232,9 +232,9 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
         }
         
         // Find tag name, class or any (*)
-        CStringA tag;
+        CString tag;
 
-        char firstTag = filterString.GetAt(0);
+        TCHAR firstTag = filterString.GetAt(0);
         // Any tag
         if (firstTag == '*')
         {
@@ -247,7 +247,7 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
         // Real tag
         else if (isalnum(firstTag))
         {
-            int pos = filterString.FindOneOf(".#[(");
+            int pos = filterString.FindOneOf(L".#[(");
             if (pos > 0)
             {
                 tag = filterString.Left(pos).MakeLower();
@@ -267,13 +267,13 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
         }
 
         // Find Id and class name
-        CStringA id;
-        CStringA className;
+        CString id;
+        CString className;
         
         // In old format, id/class is part of attributes
         if (isOldFormat == false && !filterString.IsEmpty())
         {
-            char firstId = filterString.GetAt(0);
+            TCHAR firstId = filterString.GetAt(0);
             
             // Id
             if (firstId == '#')
@@ -335,7 +335,7 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
             {
                 CFilterElementHideAttrSelector attrSelector;
 
-                CStringA arg = filterString.Mid(startPos + 1, endPos - startPos - 1);
+                CString arg = filterString.Mid(startPos + 1, endPos - startPos - 1);
 
                 if ((delimiterPos = arg.Find('=')) > 0)
                 {
@@ -366,16 +366,17 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
                         attrSelector.m_isExact = true;
                     }
                     
-                    if (CStringA(attrSelector.m_bstrAttr) == "style")
+					CString tag = attrSelector.m_bstrAttr;
+                    if (tag == "style")
                     {
                         attrSelector.m_isStyle = true;
                         attrSelector.m_value.MakeLower();
                     }
-                    else if (CStringA(attrSelector.m_bstrAttr) == "id")
+                    else if (tag == "id")
                     {
                         attrSelector.m_isId = true;
                     }
-                    else if (CStringA(attrSelector.m_bstrAttr) == "class")
+                    else if (tag == "class")
                     {
                         attrSelector.m_isClass = true;
                     }
@@ -417,7 +418,7 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
 
             while ((endPos = filterDomains.Find(',')) >= 0 || !filterDomains.IsEmpty())
             {
-                CStringA domain;
+                CString domain;
 
                 if (endPos == -1)
                 {
@@ -466,14 +467,14 @@ bool CPluginFilter::AddFilterElementHide(CStringA filterText, CStringA filterFil
 }
 
 
-bool CPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CStringA& domain) const
+bool CPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CString& domain) const
 {
     bool isHidden = true;
 
     // Check is not domains
     if (!filter.m_domainsNot.empty())
     {
-        for (std::set<CStringA>::const_iterator it = filter.m_domainsNot.begin(); isHidden && it != filter.m_domainsNot.end(); ++it)
+        for (std::set<CString>::const_iterator it = filter.m_domainsNot.begin(); isHidden && it != filter.m_domainsNot.end(); ++it)
         {
             if (domain == *(it) || IsSubdomain(domain, *it))
             {
@@ -485,7 +486,7 @@ bool CPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, I
     // Check attributes
     if (isHidden && !filter.m_attributeSelectors.empty())
     {
-        CStringA style;
+        CString style;
         
         CComPtr<IHTMLStyle> pStyle;
         if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
@@ -506,7 +507,7 @@ bool CPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, I
             CComVariant vAttr;
             UINT attrLength = 0;
 
-            CStringA value;
+            CString value;
 
             if (attrIt->m_isStyle)
             {
@@ -539,7 +540,7 @@ bool CPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, I
                 }
                 else if (vAttr.vt == VT_I4)
                 {
-                    value.Format("%u", vAttr.iVal);
+                    value.Format(L"%u", vAttr.iVal);
                 }
             }
 
@@ -584,18 +585,18 @@ bool CPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, I
 }
 
 
-bool CPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, const CStringA& domain, const CStringA& indent) const
+bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent) const
 {
     bool isHidden = false;
 
-    CStringA id;
+    CString id;
     CComBSTR bstrId;
     if (SUCCEEDED(pEl->get_id(&bstrId)) && bstrId)
     {
         id = bstrId;
     }
 
-    CStringA classNames;
+    CString classNames;
     CComBSTR bstrClassNames;
     if (SUCCEEDED(pEl->get_className(&bstrClassNames)) && bstrClassNames)
     {
@@ -604,7 +605,7 @@ bool CPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, cons
 
     s_criticalSectionFilterMap.Lock();
     {
-        CStringA domainTest = domain;
+        CString domainTest = domain;
         
         // Iterate through sub domains
         int lastDotPos = domainTest.ReverseFind('.');
@@ -658,7 +659,7 @@ bool CPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, cons
                         if (isHidden == false && !classNames.IsEmpty() && !filterIt->second.m_tagClassName.IsEmpty() && classNames.Find(' ') > 0)
                         {
                             int pos = 0;
-                            CStringA className = classNames.Tokenize(" \t\n\r", pos);
+                            CString className = classNames.Tokenize(L" \t\n\r", pos);
 
                             while (isHidden == false && pos >= 0)
                             {
@@ -683,7 +684,7 @@ bool CPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, cons
                                 }
 
                                 // Next class name
-                                className = classNames.Tokenize(" \t\n\r", pos);
+                                className = classNames.Tokenize(L" \t\n\r", pos);
                             }
                         }
                     }
@@ -738,7 +739,7 @@ bool CPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, cons
         if (isHidden == false && !classNames.IsEmpty())
         {
             int pos = 0;
-            CStringA className = classNames.Tokenize(" \t\n\r", pos);
+            CString className = classNames.Tokenize(L" \t\n\r", pos);
 
             while (isHidden == false && pos >= 0)
             {
@@ -773,7 +774,7 @@ bool CPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, cons
                 }
 
                 // Next class name
-                className = classNames.Tokenize(" \t\n\r", pos);
+                className = classNames.Tokenize(L" \t\n\r", pos);
             }
         }
 
@@ -800,15 +801,15 @@ bool CPluginFilter::IsElementHidden(const CStringA& tag, IHTMLElement* pEl, cons
 }
 
 
-void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int filterType)
+void CPluginFilter::AddFilter(CString filterString, CString filterFile, int filterType)
 {
-    CStringA raw = filterString;
+    CString raw = filterString;
     
 	// Here we should find a key for the filter
 	// We find a string of max 8 characters that does not contain any wildcards and which are unique for the filter
 
     // Find settings part, identified by $
-    CStringA filterSettings;
+    CString filterSettings;
 
     int pos = filterString.Find('$');
     if (pos > 0)
@@ -820,7 +821,7 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
     // Split filterString to parts
 
     bool bCheckFromStartDomain = false;
-    if (filterString.Find("||") == 0)
+    if (filterString.Find(L"||") == 0)
     {
         bCheckFromStartDomain = true;
         filterString = filterString.Right(filterString.GetLength() - 2);
@@ -840,7 +841,7 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
         filterString = filterString.Left(filterString.GetLength() - 1);
     }
 
-    std::vector<CStringA> filterParts;
+    std::vector<CString> filterParts;
     pos = 0;
 
     while ((pos = filterString.Find('*')) >= 0)
@@ -866,7 +867,7 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
 	int keyLength = 4;
 	int startCharacter = 0;
 
-    CStringA filterPart = filterParts[0];
+    CString filterPart = filterParts[0];
     filterPart.MakeLower();
 
     int nFilterParts = filterParts.size();
@@ -876,11 +877,11 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
 
     if (filterPartLength >= 7)
     {
-        if (filterPart.Find("http://") == 0)
+        if (filterPart.Find(L"http://") == 0)
         {
             startCharacter = 7;
         }
-        else if (filterPart.Find("https://") == 0)
+        else if (filterPart.Find(L"https://") == 0)
         {
             startCharacter = 8;
         }
@@ -947,11 +948,11 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
 
         if (filterPartLength >= 7)
         {
-            if (filterPart.Find("http://") == 0)
+            if (filterPart.Find(L"http://") == 0)
             {
                 startCharacter = 7;
             }
-            else if (filterPart.Find("https://") == 0)
+            else if (filterPart.Find(L"https://") == 0)
             {
                 startCharacter = 8;
             }
@@ -1022,7 +1023,7 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
 
         while ((pos = filterSettings.Find(',')) >= 0 || !filterSettings.IsEmpty())
 	    {
-            CStringA setting = pos >= 0 ? filterSettings.Left(pos) : filterSettings;
+            CString setting = pos >= 0 ? filterSettings.Left(pos) : filterSettings;
             filterSettings = pos >= 0 ? filterSettings.Right(filterSettings.GetLength() - pos - 1) : "";
 
             // Is content type negated
@@ -1034,7 +1035,7 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
             }
 
             // Apply content type
-            std::map<CStringA, int>::iterator it = m_contentMap.find(setting);
+            std::map<CString, int>::iterator it = m_contentMap.find(setting);
             if (it != m_contentMap.end())
             {
                 if (!hasContent)
@@ -1080,7 +1081,7 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
                 
                 while ((posDomain = setting.Find('|')) >= 0 || !setting.IsEmpty())
 	            {
-                    CStringA domain = posDomain >= 0 ? setting.Left(posDomain) : setting;
+                    CString domain = posDomain >= 0 ? setting.Left(posDomain) : setting;
                     setting = posDomain >= 0 ? setting.Right(setting.GetLength() - posDomain - 1) : "";
 
                     if (domain.GetAt(0) == '~')
@@ -1116,9 +1117,9 @@ void CPluginFilter::AddFilter(CStringA filterString, CStringA filterFile, int fi
 
 #ifdef PRODUCT_ADBLOCKER
 
-bool CPluginFilter::DownloadFilterFile(const CStringA& url, const CStringA& filename)
+bool CPluginFilter::DownloadFilterFile(const CString& url, const CString& filename)
 {
-    CStringA tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
+    CString tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
 
     DEBUG_GENERAL("*** Downloading filter file:" + filename + " (to " + tempFile + ")");
 
@@ -1126,28 +1127,28 @@ bool CPluginFilter::DownloadFilterFile(const CStringA& url, const CStringA& file
     if (bResult)
     {
 	    // if new filter urls are found download them and update the persistent data
-	    HRESULT hr = ::URLDownloadToFileA(NULL, url, tempFile, 0, NULL);
+	    HRESULT hr = ::URLDownloadToFile(NULL, url, tempFile, 0, NULL);
         if (SUCCEEDED(hr))
         {
             CPluginFilterLock lock(filename);
             if (lock.IsLocked())
             {
                 // Move the temporary file to the new text file.
-                if (!::MoveFileExA(tempFile, CPluginSettings::GetDataPath(filename), MOVEFILE_REPLACE_EXISTING))
+                if (!::MoveFileEx(tempFile, CPluginSettings::GetDataPath(filename), MOVEFILE_REPLACE_EXISTING))
                 {
                     DWORD dwError = ::GetLastError();
 
                     // Not same device? copy/delete instead
                     if (dwError == ERROR_NOT_SAME_DEVICE)
                     {
-                        if (!::CopyFileA(tempFile, CPluginSettings::GetDataPath(filename), FALSE))
+                        if (!::CopyFile(tempFile, CPluginSettings::GetDataPath(filename), FALSE))
                         {
                             DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_FILTER, PLUGIN_ERROR_FILTER_COPY_FILE, "Filter::Unable to copy file:" + filename)
 
                             bResult = false;
                         }
 
-                        ::DeleteFileA(tempFile);
+                        ::DeleteFile(tempFile);
                     }
                     else
                     {
@@ -1175,7 +1176,7 @@ bool CPluginFilter::DownloadFilterFile(const CStringA& url, const CStringA& file
 
 #endif
 
-bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloadPath)
+bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadPath)
 {
     bool isRead = false;
 
@@ -1184,7 +1185,7 @@ bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloa
     if (client)
 #endif
 	{
-        CStringA fileContent;
+        CString fileContent;
 
 #ifdef PRODUCT_ADBLOCKER
         CPluginFilterLock lock(filename);
@@ -1194,7 +1195,7 @@ bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloa
 	        DEBUG_GENERAL("*** Loading filter:" + m_dataPath + filename);
 
             // Read file
-            HANDLE hFile = ::CreateFileA(m_dataPath + filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
+            HANDLE hFile = ::CreateFile(m_dataPath + filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
             if (hFile == INVALID_HANDLE_VALUE)
             {
                 DWORD dwError = ::GetLastError();
@@ -1209,7 +1210,7 @@ bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloa
                     else if (filename == PERSONAL_FILTER_FILE)
                     {
                         // Open new file
-                        HANDLE hPersonalFile = ::CreateFileA(CPluginSettings::GetDataPath(PERSONAL_FILTER_FILE), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
+                        HANDLE hPersonalFile = ::CreateFile(CPluginSettings::GetDataPath(PERSONAL_FILTER_FILE), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
                         if (hPersonalFile)
                         {
                             // Build filter string
@@ -1280,7 +1281,7 @@ bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloa
         {
             // Parse file string
             int pos = 0;
-            CStringA filter = fileContent.Tokenize("\n\r", pos);
+            CString filter = fileContent.Tokenize(L"\n\r", pos);
         
 	        s_criticalSectionFilterMap.Lock();
 		    {
@@ -1296,14 +1297,14 @@ bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloa
 					    // See http://adblockplus.org/en/filters for further documentation
 						
 					    // @@ indicates white listing rule
-					    if (filter.Find("@@") == 0)
+					    if (filter.Find(L"@@") == 0)
 					    {
 						    filterType = CFilter::filterTypeWhiteList;
 
 						    filter.Delete(0, 2);
 					    }
 					    // If a filter contains ## then it is a element hiding rule
-					    else if (filter.Find("#") >= 0)
+					    else if (filter.Find(L"#") >= 0)
 					    {
 						    filterType = CFilter::filterTypeElementHide;
 					    }
@@ -1324,7 +1325,7 @@ bool CPluginFilter::ReadFilter(const CStringA& filename, const CStringA& downloa
 					    }
 				    }
 
-                    filter = fileContent.Tokenize("\n\r", pos);
+                    filter = fileContent.Tokenize(L"\n\r", pos);
 			    }
 		    }
 		    s_criticalSectionFilterMap.Unlock();
@@ -1381,7 +1382,7 @@ void CPluginFilter::ParseFilters(const TFilterFileList& list)
 }
 
 
-bool CPluginFilter::IsMatchFilter(const CFilter& filter, CStringA src, const CStringA& srcDomain, const CStringA& domain) const
+bool CPluginFilter::IsMatchFilter(const CFilter& filter, CString src, const CString& srcDomain, const CString& domain) const
 {
     // Initial checks
 
@@ -1396,7 +1397,7 @@ bool CPluginFilter::IsMatchFilter(const CFilter& filter, CStringA src, const CSt
     {
         bool bFound = false;
 
-        for (std::set<CStringA>::const_iterator it = filter.m_domains.begin(); !bFound && it != filter.m_domains.end(); ++it)
+        for (std::set<CString>::const_iterator it = filter.m_domains.begin(); !bFound && it != filter.m_domains.end(); ++it)
         {
             bFound = domain == *(it) || IsSubdomain(domain, *it);
         }
@@ -1410,7 +1411,7 @@ bool CPluginFilter::IsMatchFilter(const CFilter& filter, CStringA src, const CSt
     // $domain ~ 
     if (!filter.m_domainsNot.empty())
     {
-        for (std::set<CStringA>::const_iterator it = filter.m_domainsNot.begin(); it != filter.m_domainsNot.end(); ++it)
+        for (std::set<CString>::const_iterator it = filter.m_domainsNot.begin(); it != filter.m_domainsNot.end(); ++it)
         {
             if (domain == *(it) || IsSubdomain(domain, *it))
             {
@@ -1505,30 +1506,30 @@ bool CPluginFilter::IsMatchFilter(const CFilter& filter, CStringA src, const CSt
 }
 
 
-const CFilter* CPluginFilter::MatchFilter(int filterType, const CStringA& src, int contentType, const CStringA& domain) const
+const CFilter* CPluginFilter::MatchFilter(int filterType, const CString& src, int contentType, const CString& domain) const
 {
 	const CFilter* filter = NULL;
 
 	int startCharacter = 0;
 	int keyLength = 4;
 
-    CStringA srcLower = src;
+    CString srcLower = src;
     srcLower.MakeLower();
     int srcLowerLength = srcLower.GetLength();
 
     // Extract src domain
     DWORD length = 2048;
-    CStringA srcDomain;
+    CString srcDomain;
     
-    if (SUCCEEDED(::UrlGetPartA(src, srcDomain.GetBufferSetLength(2048), &length, URL_PART_HOSTNAME, 0)))
+    if (SUCCEEDED(::UrlGetPart(src, srcDomain.GetBufferSetLength(2048), &length, URL_PART_HOSTNAME, 0)))
     {
         srcDomain.ReleaseBuffer();
 
-        if (srcDomain.Left(4) == "www.")
+        if (srcDomain.Left(4) == L"www.")
         {
             srcDomain = srcDomain.Right(srcDomain.GetLength() - 4);
         }
-        else if (srcDomain.Left(5) == "www2." || srcDomain.Left(5) == "www3.")
+        else if (srcDomain.Left(5) == L"www2." || srcDomain.Left(5) == L"www3.")
         {
             srcDomain = srcDomain.Right(srcDomain.GetLength() - 5);
         }
@@ -1546,11 +1547,11 @@ const CFilter* CPluginFilter::MatchFilter(int filterType, const CStringA& src, i
 
         if (srcLowerLength >= 7)
         {
-            if (srcLower.Find("http://") == 0)
+            if (srcLower.Find(L"http://") == 0)
             {
                 startCharacter = 7;
             }
-            else if (srcLower.Find("https://") == 0)
+            else if (srcLower.Find(L"https://") == 0)
             {
                 startCharacter = 8;
             }
@@ -1592,11 +1593,11 @@ const CFilter* CPluginFilter::MatchFilter(int filterType, const CStringA& src, i
 
             if (srcLowerLength >= 7)
             {
-                if (srcLower.Find("http://") == 0)
+                if (srcLower.Find(L"http://") == 0)
                 {
                     startCharacter = 7;
                 }
-                else if (srcLower.Find("https://") == 0)
+                else if (srcLower.Find(L"https://") == 0)
                 {
                     startCharacter = 8;
                 }
@@ -1648,7 +1649,7 @@ const CFilter* CPluginFilter::MatchFilter(int filterType, const CStringA& src, i
 }
 
 
-bool CPluginFilter::ShouldWhiteList(CStringA src) const
+bool CPluginFilter::ShouldWhiteList(CString src) const
 {
 	// We should not block the empty string, so all filtering does not make sense
 	// Therefore we just return
@@ -1663,7 +1664,7 @@ bool CPluginFilter::ShouldWhiteList(CStringA src) const
 }
 
 
-bool CPluginFilter::ShouldBlock(CStringA src, int contentType, const CStringA& domain, bool addDebug) const
+bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug) const
 {
     // We should not block the empty string, so all filtering does not make sense
 	// Therefore we just return
@@ -1672,12 +1673,12 @@ bool CPluginFilter::ShouldBlock(CStringA src, int contentType, const CStringA& d
 		return false;
 	}
 
-	CStringA type;
+	CString type;
 	if (addDebug)
 	{
 	    type = "???";
 	    
-	    std::map<int,CStringA>::const_iterator it = m_contentMapText.find(contentType);
+	    std::map<int,CString>::const_iterator it = m_contentMapText.find(contentType);
 	    if (it != m_contentMapText.end())
 	    {
 	        type = it->second;
@@ -1713,7 +1714,7 @@ bool CPluginFilter::ShouldBlock(CStringA src, int contentType, const CStringA& d
 	return blockFilter ? true : false;
 }
 
-int CPluginFilter::FindMatch(const CStringA& src, CStringA filterPart, int srcStartPos) const
+int CPluginFilter::FindMatch(const CString& src, CString filterPart, int srcStartPos) const
 {
     int filterCurrentPos = filterPart.Find('^');
     if (filterCurrentPos >= 0)
@@ -1733,7 +1734,7 @@ int CPluginFilter::FindMatch(const CStringA& src, CStringA filterPart, int srcSt
         }
 
         // Find first part without special chars
-        CStringA test = filterCurrentPos >= 0 ? filterPart.Left(filterCurrentPos) : filterPart;
+        CString test = filterCurrentPos >= 0 ? filterPart.Left(filterCurrentPos) : filterPart;
         int testLength = test.GetLength();
 
         while (filterCurrentPos >= 0 || testLength > 0)
@@ -1840,7 +1841,7 @@ int CPluginFilter::FindMatch(const CStringA& src, CStringA filterPart, int srcSt
     }
 }
 
-bool CPluginFilter::IsSpecialChar(char testChar) const
+bool CPluginFilter::IsSpecialChar(TCHAR testChar) const
 {
     if (isalnum(testChar) || testChar == '.' || testChar == '-' || testChar == '%')
     {
@@ -1850,7 +1851,7 @@ bool CPluginFilter::IsSpecialChar(char testChar) const
     return true;
 }
 
-bool CPluginFilter::IsSubdomain(const CStringA& subdomain, const CStringA& domain) const
+bool CPluginFilter::IsSubdomain(const CString& subdomain, const CString& domain) const
 {
     int pos = subdomain.Find(domain);
     
@@ -1882,7 +1883,7 @@ void CPluginFilter::CreateFilters()
         }
 
         // Open file
-        HANDLE hFile = ::CreateFileA(CPluginSettings::GetDataPath("easylist.txt"), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
+        HANDLE hFile = ::CreateFile(CPluginSettings::GetDataPath("easylist.txt"), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
         if (hFile == INVALID_HANDLE_VALUE)
         {
 		    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_FILTER, PLUGIN_ERROR_FILTER_CREATE_FILE_OPEN, "Filter::Create - CreateFile");
@@ -3330,7 +3331,7 @@ void CPluginFilter::CreateFilters()
 		        // Set correct version
                 CPluginSettings* settings = CPluginSettings::GetInstance();
 
-                settings->AddFilterUrl(CStringA(FILTERS_PROTOCOL) + CStringA(FILTERS_HOST) + "/easylist.txt", 1);
+                settings->AddFilterUrl(CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt", 1);
 		        settings->Write();
             }
             else

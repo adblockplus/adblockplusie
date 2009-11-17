@@ -41,14 +41,11 @@ CPluginConfig::CPluginConfig()
         }
     }
 
-    if (isExisting)
-    {
-        Read();
-    }
-    else
+    if (!isExisting)
     {
 	    Create();
     }
+	Read();
 }
 
 
@@ -156,7 +153,7 @@ void CPluginConfig::Create()
 		    formatWmv["descriptor"] = "Windows Media Video";
 
 	        iniFile.UpdateSection("formatWmv", formatWmv);
-
+/*
     	    CPluginIniFile::TSectionData formatAsf;
 
 		    formatAsf["type"] = "video/x-ms-asf";
@@ -164,7 +161,7 @@ void CPluginConfig::Create()
 		    formatAsf["descriptor"] = "Advanced Systems Format";
 
 	        iniFile.UpdateSection("formatAsf", formatAsf);
-
+*/
 // Windows Media Audio - WMA
 	    }
         s_criticalSection.Unlock();

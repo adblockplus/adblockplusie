@@ -191,7 +191,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     // --------------------------------------------------------------------
     // Generate list of BHO guids
     // --------------------------------------------------------------------
-
+/*
 	if (!IsMainThreadDone(hMainThread))
 	{
 	    HKEY hKey;
@@ -230,7 +230,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
         DEBUG_GENERAL(debugText)
     }
-
+*/
 	// --------------------------------------------------------------------
 	// Update statusbar
 	// --------------------------------------------------------------------
@@ -441,8 +441,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 // Update dictionary
                 if (configuration->IsValidDictionary())
                 {
-                    CString dictionaryName = configuration->GetDictionaryUrl();
-
                     int currentVersion = settings->GetValue(SETTING_DICTIONARY_VERSION);
                     int newVersion = configuration->GetDictionaryVersion();
 
@@ -456,11 +454,14 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 // Update config file download info
                 if (configuration->IsValidConfig())
                 {
-                    int currentVersion = settings->GetValue(SETTING_CONFIG_VERSION);
+DEBUG("Valid config");
+					
+					int currentVersion = settings->GetValue(SETTING_CONFIG_VERSION);
                     int newVersion = configuration->GetConfigVersion();
 
                     if (newVersion != currentVersion) 
                     {
+DEBUG("new version config");
                         isNewConfig = true;
                     }
                 }
@@ -645,7 +646,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
             {
                 CString updateUrl = settings->GetString(SETTING_PLUGIN_UPDATE_URL);
 		        CString updatePath = CPluginSettings::GetTempPath(INSTALL_MSI_FILE);
-		        
+
 		        CDownloadDialog dlDlg;
 		        
 		        dlDlg.SetUrlAndPath(updateUrl, updatePath);
@@ -653,6 +654,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 		        {
 			        LaunchUpdater(updatePath);
 #ifdef AUTOMATIC_SHUTDOWN
+					settings->EraseTab();
 			        ::ExitProcess(0);
 #endif // AUTOMATIC_SHUTDOWN
 		        }

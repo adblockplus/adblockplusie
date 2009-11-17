@@ -233,15 +233,15 @@ bool CPluginSettings::Read(bool bDebug)
 
 			            do
 			            {
-				            CStringA filterCountStr;
-				            filterCountStr.Format("%d", ++filterCount);
+				            CString filterCountStr;
+				            filterCountStr.Format(L"%d", ++filterCount);
             	            
-				            CPluginIniFileW::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
-				            CPluginIniFileW::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
+				            CPluginIniFileW::TSectionData::iterator filterIt = filters.find(L"filter" + filterCountStr);
+				            CPluginIniFileW::TSectionData::iterator versionIt = filters.find(L"filter" + filterCountStr + "v");
 
 				            if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
 				            {
-					            m_filterUrlList[filterIt->second] = atoi(versionIt->second);
+					            m_filterUrlList[filterIt->second] = _wtoi(versionIt->second);
 				            }
 
 			            } while (bContinue);
@@ -431,8 +431,7 @@ CString CPluginSettings::GetTempPath(const CString& filename)
 
 	LPWSTR pwszCacheDir = NULL;
  
-	HRESULT hr = ::IEGetWriteableFolderPath(FOLDERID_InternetCache, &pwszCacheDir);
- 
+	HRESULT hr = ::IEGetWriteableFolderPath(FOLDERID_InternetCache, &pwszCacheDir); 
 	if (SUCCEEDED(hr))
     {
 		tempPath = pwszCacheDir;
@@ -444,7 +443,7 @@ CString CPluginSettings::GetTempPath(const CString& filename)
 
 	::CoTaskMemFree(pwszCacheDir);
 
-	return tempPath + filename;
+	return tempPath + "\\" + filename;
 }
 
 CString CPluginSettings::GetTempFile(const CString& prefix)
@@ -725,14 +724,14 @@ bool CPluginSettings::Write(bool isDebug)
 	    {
 		    for (TFilterUrlList::iterator it = m_filterUrlList.begin(); it != m_filterUrlList.end(); ++it)
 		    {
-			    CStringA filterCountStr;
-			    filterCountStr.Format("%d", ++filterCount);
+			    CString filterCountStr;
+			    filterCountStr.Format(L"%d", ++filterCount);
 
-			    CStringA filterVersion;
-			    filterVersion.Format("%d", it->second);
+			    CString filterVersion;
+			    filterVersion.Format(L"%d", it->second);
 
-			    filters["filter" + filterCountStr] = it->first;
-			    filters["filter" + filterCountStr + "v"] = filterVersion;
+			    filters[L"filter" + filterCountStr] = it->first;
+			    filters[L"filter" + filterCountStr + L"v"] = filterVersion;
 		    }
 	    }
         s_criticalSectionFilters.Unlock();
@@ -1466,15 +1465,15 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
 
 		            do
 		            {
-			            CStringA domainCountStr;
-			            domainCountStr.Format("%d", ++domainCount);
+			            CString domainCountStr;
+			            domainCountStr.Format(L"%d", ++domainCount);
         	            
-			            CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
-			            CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
+			            CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find(L"domain" + domainCountStr);
+			            CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find(L"domain" + domainCountStr + L"r");
 
 			            if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
 			            {
-				            m_whitelist[domainIt->second] = atoi(reasonIt->second);
+				            m_whitelist[domainIt->second] = _wtoi(reasonIt->second);
 			            }
 
 		            } while (bContinue);
@@ -1486,15 +1485,15 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
 
 		            do
 		            {
-			            CStringA domainCountStr;
-			            domainCountStr.Format("%d", ++domainCount);
+			            CString domainCountStr;
+			            domainCountStr.Format(L"%d", ++domainCount);
         	            
-			            CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
-			            CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
+			            CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find(L"domain" + domainCountStr);
+			            CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find(L"domain" + domainCountStr + L"r");
 
 			            if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
 			            {
-				            m_whitelistToGo[domainIt->second] = atoi(reasonIt->second);
+				            m_whitelistToGo[domainIt->second] = _wtoi(reasonIt->second);
 			            }
 
 		            } while (bContinue);
@@ -1558,14 +1557,14 @@ bool CPluginSettings::WriteWhitelist(bool isDebug)
 
 		    for (TDomainList::iterator it = m_whitelist.begin(); it != m_whitelist.end(); ++it)
 		    {
-			    CStringA whitelistCountStr;
-			    whitelistCountStr.Format("%d", ++whitelistCount);
+			    CString whitelistCountStr;
+			    whitelistCountStr.Format(L"%d", ++whitelistCount);
 
-			    CStringA reason;
-			    reason.Format("%d", it->second);
+			    CString reason;
+			    reason.Format(L"%d", it->second);
 
-			    whitelist["domain" + whitelistCountStr] = it->first;
-			    whitelist["domain" + whitelistCountStr + "r"] = reason;
+			    whitelist[L"domain" + whitelistCountStr] = it->first;
+			    whitelist[L"domain" + whitelistCountStr + L"r"] = reason;
 		    }
 
             m_settingsFileWhitelist->UpdateSection("Whitelist", whitelist);
@@ -1576,14 +1575,14 @@ bool CPluginSettings::WriteWhitelist(bool isDebug)
 
             for (TDomainList::iterator it = m_whitelistToGo.begin(); it != m_whitelistToGo.end(); ++it)
             {
-	            CStringA whitelistCountStr;
-	            whitelistCountStr.Format("%d", ++whitelistCount);
+	            CString whitelistCountStr;
+	            whitelistCountStr.Format(L"%d", ++whitelistCount);
 
-	            CStringA reason;
-	            reason.Format("%d", it->second);
+	            CString reason;
+	            reason.Format(L"%d", it->second);
 
-	            whitelist["domain" + whitelistCountStr] = it->first;
-	            whitelist["domain" + whitelistCountStr + "r"] = reason;
+	            whitelist[L"domain" + whitelistCountStr] = it->first;
+	            whitelist[L"domain" + whitelistCountStr + L"r"] = reason;
             }
 
             m_settingsFileWhitelist->UpdateSection("Whitelist togo", whitelist);

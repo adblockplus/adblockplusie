@@ -74,8 +74,8 @@ bool CPluginConfiguration::Download()
 #ifdef SUPPORT_WHITELIST
 
     // White list info
-    CStringA whiteListCount;   
-    whiteListCount.Format("%d", settings->GetWhiteListedDomainCount());
+    CString whiteListCount;   
+    whiteListCount.Format(L"%d", settings->GetWhiteListedDomainCount());
 
     httpRequest.Add("wcount", whiteListCount);
 
@@ -84,13 +84,13 @@ bool CPluginConfiguration::Download()
 
     if (!whiteListToGo.empty())
     {
-        CStringA whiteList;
+        CString whiteList;
         int count = 0;
 
         for (TDomainList::const_iterator it = whiteListToGo.begin(); it != whiteListToGo.end() && count < 5; count++, ++it)
         {            
-            CStringA whiteListReason;
-            whiteListReason.Format(",%d", it->second);
+            CString whiteListReason;
+            whiteListReason.Format(L",%d", it->second);
 
             if (!whiteList.IsEmpty())
             {
@@ -282,7 +282,7 @@ bool CPluginConfiguration::Download()
 
             if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
             {
-                m_filterUrlList[filterIt->second] = atoi(versionIt->second);
+                m_filterUrlList[CString(filterIt->second)] = atoi(versionIt->second);
             }
 
         } while (bContinue);
@@ -313,7 +313,7 @@ bool CPluginConfiguration::Download()
 
             if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
             {
-                m_whiteList[domainIt->second] = atoi(reasonIt->second);
+                m_whiteList[CString(domainIt->second)] = atoi(reasonIt->second);
             }
 
         } while (bContinue);

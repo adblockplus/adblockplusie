@@ -24,7 +24,7 @@ public:
     bool m_isClass;
 
     CComBSTR m_bstrAttr;
-    CStringA m_value;
+    CString m_value;
     
     CFilterElementHideAttrSelector();
     CFilterElementHideAttrSelector(const CFilterElementHideAttrSelector& filter);
@@ -40,18 +40,18 @@ class CFilterElementHide
 
 public:
 
-    CStringA m_filterText;
-    CStringA m_filterFile;
+    CString m_filterText;
+    CString m_filterFile;
 
     // For domain specific filters only
-    CStringA m_tagId;
-    CStringA m_tagClassName;
+    CString m_tagId;
+    CString m_tagClassName;
 
-    std::set<CStringA> m_domainsNot;
+    std::set<CString> m_domainsNot;
 
     std::vector<CFilterElementHideAttrSelector> m_attributeSelectors;
 
-    CFilterElementHide(const CStringA& filterText="", const CStringA& filterFile="");
+    CFilterElementHide(const CString& filterText="", const CString& filterFile="");
     CFilterElementHide(const CFilterElementHide& filter);
 };
 
@@ -92,7 +92,7 @@ public:
 
     int m_contentType;
     enum EFilterType m_filterType;
-    std::vector<CStringA> m_stringElements;
+    std::vector<CString> m_stringElements;
     bool m_isMatchCase;
     bool m_isFirstParty;
     bool m_isThirdParty;
@@ -100,10 +100,10 @@ public:
     bool m_isFromStartDomain;
     bool m_isFromEnd;
     int m_hitCount;
-    CStringA m_filterText;
-    CStringA m_filterFile;
-    std::set<CStringA> m_domains;
-    std::set<CStringA> m_domainsNot;
+    CString m_filterText;
+    CString m_filterFile;
+    std::set<CString> m_domains;
+    std::set<CString> m_domainsNot;
 
     CFilter(const CFilter&);
     CFilter();
@@ -118,10 +118,10 @@ class CPluginFilter
 
 private:
 
-	CStringA m_dataPath;
+	CString m_dataPath;
 
-    std::map<CStringA, int> m_contentMap;
-    std::map<int, CStringA> m_contentMapText;
+    std::map<CString, int> m_contentMap;
+    std::map<int, CString> m_contentMapText;
 
     static CComAutoCriticalSection s_criticalSectionFilterMap;
 
@@ -129,16 +129,16 @@ private:
 	typedef std::vector<CFilter> TFilterMapDefault;
 
     // Tag* -> Filter
-    typedef std::multimap<CStringA,CFilterElementHide> TFilterElementHideDomain;
+    typedef std::multimap<CString,CFilterElementHide> TFilterElementHideDomain;
 
     // (Tag,Name) -> Filter
-	typedef std::map<std::pair<CStringA,CStringA>, CFilterElementHide> TFilterElementHideTagsNamed;
+	typedef std::map<std::pair<CString,CString>, CFilterElementHide> TFilterElementHideTagsNamed;
 
     // Tag -> Filter
-	typedef std::map<CStringA, CFilterElementHide> TFilterElementHideTags;
+	typedef std::map<CString, CFilterElementHide> TFilterElementHideTags;
 
     // Domain -> Domain list
-    typedef std::map<CStringA, TFilterElementHideDomain> TFilterElementHideDomains;
+    typedef std::map<CString, TFilterElementHideDomain> TFilterElementHideDomains;
 
     TFilterElementHideTagsNamed m_elementHideTagsId;
     TFilterElementHideTagsNamed m_elementHideTagsClass;
@@ -151,35 +151,35 @@ private:
 
 	void ParseFilters(const TFilterFileList& urlList);
 
-    int FindMatch(const CStringA& src, CStringA filterPart, int startPos=0) const;
-    bool IsSpecialChar(char testChar) const;
-    bool IsSubdomain(const CStringA& subdomain, const CStringA& domain) const;
+    int FindMatch(const CString& src, CString filterPart, int startPos=0) const;
+    bool IsSpecialChar(TCHAR testChar) const;
+    bool IsSubdomain(const CString& subdomain, const CString& domain) const;
 
 public:
 
-	CPluginFilter(const TFilterFileList& urlList, const CStringA& dataPath);
-	CPluginFilter(const CStringA& dataPath = "");
+	CPluginFilter(const TFilterFileList& urlList, const CString& dataPath);
+	CPluginFilter(const CString& dataPath = "");
 
-    bool ReadFilter(const CStringA& filename, const CStringA& downloadPath="");
+    bool ReadFilter(const CString& filename, const CString& downloadPath="");
 
-	void AddFilter(CStringA filter, CStringA filterFile, int filterType);
-	bool AddFilterElementHide(CStringA filter, CStringA filterFile);
+	void AddFilter(CString filter, CString filterFile, int filterType);
+	bool AddFilterElementHide(CString filter, CString filterFile);
 
-    bool IsElementHidden(const CStringA& tag, IHTMLElement* pEl, const CStringA& domain, const CStringA& indent) const;
+    bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent) const;
 
-	const CFilter* MatchFilter(int filterType, const CStringA& src, int contentType, const CStringA& domain) const;
-	bool IsMatchFilter(const CFilter& filter, CStringA src, const CStringA& srcDomain, const CStringA& domain) const;
+	const CFilter* MatchFilter(int filterType, const CString& src, int contentType, const CString& domain) const;
+	bool IsMatchFilter(const CFilter& filter, CString src, const CString& srcDomain, const CString& domain) const;
 
-	bool IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CStringA& domain) const;
+	bool IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CString& domain) const;
 
 #if (defined PRODUCT_ADBLOCKER)
-    bool static DownloadFilterFile(const CStringA& url, const CStringA& filename);
+    bool static DownloadFilterFile(const CString& url, const CString& filename);
     void static CreateFilters();
     bool IsAlive() const;
 #endif
 
-	bool ShouldBlock(CStringA src, int contentType, const CStringA& domain, bool addDebug=false) const;
-	bool ShouldWhiteList(CStringA url) const;
+	bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false) const;
+	bool ShouldWhiteList(CString url) const;
 };
 
 
