@@ -229,8 +229,8 @@ private:
 
     int m_cacheIndexLast;
     int m_cacheElementsMax;
-    std::set<CStringA> m_cacheDocumentHasFrames;
-    std::set<CStringA> m_cacheDocumentHasIframes;
+    std::set<CString> m_cacheDocumentHasFrames;
+    std::set<CString> m_cacheDocumentHasIframes;
     
     CElementHideCache* m_cacheElements;
 

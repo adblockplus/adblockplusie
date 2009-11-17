@@ -618,6 +618,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\Shared\AdPluginSystem.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Shared\AdPluginUpdateDialog.cpp"
 				>
 			</File>
@@ -724,6 +728,10 @@
 			</File>
 			<File
 				RelativePath="..\Shared\AdPluginStdAfx.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\AdPluginSystem.h"
 				>
 			</File>
 			<File

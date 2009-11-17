@@ -283,6 +283,8 @@ void CPluginDictionary::Create()
 		    m_dictionary["DOWNLOAD_PLEASE_WAIT"] = "Please wait...";
 		    m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
 			m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update IE Download Helper, your Internet Explorer will close before installation";
+			m_dictionary["DOWNLOAD_DOWNLOADED_TEXT"] = "Downloaded";
+			m_dictionary["DOWNLOAD_DOWNLOADED_OF"] = "of";
 
 			// File download
 		    m_dictionary["DOWNLOAD_FILE_TITLE"] = "Download Manager";
@@ -312,10 +314,11 @@ void CPluginDictionary::Create()
         {
             DEBUG_ERROR_LOG(iniFile.GetLastError(), PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_CREATE_FILE, L"Dictionary::Create - Write")
         }
-
+#ifdef PRODUCT_ADBLOCKER
         // Delete old
         ::DeleteFile(CPluginSettings::GetDataPath(L"dictionary.ini"));
-    }
+#endif
+	}
 }
 
 bool CPluginDictionary::Download(const CString& url, const CString& filename)

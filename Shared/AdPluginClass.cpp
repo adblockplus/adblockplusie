@@ -742,6 +742,9 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 #ifdef SUPPORT_FILTER
 				HideElements(browser, true, GetDocumentUrl(), GetDocumentDomain(), CString(""));
 #endif
+#ifdef PRODUCT_DOWNLOADHELPER
+				UpdateStatusBar();
+#endif
 			}
 		}
 		break;
@@ -787,7 +790,10 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
     				        HideElements(pBrowser, url == GetDocumentUrl(), url, GetDocumentDomain(), CString(""));
 				        }
 #endif
-			        }
+#ifdef PRODUCT_DOWNLOADHELPER
+						UpdateStatusBar();
+#endif
+					}
 				}
 			}
 		}
@@ -1191,7 +1197,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 	case ID_PLUGIN_UPDATE:
         {
             s_isPluginToBeUpdated = true;
-        }
+		}
         break;
 
 	case ID_PLUGIN_ACTIVATE:
@@ -1349,6 +1355,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
                 {
 					DWORD dwError = ::CommDlgExtendedError();
 					DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
+::MessageBox(::GetDesktopWindow(), szCmdline, L"Path", MB_OK);
 				}
 
 				::CloseHandle(pi.hProcess);
@@ -2127,11 +2134,11 @@ void CPluginClass::UpdateStatusBar()
 
     s_criticalSectionLocal.Lock();
     {
-        for (int i = 0; i < s_instances.GetSize(); i++)
+		for (int i = 0; i < s_instances.GetSize(); i++)
         {
 	        ::InvalidateRect(s_instances[i]->m_hPaneWnd, NULL, FALSE);
         }
-    }
+	}
     s_criticalSectionLocal.Unlock();
 }
 
@@ -2359,7 +2366,7 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
 			CString sObjectHtml = bstrInnerHtml;
 			CString src;
 
-		    int posBegin = sObjectHtml.Find("VALUE=\"");
+		    int posBegin = sObjectHtml.Find(L"VALUE=\"");
 		    int posEnd = posBegin >= 0 ? sObjectHtml.Find('\"', posBegin + 7) : -1;
 
 		    while (posBegin >= 0 && posEnd >= 0)
@@ -2384,8 +2391,8 @@ void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, c
                     }
 			    }
 
-			    posBegin = sObjectHtml.Find("VALUE=\"", posBegin);
-			    posEnd = posBegin >= 0 ? sObjectHtml.Find("\"", posBegin + 7) : -1;
+			    posBegin = sObjectHtml.Find(L"VALUE=\"", posBegin);
+			    posEnd = posBegin >= 0 ? sObjectHtml.Find(L"\"", posBegin + 7) : -1;
 		    }
 		}
 	}	
@@ -2643,7 +2650,7 @@ void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CS
         profiler.StopTimer();
 
         CString el;
-        el.Format("%u", m_cacheIndexLast);
+        el.Format(L"%u", m_cacheIndexLast);
 
         DEBUG_HIDE_EL(indent + "HideEl el:" + el + " time:" + profiler.GetElapsedTimeString(profileTime))
 

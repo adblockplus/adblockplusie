@@ -40,7 +40,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		}
 		else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsDocumentWhiteListed())
 		{
-	        CStringA domain= client->GetDocumentDomain();
+	        CString domain = client->GetDocumentDomain();
 
 			int contentType = CFilter::contentTypeAny;
 
@@ -50,7 +50,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
             }
             else
             {
-                CStringA srcExt = src;
+                CString srcExt = src;
 
 			    int pos = 0;
 			    if ((pos = src.Find('?')) > 0)
@@ -58,29 +58,29 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 				    srcExt = src.Left(pos);
 			    }
 
-			    CStringA ext = srcExt.Right(4);
+			    CString ext = srcExt.Right(4);
 
-			    if (ext == ".jpg" || ext == ".gif" || ext == ".png")
+			    if (ext == L".jpg" || ext == L".gif" || ext == L".png")
 			    {
 				    contentType = CFilter::contentTypeImage;
 			    }
-			    else if (ext == ".css")
+			    else if (ext == L".css")
 			    {
 				    contentType = CFilter::contentTypeStyleSheet;
 			    }
-			    else if (ext.Right(3) == ".js")
+			    else if (ext.Right(3) == L".js")
 			    {
 				    contentType = CFilter::contentTypeScript;
 			    }
-			    else if (ext == ".xml")
+			    else if (ext == L".xml")
 			    {
 				    contentType = CFilter::contentTypeXmlHttpRequest;
 			    }
-			    else if (ext == ".swf")
+			    else if (ext == L".swf")
 			    {
 				    contentType = CFilter::contentTypeObjectSubrequest;
 			    }
-			    else if (ext == ".jsp" || ext == ".php")
+			    else if (ext == L".jsp" || ext == L".php")
 			    {
 				    contentType = CFilter::contentTypeSubdocument;
 			    }
@@ -99,7 +99,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 #ifdef ENABLE_DEBUG_RESULT_IGNORED
 			else
 			{
-			    CStringA type;
+			    CString type;
 
         		if (contentType == CFilter::contentTypeDocument) type = "doc";
 	            else if (contentType == CFilter::contentTypeObject) type = "object";
@@ -215,7 +215,6 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 							fileSize = atoi(contentLength.Left(posLength).GetBuffer());
 							if (fileSize > 0)
 							{
-::MessageBox(::GetDesktopWindow(), m_url, L"Has file", MB_OK);
 								client->AddDownloadFile(m_url, fileSize, downloadFileProperties);
 							}
 						}
