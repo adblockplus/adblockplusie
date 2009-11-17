@@ -1355,7 +1355,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
                 {
 					DWORD dwError = ::CommDlgExtendedError();
 					DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
-::MessageBox(::GetDesktopWindow(), szCmdline, L"Path", MB_OK);
 				}
 
 				::CloseHandle(pi.hProcess);
