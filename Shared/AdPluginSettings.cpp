@@ -67,7 +67,7 @@ CComAutoCriticalSection CPluginSettings::s_criticalSectionDomainHistory;
 
 
 CPluginSettings::CPluginSettings() : 
-    m_settingsVersion("1"), m_isDirty(false), m_isPluginSelftestEnabled(true), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
+    m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
     m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
 #ifdef SUPPORT_WHITELIST
@@ -297,10 +297,8 @@ void CPluginSettings::Clear()
 		m_properties[SETTING_PLUGIN_ACTIVATED] = "false";
 		m_properties[SETTING_PLUGIN_EXPIRED] = "false";
 		m_properties[SETTING_PLUGIN_VERSION] = IEPLUGIN_VERSION;
-		m_properties[SETTING_PLUGIN_SELFTEST] = "true";
 		m_properties[SETTING_LANGUAGE] = "en";
 		m_properties[SETTING_DICTIONARY_VERSION] = "1";
-		m_properties[SETTING_PLUGIN_INFO_PANEL] = "1"; // Welcome screen
 	}
 	s_criticalSectionLocal.Unlock();
 
@@ -620,16 +618,6 @@ void CPluginSettings::SetBool(const CString& key, bool value)
 bool CPluginSettings::IsPluginEnabled() const
 {
     return m_isPluginEnabledTab && !GetBool(SETTING_PLUGIN_EXPIRED, false);
-}
-
-bool CPluginSettings::IsPluginSelftestEnabled()
-{
-    if (m_isPluginSelftestEnabled)
-    {
-        m_isPluginSelftestEnabled = GetBool(SETTING_PLUGIN_SELFTEST, true);
-    }
-    
-    return m_isPluginSelftestEnabled;
 }
 
 

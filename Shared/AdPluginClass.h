@@ -19,7 +19,7 @@
 #define ICON_PLUGIN_DEACTIVATED 2
 #define ICON_MAX 3
 
-#define WM_LAUNCH_INFO					(WM_APP + 1)
+#define WM_LAUNCH_INFO					(WM_APP + 10)
 
 #ifdef SUPPORT_WHITELIST
  #define WM_WHITELIST_DOMAIN		        (WM_LAUNCH_INFO + 1)
@@ -80,7 +80,7 @@ public:
 		COM_INTERFACE_ENTRY_IMPL(IObjectWithSite)
 		COM_INTERFACE_ENTRY(IOleCommandTarget)
 	END_COM_MAP()
-	
+
 	CPluginClass();
 	~CPluginClass();
 	
@@ -245,6 +245,10 @@ private:
 #ifdef SUPPORT_FILE_DOWNLOAD
     static TMenuDownloadFiles s_menuDownloadFiles;
 #endif
+
+public:
+
+	static void PostMessage(UINT message, WPARAM wParam=0, LPARAM lParam=0);
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(AdPluginClass), CPluginClass)

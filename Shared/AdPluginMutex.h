@@ -10,6 +10,7 @@ private:
     HANDLE m_hMutex;
     bool m_isLocked;
     int m_errorSubidBase;
+	CString m_name;
 
 public:
 

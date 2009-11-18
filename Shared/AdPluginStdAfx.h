@@ -82,12 +82,10 @@ extern CComModule _Module;
  #include "..\DownloadHelperApp\Resource.h"
 #endif
 
-#if (defined PRODUCT_ADBLOCKER || defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
- #include "AdPluginDebug.h"
-#endif
-
 #if (defined PRODUCT_ADBLOCKER || defined PRODUCT_DOWNLOADHELPER)
- #include "AdPluginSelftest.h"
+ #include "AdPluginDebug.h"
+#elif (defined PRODUCT_DOWNLOADHELPER_APP)
+ #include "..\DownloadHelperApp\DownloadDebug.h"
 #endif
 
 #ifdef _MSC_VER

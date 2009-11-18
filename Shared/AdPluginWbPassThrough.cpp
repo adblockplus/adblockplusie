@@ -218,8 +218,7 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 								client->AddDownloadFile(m_url, fileSize, downloadFileProperties);
 							}
 						}
-					}
-					
+					}					
                 }
             }
         }

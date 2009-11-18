@@ -4,11 +4,11 @@
 #include "AdPluginClient.h"
 
 
-CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked(false), m_errorSubidBase(errorSubidBase)
+CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked(false), m_errorSubidBase(errorSubidBase), m_name(name)
 {
     if (m_errorSubidBase != PLUGIN_ERROR_MUTEX_DEBUG_FILE)
     {
-        DEBUG_MUTEX("Mutex::Create name:" + CStringA(name))
+        DEBUG_MUTEX("Mutex::Create name:" + name)
     }
 
     m_hMutex = ::CreateMutex(NULL, FALSE, "Global\\SimpleAdblock" + name);
@@ -42,7 +42,7 @@ CPluginMutex::~CPluginMutex()
 {
     if (m_errorSubidBase != PLUGIN_ERROR_MUTEX_DEBUG_FILE)
     {
-        DEBUG_MUTEX("Mutex::Release")
+		DEBUG_MUTEX("Mutex::Release name:" + m_name)
     }
 
     if (m_isLocked)

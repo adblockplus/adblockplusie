@@ -105,13 +105,23 @@ void CPluginConfig::Read()
 				{
 					CPluginIniFile::TSectionData data = iniFile.GetSectionData(*it);
 
-                    SDownloadFileProperties properties;
-                    
-                    properties.type = data["type"];
-                    properties.extension = data["extension"];
-                    properties.description = data["descriptor"];
+					CString mimeTypes = data["type"];
 
-                    m_downloadFileProperties[properties.type] = properties;
+					int pos = 0;
+
+					CString mimeType = mimeTypes.Tokenize(L";", pos);
+					while (pos >= 0)
+					{
+						SDownloadFileProperties properties;
+
+						properties.type = mimeType;
+						properties.extension = data["extension"];
+						properties.description = data["descriptor"];
+
+						m_downloadFileProperties[mimeType] = properties;
+
+						mimeType = mimeTypes.Tokenize(L";", pos);
+					}
 				}
 			}
 	    }
@@ -138,39 +148,94 @@ void CPluginConfig::Create()
 
         s_criticalSection.Lock();
 	    {
-    	    CPluginIniFile::TSectionData formatFlv;
+			// .asf
+			{
+    			CPluginIniFile::TSectionData format;
 
-		    formatFlv["type"] = "video/x-flv";
-		    formatFlv["extension"]  = "flv";
-		    formatFlv["descriptor"]  = "Flash Video";
+				format["type"] = "video/x-ms-asf";
+				format["extension"] = "asf";
+				format["descriptor"] = "Advanced Systems Format";
 
-	        iniFile.UpdateSection("formatFlv", formatFlv);
+				iniFile.UpdateSection("formatAsf", format);
+			}
+			// .avi
+			{
+    			CPluginIniFile::TSectionData format;
 
-    	    CPluginIniFile::TSectionData formatWmv;
+				format["type"] = "video/avi;video/msvideo;video/x-msvideo";
+				format["extension"] = "avi";
+				format["descriptor"] = "Audio Video Interleave";
 
-		    formatWmv["type"] = "video/x-ms-wmv";
-		    formatWmv["extension"] = "wmv";
-		    formatWmv["descriptor"] = "Windows Media Video";
+				iniFile.UpdateSection("formatAvi", format);
+			}
+			// .flv
+			{
+    			CPluginIniFile::TSectionData format;
 
-	        iniFile.UpdateSection("formatWmv", formatWmv);
-/*
-    	    CPluginIniFile::TSectionData formatAsf;
+				format["type"] = "video/x-flv";
+				format["extension"] = "flv";
+				format["descriptor"] = "Flash Video";
 
-		    formatAsf["type"] = "video/x-ms-asf";
-		    formatAsf["extension"] = "asf";
-		    formatAsf["descriptor"] = "Advanced Systems Format";
+				iniFile.UpdateSection("formatFlv", format);
+			}
+			// .mov
+			{
+    			CPluginIniFile::TSectionData format;
 
-	        iniFile.UpdateSection("formatAsf", formatAsf);
-*/
-// Windows Media Audio - WMA
-	    }
+				format["type"] = "video/quicktime";
+				format["extension"] = "mov";
+				format["descriptor"] = "QuickTime";
+
+				iniFile.UpdateSection("formatMov", format);
+			}
+			// .mp3
+			{
+    			CPluginIniFile::TSectionData format;
+
+				format["type"] = "audio/mpeg";
+				format["extension"] = "mp3";
+				format["descriptor"] = "MPEG-1 Audio Layer 3 (MP3)";
+
+				iniFile.UpdateSection("formatMp3", format);
+			}
+			// .mp4
+			{
+    			CPluginIniFile::TSectionData format;
+
+				format["type"] = "video/mp4;audio/mp4;application/mp4";
+				format["extension"] = "mp4";
+				format["descriptor"] = "MPEG-4 Part 14";
+
+				iniFile.UpdateSection("formatMp4", format);
+			}
+			// .wav
+			{
+    			CPluginIniFile::TSectionData format;
+
+				format["type"] = "audio/x-wav;audio/wav;audio/wave";
+				format["extension"] = "wav";
+				format["descriptor"] = "Waveform Audio";
+
+				iniFile.UpdateSection("formatWav", format);
+			}
+			// .wmv
+			{
+    			CPluginIniFile::TSectionData format;
+
+				format["type"] = "video/x-ms-wmv";
+				format["extension"] = "wmv";
+				format["descriptor"] = "Windows Media Video";
+
+				iniFile.UpdateSection("formatWmv", format);
+			}
+		}
         s_criticalSection.Unlock();
 
         if (iniFile.Write())
         {
             CPluginSettings* settings = CPluginSettings::GetInstance();
             
-            settings->SetValue(SETTING_CONFIG_VERSION, 1);
+            settings->SetValue(SETTING_CONFIG_VERSION, 3);
             settings->Write();
         }
         else

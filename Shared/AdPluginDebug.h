@@ -10,10 +10,7 @@ public:
 #if (defined ENABLE_DEBUG_INFO)
     static void Debug(const CString& error, DWORD dwProcessId=0, DWORD dwThreadId=0);
     static void DebugClear();
-#endif
-
-#if (defined ENABLE_DEBUG_INFO || defined ENABLE_DEBUG_SELFTEST)
-    static void DebugError(const CString& error);
+	static void DebugError(const CString& error);
     static void DebugErrorCode(DWORD errorCode, const CString& error, DWORD dwProcessId=0, DWORD dwThreadId=0);
 #endif
 

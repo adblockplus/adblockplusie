@@ -43,7 +43,7 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-BEGIN_MESSAGE_MAP(CPluginApp, CWinApp)
+BEGIN_MESSAGE_MAP(CPluginApp, CWinApp)	
 END_MESSAGE_MAP()
 
 
@@ -101,6 +101,7 @@ void InitPlugin(bool isInstall)
 
     CPluginSettings* settings = CPluginSettings::GetInstance();
 
+	settings->SetMainProcessId();
     settings->EraseTab();
 
     settings->Remove(SETTING_PLUGIN_SELFTEST);
@@ -149,36 +150,8 @@ void InitPlugin(bool isInstall)
 
 		::RegCloseKey(hKey);
 	}
-/*
-    // Create uninstall ini file
-	char path[MAX_PATH];
 
-	if (::SHGetSpecialFolderPathA(NULL, path, CSIDL_WINDOWS, TRUE))
-	{
-	    if (::PathAppendA(path, UNINSTALL_INI_FILE))
-	    {
-	        CPluginIniFile iniFile(path);
-
-            CPluginIniFile::TSectionData data;
-            data.insert(std::make_pair("pluginid", system->GetPluginId()));
-
-            iniFile.UpdateSection("Settings", data);
-            if (!iniFile.Write())
-            {
-                DEBUG_ERROR_LOG(iniFile.GetLastError(), PLUGIN_ERROR_INSTALL, PLUGIN_ERROR_INSTALL_CREATE_INI_FILE, "Install::Create init file")
-            }
-        }
-        else
-        {
-            DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_INSTALL, PLUGIN_ERROR_INSTALL_APPEND_PATH, "Install::Append path")
-        }
-	}
-	else
-	{
-		DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_INSTALL, PLUGIN_ERROR_INSTALL_GET_WINDOWS_PATH, "Install::SHGetSpecialFolderPathA failed");
-	}
-*/
-    // Post async plugin error
+	// Post async plugin error
     CPluginError pluginError;
     while (CPluginClient::PopFirstPluginError(pluginError))
     {

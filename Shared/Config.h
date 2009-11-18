@@ -72,6 +72,8 @@
  #error "Undefined product. Please specify PRODUCT_ADBLOCKER or PRODUCT_DOWNLOADHELPER in configuration"
 #endif
 
+#define WM_PLUGIN_UPDATE_STATUSBAR (WM_APP + 1)
+
 // ----------------------------------------------------------------------------
 // Timers
 // ----------------------------------------------------------------------------
@@ -120,97 +122,93 @@
 
 #undef ENABLE_DEBUG_SELFTEST
 
+#if (defined PRODUCT_DOWNLOADHELPER_APP)
+ #define DEBUG_FUNC CDownloadDebug::Debug
+ #define DEBUG_ERROR_FUNC CDownloadDebug::DebugError
+ #define DEBUG_ERROR_CODE_FUNC CDownloadDebug::DebugErrorCode
+#else
+ #define DEBUG_FUNC CPluginDebug::Debug
+ #define DEBUG_ERROR_FUNC CPluginDebug::DebugError
+ #define DEBUG_ERROR_CODE_FUNC CPluginDebug::DebugErrorCode
+#endif
+
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_GENERAL)
  #undef  DEBUG_GENERAL
- #if (defined ENABLE_DEBUG_SELFTEST)
-  #define DEBUG_GENERAL(x) CPluginDebug::Debug(x);CPluginSelftest::AddText(x);
- #else
-  #define DEBUG_GENERAL(x) CPluginDebug::Debug(x);
- #endif
+ #define DEBUG_GENERAL(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO)
  #undef  DEBUG
- #define DEBUG(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_BLOCKER)
  #undef  DEBUG_BLOCKER
- #define DEBUG_BLOCKER(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG_BLOCKER(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_FILTER)
  #undef  DEBUG_FILTER
- #define DEBUG_FILTER(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG_FILTER(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_SETTINGS)
  #undef  DEBUG_SETTINGS
- #define DEBUG_SETTINGS(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG_SETTINGS(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_THREAD)
  #undef  DEBUG_THREAD
- #define DEBUG_THREAD(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG_THREAD(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_NAVI)
  #undef  DEBUG_NAVI
- #define DEBUG_NAVI(x) CPluginDebug::Debug(x);
+ #define DEBUG_NAVI(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_CHECKSUM)
  #undef  DEBUG_CHECKSUM
- #define DEBUG_CHECKSUM(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG_CHECKSUM(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_DICTIONARY)
  #undef  DEBUG_DICTIONARY
- #define DEBUG_DICTIONARY(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG_DICTIONARY(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_INI)
  #undef  DEBUG_INI
- #define DEBUG_INI(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG_INI(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_MUTEX)
  #undef  DEBUG_MUTEX
- #define DEBUG_MUTEX(x) CPluginDebug::Debug((CString)(x));
+ #define DEBUG_MUTEX(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_HIDE_EL)
  #undef  DEBUG_HIDE_EL
- #define DEBUG_HIDE_EL(x) CPluginDebug::Debug(x);
+ #define DEBUG_HIDE_EL(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_WHITELIST)
  #undef  DEBUG_WHITELIST
- #define DEBUG_WHITELIST(x) CPluginDebug::Debug(x);
+ #define DEBUG_WHITELIST(x) DEBUG_FUNC(x);
 #endif
 
-#if (defined ENABLE_DEBUG_SELFTEST)
- #undef  DEBUG_SELFTEST
- #define DEBUG_SELFTEST(x) CPluginSelftest::AddText(x);
-
- #if (!defined ENABLE_DEBUG_INFO || !defined ENABLE_DEBUG_GENERAL)
-  #undef  DEBUG_GENERAL
-  #define DEBUG_GENERAL(x) CPluginSelftest::AddText(x);
- #endif
-#endif
-
-#if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_ERROR || defined ENABLE_DEBUG_SELFTEST)
+#if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_ERROR)
  #undef  DEBUG_ERROR
- #define DEBUG_ERROR(x) CPluginDebug::DebugError("!!! Error:" + CString(x));
+ #define DEBUG_ERROR(x) DEBUG_ERROR_FUNC("!!! Error:" + CString(x));
  #undef  DEBUG_ERROR_CODE
- #define DEBUG_ERROR_CODE(err, x) CPluginDebug::DebugErrorCode(err, "!!! Error:" + CString(x));
+ #define DEBUG_ERROR_CODE(err, x) DEBUG_ERROR_CODE_FUNC(err, "!!! Error:" + CString(x));
  #undef  DEBUG_ERROR_CODE_EX
- #define DEBUG_ERROR_CODE_EX(err, x, process, thread) CPluginDebug::DebugErrorCode(err, "!!! Error:" + CString(x), process, thread);
+ #define DEBUG_ERROR_CODE_EX(err, x, process, thread) DEBUG_ERROR_CODE_FUNC(err, "!!! Error:" + CString(x), process, thread);
 #endif
 
 #undef  DEBUG_ERROR_LOG
 #if (defined PRODUCT_DOWNLOADHELPER_APP)
- #define DEBUG_ERROR_LOG(err, id, subid, description)
+ #define DEBUG_ERROR_LOG(err, id, subid, description) CDownloadDebug::LogPluginError(err, id, subid, description);
 #else
  #define DEBUG_ERROR_LOG(err, id, subid, description) CPluginClient::LogPluginError(err, id, subid, description);
 #endif
@@ -351,7 +349,6 @@
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #define STATUSBAR_PANE_NUMBER 3
 #endif
-
 
 
 #endif // _CONFIG_H
