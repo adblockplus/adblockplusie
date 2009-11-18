@@ -153,17 +153,6 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://simple-adblock.com/downlo
 
         int info = settings->GetValue(SETTING_PLUGIN_INFO_PANEL, 0);
 
-#ifdef ENABLE_DEBUG_SELFTEST
-        if (info == 0 || info > 2)
-        {
-            CPluginSelftest::Clear();
-        }
-        else
-        {
-            CPluginSelftest::SetSupported();
-        }
-#endif // ENABLE_DEBUG_SELFTEST
-
 #ifdef ENABLE_DEBUG_RESULT
         CPluginDebug::DebugResultClear();
 #endif
@@ -742,9 +731,6 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 #ifdef SUPPORT_FILTER
 				HideElements(browser, true, GetDocumentUrl(), GetDocumentDomain(), CString(""));
 #endif
-#ifdef PRODUCT_DOWNLOADHELPER
-				UpdateStatusBar();
-#endif
 			}
 		}
 		break;
@@ -789,9 +775,6 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
                         {
     				        HideElements(pBrowser, url == GetDocumentUrl(), url, GetDocumentDomain(), CString(""));
 				        }
-#endif
-#ifdef PRODUCT_DOWNLOADHELPER
-						UpdateStatusBar();
 #endif
 					}
 				}
@@ -1918,6 +1901,12 @@ HICON CPluginClass::GetStatusBarButton(const CString& url)
 
 LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (message == WM_PLUGIN_UPDATE_STATUSBAR)
+	{
+		UpdateStatusBar();
+		return S_OK;
+	}
+
 	// Find tab
 	CPluginClass *pClass = FindInstance(GetParent(hWnd));
 	if (!pClass) 
@@ -2217,10 +2206,6 @@ void CPluginClass::HideElement(IHTMLElement* pEl, const CString& type, const CSt
 		if (SUCCEEDED(pStyle->put_display(sbstrNone)))
 		{
             DEBUG_HIDE_EL(indent + L"HideEl::Hiding " + type + L" url:" + url)
-
-#ifdef ENABLE_DEBUG_SELFTEST
-	        DEBUG_SELFTEST("*** Hiding " + type + " url:" + url)
-#endif
 
 #ifdef ENABLE_DEBUG_RESULT
             if (isDebug)
@@ -2677,3 +2662,19 @@ void CPluginClass::ClearElementHideCache()
 }
 
 #endif
+
+void CPluginClass::PostMessage(UINT message, WPARAM wParam, LPARAM lParam)
+{
+    s_criticalSectionLocal.Lock();
+    {
+		for (int i = 0; i < s_instances.GetSize(); i++)
+        {
+			HWND hWnd = s_instances[i]->m_hPaneWnd;
+			if (hWnd)
+			{
+				::PostMessage(hWnd, message, wParam, lParam);
+			}
+        }
+	}
+    s_criticalSectionLocal.Unlock();
+}

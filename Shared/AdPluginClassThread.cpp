@@ -175,7 +175,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
             {
                 for (int i = 0; i < s_instances.GetSize(); i++)
                 {
-	                PostMessage(s_instances[i]->m_hPaneWnd, WM_LAUNCH_INFO, wInfo, NULL);
+					::PostMessage(s_instances[i]->m_hPaneWnd, WM_LAUNCH_INFO, wInfo, NULL);
                 }
             }
             s_criticalSectionLocal.Unlock();
@@ -288,9 +288,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 	bool hasUser = false;
 	int regAttempts = 1;
 	int regAttemptsThread = 1;
-	
-	bool isSelftestSent = false;
-			
+				
 	while (!IsMainThreadDone(hMainThread))
 	{
 	    CString sMainLoopIteration;
@@ -444,7 +442,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                     int currentVersion = settings->GetValue(SETTING_DICTIONARY_VERSION);
                     int newVersion = configuration->GetDictionaryVersion();
 
-                    if (newVersion != currentVersion) 
+                    if (newVersion > currentVersion) 
                     {
                         isNewDictionaryVersion = true;
                     }
@@ -459,7 +457,7 @@ DEBUG("Valid config");
 					int currentVersion = settings->GetValue(SETTING_CONFIG_VERSION);
                     int newVersion = configuration->GetConfigVersion();
 
-                    if (newVersion != currentVersion) 
+                    if (newVersion > currentVersion) 
                     {
 DEBUG("new version config");
                         isNewConfig = true;
@@ -587,51 +585,6 @@ DEBUG("new version config");
 
 #endif // SUPPORT_FILTER
 
-	    // --------------------------------------------------------------------
-	    // Erase / send selftestwrite()
-	    // --------------------------------------------------------------------
-
-#if (defined ENABLE_DEBUG_SELFTEST)
-        if (!IsMainThreadDone(hMainThread) && settings->IsPluginSelftestEnabled())
-        {
-            if (CPluginSelftest::IsFileTooLarge())
-            {
-                DEBUG_THREAD("Thread::Erase selftest file");
-
-                if (settings->IsFirstRunAny() && CPluginSelftest::Send())
-                {
-                    settings->SetBool(SETTING_PLUGIN_SELFTEST, false);
-                    settings->Write();
-                }
-
-                CPluginSelftest::Clear();                
-                CPluginSelftest::SetSupported(false);
-            }
-        }
-#endif
-
-	    // --------------------------------------------------------------------
-        // Send selftest fie
-	    // --------------------------------------------------------------------
-
-#if (defined ENABLE_DEBUG_SELFTEST)
-
-        if (!IsMainThreadDone(hMainThread) && settings->IsFirstRunAny() && mainLoopIteration == 2)
-        {
-            if (settings->IsPluginSelftestEnabled())
-            {
-                if (CPluginSelftest::Send())
-                {
-                    settings->SetBool(SETTING_PLUGIN_SELFTEST, false);
-                    settings->Write();
-
-                    CPluginSelftest::Clear();
-                    CPluginSelftest::SetSupported(false);
-                }
-	        }                
-        }
-
-#endif
 	    // --------------------------------------------------------------------
 	    // Update plugin
 	    // --------------------------------------------------------------------
