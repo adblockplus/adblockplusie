@@ -320,3 +320,47 @@ bool CPluginConfig::GetDownloadProperties(const CString& contentType, SDownloadF
 
     return isValid;
 }
+
+
+int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, const CString& extension) const
+{
+	int filterIndex = 1;
+
+	std::set<std::pair<CString,CString> > filters;
+
+    s_criticalSection.Lock();
+    {
+		for (TDownloadFileProperties::const_iterator it = m_downloadFileProperties.begin(); it != m_downloadFileProperties.end(); ++it)
+        {
+			if (it->second.type.Left(5) == "video")
+			{
+				filters.insert(std::make_pair("Video - " + it->second.description, it->second.extension));
+			}
+			else
+			{
+				filters.insert(std::make_pair("Audio - " + it->second.description, it->second.extension));
+			}
+		}
+    }
+    s_criticalSection.Unlock();
+
+	int bufferIndex = 0;
+	int index = 1;
+
+	for (std::set<std::pair<CString,CString> >::iterator it = filters.begin(); it != filters.end(); ++it, index++)
+	{
+		wsprintf(pBuffer + bufferIndex, L"%s (*.%s)\0", it->first.GetBuffer(), it->second.GetBuffer());
+		bufferIndex += it->first.GetLength() + it->second.GetLength() + 6;
+		wsprintf(pBuffer + bufferIndex, L".%s\0", it->second.GetBuffer());
+		bufferIndex += it->second.GetLength() + 2;
+
+		if (it->second == extension)
+		{
+			filterIndex = index;
+		}
+	}
+
+	pBuffer[bufferIndex] = _T('\0');
+
+	return filterIndex;
+}

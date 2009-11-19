@@ -34,6 +34,7 @@ public:
     bool GetDownloadProperties(const CString& headers, SDownloadFileProperties& properties) const;
     
     void Read();
+	int GenerateFilterString(TCHAR* pBuffer, const CString& extension) const;
 };
 
 

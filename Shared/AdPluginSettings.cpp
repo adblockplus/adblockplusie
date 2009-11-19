@@ -434,23 +434,38 @@ CString CPluginSettings::GetTempPath(const CString& filename)
     {
 		tempPath = pwszCacheDir;
     }
+	// Not implemented in IE6
+	else if (hr == E_NOTIMPL)
+	{
+        TCHAR path[MAX_PATH] = _T("");
+
+		if (::SHGetSpecialFolderPath(NULL, path, CSIDL_INTERNET_CACHE, TRUE))
+        {
+			tempPath = path;
+        }
+		else
+		{
+			DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_TEMP, "Settings::GetTempPath failed");
+		}
+	}
+	// Other error
 	else
-    {
-	    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_PATH, "Settings::GetTempPath failed");
-    }
+	{
+		DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_PATH, "Settings::GetTempPath failed");
+	}
 
 	::CoTaskMemFree(pwszCacheDir);
 
 	return tempPath + "\\" + filename;
 }
 
-CString CPluginSettings::GetTempFile(const CString& prefix)
+CString CPluginSettings::GetTempFile(const CString& prefix, const CString& extension)
 {
-    WCHAR lpNameBuffer[MAX_PATH] = L"";
+    TCHAR nameBuffer[MAX_PATH] = _T("");
 
 	CString tempPath;
  
-    DWORD dwRetVal = ::GetTempFileName(GetTempPath(), prefix, 0, lpNameBuffer);
+	DWORD dwRetVal = ::GetTempFileName(GetTempPath(), prefix, 0, nameBuffer);
     if (dwRetVal == 0)
     {
 	    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_FILE, "Settings::GetTempFileName failed");
@@ -459,7 +474,15 @@ CString CPluginSettings::GetTempFile(const CString& prefix)
     }
     else
     {
-        tempPath = lpNameBuffer;
+        tempPath = nameBuffer;
+		if (!extension.IsEmpty())
+		{
+			int pos = tempPath.ReverseFind(_T('.'));
+			if (pos >= 0)
+			{
+				tempPath = tempPath.Mid(pos+1) + extension;
+			}
+		}
     }
 
     return tempPath;
