@@ -129,7 +129,7 @@ public:
 	static CString GetDataPath(const CString& filename="");
 
 	static CString GetTempPath(const CString& filename="");
-    static CString GetTempFile(const CString& prefix);
+    static CString GetTempFile(const CString& prefix, const CString& extension="");
 
     bool Has(const CString& key) const;
     void Remove(const CString& key);

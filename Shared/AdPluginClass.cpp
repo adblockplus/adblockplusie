@@ -1317,7 +1317,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				PROCESS_INFORMATION pi;
 				::ZeroMemory(&pi, sizeof(pi));
 
-	            char lpData[1024] = "";
+	            char lpData[MAX_PATH] = "";
 
 		        if (!::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_PROGRAM_FILES_COMMON, TRUE))
 		        {
