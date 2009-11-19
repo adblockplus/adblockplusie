@@ -480,7 +480,7 @@ CString CPluginSettings::GetTempFile(const CString& prefix, const CString& exten
 			int pos = tempPath.ReverseFind(_T('.'));
 			if (pos >= 0)
 			{
-				tempPath = tempPath.Mid(pos+1) + extension;
+				tempPath = tempPath.Left(pos+1) + extension;
 			}
 		}
     }
