@@ -228,9 +228,11 @@ void CPluginDictionary::Create()
             return;
         }
 
+		int dictionaryVersion = 1;
+
         s_criticalSectionDictionary.Lock();
 	    {
-		    m_dictionary.clear();
+			m_dictionary.clear();
 
 #if (defined PRODUCT_ADBLOCKER)
 
@@ -283,21 +285,38 @@ void CPluginDictionary::Create()
 		    m_dictionary["DOWNLOAD_PLEASE_WAIT"] = "Please wait...";
 		    m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
 			m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update IE Download Helper, your Internet Explorer will close before installation";
-			m_dictionary["DOWNLOAD_DOWNLOADED_TEXT"] = "Downloaded";
-			m_dictionary["DOWNLOAD_DOWNLOADED_OF"] = "of";
 
 			// File download
-		    m_dictionary["DOWNLOAD_FILE_TITLE"] = "Download Manager";
 			m_dictionary["DOWNLOAD_FILE_SAVE_TITLE"] = "Save file";
 			m_dictionary["DOWNLOAD_FILE_NO_FILES"] = "No files to download";
 
+			// Download manager
+			m_dictionary["MANAGER_TITLE"] = "Download Manager";
+			m_dictionary["MANAGER_DOWNLOAD_TITLE"] = "File download";
+			m_dictionary["MANAGER_DOWNLOAD_PROGRESS_TEXT"] = "Downloaded";
+			m_dictionary["MANAGER_DOWNLOAD_PROGRESS_TEXT_OF"] = "of";
+			m_dictionary["MANAGER_DOWNLOAD_FILE"] = "File:";
+			m_dictionary["MANAGER_DOWNLOAD_FILE_TEMP"] = "Temporary file:";
+			m_dictionary["MANAGER_CONVERSION_TITLE"] = "File conversion";
+			m_dictionary["MANAGER_CONVERSION_FILE"] = "File:";
+			m_dictionary["MANAGER_CONVERSION_NONE"] = "None";
+			m_dictionary["MANAGER_STATUS_TITLE"] = "Status";
+			m_dictionary["MANAGER_STATUS_DONE"] = "Done";
+			m_dictionary["MANAGER_STATUS_PREPARING"] = "Preparing download...";
+			m_dictionary["MANAGER_STATUS_DOWNLOADING"] = "Downloading...";
+			m_dictionary["MANAGER_STATUS_CONVERTING"] = "Converting...";
+			m_dictionary["MANAGER_ERROR_LAUNCH"] = "Unable to launch converter";
+			m_dictionary["MANAGER_ERROR_UNKNOWN"] = "Unknown error occured";
+
 			m_dictionary["GENERAL_DOWNLOAD"] = "Download";
 
+			dictionaryVersion = 2;
 #endif
             // General texts
 		    m_dictionary["GENERAL_YES"] = "Yes";
 		    m_dictionary["GENERAL_NO"] = "No";
 		    m_dictionary["GENERAL_CANCEL"] = "Cancel";
+		    m_dictionary["GENERAL_CLOSE"] = "Close";
 
 	        iniFile.UpdateSection("en", m_dictionary);
 	    }
@@ -307,7 +326,7 @@ void CPluginDictionary::Create()
         {
             CPluginSettings* settings = CPluginSettings::GetInstance();
             
-            settings->SetValue(SETTING_DICTIONARY_VERSION, 1);
+            settings->SetValue(SETTING_DICTIONARY_VERSION, dictionaryVersion);
             settings->Write();
         }
         else

@@ -204,12 +204,7 @@ STDMETHODIMP CBSCallbackImpl::OnLowResource(DWORD)
 }
 
 STDMETHODIMP CBSCallbackImpl::OnProgress(ULONG ulProgress, ULONG ulProgressMax, ULONG ulStatusCode, LPCWSTR szStatusText)
-{
-	if (ulStatusCode < UF_BINDSTATUS_FIRST || ulStatusCode > UF_BINDSTATUS_LAST)
-	{
-		ulStatusCode = UF_BINDSTATUS_LAST + 1;
-	}	
-	
+{	
 	if (m_hWnd != NULL && ::IsWindow(m_pBar))
 	{
 		// inform the dialog box to display current status, don't use PostMessage
