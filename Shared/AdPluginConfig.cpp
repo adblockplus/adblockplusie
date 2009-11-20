@@ -322,7 +322,7 @@ bool CPluginConfig::GetDownloadProperties(const CString& contentType, SDownloadF
 }
 
 
-int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, const CString& extension) const
+int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, const CString& extension, bool allowConversion) const
 {
 	int filterIndex = 1;
 
@@ -349,14 +349,17 @@ int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, const CString& extension
 
 	for (std::set<std::pair<CString,CString> >::iterator it = filters.begin(); it != filters.end(); ++it, index++)
 	{
-		wsprintf(pBuffer + bufferIndex, L"%s (*.%s)\0", it->first.GetBuffer(), it->second.GetBuffer());
-		bufferIndex += it->first.GetLength() + it->second.GetLength() + 6;
-		wsprintf(pBuffer + bufferIndex, L".%s\0", it->second.GetBuffer());
-		bufferIndex += it->second.GetLength() + 2;
-
-		if (it->second == extension)
+		if (allowConversion || it->second == extension)
 		{
-			filterIndex = index;
+			wsprintf(pBuffer + bufferIndex, L"%s (*.%s)\0", it->first.GetBuffer(), it->second.GetBuffer());
+			bufferIndex += it->first.GetLength() + it->second.GetLength() + 6;
+			wsprintf(pBuffer + bufferIndex, L".%s\0", it->second.GetBuffer());
+			bufferIndex += it->second.GetLength() + 2;
+
+			if (it->second == extension)
+			{
+				filterIndex = index;
+			}
 		}
 	}
 

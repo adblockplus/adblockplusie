@@ -295,11 +295,14 @@ void CPluginDictionary::Create()
 			m_dictionary["MANAGER_DOWNLOAD_TITLE"] = "File download";
 			m_dictionary["MANAGER_DOWNLOAD_PROGRESS_TEXT"] = "Downloaded";
 			m_dictionary["MANAGER_DOWNLOAD_PROGRESS_TEXT_OF"] = "of";
-			m_dictionary["MANAGER_DOWNLOAD_FILE"] = "File:";
-			m_dictionary["MANAGER_DOWNLOAD_FILE_TEMP"] = "Temporary file:";
+			m_dictionary["MANAGER_DOWNLOAD_FILE"] = "File";
+			m_dictionary["MANAGER_DOWNLOAD_FILE_TEMP"] = "Temporary file";
 			m_dictionary["MANAGER_CONVERSION_TITLE"] = "File conversion";
-			m_dictionary["MANAGER_CONVERSION_FILE"] = "File:";
+			m_dictionary["MANAGER_CONVERSION_FILE"] = "File";
 			m_dictionary["MANAGER_CONVERSION_NONE"] = "None";
+			m_dictionary["MANAGER_CONVERSION_AWAITING_DOWNLOAD"] = "Awating file download";
+			m_dictionary["MANAGER_CONVERSION_CONVERTED_SIZE"] = "Converted file size";
+			m_dictionary["MANAGER_CONVERSION_TIME_ELAPSED"] = "Elapsed time";
 			m_dictionary["MANAGER_STATUS_TITLE"] = "Status";
 			m_dictionary["MANAGER_STATUS_DONE"] = "Done";
 			m_dictionary["MANAGER_STATUS_PREPARING"] = "Preparing download...";

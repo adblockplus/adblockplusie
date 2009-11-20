@@ -640,7 +640,11 @@ void CPluginSettings::SetBool(const CString& key, bool value)
 
 bool CPluginSettings::IsPluginEnabled() const
 {
-    return m_isPluginEnabledTab && !GetBool(SETTING_PLUGIN_EXPIRED, false);
+#if (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
+	return m_isPluginEnabledTab;
+#else
+	return m_isPluginEnabledTab && !GetBool(SETTING_PLUGIN_EXPIRED, false);
+#endif
 }
 
 

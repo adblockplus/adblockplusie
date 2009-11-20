@@ -326,7 +326,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 	        {
 		        DWORD nUserTimerBase = GetTickCount() / TIMER_INTERVAL_USER_REGISTRATION;
 
-		        if (nUserTimerBase >= nNextUserTimerBase || mainLoopIteration == 1)
+				if (nUserTimerBase >= nNextUserTimerBase || mainLoopIteration == 1 && !settings->IsFirstRun())
 		        {
                     DEBUG_THREAD("Thread::Register user (action)");
 
