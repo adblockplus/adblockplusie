@@ -17,6 +17,7 @@ private:
     static CComAutoCriticalSection s_criticalSection;
 
 	TDownloadFileProperties m_downloadFileProperties;
+	TDownloadFileCategories m_downloadFileCategories;
 
 	// private constructor used by the singleton pattern
 	CPluginConfig();
@@ -34,7 +35,7 @@ public:
     bool GetDownloadProperties(const CString& headers, SDownloadFileProperties& properties) const;
     
     void Read();
-	int GenerateFilterString(TCHAR* pBuffer, const CString& extension, bool allowConversion) const;
+	int GenerateFilterString(TCHAR* pBuffer, SDownloadFileProperties& properties, std::vector<std::pair<CString,CString>>& filterData, bool allowConversion) const;
 };
 
 

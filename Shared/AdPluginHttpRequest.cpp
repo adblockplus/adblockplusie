@@ -5,6 +5,7 @@
 #include "AdPluginHttpRequest.h"
 #include "AdPluginClient.h"
 #include "AdPluginSettings.h"
+#include "AdPluginSystem.h"
 
 #include <winhttp.h>
 
@@ -75,14 +76,16 @@ CPluginHttpRequest::~CPluginHttpRequest()
 void CPluginHttpRequest::AddPluginId()
 {
 	CPluginSettings* settings = CPluginSettings::GetInstance();
-	
+
+    CPluginSystem* system = CPluginSystem::GetInstance();
+
     if (settings->Has(SETTING_PLUGIN_ID))
     {
         Add("plugin", settings->GetString(SETTING_PLUGIN_ID));
     }
     else
     {
-	    Add("plugin", CPluginClient::GetPluginId());
+	    Add("plugin", system->GetPluginId());
     }
     Add("user", settings->GetString(SETTING_USER_ID));
     Add("password", settings->GetString(SETTING_PLUGIN_PASSWORD));

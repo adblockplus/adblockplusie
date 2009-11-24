@@ -4,6 +4,7 @@
 #include "AdPluginClient.h"
 #include "AdPluginIniFile.h"
 #include "AdPluginSettings.h"
+#include "AdPluginSystem.h"
 #include "AdPluginHttpRequest.h"
 
 
@@ -37,6 +38,8 @@ void CPluginConfiguration::Invalidate()
 
 bool CPluginConfiguration::Download()
 {
+    CPluginSystem* system = CPluginSystem::GetInstance();
+
     bool isOk = true;
 
     m_isValid = false;
@@ -55,15 +58,15 @@ bool CPluginConfiguration::Download()
 
     httpRequest.Add("enabled", settings->GetPluginEnabled() ? "true":"false");
     httpRequest.Add("lang", settings->GetString(SETTING_LANGUAGE, "err"));
-	httpRequest.Add("ie", CPluginClient::GetBrowserVersion());
-	httpRequest.Add("ielang", CPluginClient::GetBrowserLanguage());
+	httpRequest.Add("ie", system->GetBrowserVersion());
+	httpRequest.Add("ielang", system->GetBrowserLanguage());
 
 	httpRequest.AddOsInfo();
 
-    httpRequest.Add("pc", CPluginClient::GetComputerName(), false);
-    httpRequest.Add("username", CPluginClient::GetUserName(), false);
+    httpRequest.Add("pc", system->GetComputerName(), false);
+    httpRequest.Add("username", system->GetUserName(), false);
 
-    CString newPluginId = CPluginClient::GetPluginId();
+    CString newPluginId = system->GetPluginId();
     if (newPluginId != settings->GetString(SETTING_PLUGIN_ID))
     {
         httpRequest.Add("newplugin", newPluginId);

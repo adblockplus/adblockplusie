@@ -8,9 +8,11 @@
 
 #include "AdPluginTypedef.h"
 
-#if (defined PRODUCT_ADBLOCKER)
+
+#ifdef PRODUCT_ADBLOCKER
  #include "../AdBlocker/AdBlocker.h"
-#elif (defined PRODUCT_DOWNLOADHELPER)
+#endif
+#ifdef PRODUCT_DOWNLOADHELPER
  #include "../DownloadHelper/DownloadHelper.h"
 #endif
 
@@ -54,6 +56,13 @@ public:
 
 
 class CPluginMimeFilterClient;
+
+#ifdef PRODUCT_DOWNLOADHELPER
+	class CDownloadDomTraverser;
+#endif
+#ifdef PRODUCT_ADBLOCKER
+	class CElementHideDomTraverser;
+#endif
 
 
 // This class implements an object that's created for every browser window. The SetSite
@@ -123,11 +132,14 @@ private:
 
 	static CPluginMimeFilterClient* s_mimeFilter;
 
-#ifdef SUPPORT_FILTER
-    void HideElement(IHTMLElement* pEl, const CString& type, const CString& url, bool isDebug, CString& indent);
-    void HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, const CString& docName, const CString& domain, CString& indent, bool isCached=true);
-	void HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CString& docName, const CString& domain, CString indent);
-#endif // SUPPORT_FILTER
+#ifdef SUPPORT_DOM_TRAVERSER
+#ifdef PRODUCT_DOWNLOADHELPER
+	CDownloadDomTraverser* m_traverser;
+#endif
+#ifdef PRODUCT_ADBLOCKER
+	CElementHideDomTraverser* m_traverser;
+#endif
+#endif // SUPPORT_DOM_TRAVERSER
 
 	bool InitObject(bool bBHO);
 	void CloseTheme();
@@ -219,22 +231,6 @@ private:
 	static CComAutoCriticalSection s_criticalSectionBrowser;
 #ifdef SUPPORT_WHITELIST
 	static CComAutoCriticalSection s_criticalSectionWhiteList;
-#endif
-
-    // Hide element caching	
-#ifdef SUPPORT_FILTER
-	CComAutoCriticalSection m_criticalSectionHideElement;
-
-    long m_cacheDomElementCount;
-
-    int m_cacheIndexLast;
-    int m_cacheElementsMax;
-    std::set<CString> m_cacheDocumentHasFrames;
-    std::set<CString> m_cacheDocumentHasIframes;
-    
-    CElementHideCache* m_cacheElements;
-
-    void ClearElementHideCache();
 #endif
 
     // Async browser
