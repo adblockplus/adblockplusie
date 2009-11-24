@@ -484,7 +484,7 @@ int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, SDownloadFileProperties&
 
 		int index = 1;
 
-		for (std::map<CString,SDownloadFileCategory>::iterator it = filters.begin(); it != filters.end(); ++it, index++)
+		for (std::map<CString,SDownloadFileCategory>::iterator it = filters.begin(); it != filters.end(); ++it)
 		{
 			if (allowConversion && it->second.ffmpegArgs != "exclude" || it->second.category == properties.category)
 			{
@@ -505,6 +505,8 @@ int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, SDownloadFileProperties&
 				{
 					filterData.push_back(std::make_pair(extension, it->second.ffmpegArgs));
 				}
+
+				index++;
 			}
 		}
     }
