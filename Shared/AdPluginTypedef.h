@@ -4,11 +4,34 @@
 
 #ifdef SUPPORT_FILE_DOWNLOAD
 
+struct SDownloadFileCategory
+{
+	CString category;
+    CString type;
+    CString extension;
+	CString ffmpegArgs;
+    CString description;
+
+    SDownloadFileCategory()
+    {
+    }
+
+    SDownloadFileCategory(const SDownloadFileCategory& org)
+    {
+		category = org.category;
+		type = org.type;
+		extension = org.extension;
+		ffmpegArgs = org.ffmpegArgs;
+		description = org.description;
+	}
+};
+
 struct SDownloadFileProperties
 {
-    CString extension;
-    CString type;
-    CString description;
+    CString content;
+    CString conversions;
+    CString category;
+	SDownloadFileCategory properties;
     
     SDownloadFileProperties()
     {
@@ -16,9 +39,10 @@ struct SDownloadFileProperties
 
     SDownloadFileProperties(const SDownloadFileProperties& org)
     {
-        extension = org.extension;
-        type = org.type;
-        description = org.description;
+		content = org.content;
+        category = org.category;
+		properties = org.properties;
+		conversions = org.conversions;
     }
 };
 
@@ -79,6 +103,9 @@ typedef std::map<UINT,SDownloadFile> TMenuDownloadFiles;
 
 // Download file properties (content type -> struct)
 typedef std::map<CString,SDownloadFileProperties> TDownloadFileProperties;
+
+// Download file categories (category -> struct)
+typedef std::map<CString,SDownloadFileCategory> TDownloadFileCategories;
 
 #endif
 

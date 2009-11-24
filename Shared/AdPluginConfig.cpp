@@ -85,7 +85,7 @@ void CPluginConfig::Read()
     CPluginConfigLock lock;
     if (lock.IsLocked())
     {
-        CPluginIniFile iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), true);
+        CPluginIniFile iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), false);
 
         if (!iniFile.Read())
         {
@@ -96,31 +96,52 @@ void CPluginConfig::Read()
         s_criticalSection.Lock();
 	    {
             m_downloadFileProperties.clear();
+			m_downloadFileCategories.clear();
 
 			const CPluginIniFile::TSectionNames& names = iniFile.GetSectionNames();
 
 			for (CPluginIniFile::TSectionNames::const_iterator it = names.begin(); it != names.end(); ++it)
 			{
-				if (it->Left(6) == L"format")
+				if (it->Left(8) == L"category")
 				{
 					CPluginIniFile::TSectionData data = iniFile.GetSectionData(*it);
 
-					CString mimeTypes = data["type"];
+					SDownloadFileCategory category;
+
+					category.description = data["description"];
+					category.extension = data["extension"];
+					category.ffmpegArgs = data["ffmpeg"];
+					category.type = data["type"];
+					category.category = *it;
+
+					m_downloadFileCategories[category.category] = category;
+				}
+				else if (it->Left(6) == L"format")
+				{
+					CPluginIniFile::TSectionData data = iniFile.GetSectionData(*it);
+
+					CString contents = data["type"];
 
 					int pos = 0;
 
-					CString mimeType = mimeTypes.Tokenize(L";", pos);
+					CString content = contents.Tokenize(L";", pos);
 					while (pos >= 0)
 					{
 						SDownloadFileProperties properties;
 
-						properties.type = mimeType;
-						properties.extension = data["extension"];
-						properties.description = data["descriptor"];
+						properties.category = data["category"];
+						properties.conversions = data["conversions"];
+						properties.content = content;
 
-						m_downloadFileProperties[mimeType] = properties;
+						TDownloadFileCategories::const_iterator it = m_downloadFileCategories.find(properties.category);
+						if (it != m_downloadFileCategories.end())
+						{
+							properties.properties = it->second;
+						}
 
-						mimeType = mimeTypes.Tokenize(L";", pos);
+						m_downloadFileProperties[content] = properties;
+
+						content = contents.Tokenize(L";", pos);
 					}
 				}
 			}
@@ -137,7 +158,7 @@ void CPluginConfig::Create()
     CPluginConfigLock lock;
     if (lock.IsLocked())
     {
-        CPluginIniFile iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), true);
+        CPluginIniFile iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), false);
 
         CPluginSettings* settings = CPluginSettings::GetInstance();
 
@@ -148,13 +169,15 @@ void CPluginConfig::Create()
 
         s_criticalSection.Lock();
 	    {
+			// Formats
+			// ----------------------------------------------------------------
 			// .asf
 			{
     			CPluginIniFile::TSectionData format;
 
 				format["type"] = "video/x-ms-asf";
-				format["extension"] = "asf";
-				format["descriptor"] = "Advanced Systems Format";
+				format["category"] = "categoryAsf";
+				format["conversions"] = "Video;Audio";
 
 				iniFile.UpdateSection("formatAsf", format);
 			}
@@ -163,8 +186,8 @@ void CPluginConfig::Create()
     			CPluginIniFile::TSectionData format;
 
 				format["type"] = "video/avi;video/msvideo;video/x-msvideo";
-				format["extension"] = "avi";
-				format["descriptor"] = "Audio Video Interleave";
+				format["category"] = "categoryAvi";
+				format["conversions"] = "Video;Audio";
 
 				iniFile.UpdateSection("formatAvi", format);
 			}
@@ -173,8 +196,8 @@ void CPluginConfig::Create()
     			CPluginIniFile::TSectionData format;
 
 				format["type"] = "video/x-flv";
-				format["extension"] = "flv";
-				format["descriptor"] = "Flash Video";
+				format["category"] = "categoryFlv";
+				format["conversions"] = "Video;Audio";
 
 				iniFile.UpdateSection("formatFlv", format);
 			}
@@ -183,8 +206,8 @@ void CPluginConfig::Create()
     			CPluginIniFile::TSectionData format;
 
 				format["type"] = "video/quicktime";
-				format["extension"] = "mov";
-				format["descriptor"] = "QuickTime";
+				format["category"] = "categoryMov";
+				format["conversions"] = "Video;Audio";
 
 				iniFile.UpdateSection("formatMov", format);
 			}
@@ -193,28 +216,38 @@ void CPluginConfig::Create()
     			CPluginIniFile::TSectionData format;
 
 				format["type"] = "audio/mpeg";
-				format["extension"] = "mp3";
-				format["descriptor"] = "MPEG-1 Audio Layer 3 (MP3)";
+				format["category"] = "categoryMp3";
+				format["conversions"] = "Audio";
 
 				iniFile.UpdateSection("formatMp3", format);
 			}
-			// .mp4
+			// .mp4 audio
 			{
     			CPluginIniFile::TSectionData format;
 
-				format["type"] = "video/mp4;audio/mp4;application/mp4";
-				format["extension"] = "mp4";
-				format["descriptor"] = "MPEG-4 Part 14";
+				format["type"] = "audio/mp4";
+				format["category"] = "categoryMp4Audio";
+				format["conversions"] = "Audio";
 
-				iniFile.UpdateSection("formatMp4", format);
+				iniFile.UpdateSection("formatMp4Audio", format);
+			}
+			// .mp4 video
+			{
+    			CPluginIniFile::TSectionData format;
+
+				format["type"] = "video/mp4";
+				format["category"] = "categoryMp4Video";
+				format["conversions"] = "Video;Audio";
+
+				iniFile.UpdateSection("formatMp4Video", format);
 			}
 			// .wav
 			{
     			CPluginIniFile::TSectionData format;
 
 				format["type"] = "audio/x-wav;audio/wav;audio/wave";
-				format["extension"] = "wav";
-				format["descriptor"] = "Waveform Audio";
+				format["category"] = "categoryWav";
+				format["conversions"] = "Audio";
 
 				iniFile.UpdateSection("formatWav", format);
 			}
@@ -223,10 +256,112 @@ void CPluginConfig::Create()
     			CPluginIniFile::TSectionData format;
 
 				format["type"] = "video/x-ms-wmv";
-				format["extension"] = "wmv";
-				format["descriptor"] = "Windows Media Video";
+				format["category"] = "categoryWmv";
+				format["conversions"] = "";
 
 				iniFile.UpdateSection("formatWmv", format);
+			}
+
+			// Categories
+			// ----------------------------------------------------------------
+			// asf
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Video";
+				category["extension"] = "asf";
+				category["description"] = "Advanced Systems Format";
+				category["ffmpeg"] = "";
+
+				iniFile.UpdateSection("categoryAsf", category);
+			}
+			// avi
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Video";
+				category["extension"] = "avi";
+				category["description"] = "Audio Video Interleave";
+				category["ffmpeg"] = "";
+
+				iniFile.UpdateSection("categoryAvi", category);
+			}
+			// flv
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Video";
+				category["extension"] = "flv";
+				category["description"] = "Flash Video";
+				category["ffmpeg"] = "";
+
+				iniFile.UpdateSection("categoryFlv", category);
+			}
+			// mp3
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Audio";
+				category["extension"] = "mp3";
+				category["description"] = "MP3";
+				category["ffmpeg"] = "-acodec libmp3lame -ab 160kb -ac 2 -ar 44100";
+
+				iniFile.UpdateSection("categoryMp3", category);
+			}
+			// mov
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Video";
+				category["extension"] = "mov";
+				category["description"] = "QuickTime";
+				category["ffmpeg"] = "";
+
+				iniFile.UpdateSection("categoryMov", category);
+			}
+			// mp4 Audio
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Audio";
+				category["extension"] = "mp4";
+				category["description"] = "MPEG-4 Audio";
+				category["ffmpeg"] = "exclude";
+
+				iniFile.UpdateSection("categoryMp4Audio", category);
+			}
+			// mp4 Video
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Video";
+				category["extension"] = "mp4";
+				category["description"] = "MPEG-4 Video";
+				category["ffmpeg"] = "";
+
+				iniFile.UpdateSection("categoryMp4Video", category);
+			}
+			// wav
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Audio";
+				category["extension"] = "wav";
+				category["description"] = "Waveform Audio";
+				category["ffmpeg"] = "";
+
+				iniFile.UpdateSection("categoryWav", category);
+			}
+			// wmv
+			{
+    			CPluginIniFile::TSectionData category;
+
+				category["type"] = "Video";
+				category["extension"] = "wmv";
+				category["description"] = "Windows Media Video";
+				category["ffmpeg"] = "exclude";
+
+				iniFile.UpdateSection("categoryWmv", category);
 			}
 		}
         s_criticalSection.Unlock();
@@ -235,7 +370,7 @@ void CPluginConfig::Create()
         {
             CPluginSettings* settings = CPluginSettings::GetInstance();
             
-            settings->SetValue(SETTING_CONFIG_VERSION, 3);
+            settings->SetValue(SETTING_CONFIG_VERSION, 4);
             settings->Write();
         }
         else
@@ -322,46 +457,58 @@ bool CPluginConfig::GetDownloadProperties(const CString& contentType, SDownloadF
 }
 
 
-int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, const CString& extension, bool allowConversion) const
+int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, SDownloadFileProperties& properties, std::vector<std::pair<CString,CString>>& filterData, bool allowConversion) const
 {
 	int filterIndex = 1;
+	int bufferIndex = 0;
 
-	std::set<std::pair<CString,CString> > filters;
+	std::map<CString,SDownloadFileCategory> filters;
 
     s_criticalSection.Lock();
     {
-		for (TDownloadFileProperties::const_iterator it = m_downloadFileProperties.begin(); it != m_downloadFileProperties.end(); ++it)
-        {
-			if (it->second.type.Left(5) == "video")
+		int pos = 0;
+		CString categories = properties.conversions + ";" + properties.properties.extension;
+		CString category = categories.Tokenize(_T(";"), pos);
+		while (pos >= 0)
+		{
+			for (TDownloadFileCategories::const_iterator it = m_downloadFileCategories.begin(); it != m_downloadFileCategories.end(); ++it)
 			{
-				filters.insert(std::make_pair("Video - " + it->second.description, it->second.extension));
+				if (it->second.type == category)
+				{
+					filters[category + " - " + it->second.description] = it->second;
+				}
 			}
-			else
+
+			category = categories.Tokenize(_T(";"), pos);
+		}
+
+		int index = 1;
+
+		for (std::map<CString,SDownloadFileCategory>::iterator it = filters.begin(); it != filters.end(); ++it, index++)
+		{
+			if (allowConversion && it->second.ffmpegArgs != "exclude" || it->second.category == properties.category)
 			{
-				filters.insert(std::make_pair("Audio - " + it->second.description, it->second.extension));
+				CString extension = it->second.extension;
+				CString description = it->first;
+
+				wsprintf(pBuffer + bufferIndex, L"%s (*.%s)\0", description.GetBuffer(), extension.GetBuffer());
+				bufferIndex += description.GetLength() + extension.GetLength() + 6;
+				wsprintf(pBuffer + bufferIndex, L".%s\0", extension.GetBuffer());
+				bufferIndex += extension.GetLength() + 2;
+
+				if (it->second.category == properties.category)
+				{
+					filterIndex = index;
+					filterData.push_back(std::make_pair(extension, ""));
+				}
+				else
+				{
+					filterData.push_back(std::make_pair(extension, it->second.ffmpegArgs));
+				}
 			}
 		}
     }
     s_criticalSection.Unlock();
-
-	int bufferIndex = 0;
-	int index = 1;
-
-	for (std::set<std::pair<CString,CString> >::iterator it = filters.begin(); it != filters.end(); ++it, index++)
-	{
-		if (allowConversion || it->second == extension)
-		{
-			wsprintf(pBuffer + bufferIndex, L"%s (*.%s)\0", it->first.GetBuffer(), it->second.GetBuffer());
-			bufferIndex += it->first.GetLength() + it->second.GetLength() + 6;
-			wsprintf(pBuffer + bufferIndex, L".%s\0", it->second.GetBuffer());
-			bufferIndex += it->second.GetLength() + 2;
-
-			if (it->second == extension)
-			{
-				filterIndex = index;
-			}
-		}
-	}
 
 	pBuffer[bufferIndex] = _T('\0');
 

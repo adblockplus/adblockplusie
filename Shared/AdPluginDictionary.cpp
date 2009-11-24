@@ -305,11 +305,13 @@ void CPluginDictionary::Create()
 			m_dictionary["MANAGER_CONVERSION_TIME_ELAPSED"] = "Elapsed time";
 			m_dictionary["MANAGER_STATUS_TITLE"] = "Status";
 			m_dictionary["MANAGER_STATUS_DONE"] = "Done";
-			m_dictionary["MANAGER_STATUS_PREPARING"] = "Preparing download...";
+			m_dictionary["MANAGER_STATUS_PREPARING_DOWNLOAD"] = "Preparing download...";
 			m_dictionary["MANAGER_STATUS_DOWNLOADING"] = "Downloading...";
 			m_dictionary["MANAGER_STATUS_CONVERTING"] = "Converting...";
 			m_dictionary["MANAGER_ERROR_LAUNCH"] = "Unable to launch converter";
 			m_dictionary["MANAGER_ERROR_UNKNOWN"] = "Unknown error occured";
+			m_dictionary["MANAGER_ERROR_DOWNLOAD_FAILURE"] = "Download failed";
+			m_dictionary["MANAGER_ERROR_DOWNLOAD_FILE_NOT_FOUND"] = "Download failed. File not found";
 
 			m_dictionary["GENERAL_DOWNLOAD"] = "Download";
 

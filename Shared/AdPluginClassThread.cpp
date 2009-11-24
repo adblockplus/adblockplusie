@@ -5,6 +5,7 @@
 #include "AdPluginClass.h"
 #include "AdPluginDictionary.h"
 #include "AdPluginSettings.h"
+#include "AdPluginSystem.h"
 #include "AdPluginConfiguration.h"
 #ifdef SUPPORT_FILTER
  #include "AdPluginFilterClass.h"
@@ -34,6 +35,8 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     // Force loading/creation of settings
     CPluginSettings* settings = CPluginSettings::GetInstance();
 
+    CPluginSystem* system = CPluginSystem::GetInstance();
+
     settings->SetMainThreadId();
 
     CString debugText;
@@ -46,13 +49,13 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     debugText += L"\n================================================================================";
 
     debugText += L"\nPlugin version:    " + CString(IEPLUGIN_VERSION);
-    debugText += L"\nPlugin id:         " + CPluginClient::GetPluginId();
-    debugText += L"\nMAC address:       " + CPluginClient::GetMacId(true);
-    debugText += L"\nComputer name:     " + CPluginClient::GetComputerName();
+    debugText += L"\nPlugin id:         " + system->GetPluginId();
+    debugText += L"\nMAC address:       " + system->GetMacId(true);
+    debugText += L"\nComputer name:     " + system->GetComputerName();
     debugText += L"\nUser id:           " + settings->GetString(SETTING_USER_ID, "N/A");
-    debugText += L"\nUser name:         " + CPluginClient::GetUserName();
-    debugText += L"\nBrowser version:   " + CPluginClient::GetBrowserVersion();
-    debugText += L"\nBrowser language:  " + CPluginClient::GetBrowserLanguage();
+    debugText += L"\nUser name:         " + system->GetUserName();
+    debugText += L"\nBrowser version:   " + system->GetBrowserVersion();
+    debugText += L"\nBrowser language:  " + system->GetBrowserLanguage();
 
     DWORD osVersion = ::GetVersion();
 
@@ -482,7 +485,7 @@ DEBUG("new version config");
 #endif // SUPPORT_WHITELIST
 
                 // Check pluginID
-                CString newPluginId = CPluginClient::GetPluginId();
+                CString newPluginId = system->GetPluginId();
         	    
                 if (newPluginId != settings->GetString(SETTING_PLUGIN_ID))
                 {

@@ -115,20 +115,6 @@ public:
 	void SetDocumentUrl(const CString& url);
 	CString GetDocumentUrl() const;
 
-	// Returns browser info
-	static CString GetBrowserLanguage();
-	static CString GetBrowserVersion();
-
-    static CString GetUserName();
-
-    static CString GetComputerName();
-
-	static CString GetPluginId();
-
-    static CString GetMacId(bool addSeparator=false);
-
-    static CString GeneratePluginId();
-
 	static void LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description="", bool isAsync=false, DWORD dwProcessId=0, DWORD dwThreadId=0);
 
     static bool SendFtpFile(LPCTSTR server, LPCTSTR inputFile, LPCTSTR outputFile);
@@ -158,10 +144,16 @@ public:
     // Download files
 #ifdef SUPPORT_FILE_DOWNLOAD
     TDownloadFiles m_downloadFiles;
+	CString m_downloadTitle;
     
+	void AddDownloadFile(const CString& url, const CString& filename, int filesize, const CString& contentType);
+	void AddDownloadFile(const CString& url, const CString& filename, int filesize, const SDownloadFileProperties& properties);
     void AddDownloadFile(const CString& url, int fileSize, const SDownloadFileProperties& properties);
-    TDownloadFiles GetDownloadFiles() const;
+
+	TDownloadFiles GetDownloadFiles() const;
     bool HasDownloadFiles() const;
+	void SetDownloadTitle(const CString& title);
+	CString GetDownloadTitle() const;
 #endif
 };
 

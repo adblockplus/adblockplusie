@@ -3,6 +3,7 @@
 #include "AdPluginClass.h"
 #include "AdPluginDictionary.h"
 #include "AdPluginSettings.h"
+#include "AdPluginSystem.h"
 #ifdef SUPPORT_FILTER
 #include "AdPluginFilterClass.h"
 #endif
@@ -13,6 +14,15 @@
 #include "AdPluginHttpRequest.h"
 #include "AdPluginMutex.h"
 #include "AdPluginProfiler.h"
+
+#ifdef SUPPORT_DOM_TRAVERSER
+#ifdef PRODUCT_DOWNLOADHELPER
+ #include "../DownloadHelper/DownloadDomTraverser.h"
+#endif
+#ifdef PRODUCT_ADBLOCKER
+ #include "../AdBlocker/ElementHideDomTraverser.h"
+#endif
+#endif // SUPPORT_DOM_TRAVERSER
 
 
 #ifdef DEBUG_HIDE_EL
@@ -77,15 +87,20 @@ CPluginClass::CPluginClass()
     m_pWndProcStatus = NULL;
     m_hTheme = NULL;
 
-#ifdef SUPPORT_FILTER
-    m_cacheDomElementCount = 0;
-    m_cacheIndexLast = 0;
-    m_cacheElementsMax= 5000;
-    m_cacheElements = new CElementHideCache[m_cacheElementsMax];
+#ifdef SUPPORT_DOM_TRAVERSER
+#ifdef PRODUCT_DOWNLOADHELPER
+	m_traverser = new CDownloadDomTraverser();
+	m_traverser->TraverseHeader(true);
 #endif
+#ifdef PRODUCT_ADBLOCKER
+	m_traverser = new CElementHideDomTraverser();
+#endif
+#endif // SUPPORT_DOM_TRAVERSER
 
     // Load / create settings
     CPluginSettings* settings = CPluginSettings::GetInstance();
+
+    CPluginSystem* system = CPluginSystem::GetInstance();
 
     bool isMainTab = settings->IncrementTabCount();
 
@@ -104,7 +119,7 @@ CPluginClass::CPluginClass()
         // First run or deleted settings file)
         if (!settings->Has(SETTING_PLUGIN_ID))
         {
-            settings->SetString(SETTING_PLUGIN_ID, CPluginClient::GetPluginId());
+            settings->SetString(SETTING_PLUGIN_ID, system->GetPluginId());
             settings->SetFirstRun();
         }
 /*        
@@ -172,6 +187,10 @@ CPluginClass::~CPluginClass()
 {
 #ifdef SUPPORT_FILTER
     delete [] m_cacheElements;
+#endif
+
+#ifdef SUPPORT_DOM_TRAVERSER
+	delete m_traverser;
 #endif
 
     CPluginSettings* settings = CPluginSettings::GetInstance();
@@ -620,7 +639,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 
             DEBUG_GENERAL(L"================================================================================\nBegin main navigation url:" + url + "\n================================================================================")
 
-#if (defined ENABLE_DEBUG_RESULT)
+#ifdef ENABLE_DEBUG_RESULT
             CPluginDebug::DebugResultDomain(url);
 #endif
 			m_isRefresh = false;
@@ -725,13 +744,13 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 		{
 			DEBUG_NAVI("Navi::Download Complete")
 
+#ifdef SUPPORT_DOM_TRAVERSER
             CComQIPtr<IWebBrowser2> browser = GetBrowser();
 			if (browser)
 			{
-#ifdef SUPPORT_FILTER
-				HideElements(browser, true, GetDocumentUrl(), GetDocumentDomain(), CString(""));
-#endif
+				m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
 			}
+#endif // SUPPORT_DOM_TRAVERSER
 		}
 		break;
 
@@ -770,10 +789,17 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 						    m_isRefresh = true;			
 					    }
 
-#ifdef SUPPORT_FILTER
+#ifdef SUPPORT_DOM_TRAVERSER
                         if (url.Left(6) != "res://")
                         {
-    				        HideElements(pBrowser, url == GetDocumentUrl(), url, GetDocumentDomain(), CString(""));
+							if (url == GetDocumentUrl())
+							{
+								m_traverser->TraverseDocument(browser, GetDocumentDomain(), url);
+							}
+							else
+							{
+								m_traverser->TraverseSubdocument(browser, GetDocumentDomain(), url);
+							}				
 				        }
 #endif
 					}
@@ -1004,7 +1030,7 @@ bool CPluginClass::CreateStatusBarPane()
 
 	if (rcStatusBar.Height() > 0)
 	{
-#if (defined _DEBUG)
+#ifdef _DEBUG
 		m_nPaneWidth = 70;
 #else
 		m_nPaneWidth = min(rcStatusBar.Height(), 22);
@@ -1012,7 +1038,7 @@ bool CPluginClass::CreateStatusBarPane()
 	}
 	else
 	{
-#if (defined _DEBUG)
+#ifdef _DEBUG
 		m_nPaneWidth = 70;
 #else
 		m_nPaneWidth = 22;
@@ -1146,6 +1172,8 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 	    return;
     }
 
+	CPluginSystem* system = CPluginSystem::GetInstance();
+
 	CString url;
 	int navigationErrorId = 0;
 
@@ -1226,7 +1254,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
             CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
             
             httpRequest.AddPluginId();
-            httpRequest.Add("username", CPluginClient::GetUserName(), false);
+            httpRequest.Add("username", system->GetUserName(), false);
 			
 			url = httpRequest.GetUrl();
 
@@ -1327,10 +1355,10 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				CPluginChecksum checksum;
 
 				checksum.Add("/url", downloadFile.downloadUrl);
-				checksum.Add("/type", downloadFile.properties.type);
+				checksum.Add("/type", downloadFile.properties.content);
 				checksum.Add("/file", downloadFile.downloadFile);
 
-				CString args = CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.type + " /file:" + downloadFile.downloadFile + " /checksum:" + checksum.GetAsString();
+				CString args = CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile + " /checksum:" + checksum.GetAsString();
 
 				LPWSTR szCmdline = _wcsdup(args);
 
@@ -1863,7 +1891,7 @@ HICON CPluginClass::GetStatusBarButton(const CString& url)
 	// use the disable icon as defualt, if the client doesn't exists
 	HICON hIcon = GetIcon(ICON_PLUGIN_DEACTIVATED);
 
-#if (defined PRODUCT_ADBLOCKER)
+#ifdef PRODUCT_ADBLOCKER
     if (!CPluginSettings::GetInstance()->IsPluginEnabled())
 	{
     }
@@ -1872,12 +1900,14 @@ HICON CPluginClass::GetStatusBarButton(const CString& url)
 	{
 		hIcon = GetIcon(ICON_PLUGIN_DISABLED);
 	}
-#endif
+#endif // SUPPORT_WHITELIST
 	else if (client)
 	{
 		hIcon = GetIcon(ICON_PLUGIN_ENABLED);
 	}
-#elif (defined PRODUCT_DOWNLOADHELPER)
+#endif // PRODUCT_ADBLOCKER
+
+#ifdef PRODUCT_DOWNLOADHELPER
  #ifdef SUPPORT_WHITELIST
     if (CPluginSettings::GetInstance()->IsPluginEnabled() && client && !client->IsUrlWhiteListed(url))
  #else
@@ -1913,6 +1943,8 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 	{
 		return ::DefWindowProc(hWnd, message, wParam, lParam);
 	}
+
+	CPluginSystem* system = CPluginSystem::GetInstance();
 
 	// Process message 
 	switch (message)
@@ -1985,7 +2017,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 					::DrawIconEx(hDC, offx, (rcClient.Height() - 16)/2 + 2, hIcon, 16, 16, NULL, NULL, DI_NORMAL);
 					offx += 22;
 				}
-#if (defined _DEBUG)
+#ifdef _DEBUG
 				// Display version
 				HFONT hFont = (HFONT)::SendMessage(pClass->m_hStatusBarWnd, WM_GETFONT, 0, 0);
 				HGDIOBJ hOldFont = ::SelectObject(hDC,hFont);
@@ -2058,7 +2090,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
                     CPluginHttpRequest httpRequest(USERS_SCRIPT_WELCOME);
 
                     httpRequest.AddPluginId();
-                    httpRequest.Add("username", CPluginClient::GetUserName(), false);
+                    httpRequest.Add("username", system->GetUserName(), false);
                     httpRequest.Add("errors", settings->GetErrorList());
 
 			        HRESULT hr = browser->Navigate(CComBSTR(httpRequest.GetUrl()), NULL, NULL, NULL, NULL);
@@ -2180,488 +2212,6 @@ ATOM CPluginClass::GetAtomPaneClass()
     return s_atomPaneClass;
 }
 
-// ============================================================================
-// Element hiding
-// ============================================================================
-
-#ifdef SUPPORT_FILTER
-
-void CPluginClass::HideElement(IHTMLElement* pEl, const CString& type, const CString& url, bool isDebug, CString& indent)
-{
-	CComPtr<IHTMLStyle> pStyle;
-
-	if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
-	{
-#ifdef ENABLE_DEBUG_RESULT
-        CComBSTR bstrDisplay;
-
-        if (SUCCEEDED(pStyle->get_display(&bstrDisplay)) && bstrDisplay && CString(bstrDisplay) == L"none")
-        {
-            return;
-        }
-#endif
-
-		static const CComBSTR sbstrNone(L"none");
-
-		if (SUCCEEDED(pStyle->put_display(sbstrNone)))
-		{
-            DEBUG_HIDE_EL(indent + L"HideEl::Hiding " + type + L" url:" + url)
-
-#ifdef ENABLE_DEBUG_RESULT
-            if (isDebug)
-            {
-                CPluginDebug::DebugResultHiding(type, url, "-", "-");
-            }
-#endif
-		}
-	}
-}
-
-
-void CPluginClass::HideElementsLoop(IHTMLElement* pEl, IWebBrowser2* pBrowser, const CString& docName, const CString& domain, CString& indent, bool isCached)
-{
-    int  cacheIndex = -1;
-    long cacheAllElementsCount = -1;
-    bool isHidden = false;
-
-    m_criticalSectionHideElement.Lock();
-    {
-        CComVariant vCacheIndex;
-        if (isCached && SUCCEEDED(pEl->getAttribute(L"sab", 0, &vCacheIndex)) && vCacheIndex.vt == VT_I4)
-        {
-            cacheIndex = vCacheIndex.intVal;
-            
-            isHidden = m_cacheElements[cacheIndex].m_isHidden;
-
-            cacheAllElementsCount = m_cacheElements[cacheIndex].m_elements;
-        }
-        else
-        {
-            isCached = false;
-
-            cacheIndex = m_cacheIndexLast++;
-
-            // Resize cache???            
-            if (cacheIndex >= m_cacheElementsMax)
-            {
-                CElementHideCache* oldCacheElements = m_cacheElements;
-                
-                m_cacheElements = new CElementHideCache[2*m_cacheElementsMax];
-
-                memcpy(m_cacheElements, oldCacheElements, m_cacheElementsMax*sizeof(CElementHideCache));
-
-                m_cacheElementsMax *= 2;
-
-                delete [] oldCacheElements;                
-            }
-            
-            m_cacheElements[cacheIndex].m_isHidden = false;
-            m_cacheElements[cacheIndex].m_elements = 0;
-
-            vCacheIndex.vt = VT_I4;
-            vCacheIndex.intVal = cacheIndex;
-     
-            pEl->setAttribute(L"sab", vCacheIndex);
-        }
-    }
-    m_criticalSectionHideElement.Unlock();
-
-    // Element is hidden - no need to continue
-    if (isHidden)
-    {
-        return;
-    }
-
-    // Get number of elements in the scope of pEl
-    long allElementsCount = 0;
-    
-    CComPtr<IDispatch> pAllCollectionDisp;
-
-    if (SUCCEEDED(pEl->get_all(&pAllCollectionDisp)) && pAllCollectionDisp)
-    {
-        CComPtr<IHTMLElementCollection> pAllCollection;
-
-        if (SUCCEEDED(pAllCollectionDisp->QueryInterface(IID_IHTMLElementCollection, (LPVOID*)&pAllCollection)) && pAllCollection)
-        {
-            // If number of elements = cached number, return
-            if (SUCCEEDED(pAllCollection->get_length(&allElementsCount)) && allElementsCount == cacheAllElementsCount)
-            {
-                return;
-            }
-        }
-    }
-
-    // Update cache
-    m_criticalSectionHideElement.Lock();
-    {
-        m_cacheElements[cacheIndex].m_elements = allElementsCount;
-    }
-    m_criticalSectionHideElement.Unlock();
-
-    // Get tag
-    CComBSTR bstrTag;
-    if (FAILED(pEl->get_tagName(&bstrTag)) || !bstrTag)
-    {
-        return;
-    }
-
-    CString tag = bstrTag;
-    tag.MakeLower();
-
-    // Check if element is hidden
-    CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
-
-    m_cacheElements[cacheIndex].m_isHidden = client->IsElementHidden(tag, pEl, domain, indent);
-
-    if (m_cacheElements[cacheIndex].m_isHidden)
-    {
-        HideElement(pEl, tag, "", false, indent);
-        return;
-    }
-
-    // Special checks - hide already blocked elements
-
-    // Images 
-    if (tag == "img")
-    {
-		CComVariant vAttr;
-
-		if (SUCCEEDED(pEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
-		{
-		    CString src = vAttr.bstrVal;
-		    CPluginClient::UnescapeUrl(src);
-
-			// If src should be blocked, set style display:none on image
-		    m_cacheElements[cacheIndex].m_isHidden = client->ShouldBlock(src, CFilter::contentTypeImage, domain);
-		    if (m_cacheElements[cacheIndex].m_isHidden)
-		    {
-			    HideElement(pEl, "image", src, true, indent);
-			    return;
-		    }
-		}
-	}
-    // Objects
-	else if (tag == "object")
-	{
-		CComBSTR bstrInnerHtml;
-
-		if (SUCCEEDED(pEl->get_innerHTML(&bstrInnerHtml)) && bstrInnerHtml)
-		{
-			CString sObjectHtml = bstrInnerHtml;
-			CString src;
-
-		    int posBegin = sObjectHtml.Find(L"VALUE=\"");
-		    int posEnd = posBegin >= 0 ? sObjectHtml.Find('\"', posBegin + 7) : -1;
-
-		    while (posBegin >= 0 && posEnd >= 0)
-		    {
-			    posBegin += 7;
-
-			    src = sObjectHtml.Mid(posBegin, posEnd - posBegin);
-
-	            // eg. http://w3schools.com/html/html_examples.asp
-			    if (src.Left(2) == "//")
-			    {
-				    src = "http:" + src;
-			    }
-
-			    if (!src.IsEmpty())
-			    {
-			        m_cacheElements[cacheIndex].m_isHidden = client->ShouldBlock(src, CFilter::contentTypeObject, domain);
-		            if (m_cacheElements[cacheIndex].m_isHidden)
-                    {
-	                    HideElement(pEl, "object", src, true, indent);
-	                    return;
-                    }
-			    }
-
-			    posBegin = sObjectHtml.Find(L"VALUE=\"", posBegin);
-			    posEnd = posBegin >= 0 ? sObjectHtml.Find(L"\"", posBegin + 7) : -1;
-		    }
-		}
-	}	
-	else if (tag == "iframe")
-    {
-        m_criticalSectionHideElement.Lock();
-        {
-            m_cacheDocumentHasIframes.insert(docName);
-        }
-        m_criticalSectionHideElement.Unlock();
-	}
-	else if (tag == "frame")
-	{
-	    m_criticalSectionHideElement.Lock();
-	    {
-            m_cacheDocumentHasFrames.insert(docName);
-        }
-	    m_criticalSectionHideElement.Unlock();
-	}
-
-    // Iterate through children of this element
-    if (allElementsCount > 0)
-    {
-        long childElementsCount = 0;
-
-        CComPtr<IDispatch> pChildCollectionDisp;
-        if (SUCCEEDED(pEl->get_children(&pChildCollectionDisp)) && pChildCollectionDisp)
-        {
-            CComPtr<IHTMLElementCollection> pChildCollection;
-            if (SUCCEEDED(pChildCollectionDisp->QueryInterface(IID_IHTMLElementCollection, (LPVOID*)&pChildCollection)) && pChildCollection)
-            {
-                pChildCollection->get_length(&childElementsCount);
-
-	            CComVariant vIndex(0);
-
-	            // Iterate through all children
-	            for (long i = 0; i < childElementsCount; i++)
-	            {
-                    CComPtr<IDispatch> pChildElDispatch;
-	                CComVariant vRetIndex;
-
-	                vIndex.intVal = i;
-
-		            if (SUCCEEDED(pChildCollection->item(vIndex, vRetIndex, &pChildElDispatch)) && pChildElDispatch)
-		            {
-                        CComPtr<IHTMLElement> pChildEl;
-			            if (SUCCEEDED(pChildElDispatch->QueryInterface(IID_IHTMLElement, (LPVOID*)&pChildEl)) && pChildEl)
-			            {
-                            HideElementsLoop(pChildEl, pBrowser, docName, domain, indent, isCached);
-			            }
-		            }
-	            }
-            }
-        }
-    }
-}
-
-void CPluginClass::HideElements(IWebBrowser2* pBrowser, bool isMainDoc, const CString& docName, const CString& domain, CString indent)
-{
-	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
-
-	if (!client || !CPluginSettings::GetInstance()->IsPluginEnabled() || client->IsUrlWhiteListed(domain))
-	{
-	    return;
-	}
-
-#ifdef DEBUG_HIDE_EL
-    DEBUG_HIDE_EL(indent + "HideEl doc:" + docName)
-
-    indent += "  ";
-
-    CPluginProfiler profiler;
-#endif
-
-    VARIANT_BOOL isBusy;    
-    if (SUCCEEDED(pBrowser->get_Busy(&isBusy)))
-    {
-        if (isBusy)
-        {
-            return;
-        }
-    }
-
-	// Get document
-	CComPtr<IDispatch> pDocDispatch;
-	HRESULT hr = pBrowser->get_Document(&pDocDispatch);
-	if (FAILED(hr) || !pDocDispatch)
-	{
-	    return;
-    }
-    
-	CComQIPtr<IHTMLDocument3> pDoc = pDocDispatch;
-	if (!pDoc)
-	{
-	    return;
-    }
-
-	CComPtr<IHTMLElement> pBody;
-	if (FAILED(pDoc->get_documentElement(&pBody)) || !pBody)
-	{
-	    return;
-    }
-
-    CComPtr<IHTMLElementCollection> pBodyCollection;
-    if (FAILED(pDoc->getElementsByTagName(L"body", &pBodyCollection)) || !pBodyCollection)
-    {
-        return;
-    }
-
-    CComPtr<IHTMLElement> pBodyEl;
-    {
-        CComVariant vIndex(0);        
-        CComPtr<IDispatch> pBodyDispatch;
-        if (FAILED(pBodyCollection->item(vIndex, vIndex, &pBodyDispatch)) || !pBodyDispatch)
-        {
-            return;
-        }
-
-        if (FAILED(pBodyDispatch->QueryInterface(IID_IHTMLElement, (LPVOID*)&pBodyEl)) || !pBodyEl)
-        {
-            return;
-        }
-    }
-
-    // Clear cache (if eg. refreshing) ???
-    if (isMainDoc)
-    {
-        CComVariant vCacheIndex;
-        
-        if (FAILED(pBodyEl->getAttribute(L"sab", 0, &vCacheIndex)) || vCacheIndex.vt == VT_NULL)
-        {
-            ClearElementHideCache();
-        }
-    }
-
-    // Hide elements in body part
-    HideElementsLoop(pBodyEl, pBrowser, docName, domain, indent);
-
-    // Check frames and iframes
-    bool hasFrames = false;
-    bool hasIframes = false;
-    
-    m_criticalSectionHideElement.Lock();
-    {
-        hasFrames = m_cacheDocumentHasFrames.find(docName) != m_cacheDocumentHasFrames.end();
-        hasIframes = m_cacheDocumentHasIframes.find(docName) != m_cacheDocumentHasIframes.end();
-    }
-    m_criticalSectionHideElement.Unlock();
-
-    // Frames
-    if (hasFrames)
-    {
-        // eg. http://gamecopyworld.com/
-	    long frameCount = 0;
-	    CComPtr<IHTMLElementCollection> pFrameCollection;
-	    if (SUCCEEDED(pDoc->getElementsByTagName(L"frame", &pFrameCollection)) && pFrameCollection)
-	    {
-		    pFrameCollection->get_length(&frameCount);
-	    }
-
-	    // Iterate through all frames
-	    for (long i = 0; i < frameCount; i++)
-	    {
-		    CComVariant vIndex(i);
-		    CComVariant vRetIndex;
-		    CComPtr<IDispatch> pFrameDispatch;
-
-		    if (SUCCEEDED(pFrameCollection->item(vIndex, vRetIndex, &pFrameDispatch)) && pFrameDispatch)
-		    {
-                CComQIPtr<IWebBrowser2> pFrameBrowser = pFrameDispatch;
-                if (pFrameBrowser)
-                {
-                    CComBSTR bstrSrc;
-                    CString src;
-
-                    if (SUCCEEDED(pFrameBrowser->get_LocationURL(&bstrSrc)))
-                    {
-                        src = bstrSrc;
-				        CPluginClient::UnescapeUrl(src);
-                    }
-
-                    if (!src.IsEmpty())
-                    {
-                        HideElements(pFrameBrowser, false, src, domain, indent);
-                    }
-                }
-	        }
-	    }
-    }
-
-    // Iframes
-    if (hasIframes)
-    {
-	    long frameCount = 0;
-	    CComPtr<IHTMLElementCollection> pFrameCollection;
-	    if (SUCCEEDED(pDoc->getElementsByTagName(L"iframe", &pFrameCollection)) && pFrameCollection)
-	    {
-		    pFrameCollection->get_length(&frameCount);
-	    }
-
-	    // Iterate through all iframes
-	    for (long i = 0; i < frameCount; i++)
-	    {
-		    CComVariant vIndex(i);
-		    CComVariant vRetIndex;
-		    CComPtr<IDispatch> pFrameDispatch;
-
-		    if (SUCCEEDED(pFrameCollection->item(vIndex, vRetIndex, &pFrameDispatch)) && pFrameDispatch)
-		    {
-                CComQIPtr<IHTMLElement> pFrameEl = pFrameDispatch;
-                if (pFrameEl)
-                {
-                    CComVariant vAttr;
-
-                    if (SUCCEEDED(pFrameEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
-                    {
-		                CString src = vAttr.bstrVal;
-
-		                // Some times, domain is missing. Should this be added on image src's as well?''
-            		    
-		                // eg. gadgetzone.com.au
-		                if (src.Left(2) == L"//")
-		                {
-			                src = L"http:" + src;
-		                }
-		                // eg. http://w3schools.com/html/html_examples.asp
-		                else if (src.Left(4) != L"http" && src.Left(6) != L"res://")
-		                {
-			                src = L"http://" + domain + src;
-		                }
-		                
-		                CPluginClient::UnescapeUrl(src);
-
-			            // If src should be blocked, set style display:none on iframe
-                        if (client->ShouldBlock(src, CFilter::contentTypeSubdocument, domain))
-                        {
-		                    HideElement(pFrameEl, "iframe", src, true, indent);
-	                    }
-	                    else
-	                    {
-                            CComQIPtr<IWebBrowser2> pFrameBrowser = pFrameDispatch;
-                            if (pFrameBrowser)
-		                    {
-                                HideElements(pFrameBrowser, false, src, domain, indent);
-                            }
-                        }	                        
-		            }
-		        }
-	        }
-	    }
-    }
-
-    #ifdef DEBUG_HIDE_EL
-    {
-        profiler.StopTimer();
-
-        CString el;
-        el.Format(L"%u", m_cacheIndexLast);
-
-        DEBUG_HIDE_EL(indent + "HideEl el:" + el + " time:" + profiler.GetElapsedTimeString(profileTime))
-
-        profileTime += profiler.GetElapsedTime();
-    }
-    #endif
-
-}
-
-void CPluginClass::ClearElementHideCache()
-{
-    m_criticalSectionHideElement.Lock();
-    {
-        m_cacheIndexLast = 0;
-        m_cacheDocumentHasFrames.clear();
-        m_cacheDocumentHasIframes.clear();
-        
-        #ifdef DEBUG_HIDE_EL
-        {
-            profileTime = 0;
-        }
-        #endif
-    }
-    m_criticalSectionHideElement.Unlock();
-}
-
-#endif
 
 void CPluginClass::PostMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {

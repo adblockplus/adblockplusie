@@ -222,16 +222,19 @@
  #define SUPPORT_WHITELIST
  #undef  SUPPORT_FILE_DOWNLOAD
  #undef  SUPPORT_CONFIG
+ #define SUPPORT_DOM_TRAVERSER
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #undef  SUPPORT_FILTER
  #undef  SUPPORT_WHITELIST
  #define SUPPORT_FILE_DOWNLOAD
  #define SUPPORT_CONFIG
+ #define SUPPORT_DOM_TRAVERSER
 #elif (defined PRODUCT_DOWNLOADHELPER_APP)
  #undef  SUPPORT_FILTER
  #undef  SUPPORT_WHITELIST
  #define SUPPORT_FILE_DOWNLOAD
  #define SUPPORT_CONFIG
+ #undef  SUPPORT_DOM_TRAVERSER
 #endif
 
 // ----------------------------------------------------------------------------

@@ -52,6 +52,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="../Shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKER"
 				StringPooling="false"
 				RuntimeLibrary="0"
@@ -117,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\install\dll\$(TargetName).dll&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;install\output\$(TargetName).dll&quot;"
 				ExcludedFromBuild="false"
 			/>
 		</Configuration>
@@ -157,6 +158,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="../Shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_ADBLOCKER"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -222,7 +224,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\install\dll\$(TargetName).dll&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;install\output\$(TargetName).dll&quot;"
 				ExcludedFromBuild="false"
 			/>
 		</Configuration>
@@ -260,6 +262,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="../Shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_ADBLOCKER"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -325,7 +328,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\install\dll\$(TargetName).dll&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;install\output\$(TargetName).dll&quot;"
 				ExcludedFromBuild="false"
 			/>
 		</Configuration>
@@ -365,6 +368,7 @@
 				Optimization="0"
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="0"
+				AdditionalIncludeDirectories="../Shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKER"
 				StringPooling="false"
 				MinimalRebuild="true"
@@ -433,7 +437,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;..\..\install\dll\$(TargetName).dll&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;install\output\$(TargetName).dll&quot;"
 				ExcludedFromBuild="false"
 			/>
 		</Configuration>
@@ -629,6 +633,10 @@
 				RelativePath="..\Shared\AdPluginWbPassThrough.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\ElementHideDomTraverser.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -748,6 +756,14 @@
 			</File>
 			<File
 				RelativePath="..\Shared\Config.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ElementHideDomTraverser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginDomTraverser.h"
 				>
 			</File>
 			<File
