@@ -85,7 +85,7 @@ void CPluginConfig::Read()
     CPluginConfigLock lock;
     if (lock.IsLocked())
     {
-        CPluginIniFile iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), false);
+        CPluginIniFileW iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), false);
 
         if (!iniFile.Read())
         {
@@ -97,14 +97,15 @@ void CPluginConfig::Read()
 	    {
             m_downloadFileProperties.clear();
 			m_downloadFileCategories.clear();
+			m_downloadDomainTitles.clear();
 
-			const CPluginIniFile::TSectionNames& names = iniFile.GetSectionNames();
+			const CPluginIniFileW::TSectionNames& names = iniFile.GetSectionNames();
 
-			for (CPluginIniFile::TSectionNames::const_iterator it = names.begin(); it != names.end(); ++it)
+			for (CPluginIniFileW::TSectionNames::const_iterator it = names.begin(); it != names.end(); ++it)
 			{
 				if (it->Left(8) == L"category")
 				{
-					CPluginIniFile::TSectionData data = iniFile.GetSectionData(*it);
+					CPluginIniFileW::TSectionData data = iniFile.GetSectionData(*it);
 
 					SDownloadFileCategory category;
 
@@ -118,7 +119,7 @@ void CPluginConfig::Read()
 				}
 				else if (it->Left(6) == L"format")
 				{
-					CPluginIniFile::TSectionData data = iniFile.GetSectionData(*it);
+					CPluginIniFileW::TSectionData data = iniFile.GetSectionData(*it);
 
 					CString contents = data["type"];
 
@@ -144,6 +145,71 @@ void CPluginConfig::Read()
 						content = contents.Tokenize(L";", pos);
 					}
 				}
+				else if (*it == L"titles")
+				{
+					CPluginIniFileW::TSectionData data = iniFile.GetSectionData(*it);
+
+					for (CPluginIniFileW::TSectionData::iterator it = data.begin(); it != data.end(); ++it)
+					{
+						SDownloadDomainTitle title;
+
+						int iPos = 0;
+						CString token = it->second.Tokenize(L";", iPos);
+						while (iPos >= 0)
+						{
+							int iTagPos = 0;
+							CString tag = token.Tokenize(L"=", iTagPos);
+							if (iTagPos >= 0)
+							{
+								CString value = token.Mid(iTagPos);
+
+								if (tag == "tag")
+								{
+									title.tag = value;
+								}
+								else if (tag == "search")
+								{
+									title.search = value;
+								}
+								else if (tag == "format")
+								{
+									int iTitlePos = value.Find(L"[TITLE]");
+									if (iTitlePos > 0)
+									{
+										title.formatPre = value.Left(iTitlePos);
+									}
+									if (iTitlePos >= 0)
+									{
+										title.formatPost = value.Mid(iTitlePos + 7);
+									}
+									DEBUG("formatPre:" + title.formatPre)
+									DEBUG("formatPost:" + title.formatPost)
+								}
+								else if (tag == "token")
+								{
+									title.token = value;
+									title.token.Replace(L"\\t", L"\t");
+									title.token.Replace(L"\\n", L"\n");
+									title.token.Replace(L"\\r", L"\r");
+								}
+								else if (tag.Left(5) == "attr.")
+								{
+									SDownloadDomainTitleAttribute titleAttr;
+
+									titleAttr.attribute = tag.Mid(5);
+									titleAttr.bstrAttribute = tag.Mid(5);
+									titleAttr.value = value;
+
+									title.attributes.push_back(titleAttr);
+								}
+							}
+
+							token = it->second.Tokenize(L";", iPos);
+						}
+
+						m_downloadDomainTitles[it->first] = title;
+					}
+				}
 			}
 	    }
         s_criticalSection.Unlock();
@@ -158,7 +224,7 @@ void CPluginConfig::Create()
     CPluginConfigLock lock;
     if (lock.IsLocked())
     {
-        CPluginIniFile iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), false);
+        CPluginIniFileW iniFile(CPluginSettings::GetDataPath(CONFIG_INI_FILE), false);
 
         CPluginSettings* settings = CPluginSettings::GetInstance();
 
@@ -173,7 +239,7 @@ void CPluginConfig::Create()
 			// ----------------------------------------------------------------
 			// .asf
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
 				format["type"] = "video/x-ms-asf";
 				format["category"] = "categoryAsf";
@@ -183,7 +249,7 @@ void CPluginConfig::Create()
 			}
 			// .avi
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
 				format["type"] = "video/avi;video/msvideo;video/x-msvideo";
 				format["category"] = "categoryAvi";
@@ -193,9 +259,9 @@ void CPluginConfig::Create()
 			}
 			// .flv
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
-				format["type"] = "video/x-flv";
+				format["type"] = "video/x-flv;flv-application/octet-stream";
 				format["category"] = "categoryFlv";
 				format["conversions"] = "Video;Audio";
 
@@ -203,7 +269,7 @@ void CPluginConfig::Create()
 			}
 			// .mov
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
 				format["type"] = "video/quicktime";
 				format["category"] = "categoryMov";
@@ -213,7 +279,7 @@ void CPluginConfig::Create()
 			}
 			// .mp3
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
 				format["type"] = "audio/mpeg";
 				format["category"] = "categoryMp3";
@@ -223,7 +289,7 @@ void CPluginConfig::Create()
 			}
 			// .mp4 audio
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
 				format["type"] = "audio/mp4";
 				format["category"] = "categoryMp4Audio";
@@ -233,7 +299,7 @@ void CPluginConfig::Create()
 			}
 			// .mp4 video
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
 				format["type"] = "video/mp4";
 				format["category"] = "categoryMp4Video";
@@ -243,7 +309,7 @@ void CPluginConfig::Create()
 			}
 			// .wav
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
 				format["type"] = "audio/x-wav;audio/wav;audio/wave";
 				format["category"] = "categoryWav";
@@ -253,7 +319,7 @@ void CPluginConfig::Create()
 			}
 			// .wmv
 			{
-    			CPluginIniFile::TSectionData format;
+    			CPluginIniFileW::TSectionData format;
 
 				format["type"] = "video/x-ms-wmv";
 				format["category"] = "categoryWmv";
@@ -266,7 +332,7 @@ void CPluginConfig::Create()
 			// ----------------------------------------------------------------
 			// asf
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Video";
 				category["extension"] = "asf";
@@ -277,7 +343,7 @@ void CPluginConfig::Create()
 			}
 			// avi
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Video";
 				category["extension"] = "avi";
@@ -288,7 +354,7 @@ void CPluginConfig::Create()
 			}
 			// flv
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Video";
 				category["extension"] = "flv";
@@ -299,7 +365,7 @@ void CPluginConfig::Create()
 			}
 			// mp3
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Audio";
 				category["extension"] = "mp3";
@@ -310,7 +376,7 @@ void CPluginConfig::Create()
 			}
 			// mov
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Video";
 				category["extension"] = "mov";
@@ -321,7 +387,7 @@ void CPluginConfig::Create()
 			}
 			// mp4 Audio
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Audio";
 				category["extension"] = "mp4";
@@ -332,7 +398,7 @@ void CPluginConfig::Create()
 			}
 			// mp4 Video
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Video";
 				category["extension"] = "mp4";
@@ -343,7 +409,7 @@ void CPluginConfig::Create()
 			}
 			// wav
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Audio";
 				category["extension"] = "wav";
@@ -354,7 +420,7 @@ void CPluginConfig::Create()
 			}
 			// wmv
 			{
-    			CPluginIniFile::TSectionData category;
+    			CPluginIniFileW::TSectionData category;
 
 				category["type"] = "Video";
 				category["extension"] = "wmv";
@@ -363,6 +429,24 @@ void CPluginConfig::Create()
 
 				iniFile.UpdateSection("categoryWmv", category);
 			}
+
+			// Titles
+			// ----------------------------------------------------------------
+			{
+    			CPluginIniFileW::TSectionData titles;
+
+				titles["dailymotion.com"] = "tag=h1";
+				titles["guitarworld.com"] = "tag=h1";
+				titles["metacafe.com"] = "tag=h1";
+//				titles["nationalgeographic.com"] = "tag=title;format=[TITLE] -- National Geographic";
+				titles["top-channel.tv"] = "tag=span;attr.class=titullmadh";
+				titles["youporn.com"] = "tag=h1;attr.id=";
+				titles["youtube.com"] = "tag=title;format=YouTube - [TITLE]";
+				titles["video.nationalgeographic.com"] = "tag=title;format=[TITLE] -- National Geographic";
+				titles["wimp.com"] = "tag=title";
+
+				iniFile.UpdateSection("titles", titles);
+			}
 		}
         s_criticalSection.Unlock();
 
@@ -370,7 +454,7 @@ void CPluginConfig::Create()
         {
             CPluginSettings* settings = CPluginSettings::GetInstance();
             
-            settings->SetValue(SETTING_CONFIG_VERSION, 4);
+            settings->SetValue(SETTING_CONFIG_VERSION, 5);
             settings->Write();
         }
         else
@@ -515,4 +599,15 @@ int CPluginConfig::GenerateFilterString(TCHAR* pBuffer, SDownloadFileProperties&
 	pBuffer[bufferIndex] = _T('\0');
 
 	return filterIndex;
+}
+
+void CPluginConfig::GetDownloadDomainTitles(TDownloadDomainTitles& domainTitles) const
+{
+	domainTitles.clear();
+
+    s_criticalSection.Lock();
+	{
+		domainTitles = m_downloadDomainTitles;
+    }
+    s_criticalSection.Unlock();
 }

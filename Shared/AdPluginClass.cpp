@@ -633,7 +633,10 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
 	if (client)
 	{
-		if (GetBrowser().IsEqualObject(WebBrowser2Ptr))
+		if (url.Find(L"javascript") == 0)
+		{
+		}
+		else if (GetBrowser().IsEqualObject(WebBrowser2Ptr))
 		{
 			SetDocumentUrl(url);
 
@@ -645,6 +648,12 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 			m_isRefresh = false;
 			
 			client->ClearCache(GetDocumentDomain());
+#ifdef SUPPORT_DOM_TRAVERSER
+			m_traverser->ClearCache();
+#endif
+#ifdef PRODUCT_DOWNLOADHELPER
+			UpdateStatusBar();
+#endif
 		}
 		else
 		{
@@ -657,15 +666,14 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 
 		client->SetDocumentUrl(GetDocumentUrl());
 		client->SetDocumentDomain(GetDocumentDomain());
+
+		DEBUG("BeforeNavigate2:" + GetDocumentDomain())
 	}
 }
 
 
 // This gets called whenever there's a browser event
-STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, 
-									 WORD wFlags, DISPPARAMS* pDispParams, 
-									 VARIANT* pvarResult, EXCEPINFO*  pExcepInfo,
-									 UINT* puArgErr)
+STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pvarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr)
 {
 	if (!pDispParams)
 	{
@@ -783,7 +791,9 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid,
 								{
 									client->SetDocumentUrl(GetDocumentUrl());
 									client->SetDocumentDomain(GetDocumentDomain());
-								}
+
+									DEBUG("DocumentComplete:" + GetDocumentDomain())
+									}
 							}
 
 						    m_isRefresh = true;			
@@ -2228,3 +2238,21 @@ void CPluginClass::PostMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	}
     s_criticalSectionLocal.Unlock();
 }
+
+#ifdef SUPPORT_CONFIG
+
+void CPluginClass::UpdateConfig()
+{
+#ifdef PRODUCT_DOWNLOADHELPER
+	s_criticalSectionLocal.Lock();
+    {
+		for (int i = 0; i < s_instances.GetSize(); i++)
+        {
+			s_instances[i]->m_traverser->UpdateConfig();
+        }
+	}
+    s_criticalSectionLocal.Unlock();
+#endif PRODUCT_DOWNLOADHELPER
+}
+
+#endif

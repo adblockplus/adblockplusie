@@ -29,14 +29,14 @@ public:
 	void TraverseDocument(IWebBrowser2* pBrowser, const CString& domain, const CString& documentName);
 	void TraverseSubdocument(IWebBrowser2* pBrowser, const CString& domain, const CString& documentName);
 
+    virtual void ClearCache();
+
 protected:
 
 	virtual bool OnIFrame(IHTMLElement* pEl, const CString& url, CString& indent) { return true; }
 	virtual bool OnElement(IHTMLElement* pEl, const CString& tag, T* cache, bool isDebug, CString& indent) { return true; }
 
 	virtual bool IsEnabled();
-
-    virtual void ClearCache();
 
 protected:
 
@@ -354,7 +354,7 @@ void CPluginDomTraverser<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* pBro
             // If number of elements = cached number, return
             if (SUCCEEDED(pAllCollection->get_length(&allElementsCount)) && allElementsCount == cacheAllElementsCount)
             {
-//                return;
+                return;
             }
         }
     }

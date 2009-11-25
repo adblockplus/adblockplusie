@@ -4,6 +4,48 @@
 
 #ifdef SUPPORT_FILE_DOWNLOAD
 
+struct SDownloadDomainTitleAttribute
+{
+	CComBSTR bstrAttribute;
+	CString attribute;
+	CString value;
+
+	SDownloadDomainTitleAttribute() {};
+
+	SDownloadDomainTitleAttribute(const SDownloadDomainTitleAttribute& org)
+	{
+		bstrAttribute = org.bstrAttribute;
+		attribute = org.attribute;
+		value = org.value;
+	}
+};
+
+// Download file title attributes (struct)
+typedef std::vector<SDownloadDomainTitleAttribute> TDomainTitleAttributes;
+
+struct SDownloadDomainTitle
+{
+	CString tag;
+	CString search;
+	CString token;
+	CString formatPre;
+	CString formatPost;
+	TDomainTitleAttributes attributes;
+
+	SDownloadDomainTitle() {};
+
+	SDownloadDomainTitle(const SDownloadDomainTitle& org)
+	{
+		tag = org.tag;
+		search = org.search;
+		token = org.token;
+		formatPre = org.formatPre;
+		formatPost = org.formatPost;
+		attributes = org.attributes;
+	}
+};
+
+
 struct SDownloadFileCategory
 {
 	CString category;
@@ -52,9 +94,10 @@ struct SDownloadFile
     CString downloadUrl;
     int fileType;
 	int fileSize;
+	bool isAutoFilename;
     SDownloadFileProperties properties;
 
-    SDownloadFile() : fileType(0), fileSize(0)
+    SDownloadFile() : fileType(0), fileSize(0), isAutoFilename(false)
     {
     }
 
@@ -65,6 +108,7 @@ struct SDownloadFile
         fileType = org.fileType;
         fileSize = org.fileSize;
         properties = org.properties;
+		isAutoFilename = org.isAutoFilename;
     }
 };
 
@@ -106,6 +150,9 @@ typedef std::map<CString,SDownloadFileProperties> TDownloadFileProperties;
 
 // Download file categories (category -> struct)
 typedef std::map<CString,SDownloadFileCategory> TDownloadFileCategories;
+
+// Download file titles (domain -> struct)
+typedef std::map<CString,SDownloadDomainTitle> TDownloadDomainTitles;
 
 #endif
 
