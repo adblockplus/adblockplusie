@@ -136,7 +136,12 @@ DWORD WINAPI CPluginClass::TabThreadProc(LPVOID pParam)
                 s_configVersion = newConfigVersion;
                 client->ClearCache();
                 isChanged = true;
-            }
+#ifdef SUPPORT_DOM_TRAVERSER
+#ifdef PRODUCT_DOWNLOADHELPER
+				UpdateConfig();
+#endif
+#endif
+			}
 #endif // SUPPORT_CONFIG
 
 #ifdef SUPPORT_WHITELIST

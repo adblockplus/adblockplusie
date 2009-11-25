@@ -98,6 +98,8 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 #ifdef SUPPORT_CONFIG
     // Force loading/creation of config
     CPluginConfig* config = CPluginConfig::GetInstance();
+
+	UpdateConfig();
 #endif // SUPPORT_CONFIG
 
     // Timer settings for retrieving server client (settings from server)

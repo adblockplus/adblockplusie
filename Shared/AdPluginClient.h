@@ -146,8 +146,9 @@ public:
     TDownloadFiles m_downloadFiles;
 	CString m_downloadTitle;
     
+	void AddDownloadFile(const CString& url, int fileSize, const CString& contentType);
 	void AddDownloadFile(const CString& url, const CString& filename, int filesize, const CString& contentType);
-	void AddDownloadFile(const CString& url, const CString& filename, int filesize, const SDownloadFileProperties& properties);
+	void AddDownloadFile(const CString& url, const CString& filename, int filesize, const SDownloadFileProperties& properties, bool isAutoFilename=false);
     void AddDownloadFile(const CString& url, int fileSize, const SDownloadFileProperties& properties);
 
 	TDownloadFiles GetDownloadFiles() const;

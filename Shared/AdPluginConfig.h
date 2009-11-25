@@ -3,7 +3,7 @@
 
 
 #include "AdPluginTypedef.h"
-#include "AdPluginIniFile.h"
+#include "AdPluginIniFileW.h"
 #include "AdPluginChecksum.h"
 
 
@@ -18,6 +18,7 @@ private:
 
 	TDownloadFileProperties m_downloadFileProperties;
 	TDownloadFileCategories m_downloadFileCategories;
+	TDownloadDomainTitles m_downloadDomainTitles;
 
 	// private constructor used by the singleton pattern
 	CPluginConfig();
@@ -36,6 +37,8 @@ public:
     
     void Read();
 	int GenerateFilterString(TCHAR* pBuffer, SDownloadFileProperties& properties, std::vector<std::pair<CString,CString>>& filterData, bool allowConversion) const;
+
+	void GetDownloadDomainTitles(TDownloadDomainTitles& domainTitles) const;
 };
 
 

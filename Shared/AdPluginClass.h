@@ -245,6 +245,13 @@ private:
 public:
 
 	static void PostMessage(UINT message, WPARAM wParam=0, LPARAM lParam=0);
+
+protected:
+
+#ifdef SUPPORT_CONFIG
+	static void UpdateConfig();
+#endif
+
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(AdPluginClass), CPluginClass)

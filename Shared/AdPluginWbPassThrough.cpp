@@ -182,8 +182,8 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 
     CPluginClient* client = CPluginClientFactory::GetLazyClientInstance();
     if (client)
-    {	    
-        CPluginConfig* config = CPluginConfig::GetInstance();
+    {
+		CPluginConfig* config = CPluginConfig::GetInstance();
         
         CString contentType = szResponseHeaders;
 
@@ -195,13 +195,30 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
             pos = contentType.FindOneOf(L"; \n\r");
             if (pos > 0)
             {				
+				bool isDownloadFile = false;
 				SDownloadFileProperties downloadFileProperties;
 
 				contentType = contentType.Left(pos);
 				if (config->GetDownloadProperties(contentType, downloadFileProperties))
                 {
-					int fileSize = 0;
+					isDownloadFile = true;
+                }
+				// Special hacks
+				else if (contentType == "text/plain")
+				{
+					CString domain = client->GetDocumentDomain();
+					if (domain == "fragstein.org" && m_url.Find(L".flv") == m_url.GetLength() - 4)
+					{
+						isDownloadFile = config->GetDownloadProperties("video/x-flv", downloadFileProperties);
+					}
+					else if (domain == "metacafe.com" && m_url.Find(L"http://akvideos.metacafe.com/ItemFiles/") == 0)
+					{
+						isDownloadFile = config->GetDownloadProperties("video/x-flv", downloadFileProperties);
+					}
+				}
 
+				if (isDownloadFile)
+				{
 					// Find length
 					CStringA contentLength = szResponseHeaders;
 
@@ -213,41 +230,12 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 						posLength = contentLength.FindOneOf("; \n\r");
 						if (posLength > 0)
 						{
-							fileSize = atoi(contentLength.Left(posLength).GetBuffer());
+							int fileSize = atoi(contentLength.Left(posLength).GetBuffer());
 							if (fileSize > 0)
 							{
+								DEBUG("WBPassThrough:" + client->GetDocumentDomain() + " url:" + m_url)
 								client->AddDownloadFile(m_url, fileSize, downloadFileProperties);
 							}
-						}
-					}					
-                }
-				// Special hacks
-				else if (contentType == "text/plain")
-				{
-					CString domain = client->GetDocumentDomain();
-					if (domain == "metacafe.com" && m_url.Find(L"http://akvideos.metacafe.com/ItemFiles/") == 0)
-					{
-						CString title = client->GetDownloadTitle();
-						if (!title.IsEmpty())
-						{
-							int fileSize = 0;
-
-							// Find length
-							CStringA contentLength = szResponseHeaders;
-
-							int posLength = contentLength.Find("Content-Length: ");
-							if (posLength > 0)
-							{
-								contentLength = contentLength.Mid(posLength + 16);
-					            
-								posLength = contentLength.FindOneOf("; \n\r");
-								if (posLength > 0)
-								{
-									fileSize = atoi(contentLength.Left(posLength).GetBuffer());
-								}
-							}
-
-							client->AddDownloadFile(m_url, title + ".flv", fileSize, "video/x-flv"); 
 						}
 					}
 				}
