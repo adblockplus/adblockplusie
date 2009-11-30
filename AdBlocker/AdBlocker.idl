@@ -23,7 +23,7 @@ interface IIEPlugin : IDispatch
 	helpstring("SimpleAdblock 1.0 Type Library")
 ]
 
-library AdPluginLib
+library PluginLib
 {
 	importlib("stdole32.tlb");
 	importlib("stdole2.tlb");
@@ -32,7 +32,7 @@ library AdPluginLib
 		uuid(GUUID_CLASS_PRODUCT),
 		helpstring("SimpleAdblock Class")
 	]
-	coclass AdPluginClass
+	coclass PluginClass
 	{
 		[default] interface IIEPlugin;
 	};
