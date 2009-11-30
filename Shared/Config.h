@@ -6,7 +6,7 @@
 // ----------------------------------------------------------------------------
 
 // Define filter configuration
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define FILTERS_PROTOCOL "http://"
  #define FILTERS_HOST "simple-adblock.com/download"
 #elif (defined PRODUCT_DOWNLOADHELPER)
@@ -38,7 +38,7 @@
 
 // AdBlocker configuration
 
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #ifdef ADPLUGIN_TEST_MODE
   #define USERS_HOST L"mytest.simple-adblock.com"
  #elif (defined ADPLUGIN_PRODUCTION_MODE)
@@ -69,10 +69,8 @@
 // No product defined
 
 #else
- #error "Undefined product. Please specify PRODUCT_ADBLOCKER or PRODUCT_DOWNLOADHELPER in configuration"
+ #error "Undefined product. Please specify PRODUCT_SIMPLEADBLOCK or PRODUCT_DOWNLOADHELPER in configuration"
 #endif
-
-#define WM_PLUGIN_UPDATE_STATUSBAR (WM_APP + 1)
 
 // ----------------------------------------------------------------------------
 // Timers
@@ -116,7 +114,7 @@
 
  #define ENABLE_DEBUG_RESULT
  #define ENABLE_DEBUG_RESULT_IGNORED
- #undef  ENABLE_DEBUG_SPLIT_FILE
+ #define ENABLE_DEBUG_SPLIT_FILE
 #else
  #undef ENABLE_DEBUG_INFO
 #endif
@@ -218,24 +216,27 @@
 // Features
 // ----------------------------------------------------------------------------
 
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define SUPPORT_FILTER
  #define SUPPORT_WHITELIST
  #undef  SUPPORT_FILE_DOWNLOAD
  #undef  SUPPORT_CONFIG
  #define SUPPORT_DOM_TRAVERSER
+ #define SUPPORT_FRAME_CACHING
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #undef  SUPPORT_FILTER
  #undef  SUPPORT_WHITELIST
  #define SUPPORT_FILE_DOWNLOAD
  #define SUPPORT_CONFIG
  #define SUPPORT_DOM_TRAVERSER
+ #undef  SUPPORT_FRAME_CACHING
 #elif (defined PRODUCT_DOWNLOADHELPER_APP)
  #undef  SUPPORT_FILTER
  #undef  SUPPORT_WHITELIST
  #define SUPPORT_FILE_DOWNLOAD
  #define SUPPORT_CONFIG
  #undef  SUPPORT_DOM_TRAVERSER
+ #undef  SUPPORT_FRAME_CACHING
 #endif
 
 // ----------------------------------------------------------------------------
@@ -274,39 +275,39 @@
 // or  NO_AUTOMATIC_SHUTDOWN" - "If you choose to install the new plugin, you have to restart Explorer for the update to take effect"
 #define AUTOMATIC_SHUTDOWN
 
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define SIMPLE_ADBLOCK_NAME "Simple Adblock"
 #endif
 
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define BHO_NAME _T("Simple Adblock BHO/1.0")
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #define BHO_NAME _T("Download Helper BHO/1.0")
 #endif
 
 // Name of ini file in Windows directory for uninstall
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define UNINSTALL_INI_FILE "SimpleAdblock.ini"
 #elif (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
  #define UNINSTALL_INI_FILE "DownloadHelper.ini"
 #endif
 
 // Name of user dir
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define USER_DIR "Simple Adblock\\"
 #elif (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
  #define USER_DIR "Download Helper\\"
 #endif
 
 // Prefix on temp dir files
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define TEMP_FILE_PREFIX "ab_"
 #elif (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
  #define TEMP_FILE_PREFIX "dh_"
 #endif
 
 // Dictionary filename
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define DICTIONARY_INI_FILE "dictionary_w.ini"
 #else
  #define DICTIONARY_INI_FILE "dictionary.ini"
@@ -334,21 +335,21 @@
 #endif
 
 // Install MSI filename
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define INSTALL_MSI_FILE "simpleadblock.msi"
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #define INSTALL_MSI_FILE "downloadhelper.msi"
 #endif
 
 // Status bar pane name
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define STATUSBAR_PANE_NAME "SimpleAdblockStatusBarPane"
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #define STATUSBAR_PANE_NAME "DownloadHelperStatusBarPane"
 #endif
 
 // Status bar pane number
-#if (defined PRODUCT_ADBLOCKER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #define STATUSBAR_PANE_NUMBER 2
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #define STATUSBAR_PANE_NUMBER 3

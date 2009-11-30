@@ -53,15 +53,15 @@
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../Shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKER"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_SIMPLEADBLOCK"
 				StringPooling="false"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DefaultCharIsUnsigned="false"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="AdPluginStdAfx.h"
-				PrecompiledHeaderFile="$(IntDir)\AdPlugin.pch"
+				PrecompiledHeaderThrough="PluginStdAfx.h"
+				PrecompiledHeaderFile="$(IntDir)\Plugin.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				WarningLevel="3"
@@ -159,15 +159,15 @@
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="../Shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_ADBLOCKER"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_SIMPLEADBLOCK"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				DefaultCharIsUnsigned="false"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="AdPluginStdAfx.h"
-				PrecompiledHeaderFile="$(IntDir)\AdPlugin.pch"
+				PrecompiledHeaderThrough="PluginStdAfx.h"
+				PrecompiledHeaderFile="$(IntDir)\Plugin.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				WarningLevel="3"
@@ -263,13 +263,13 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../Shared"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_ADBLOCKER"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_SIMPLEADBLOCK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="AdPluginStdAfx.h"
-				PrecompiledHeaderFile="$(IntDir)\AdPlugin.pch"
+				PrecompiledHeaderThrough="PluginStdAfx.h"
+				PrecompiledHeaderFile="$(IntDir)\Plugin.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
@@ -369,7 +369,7 @@
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="0"
 				AdditionalIncludeDirectories="../Shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKER"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_SIMPLEADBLOCK"
 				StringPooling="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -378,8 +378,8 @@
 				DefaultCharIsUnsigned="false"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="2"
-				PrecompiledHeaderThrough="AdPluginStdAfx.h"
-				PrecompiledHeaderFile="$(IntDir)\AdPlugin.pch"
+				PrecompiledHeaderThrough="PluginStdAfx.h"
+				PrecompiledHeaderFile="$(IntDir)\Plugin.pch"
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				WarningLevel="3"
@@ -454,91 +454,79 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPlugin.cpp"
+				RelativePath="..\Shared\Plugin.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginChecksum.cpp"
+				RelativePath="..\Shared\PluginChecksum.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginClass.cpp"
+				RelativePath="..\Shared\PluginClass.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginClassThread.cpp"
+				RelativePath="..\Shared\PluginClassThread.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginClassThreadTab.cpp"
+				RelativePath="..\Shared\PluginClientBase.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginClient.cpp"
+				RelativePath="..\Shared\PluginClientFactory.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginClientFactory.cpp"
+				RelativePath="..\Shared\PluginConfiguration.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginConfiguration.cpp"
+				RelativePath="..\Shared\PluginDebug.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginDebug.cpp"
+				RelativePath="..\Shared\PluginDictionary.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginDictionary.cpp"
+				RelativePath="..\Shared\PluginDownloadDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginDownloadDialog.cpp"
+				RelativePath="..\Shared\PluginFilter.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginFilterClass.cpp"
+				RelativePath="..\Shared\PluginHttpRequest.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginHttpRequest.cpp"
+				RelativePath="..\Shared\PluginIniFile.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginIniFile.cpp"
+				RelativePath="..\Shared\PluginIniFileW.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginIniFileW.cpp"
+				RelativePath="..\Shared\PluginMimeFilterClient.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginMimeFilterClient.cpp"
+				RelativePath="..\Shared\PluginMutex.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginMutex.cpp"
+				RelativePath="..\Shared\PluginSettings.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginProfiler.cpp"
+				RelativePath="..\Shared\PluginSha1.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginSelftest.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginSettings.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginSha1.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginStdAfx.cpp"
+				RelativePath="..\Shared\PluginStdAfx.cpp"
 				>
 				<FileConfiguration
 					Name="Release Production|Win32"
@@ -546,8 +534,6 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="AdPluginStdAfx.h"
-						PrecompiledHeaderFile="$(IntDir)/AdPlugin.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -556,8 +542,6 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="AdPluginStdAfx.h"
-						PrecompiledHeaderFile="$(IntDir)/AdPlugin.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -566,8 +550,6 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="AdPluginStdAfx.h"
-						PrecompiledHeaderFile="$(IntDir)/AdPlugin.pch"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -576,65 +558,35 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="AdPluginStdAfx.h"
-						PrecompiledHeaderFile="$(IntDir)/AdPlugin.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release Development|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="AdPluginStdAfx.h"
-						PrecompiledHeaderFile="$(IntDir)/AdPlugin.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Development|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="AdPluginStdAfx.h"
-						PrecompiledHeaderFile="$(IntDir)/AdPlugin.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Production Blocker|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="AdPluginStdAfx.h"
-						PrecompiledHeaderFile="$(IntDir)/AdPlugin.pch"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug Development Blocker|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-						PrecompiledHeaderThrough="AdPluginStdAfx.h"
-						PrecompiledHeaderFile="$(IntDir)/AdPlugin.pch"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginSystem.cpp"
+				RelativePath="..\Shared\PluginSystem.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginUpdateDialog.cpp"
+				RelativePath="..\Shared\PluginTabBase.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginWbPassThrough.cpp"
+				RelativePath="..\Shared\PluginUpdateDialog.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\ElementHideDomTraverser.cpp"
+				RelativePath="..\Shared\PluginWbPassThrough.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SimpleAdblockClient.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SimpleAdblockDomTraverser.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SimpleAdblockTab.cpp"
 				>
 			</File>
 		</Filter>
@@ -651,119 +603,123 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Shared\AdPluginChecksum.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginClass.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginClient.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginClientFactory.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginConfiguration.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginDebug.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginDebugMacros.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginDictionary.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginDownloadDialog.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginErrorCodes.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginFilterClass.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginHttpRequest.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginIniFile.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginIniFileW.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginMimeFilterClient.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginMutex.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginPassthroughObject.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginProfiler.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginSelftest.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginSettings.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginSha1.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginStdAfx.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginSystem.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginTypedef.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginUpdateDialog.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Shared\AdPluginWbPassThrough.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Shared\Config.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ElementHideDomTraverser.h"
+				RelativePath="..\Shared\Plugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginChecksum.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginClass.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginClient.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginClientBase.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginClientFactory.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginConfiguration.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginDebug.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginDebugMacros.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginDictionary.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Shared\PluginDomTraverser.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginDomTraverserBase.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginDownloadDialog.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginErrorCodes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginFilter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginHttpRequest.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginIniFile.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginIniFileW.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginMimeFilterClient.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginMutex.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginPassthroughObject.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginSettings.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginSha1.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginStdAfx.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginSystem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginTab.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginTabBase.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginTypedef.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Shared\PluginUpdateDialog.h"
 				>
 			</File>
 			<File
@@ -784,6 +740,18 @@
 			</File>
 			<File
 				RelativePath=".\Resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SimpleAdblockClient.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SimpleAdblockDomTraverser.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SimpleAdblockTab.h"
 				>
 			</File>
 			<File

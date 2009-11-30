@@ -9,7 +9,8 @@
  #error ProtocolCF.inl requires ProtocolCF.h to be included first
 #endif
 
-#include "AdPluginPassthroughObject.h"
+#include "PluginPassthroughObject.h"
+
 
 namespace PassthroughAPP
 {
