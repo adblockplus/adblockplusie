@@ -21,8 +21,6 @@ private:
 
 	// private constructor used by the singleton pattern
 	CPluginDictionary(bool forceCreate=false);
-	
-	void Create(bool forceCreate=false);
 
 public:
 	
@@ -30,6 +28,8 @@ public:
 	
 	// Returns an instance of the Dictionary
 	static CPluginDictionary* GetInstance(bool forceCreate=false); 
+
+	void Create(bool forceCreate=false);
 
 	// Initializes the Dictionary. Should be called before any thing else
 	void SetLanguage(const CString& lang);
