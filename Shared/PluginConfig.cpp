@@ -19,7 +19,7 @@ CPluginConfig* CPluginConfig::s_instance = NULL;
 CComAutoCriticalSection CPluginConfig::s_criticalSection;
 
 
-CPluginConfig::CPluginConfig()
+CPluginConfig::CPluginConfig(bool forceCreate)
 {
 	DEBUG_GENERAL("*** Initializing config")
 
@@ -43,7 +43,7 @@ CPluginConfig::CPluginConfig()
 
     if (!isExisting)
     {
-	    Create();
+	    Create(forceCreate);
     }
 	Read();
 }
@@ -59,7 +59,7 @@ CPluginConfig::~CPluginConfig()
 }
 
 
-CPluginConfig* CPluginConfig::GetInstance() 
+CPluginConfig* CPluginConfig::GetInstance(bool forceCreate) 
 {
 	CPluginConfig* instance = NULL;
 
@@ -67,7 +67,7 @@ CPluginConfig* CPluginConfig::GetInstance()
 	{
 		if (!s_instance)
 		{
-			s_instance = new CPluginConfig();
+			s_instance = new CPluginConfig(forceCreate);
 		}
 
 		instance = s_instance;
@@ -219,7 +219,7 @@ void CPluginConfig::Read()
 }
 
 
-void CPluginConfig::Create()
+void CPluginConfig::Create(bool forceCreate)
 {
 	DEBUG_GENERAL("*** Creating config:" + CPluginSettings::GetDataPath(CONFIG_INI_FILE));
 
@@ -230,7 +230,10 @@ void CPluginConfig::Create()
 
         CPluginSettings* settings = CPluginSettings::GetInstance();
 
-        if (iniFile.Exists() || !settings->IsMainProcess())
+		if (forceCreate)
+		{
+		}
+        else if (iniFile.Exists() || !settings->IsMainProcess())
         {
             return;
         }
