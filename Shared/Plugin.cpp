@@ -104,7 +104,6 @@ void InitPlugin(bool isInstall)
 
 	if (isInstall)
 	{
-		::MessageBoxA(::GetDesktopWindow(), "OnInstall", "info", MB_OK);
 		DEBUG_GENERAL(
 			L"================================================================================\nINSTALLER " + 
 			CString(IEPLUGIN_VERSION) + 
@@ -112,7 +111,6 @@ void InitPlugin(bool isInstall)
 	}
 	else
 	{
-		::MessageBoxA(::GetDesktopWindow(), "OnUpdate", "info", MB_OK);
 		DEBUG_GENERAL(
 			L"================================================================================\nUPDATER " + 
 			CString(IEPLUGIN_VERSION) + L" (UPDATED FROM " + settings->GetString(SETTING_PLUGIN_VERSION) + L")"
