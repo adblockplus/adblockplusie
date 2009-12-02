@@ -19,7 +19,7 @@ CPluginDictionary* CPluginDictionary::s_instance = NULL;
 CComAutoCriticalSection CPluginDictionary::s_criticalSectionDictionary;
 
 
-CPluginDictionary::CPluginDictionary() : m_dictionaryLanguage("en")
+CPluginDictionary::CPluginDictionary(bool forceCreate) : m_dictionaryLanguage("en")
 {
 	DEBUG_GENERAL("*** Initializing dictionary")
 
@@ -63,9 +63,9 @@ CPluginDictionary::CPluginDictionary() : m_dictionaryLanguage("en")
         }
     }
 
-    if (!isExisting)
+    if (!isExisting || forceCreate)
     {
-	    Create();
+	    Create(forceCreate);
     }
 }
 
@@ -80,7 +80,7 @@ CPluginDictionary::~CPluginDictionary()
 }
 
 
-CPluginDictionary* CPluginDictionary::GetInstance() 
+CPluginDictionary* CPluginDictionary::GetInstance(bool forceCreate) 
 {
 	CPluginDictionary* instance = NULL;
 
@@ -89,7 +89,7 @@ CPluginDictionary* CPluginDictionary::GetInstance()
 		if (!s_instance)
 		{
 	        DEBUG_DICTIONARY("Dictionary::GetInstance - creating")
-			s_instance = new CPluginDictionary();
+			s_instance = new CPluginDictionary(forceCreate);
 		}
 
 		instance = s_instance;
@@ -212,7 +212,7 @@ CString CPluginDictionary::Lookup(const CString& key)
 }
 
 
-void CPluginDictionary::Create()
+void CPluginDictionary::Create(bool forceCreate)
 {
 	DEBUG_GENERAL(L"*** Creating dictionary:" + CPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
 
@@ -223,7 +223,10 @@ void CPluginDictionary::Create()
 
         CPluginSettings* settings = CPluginSettings::GetInstance();
 
-        if (iniFile.Exists() || !settings->IsMainProcess())
+		if (forceCreate)
+		{
+		}
+        else if (iniFile.Exists() || !settings->IsMainProcess())
         {
             return;
         }

@@ -227,9 +227,11 @@ BOOL CPluginHttpRequest::GetProxySettings(CString& proxyName, CString& proxyBypa
 	// Get Proxy config info.
 	WINHTTP_CURRENT_USER_IE_PROXY_CONFIG proxyConfig;
 
+	::ZeroMemory(&proxyConfig, sizeof(proxyConfig));
+
     if (::WinHttpGetIEProxyConfigForCurrentUser(&proxyConfig))
     {
-        proxyName = proxyConfig.lpszProxy;
+        proxyName   = proxyConfig.lpszProxy;
         proxyBypass = proxyConfig.lpszProxyBypass;
     }
     else
@@ -301,17 +303,14 @@ bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCWSTR file, CStringA*
 
 	// Create an HTTP request handle.
 	if (*hConnect) 
-	{		
+	{
+		DWORD dwFlags = 0;
 	    if (nServerPort == INTERNET_DEFAULT_HTTPS_PORT)
 		{
-			hRequest = ::WinHttpOpenRequest(*hConnect, L"GET", url,
-				NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
+			dwFlags = WINHTTP_FLAG_SECURE;
 		}
-		else
-		{
-			hRequest = ::WinHttpOpenRequest(*hConnect, L"GET", url,
-				NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
-		}
+
+		hRequest = ::WinHttpOpenRequest(*hConnect, L"GET", url, NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, dwFlags);
 	}
 	else
 	{
@@ -473,143 +472,3 @@ bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCWSTR file, CStringA*
 
 	return bResult;
 }
-
-
-/*
-//not tested - currently work in progress
-bool CPluginClient::SendHttpRequestAsyncronous(LPCWSTR server, LPCSTR file, INTERNET_PORT nServerPort)
-{
-	USES_CONVERSION;
-
-	DWORD dwSize = 0;
-	DWORD dwDownloaded = 0;
-	BOOL  bResults = FALSE;
-	HINTERNETHandle hSession,hConnect,hRequest;
-
-	// Get Proxy config info.
-	WINHTTP_CURRENT_USER_IE_PROXY_CONFIG proxyConfig;
-	if (!WinHttpGetIEProxyConfigForCurrentUser(&proxyConfig))
-	{
-	    // DEBUG ERROR
-	}
-	
-	// If there is is proxy setting, use it.
-	if (proxyConfig.lpszProxy == NULL)
-	{
-		// runs synchronoyus
-		hSession = WinHttpOpen(L"Simple Adblock BHO/1.0", 
-			WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
-			WINHTTP_NO_PROXY_NAME, 
-			WINHTTP_NO_PROXY_BYPASS, 
-			WINHTTP_FLAG_ASYNC);
-	}
-	// Use WinHttpOpen to obtain a session handle.
-	else
-	{
-		// runs synchronoyus
-		hSession = WinHttpOpen(L"Simple Adblock BHO/1.0", 
-			WINHTTP_ACCESS_TYPE_NAMED_PROXY,
-			proxyConfig.lpszProxy, 
-			proxyConfig.lpszProxyBypass, 
-			WINHTTP_FLAG_ASYNC);
-	}
-
-	if (!*hSession)
-	{
-	    // DEBUG ERROR
-	}
-
-	
-	// The strings need to be freed.
-	if (proxyConfig.lpszProxy != NULL)
-	{
-		GlobalFree(proxyConfig.lpszProxy);
-	}
-	if (proxyConfig.lpszAutoConfigUrl != NULL)
-	{
-		GlobalFree(proxyConfig.lpszAutoConfigUrl);
-	}
-	if (proxyConfig.lpszProxyBypass!= NULL)
-	{
-		GlobalFree(proxyConfig.lpszProxyBypass);
-	}
-
-	DWORD cb = 2048;
-	CString url;
-	UrlCanonicalize(file, (char*)url.GetBufferSetLength(cb), &cb, URL_ESCAPE_UNSAFE);
-
-	// Specify an HTTP server.
-	if (*hSession)
-	{
-		//runs synchronous
-		hConnect = WinHttpConnect(*hSession, server, nServerPort, 0);
-	}
-
-	// Create an HTTP request handle.
-	if (*hConnect) 
-	{
-		if (nServerPort == INTERNET_DEFAULT_HTTP_PORT) 
-		{
-			//runs synchronous
-			hRequest = WinHttpOpenRequest(*hConnect, L"GET", A2W(url),
-				NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
-		}
-		else 
-		{
-			//runs synchronous
-			hRequest = WinHttpOpenRequest(*hConnect, L"GET", A2W(url),
-				NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
-		}
-	}
-	else
-	{
-	    // DEBUG ERROR
-	}
-
-	// close the url, wont be needed anymore
-	url.ReleaseBuffer();
-
-	if (WinHttpSetStatusCallback(*hRequest,(WINHTTP_STATUS_CALLBACK)&WINHTTP_STATUS_CALLBACK_DEFINITION, WINHTTP_CALLBACK_FLAG_ALL_COMPLETIONS, NULL) == WINHTTP_INVALID_STATUS_CALLBACK)
-	{
-		return false;
-	}
-
-	// Send a request.
-	if (*hRequest)
-	{
-		bResults = WinHttpSendRequest(*hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
-	}
-	else
-	{
-	    // DEBUG ERROR
-	}
-
-	return true;
-}
-
-*/
-
-/*
-void WINHTTP_STATUS_CALLBACK_DEFINITION(HINTERNET hInternet, DWORD_PTR dwContext,
-	DWORD dwInternetStatus, LPVOID lpvStatusInformation, DWORD dwStatusInformationLength)
-{
-	int i = 0;
-	WINHTTP_ASYNC_RESULT* result;	
-
-	switch (dwInternetStatus)
-	{
-		case WINHTTP_CALLBACK_STATUS_NAME_RESOLVED:
-			i++;
-			break;
-		case WINHTTP_CALLBACK_STATUS_READ_COMPLETE:
-			i++;
-			break;
-		case WINHTTP_CALLBACK_STATUS_WRITE_COMPLETE:
-			i++;
-			break;
-		case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
-			result = (WINHTTP_ASYNC_RESULT*)lpvStatusInformation;
-			break;
-	}
-}
-*/

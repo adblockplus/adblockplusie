@@ -123,13 +123,13 @@ void InitPlugin(bool isInstall)
     CPluginFilter::CreateFilters();
 #endif
 
-    // Create default dictionary
-    CPluginDictionary::GetInstance();   
+    // Force creation of default dictionary
+    CPluginDictionary::GetInstance(true);   
 
-    // Create default config file
+    // Force creation of default config file
 #ifdef SUPPORT_CONFIG
     DEBUG_GENERAL("*** Generating config file")
-    CPluginConfig::GetInstance();
+    CPluginConfig::GetInstance(true);
 #endif
 
 	HKEY hKey = NULL;

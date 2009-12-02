@@ -21,16 +21,16 @@ private:
 	TDownloadDomainTitles m_downloadDomainTitles;
 
 	// private constructor used by the singleton pattern
-	CPluginConfig();
+	CPluginConfig(bool forceCreate=true);
 	
-	void Create();
+	void Create(bool forceCreate=true);
 
 public:
 	
 	~CPluginConfig();
 	
 	// Returns an instance of the Dictionary
-	static CPluginConfig* GetInstance(); 
+	static CPluginConfig* GetInstance(bool forceCreate=true); 
 
     static bool Download(const CString& url, const CString& filename);
     bool GetDownloadProperties(const CString& headers, SDownloadFileProperties& properties) const;

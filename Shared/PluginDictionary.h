@@ -20,16 +20,16 @@ private:
 	std::map<CString,CString> m_dictionaryConversions;
 
 	// private constructor used by the singleton pattern
-	CPluginDictionary();
+	CPluginDictionary(bool forceCreate=false);
 	
-	void Create();
+	void Create(bool forceCreate=false);
 
 public:
 	
 	~CPluginDictionary();
 	
 	// Returns an instance of the Dictionary
-	static CPluginDictionary* GetInstance(); 
+	static CPluginDictionary* GetInstance(bool forceCreate=false); 
 
 	// Initializes the Dictionary. Should be called before any thing else
 	void SetLanguage(const CString& lang);
