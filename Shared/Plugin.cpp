@@ -104,6 +104,7 @@ void InitPlugin(bool isInstall)
 
 	if (isInstall)
 	{
+		::MessageBoxA(::GetDesktopWindow(), "OnInstall", "info", MB_OK);
 		DEBUG_GENERAL(
 			L"================================================================================\nINSTALLER " + 
 			CString(IEPLUGIN_VERSION) + 
@@ -111,6 +112,7 @@ void InitPlugin(bool isInstall)
 	}
 	else
 	{
+		::MessageBoxA(::GetDesktopWindow(), "OnUpdate", "info", MB_OK);
 		DEBUG_GENERAL(
 			L"================================================================================\nUPDATER " + 
 			CString(IEPLUGIN_VERSION) + L" (UPDATED FROM " + settings->GetString(SETTING_PLUGIN_VERSION) + L")"
@@ -124,12 +126,14 @@ void InitPlugin(bool isInstall)
 #endif
 
     // Force creation of default dictionary
-    CPluginDictionary::GetInstance(true);   
+    CPluginDictionary* dictionary = CPluginDictionary::GetInstance(true);   
+	dictionary->Create(true);
 
     // Force creation of default config file
 #ifdef SUPPORT_CONFIG
     DEBUG_GENERAL("*** Generating config file")
-    CPluginConfig::GetInstance(true);
+    CPluginConfig* config = CPluginConfig::GetInstance();
+	config->Create(true);
 #endif
 
 	HKEY hKey = NULL;

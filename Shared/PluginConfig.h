@@ -22,8 +22,6 @@ private:
 
 	// private constructor used by the singleton pattern
 	CPluginConfig(bool forceCreate=true);
-	
-	void Create(bool forceCreate=true);
 
 public:
 	
@@ -36,6 +34,8 @@ public:
     bool GetDownloadProperties(const CString& headers, SDownloadFileProperties& properties) const;
     
     void Read();
+	void Create(bool forceCreate=true);
+
 	int GenerateFilterString(TCHAR* pBuffer, SDownloadFileProperties& properties, std::vector<std::pair<CString,CString>>& filterData, bool allowConversion) const;
 
 	void GetDownloadDomainTitles(TDownloadDomainTitles& domainTitles) const;
