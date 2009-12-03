@@ -95,10 +95,11 @@ CPluginClass::CPluginClass()
             settings->SetString(SETTING_PLUGIN_ID, system->GetPluginId());
             settings->SetFirstRun();
         }
-/*        
+		
+/*
 #ifdef _DEBUG
 settings->SetString(SETTING_PLUGIN_UPDATE_VERSION, "9.9.9");
-settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://simple-adblock.com/download/simpleadblockupdate.msi");
+settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://ie-downloadhelper.com/download/downloadhelper_update_test 2.1.msi");
 #endif
 */
         // Update?
@@ -305,7 +306,7 @@ void CPluginClass::LaunchUpdater(const CString& strPath)
 	si.cb = sizeof(si);
 	si.wShowWindow = FALSE;
 
-	CString cpath = _T("\"msiexec.exe\" /i \"") + strPath + _T("\""); 
+	CString cpath = _T("\"msiexec.exe\" /i \"") + strPath + _T("\" UPDATEPLUGIN=\"True\"");
 
 	if (!::CreateProcess(NULL, cpath.GetBuffer(), NULL, NULL, FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL, &si, &pi))
 	{
