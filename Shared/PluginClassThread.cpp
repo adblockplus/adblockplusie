@@ -88,6 +88,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     HANDLE hMainThread = GetMainThreadHandle();
 
 	CPluginClient* client = CPluginClient::GetInstance();
+	client->SetLocalization();
+
+	CPluginDictionary::GetInstance();
 
 	// Timer settings for retrieving server client (settings from server)
     DWORD nNextServerClientTimerBase = GetTickCount() / TIMER_INTERVAL_SERVER_CLIENT_INIT + 1;
@@ -539,6 +542,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
             {
                 CString updateUrl = settings->GetString(SETTING_PLUGIN_UPDATE_URL);
 		        CString updatePath = CPluginSettings::GetTempPath(INSTALL_MSI_FILE);
+
+				// Delete old installer
+				::DeleteFile(CPluginSettings::GetTempPath(INSTALL_MSI_FILE));
 
 		        CPluginDownloadDialog dlDlg;
 		        
