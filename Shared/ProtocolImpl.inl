@@ -692,7 +692,7 @@ inline HRESULT CustomSinkStartPolicy<Sink>::OnStart(LPCWSTR szUrl,
 	}
 	if (SUCCEEDED(hr))
 	{
-		hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI,
+		hr = pTargetProtocol->Start(m_internetSink.m_curUrl, spSink, spBindInfo, grfPI,
 			dwReserved);
 	}
 	return hr;
