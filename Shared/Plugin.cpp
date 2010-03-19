@@ -137,6 +137,7 @@ void InitPlugin(bool isInstall)
 	HKEY hKey = NULL;
 	DWORD dwDisposition = 0;
 
+#ifndef SUPPORT_FILTER
 	DWORD dwResult = ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\IE Download Helper", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition);
 	if (dwResult == ERROR_SUCCESS)
 	{
@@ -146,7 +147,17 @@ void InitPlugin(bool isInstall)
 
 		::RegCloseKey(hKey);
 	}
+#else if
+	DWORD dwResult = ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Simple Adblock", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition);
+	if (dwResult == ERROR_SUCCESS)
+	{
+		CString pluginId = system->GetPluginId();
 
+		::RegSetValueEx(hKey, L"PluginId", 0, REG_SZ, (const BYTE*)pluginId.GetBuffer(), 2*(pluginId.GetLength() + 1));
+
+		::RegCloseKey(hKey);
+	}
+#endif
 	// Post async plugin error
     CPluginError pluginError;
     while (CPluginClientBase::PopFirstPluginError(pluginError))
