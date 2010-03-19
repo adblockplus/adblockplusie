@@ -8,7 +8,7 @@
 // Define filter configuration
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define FILTERS_PROTOCOL "http://"
- #define FILTERS_HOST "simple-adblock.com/download"
+ #define FILTERS_HOST "simple-adblock.com/download/filterlists"
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #define FILTERS_PROTOCOL "http://"
  #define FILTERS_HOST "ie-downloadhelper.com/download"

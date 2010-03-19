@@ -2,6 +2,7 @@
 
 #include "ProtocolCF.h"
 #include "ProtocolImpl.h"
+#define IE_MAX_URL_LENGTH 2048
 
 class WBPassthruSink :
 	public PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink>,
@@ -9,12 +10,12 @@ class WBPassthruSink :
 {
 	typedef PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink> BaseClass;
 
-private:
-
-    CString m_url;
-
 public:
 
+	//Maximum URL length in IE
+	WCHAR m_curUrl[IE_MAX_URL_LENGTH];
+
+public:
 	BEGIN_COM_MAP(WBPassthruSink)
 		COM_INTERFACE_ENTRY(IHttpNegotiate)
 		COM_INTERFACE_ENTRY_CHAIN(BaseClass)

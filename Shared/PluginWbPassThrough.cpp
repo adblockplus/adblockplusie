@@ -13,6 +13,7 @@
 #include "PluginClass.h"
 
 
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //WBPassthruSink
 //Monitor and/or cancel every request and responde
@@ -26,8 +27,19 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
     CString src = szUrl;
     CPluginClient::UnescapeUrl(src);
-
-    m_url = src;
+	
+	SIZE_T urlLegth = wcslen(szUrl);
+	if (urlLegth < IE_MAX_URL_LENGTH)
+	{
+		memcpy((void*)m_curUrl, (void*)szUrl, urlLegth * 2);
+		m_curUrl[urlLegth] = '\0';
+	} 
+	else 
+	{
+		memcpy((void*)m_curUrl, (void*)szUrl, IE_MAX_URL_LENGTH * 2);
+		m_curUrl[urlLegth] = '\0';
+	}
+	int contentType = CFilter::contentTypeAny;
 
 #ifdef SUPPORT_FILTER
 
@@ -46,7 +58,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		{
 	        CString domain = tab->GetDocumentDomain();
 
-			int contentType = CFilter::contentTypeAny;
+			contentType = CFilter::contentTypeAny;
 
 #ifdef SUPPORT_FRAME_CACHING
             if (tab->IsFrameCached(src))
@@ -130,6 +142,13 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
 #endif // SUPPORT_FILTER
 
+	//Fixes the iframe back button issue
+	if ((contentType == CFilter::contentTypeSubdocument) && (isBlocked)) 
+	{
+		memcpy(m_curUrl, L"http://zaviriuh.shoniko.operaunite.com/webserver/content/test.htm", wcslen(L"http://zaviriuh.shoniko.operaunite.com/webserver/content/test.htm") * 2);
+		m_curUrl[wcslen(L"http://zaviriuh.shoniko.operaunite.com/webserver/content/test.htm")] = '\0';
+		return S_FALSE;
+	}
 	return isBlocked ? S_FALSE : BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 }
 
