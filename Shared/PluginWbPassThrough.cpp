@@ -12,7 +12,7 @@
 #include "PluginSettings.h"
 #include "PluginClass.h"
 
-
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //WBPassthruSink
@@ -23,8 +23,10 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved,
 		IInternetProtocol* pTargetProtocol)
 {
+	m_pTargetProtocol = pTargetProtocol;
     bool isBlocked = false;
-
+	m_shouldBlock = false;
+	m_lastDataReported = false;
     CString src = szUrl;
     CPluginClient::UnescapeUrl(src);
 	
@@ -142,16 +144,57 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
 #endif // SUPPORT_FILTER
 
+	//TODO: cleanup here
 	//Fixes the iframe back button issue
-	if ((contentType == CFilter::contentTypeSubdocument) && (isBlocked)) 
+	if (client->GetIEVersion() > 6)
 	{
-		memcpy(m_curUrl, L"http://zaviriuh.shoniko.operaunite.com/webserver/content/test.htm", wcslen(L"http://zaviriuh.shoniko.operaunite.com/webserver/content/test.htm") * 2);
-		m_curUrl[wcslen(L"http://zaviriuh.shoniko.operaunite.com/webserver/content/test.htm")] = '\0';
-		return S_FALSE;
+		if ((contentType == CFilter::contentTypeSubdocument) && (isBlocked)) 
+		{
+			m_shouldBlock = true;
+			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+			pTargetProtocol->Start(L"", pOIProtSink, pOIBindInfo, grfPI, dwReserved);
+			pOIProtSink->ReportData(BSCF_DATAFULLYAVAILABLE, 0, 10);
+			return INET_E_REDIRECT_FAILED;
+		}
 	}
 	return isBlocked ? S_FALSE : BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 }
 
+
+HRESULT WBPassthruSink::Read(void *pv, ULONG cb, ULONG* pcbRead)
+{
+	if (m_shouldBlock)
+	{
+		*pcbRead = 0;
+		if (!m_lastDataReported)
+		{
+			if (cb <= 1)
+			{
+				//IE must've gone nuts if this happened, but let's be cool about it and report we have no more data
+				return S_FALSE;
+			}
+			*pcbRead = 10;
+			memcpy(pv, "Ad blocked", 10);
+
+			if (m_spInternetProtocolSink != NULL)
+			{
+				m_spInternetProtocolSink->ReportResult(S_OK, 0, NULL);
+			}
+			m_lastDataReported = true;
+		}
+		return S_FALSE;
+	}
+	else 
+	{
+		if (m_pTargetProtocol != NULL)
+		{
+			return m_pTargetProtocol->Read(pv, cb, pcbRead);
+		}
+		else 
+			return S_FALSE;
+	}
+	return S_OK;
+}
 STDMETHODIMP WBPassthruSink::Switch(
 	/* [in] */ PROTOCOLDATA *pProtocolData)
 {
