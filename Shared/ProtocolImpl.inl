@@ -221,6 +221,11 @@ inline STDMETHODIMP IInternetProtocolImpl::Start(
 inline STDMETHODIMP IInternetProtocolImpl::Continue(
 	/* [in] */ PROTOCOLDATA *pProtocolData)
 {
+	//TODO: cleanup here
+//	if (pProtocolData->grfFlags & PD_FORCE_SWITCH)
+//	{
+//		return S_OK;
+//	}
 	ATLASSERT(m_spInternetProtocol != 0);
 	return m_spInternetProtocol ?
 		m_spInternetProtocol->Continue(pProtocolData) :
@@ -678,6 +683,11 @@ inline HRESULT CustomSinkStartPolicy<Sink>::OnStart(LPCWSTR szUrl,
 	HRESULT hr = m_internetSink.OnStart(szUrl, pOIProtSink, pOIBindInfo,
 		grfPI, dwReserved, pTargetProtocol);
 
+	//We return INET_E_REDIRECT_FAILED in case we have iframe blocking.
+	if (hr == INET_E_REDIRECT_FAILED)
+	{
+		return S_OK;
+	}
 	CComPtr<IInternetProtocolSink> spSink;
 	CComPtr<IInternetBindInfo> spBindInfo;
 	if (SUCCEEDED(hr))
@@ -692,10 +702,19 @@ inline HRESULT CustomSinkStartPolicy<Sink>::OnStart(LPCWSTR szUrl,
 	}
 	if (SUCCEEDED(hr))
 	{
-		hr = pTargetProtocol->Start(m_internetSink.m_curUrl, spSink, spBindInfo, grfPI,
+		hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI,
 			dwReserved);
+	} 
+	else
+	{
+
 	}
 	return hr;
+}
+template <class Sink>
+inline HRESULT CustomSinkStartPolicy<Sink>::Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead)
+{
+	return m_internetSink.Read(pv, cb, pcbRead);
 }
 
 // ===== CInternetProtocol =====
@@ -721,7 +740,14 @@ inline STDMETHODIMP CInternetProtocol<StartPolicy, ThreadModel>::Start(
 	return StartPolicy::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI,
 		dwReserved, m_spInternetProtocol);
 }
-
+template <class StartPolicy, class ThreadModel>
+inline STDMETHODIMP CInternetProtocol<StartPolicy, ThreadModel>::Read(
+	/* [in, out] */ void *pv,
+	/* [in] */ ULONG cb,
+	/* [out] */ ULONG *pcbRead)
+{
+	return StartPolicy::Read(pv, cb, pcbRead);
+}
 } // end namespace PassthroughAPP
 
 #endif // PASSTHROUGHAPP_PROTOCOLIMPL_INL

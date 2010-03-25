@@ -45,6 +45,8 @@ public:
 
     bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent);
 	bool IsUrlWhiteListed(const CString& url);
+
+	int GetIEVersion();
 };
 
 #endif // _SIMPLE_ADBLOCK_CLIENT_H_

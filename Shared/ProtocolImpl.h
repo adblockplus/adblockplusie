@@ -390,6 +390,8 @@ public:
 		IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
 		DWORD grfPI, DWORD dwReserved, IInternetProtocol* pTargetProtocol);
 
+	HRESULT Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead);
+
 	CComObjectSharedRef<Sink> m_internetSink;
 };
 
@@ -421,6 +423,8 @@ public:
 	// IInternetProtocolRoot
 	STDMETHODIMP Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
 		IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved);
+
+	STDMETHODIMP Read(	/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead);
 };
 
 } // end namespace PassthroughAPP

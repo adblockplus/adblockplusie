@@ -14,6 +14,9 @@ public:
 
 	//Maximum URL length in IE
 	WCHAR m_curUrl[IE_MAX_URL_LENGTH];
+	bool m_shouldBlock;
+	bool m_lastDataReported;
+	IInternetProtocol* m_pTargetProtocol;
 
 public:
 	BEGIN_COM_MAP(WBPassthruSink)
@@ -40,6 +43,7 @@ public:
 	HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
 		IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved,
 		IInternetProtocol* pTargetProtocol);
+	HRESULT Read(void *pv, ULONG cb, ULONG* pcbRead);
 
 	STDMETHODIMP ReportProgress(
 		/* [in] */ ULONG ulStatusCode,

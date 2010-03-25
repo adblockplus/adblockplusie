@@ -1,19 +1,20 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "Resource.h"
+#include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 #include "winres.h"
 #undef APSTUDIO_READONLY_SYMBOLS
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // REGISTRY
 //
 
-IDR_PLUGIN_CLASS      REGISTRY                "AdBlocker.rgs"
-IDR_PLUGIN_LISTENER   REGISTRY                "AdBlockerListener.rgs"
-IDR_PLUGIN_MIMEFILTER REGISTRY                "AdBlockerMimeFilter.rgs"
+IDR_PLUGIN_CLASS        REGISTRY                "AdBlocker.rgs"
+IDR_PLUGIN_LISTENER     REGISTRY                "AdBlockerListener.rgs"
+IDR_PLUGIN_MIMEFILTER   REGISTRY                "AdBlockerMimeFilter.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -118,6 +119,7 @@ BEGIN
     PUSHBUTTON      "Install new Plugin",IDC_INSTALLBTN,7,47,75,14,WS_DISABLED
 END
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // DESIGNINFO
@@ -144,6 +146,15 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// HTML
+//
+
+IDR_HTML1               HTML                    "res\\html1.htm"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
@@ -154,13 +165,17 @@ BEGIN
     IDS_PROJNAME            "Simple Adblock"
 END
 
+/////////////////////////////////////////////////////////////////////////////
+
+
+
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-1 TYPELIB "SimpleAdblock.tlb"
 
+1 TYPELIB "SimpleAdblock.tlb"
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
