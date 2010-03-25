@@ -263,7 +263,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="../Shared"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_SIMPLEADBLOCK;ENABLE_DEBUG_THREAD;ENABLE_DEBUG_SELFTEST"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_SIMPLEADBLOCK"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -717,13 +717,6 @@
 			<File
 				RelativePath="..\Shared\PluginTypedef.h"
 				>
-				<FileConfiguration
-					Name="Debug Test|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\Shared\PluginUpdateDialog.h"
@@ -773,14 +766,6 @@
 			<File
 				RelativePath=".\AdBlocker.rc"
 				>
-				<FileConfiguration
-					Name="Debug Test|Win32"
-					>
-					<Tool
-						Name="VCResourceCompilerTool"
-						Culture="0"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\AdBlocker.rgs"
@@ -831,11 +816,6 @@
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\res\html1.htm"
-			DeploymentContent="true"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global
