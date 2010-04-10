@@ -17,6 +17,7 @@ public:
 	bool m_shouldBlock;
 	bool m_lastDataReported;
 	IInternetProtocol* m_pTargetProtocol;
+	CString m_url;
 
 public:
 	BEGIN_COM_MAP(WBPassthruSink)

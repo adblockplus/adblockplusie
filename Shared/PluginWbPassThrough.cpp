@@ -41,9 +41,9 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		memcpy((void*)m_curUrl, (void*)szUrl, IE_MAX_URL_LENGTH * 2);
 		m_curUrl[urlLegth] = '\0';
 	}
-	int contentType = CFilter::contentTypeAny;
 
 #ifdef SUPPORT_FILTER
+	int contentType = CFilter::contentTypeAny;
 
 	CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
     CPluginClient* client = CPluginClient::GetInstance();
@@ -142,7 +142,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
         }
 	}
 
-#endif // SUPPORT_FILTER
 
 	//TODO: cleanup here
 	//Fixes the iframe back button issue
@@ -157,6 +156,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 			return INET_E_REDIRECT_FAILED;
 		}
 	}
+#endif // SUPPORT_FILTER
 	return isBlocked ? S_FALSE : BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 }
 
