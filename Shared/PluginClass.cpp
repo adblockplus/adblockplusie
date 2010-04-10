@@ -40,6 +40,7 @@ std::map<DWORD, CPluginClass*> CPluginClass::s_threadInstances;
 
 CComAutoCriticalSection CPluginClass::s_criticalSectionLocal;
 CComAutoCriticalSection CPluginClass::s_criticalSectionBrowser;
+CComAutoCriticalSection CPluginClass::s_criticalSectionWindow;
 
 CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
 
@@ -1736,7 +1737,6 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 			{
 				lpParts[i] -= pClass->m_nPaneWidth;
 			}
-
 			LRESULT hRet = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, (LPARAM)lpParts);
 
 			CRect rcPane;
@@ -1755,6 +1755,7 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 
 			::LocalFree(hLocal);
 
+
 			return hRet;
 		}
 
@@ -1762,7 +1763,10 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 		break;
 	}
 
-	return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+	LRESULT result = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+
+
+	return result;
 }
 
 

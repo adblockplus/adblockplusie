@@ -169,6 +169,7 @@ private:
 
 	static CComAutoCriticalSection s_criticalSectionLocal;
 	static CComAutoCriticalSection s_criticalSectionBrowser;
+	static CComAutoCriticalSection s_criticalSectionWindow;
 #ifdef SUPPORT_WHITELIST
 	static CComAutoCriticalSection s_criticalSectionWhiteList;
 #endif
