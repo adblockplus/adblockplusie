@@ -29,6 +29,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 	m_lastDataReported = false;
     CString src = szUrl;
     CPluginClient::UnescapeUrl(src);
+	m_url = szUrl;
 	
 	SIZE_T urlLegth = wcslen(szUrl);
 	if (urlLegth < IE_MAX_URL_LENGTH)

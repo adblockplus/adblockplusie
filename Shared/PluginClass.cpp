@@ -806,6 +806,7 @@ bool CPluginClass::InitObject(bool bBHO)
 
 bool CPluginClass::CreateStatusBarPane()
 {
+
 	TCHAR szClassName[MAX_PATH];
 
 	// Get browser window and url
@@ -813,6 +814,8 @@ bool CPluginClass::CreateStatusBarPane()
 	if (!hBrowserWnd)
 	{
         DEBUG_ERROR_LOG(0, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_NO_STATUSBAR_BROWSER, "Class::CreateStatusBarPane - No status bar")
+                    s_criticalSectionWindow.Unlock();
+
 		return false;
 	}
 
@@ -842,8 +845,8 @@ bool CPluginClass::CreateStatusBarPane()
 				if (::GetCurrentProcessId() == nProcessId)
 				{
 					bool bExistingTab = false;
+					s_criticalSectionLocal.Lock();
 
-                    s_criticalSectionLocal.Lock();
                     {
 					    for (int i = 0; i < s_instances.GetSize(); i++)
 					    {
@@ -854,13 +857,17 @@ bool CPluginClass::CreateStatusBarPane()
 						    }
 					    }
                     }
-                    s_criticalSectionLocal.Unlock();
 
 					if (!bExistingTab)
 					{
-						hBrowserWnd = hTabWnd = hTabWnd2;
+						hBrowserWnd = hTabWnd2;
+						hTabWnd = hTabWnd2;
+						m_hTabWnd = hTabWnd2;
+						s_criticalSectionLocal.Unlock();
 						break;
 					}
+					s_criticalSectionLocal.Unlock();
+
 				}
 			}
 		}
@@ -869,23 +876,32 @@ bool CPluginClass::CreateStatusBarPane()
 	}
 
 	HWND hWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
-	while (hWnd)
+	int iterations = 0;
+	while (!hWndStatusBar)
 	{
-		memset(szClassName, 0, MAX_PATH);
-		::GetClassName(hWnd, szClassName, MAX_PATH);
-
-		if (_tcscmp(szClassName,_T("msctls_statusbar32")) == 0)
+		while (hWnd)
 		{
-			hWndStatusBar = hWnd;
-			break;
+			memset(szClassName, 0, MAX_PATH);
+			::GetClassName(hWnd, szClassName, MAX_PATH);
+
+			if (_tcscmp(szClassName,_T("msctls_statusbar32")) == 0)
+			{
+				hWndStatusBar = hWnd;
+				break;
+			}
+
+			hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
 		}
-
-		hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
+		iterations++;
+		if (iterations > 5)
+			break;
+		Sleep(50);
 	}
-
 	if (!hWndStatusBar)
 	{
         DEBUG_ERROR_LOG(0, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_NO_STATUSBAR_WIN, "Class::CreateStatusBarPane - No status bar")
+                    s_criticalSectionWindow.Unlock();
+
 		return false;
 	}
 
@@ -909,6 +925,8 @@ bool CPluginClass::CreateStatusBarPane()
 		m_nPaneWidth = 22;
 #endif
 	}
+                    s_criticalSectionWindow.Unlock();
+
 
 	// Create pane window
 	HWND hWndNewPane = ::CreateWindowEx(
@@ -922,17 +940,22 @@ bool CPluginClass::CreateStatusBarPane()
 		_Module.m_hInst,
 		NULL);
 
+	                    s_criticalSectionWindow.Lock();
+
 	if (!hWndNewPane)
 	{
         DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_CREATE_STATUSBAR_PANE, "Class::CreateStatusBarPane - CreateWindowEx")
+                    s_criticalSectionWindow.Unlock();
+
 		return false;
 	}
 
-	m_hTabWnd = hTabWnd;
+//	m_hTabWnd = hTabWnd;
 	m_hStatusBarWnd = hWndStatusBar;
 	m_hPaneWnd = hWndNewPane;
 
 	UpdateTheme();
+                    s_criticalSectionWindow.Unlock();
 
 	// Subclass status bar
 	m_pWndProcStatus = (WNDPROC)SetWindowLong(hWndStatusBar, GWL_WNDPROC, (LPARAM)(WNDPROC)NewStatusProc);
@@ -949,7 +972,6 @@ bool CPluginClass::CreateStatusBarPane()
 
 		delete[] pData;
 	}  
-
 	return true;
 }
 
@@ -1763,9 +1785,15 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 		break;
 	}
 
-	LRESULT result = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
-
-
+	LRESULT result = NULL;
+	if (message != WM_PARENTNOTIFY)
+	{
+		LRESULT result = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+	} 
+	else
+	{
+		LRESULT result = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+	}
 	return result;
 }
 
