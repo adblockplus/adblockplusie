@@ -73,7 +73,7 @@ goto end
 
 @echo on
 echo #define DOWNLOAD_SOURCE "test" > ..\..\Shared\DownloadSource.h
-REM devenv ..\..\AdPlugin.sln /rebuild "Release Test"
+devenv ..\..\AdPlugin.sln /rebuild "Release Test"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
 copy adblock.msi downloadfiles\simpleadblocktest.msi
@@ -102,5 +102,19 @@ echo %version%;%release%;%date%;%1;%comment% >> installers\simpleadblock_buildlo
 @echo off
 goto end
 
+:prod_build_sites
+:: LOOP SITE INSTALLERS
+@echo on
+FOR /L %%i IN (1 1 10) DO (
+     echo #define DOWNLOAD_SOURCE "%%i" > ..\..\Shared\DownloadSource.h
+     devenv ..\..\AdPlugin.sln /rebuild "Release Production"
+     "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
+     "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
+     copy adblock.msi downloadfiles\simpleadblock-%%i.msi
+)            
+@echo off
+goto end
+
 :end
+echo #define DOWNLOAD_SOURCE "test" > ..\..\Shared\DownloadSource.h
 @echo on
