@@ -13,9 +13,8 @@
 #include "PluginHttpRequest.h"
 #include "PluginMutex.h"
 #include "PluginProfiler.h"
-#ifdef PRODUCT_DOWNLOADHELPER
-#include "../DownloadHelper/downloadsource.h"
-#endif
+#include "DownloadSource.h"
+
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -2025,9 +2024,8 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
                     httpRequest.AddPluginId();
                     httpRequest.Add("username", system->GetUserName(), false);
                     httpRequest.Add("errors", settings->GetErrorList());
-#ifdef PRODUCT_DOWNLOADHELPER
                     httpRequest.Add("src", DOWNLOAD_SOURCE);
-#endif
+
 
 			        hr = browser->Navigate(CComBSTR(httpRequest.GetUrl()), NULL, NULL, NULL, NULL);
 					if (FAILED(hr))
