@@ -14,7 +14,7 @@ set pathAdvancedInstaller=C:\Programmer\Caphyon\Advanced Installer 7.2.1
 
 
 :: Write version to config files
-echo #define IEPLUGIN_VERSION "%version%" > ..\source\Shared\Version.h
+::echo #define IEPLUGIN_VERSION "%version%" > ..\source\Shared\Version.h
 
 echo BUILD %version%
 
@@ -53,7 +53,7 @@ goto end
 :prod_build
 
 @echo on
-echo #define DOWNLOAD_SOURCE "home" > ..\downloadsource.h
+echo #define DOWNLOAD_SOURCE "home" > ..\..\Shared\DownloadSource.h
 devenv ..\..\AdPlugin.sln /rebuild "Release Production"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
@@ -72,7 +72,7 @@ goto end
 :test_build
 
 @echo on
-echo #define DOWNLOAD_SOURCE "test" > ..\downloadsource.h
+echo #define DOWNLOAD_SOURCE "test" > ..\..\Shared\DownloadSource.h
 REM devenv ..\..\AdPlugin.sln /rebuild "Release Test"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
@@ -88,7 +88,7 @@ goto end
 
 :dev_build
 @echo on
-echo #define DOWNLOAD_SOURCE "dev" > ..\downloadsource.h
+echo #define DOWNLOAD_SOURCE "dev" > ..\..\Shared\DownloadSource.h
 devenv ..\..\AdPlugin.sln /rebuild "Release Development"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
