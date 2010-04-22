@@ -13,7 +13,9 @@
 #include "PluginHttpRequest.h"
 #include "PluginMutex.h"
 #include "PluginProfiler.h"
-
+#ifdef PRODUCT_DOWNLOADHELPER
+#include "../DownloadHelper/downloadsource.h"
+#endif
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -67,6 +69,7 @@ CPluginClass::CPluginClass()
     m_nPaneWidth = 0;
     m_pWndProcStatus = NULL;
     m_hTheme = NULL;
+	m_isInitializedOk = false;
 
 	m_tab = new CPluginTab(this);
 
@@ -337,7 +340,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
 	if (unknownSite) 
 	{
-		s_activeTab = m_tab;
+//		s_activeTab = m_tab;
 
         if (settings->IsMainProcess() && settings->IsMainUiThread())
         {
@@ -373,7 +376,6 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
 			s_asyncWebBrowser2 = unknownSite;
 		    s_instances.Add(this);
-			s_threadInstances[::GetCurrentThreadId()] = this;
 	    }
         s_criticalSectionLocal.Unlock();
 
@@ -391,9 +393,11 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 					{
 						m_isAdviced = true;
 
+						//TODO: Lets try and load the status bar only when it's first opened
+
 						if (!InitObject(true))
 						{
-						    Unadvice();
+							Unadvice();
 						}
 					}
 					else
@@ -580,7 +584,30 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 #endif
 	}
 }
-
+STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
+{
+	bool newtabshown = pDispParams->rgvarg[1].intVal==3;
+	if (newtabshown)
+	{
+		std::map<DWORD,CPluginClass*>::const_iterator it = s_threadInstances.find(GetCurrentThreadId());
+		if (it == s_threadInstances.end())
+		{
+			s_threadInstances[::GetCurrentThreadId()] = this;
+			
+			
+			if (!m_isInitializedOk)
+			{
+				m_isInitializedOk = true;
+				if (!InitObject(true))
+				{
+					Unadvice();
+				}
+				UpdateStatusBar();
+			}
+		}
+	}
+	return VARIANT_TRUE;
+}
 
 // This gets called whenever there's a browser event
 STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pvarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr)
@@ -592,6 +619,9 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
 
 	switch (dispidMember)
 	{
+	case DISPID_WINDOWSTATECHANGED:
+		return OnTabChanged(pDispParams, wFlags);
+		break;
 	case DISPID_HTMLDOCUMENTEVENTS2_ONBEFOREUPDATE:
 		return VARIANT_TRUE;
 		break;
@@ -806,7 +836,6 @@ bool CPluginClass::InitObject(bool bBHO)
 
 bool CPluginClass::CreateStatusBarPane()
 {
-
 	TCHAR szClassName[MAX_PATH];
 
 	// Get browser window and url
@@ -814,8 +843,6 @@ bool CPluginClass::CreateStatusBarPane()
 	if (!hBrowserWnd)
 	{
         DEBUG_ERROR_LOG(0, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_NO_STATUSBAR_BROWSER, "Class::CreateStatusBarPane - No status bar")
-                    s_criticalSectionWindow.Unlock();
-
 		return false;
 	}
 
@@ -824,6 +851,8 @@ bool CPluginClass::CreateStatusBarPane()
 	HWND hWndStatusBar = NULL;
 
 	HWND hTabWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
+	UINT amoundOfNewTabs = 0;
+	HWND uniqueNewTab = NULL;
 	while (hTabWnd)
 	{
 		memset(szClassName, 0, MAX_PATH);
@@ -845,29 +874,32 @@ bool CPluginClass::CreateStatusBarPane()
 				if (::GetCurrentProcessId() == nProcessId)
 				{
 					bool bExistingTab = false;
-					s_criticalSectionLocal.Lock();
 
+                    s_criticalSectionLocal.Lock();
                     {
 					    for (int i = 0; i < s_instances.GetSize(); i++)
 					    {
 						    if (s_instances[i]->m_hTabWnd == hTabWnd2) 
 						    {
-							    bExistingTab = true;
-							    break;
+
+									bExistingTab = true;
+									break;
 						    }
 					    }
                     }
+                    s_criticalSectionLocal.Unlock();
 
 					if (!bExistingTab)
 					{
-						hBrowserWnd = hTabWnd2;
-						hTabWnd = hTabWnd2;
-						m_hTabWnd = hTabWnd2;
-						s_criticalSectionLocal.Unlock();
-						break;
-					}
-					s_criticalSectionLocal.Unlock();
+						amoundOfNewTabs ++;
+						uniqueNewTab = hTabWnd2;
+						if (GetCurrentThreadId() == GetWindowThreadProcessId(hTabWnd2, NULL))
+						{
+							hBrowserWnd = hTabWnd = hTabWnd2;
+							break;
+						}
 
+					}
 				}
 			}
 		}
@@ -875,33 +907,25 @@ bool CPluginClass::CreateStatusBarPane()
 		hTabWnd = ::GetWindow(hTabWnd, GW_HWNDNEXT);
 	}
 
+
 	HWND hWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
-	int iterations = 0;
-	while (!hWndStatusBar)
+	while (hWnd)
 	{
-		while (hWnd)
+		memset(szClassName, 0, MAX_PATH);
+		::GetClassName(hWnd, szClassName, MAX_PATH);
+
+		if (_tcscmp(szClassName,_T("msctls_statusbar32")) == 0)
 		{
-			memset(szClassName, 0, MAX_PATH);
-			::GetClassName(hWnd, szClassName, MAX_PATH);
-
-			if (_tcscmp(szClassName,_T("msctls_statusbar32")) == 0)
-			{
-				hWndStatusBar = hWnd;
-				break;
-			}
-
-			hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
-		}
-		iterations++;
-		if (iterations > 5)
+			hWndStatusBar = hWnd;
 			break;
-		Sleep(50);
+		}
+
+		hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
 	}
+
 	if (!hWndStatusBar)
 	{
         DEBUG_ERROR_LOG(0, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_NO_STATUSBAR_WIN, "Class::CreateStatusBarPane - No status bar")
-                    s_criticalSectionWindow.Unlock();
-
 		return false;
 	}
 
@@ -925,8 +949,6 @@ bool CPluginClass::CreateStatusBarPane()
 		m_nPaneWidth = 22;
 #endif
 	}
-                    s_criticalSectionWindow.Unlock();
-
 
 	// Create pane window
 	HWND hWndNewPane = ::CreateWindowEx(
@@ -940,22 +962,17 @@ bool CPluginClass::CreateStatusBarPane()
 		_Module.m_hInst,
 		NULL);
 
-	                    s_criticalSectionWindow.Lock();
-
 	if (!hWndNewPane)
 	{
         DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_CREATE_STATUSBAR_PANE, "Class::CreateStatusBarPane - CreateWindowEx")
-                    s_criticalSectionWindow.Unlock();
-
 		return false;
 	}
 
-//	m_hTabWnd = hTabWnd;
+	m_hTabWnd = hTabWnd;
 	m_hStatusBarWnd = hWndStatusBar;
 	m_hPaneWnd = hWndNewPane;
 
 	UpdateTheme();
-                    s_criticalSectionWindow.Unlock();
 
 	// Subclass status bar
 	m_pWndProcStatus = (WNDPROC)SetWindowLong(hWndStatusBar, GWL_WNDPROC, (LPARAM)(WNDPROC)NewStatusProc);
@@ -972,11 +989,11 @@ bool CPluginClass::CreateStatusBarPane()
 
 		delete[] pData;
 	}  
+	HDC hdc = GetWindowDC(m_hStatusBarWnd);
+	SendMessage(m_hStatusBarWnd, WM_PAINT, (WPARAM)hdc, 0);
+	ReleaseDC(m_hStatusBarWnd, hdc);
 	return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
+}/////////////////////////////////////////////////////////////////////////////
 // Implementation
 
 void CPluginClass::CloseTheme()
@@ -1785,16 +1802,8 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 		break;
 	}
 
-	LRESULT result = NULL;
-	if (message != WM_PARENTNOTIFY)
-	{
-		LRESULT result = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
-	} 
-	else
-	{
-		LRESULT result = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
-	}
-	return result;
+	return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+
 }
 
 
@@ -2016,6 +2025,9 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
                     httpRequest.AddPluginId();
                     httpRequest.Add("username", system->GetUserName(), false);
                     httpRequest.Add("errors", settings->GetErrorList());
+#ifdef PRODUCT_DOWNLOADHELPER
+                    httpRequest.Add("src", DOWNLOAD_SOURCE);
+#endif
 
 			        hr = browser->Navigate(CComBSTR(httpRequest.GetUrl()), NULL, NULL, NULL, NULL);
 					if (FAILED(hr))
@@ -2134,4 +2146,75 @@ HICON CPluginClass::GetIcon(int type)
 ATOM CPluginClass::GetAtomPaneClass()
 {
     return s_atomPaneClass;
+}
+
+HWND CPluginClass::GetTabHWND() const
+{
+
+	TCHAR szClassName[MAX_PATH];
+	// Get browser window and url
+	HWND hBrowserWnd = GetBrowserHWND();
+	if (!hBrowserWnd)
+	{
+        DEBUG_ERROR_LOG(0, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_NO_STATUSBAR_BROWSER, "Class::GetTabWindow - No tab window")
+                    s_criticalSectionWindow.Unlock();
+
+		return false;
+	}
+
+	// Looking for a TabWindowClass window in IE7
+
+	HWND hTabWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
+	while (hTabWnd)
+	{
+		memset(szClassName, 0, MAX_PATH);
+		GetClassName(hTabWnd, szClassName, MAX_PATH);
+
+		if (_tcscmp(szClassName, _T("TabWindowClass")) == 0 || _tcscmp(szClassName,_T("Frame Tab")) == 0)
+		{
+			// IE8 support
+			HWND hTabWnd2 = hTabWnd;
+			if (_tcscmp(szClassName,_T("Frame Tab")) == 0)
+			{
+				hTabWnd2 = ::FindWindowEx(hTabWnd2, NULL, _T("TabWindowClass"), NULL);
+			}
+
+			if (hTabWnd2)
+			{
+				DWORD nProcessId;
+				::GetWindowThreadProcessId(hTabWnd2, &nProcessId);
+				if (::GetCurrentProcessId() == nProcessId)
+				{
+					bool bExistingTab = false;
+					s_criticalSectionLocal.Lock();
+
+                    {
+					    for (int i = 0; i < s_instances.GetSize(); i++)
+					    {
+						    if (s_instances[i]->m_hTabWnd == hTabWnd2) 
+						    {
+							    bExistingTab = true;
+							    break;
+						    }
+					    }
+                    }
+
+					if (!bExistingTab)
+					{
+						hBrowserWnd = hTabWnd2;
+						hTabWnd = hTabWnd2;
+						s_criticalSectionLocal.Unlock();
+						break;
+					}
+					s_criticalSectionLocal.Unlock();
+
+				}
+			}
+		}
+
+		hTabWnd = ::GetWindow(hTabWnd, GW_HWNDNEXT);
+	}
+
+	return hTabWnd;
+
 }

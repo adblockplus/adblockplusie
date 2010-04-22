@@ -104,7 +104,11 @@ private:
 	CComPtr<IConnectionPoint> GetConnectionPointPropSink();
 
 	HWND GetBrowserHWND() const;
+	HWND GetTabHWND() const;
     CComQIPtr<IWebBrowser2> GetBrowser() const;
+
+	STDMETHODIMP OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags);
+
 
 	CString GetBrowserUrl() const;
 
@@ -135,6 +139,7 @@ private:
 	HANDLE m_hTheme;
 
 	bool m_isAdviced;
+	bool m_isInitializedOk;
 	
     // Atom pane class  
 	static ATOM s_atomPaneClass;
