@@ -5,12 +5,12 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=0.8.1
-set release=858
-set comment=Release 0.8.1
+set version=0.8.5
+set release=64
+set comment=Test Release 0.8.5
 
-set pathVisualStudio=C:\Program Files\Microsoft Visual Studio 9.0\Common7\Tools
-set pathAdvancedInstaller=C:\Program Files\Caphyon\Advanced Installer 7.2.1
+set pathVisualStudio=C:\Programmer\Microsoft Visual Studio 9.0\Common7\Tools
+set pathAdvancedInstaller=C:\Programmer\Caphyon\Advanced Installer 7.2.1
 
 
 :: Write version to config files
@@ -53,16 +53,17 @@ goto end
 :prod_build
 
 @echo on
-devenv ..\source\AdPlugin.sln /rebuild "Release Production"
+echo #define DOWNLOAD_SOURCE "home" > ..\downloadsource.h
+devenv ..\..\AdPlugin.sln /rebuild "Release Production"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
-copy AdvInstallers\simpleadblock.msi download\simpleadblock.msi
-copy AdvInstallers\simpleadblock.msi installers\simpleadblock%version%.msi
+copy adblock.msi downloadfiles\simpleadblock.msi
+copy adblock.msi installers\simpleadblock%version%.msi
 
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblockupdate.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblockupdate.aip
-copy AdvInstallers\simpleadblockupdate.msi download\simpleadblockupdate.msi
-copy AdvInstallers\simpleadblockupdate.msi installers\simpleadblockupdate%version%.msi
+copy adblockupdate.msi downloadfiles\simpleadblockupdate.msi
+copy adblockupdate.msi installers\simpleadblockupdate%version%.msi
 
 echo %version%;%release%;%date%;%1;%comment% >> installers\simpleadblock_buildlog.dat
 @echo off
@@ -71,14 +72,15 @@ goto end
 :test_build
 
 @echo on
-REM devenv ..\source\AdPlugin.sln /rebuild "Release Test"
+echo #define DOWNLOAD_SOURCE "test" > ..\downloadsource.h
+REM devenv ..\..\AdPlugin.sln /rebuild "Release Test"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
-copy AdvInstallers\simpleadblock.msi download\simpleadblocktest.msi
+copy adblock.msi downloadfiles\simpleadblocktest.msi
 
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblockupdate.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblockupdate.aip
-copy AdvInstallers\simpleadblockupdate.msi download\simpleadblocktestupdate.msi
+copy adblockupdate.msi downloadfiles\simpleadblocktestupdate.msi
 
 echo %version%;%release%;%date%;%1;%comment% >> installers\simpleadblock_buildlog.dat
 @echo off
@@ -86,14 +88,15 @@ goto end
 
 :dev_build
 @echo on
-devenv ..\source\AdPlugin.sln /rebuild "Release Development"
+echo #define DOWNLOAD_SOURCE "dev" > ..\downloadsource.h
+devenv ..\..\AdPlugin.sln /rebuild "Release Development"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
-copy AdvInstallers\simpleadblock.msi download\simpleadblockdevelopment.msi
+copy adblock.msi downloadfiles\simpleadblockdevelopment.msi
 
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblockupdate.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblockupdate.aip
-copy AdvInstallers\simpleadblockupdate.msi download\simpleadblockdevelopmentupdate.msi
+copy adblockupdate.msi downloadfiles\simpleadblockdevelopmentupdate.msi
 
 echo %version%;%release%;%date%;%1;%comment% >> installers\simpleadblock_buildlog.dat
 @echo off
