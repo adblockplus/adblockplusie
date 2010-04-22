@@ -1,5 +1,5 @@
 ::input parameters
-::prod, test, dev
+::prod, test, dev, sites
 
 @echo off
 cls
@@ -41,6 +41,12 @@ if %1 == dev  (
   echo CREATE DEV RELEASE
   echo ******************
   goto dev_build
+)
+
+if %1 == sites  (
+  echo CREATE SITES INSTALLERS
+  echo ******************
+  goto prod_build_sites
 )
 
 :invalid
