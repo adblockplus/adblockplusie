@@ -13,30 +13,38 @@ namespace PassthroughAPP
 
 namespace Detail
 {
-
+#ifdef WIN64
+struct PassthroughItfData
+{
+	DWORD_PTR offsetItf;
+	DWORD_PTR offsetUnk;
+	const IID* piidBase;
+};
+#else
 struct PassthroughItfData
 {
 	DWORD offsetItf;
 	DWORD offsetUnk;
 	const IID* piidBase;
 };
+#endif
 
-template <class itf, class impl, DWORD offsetUnk, const IID* piidBase>
+template <class itf, class impl, DWORD_PTR offsetUnk, const IID* piidBase>
 struct PassthroughItfHelper
 {
 	static PassthroughItfData data;
 };
 
-template <class itf, class impl, DWORD offsetUnk, const IID* piidBase>
+template <class itf, class impl, DWORD_PTR offsetUnk, const IID* piidBase>
 PassthroughItfData
 	PassthroughItfHelper<itf, impl, offsetUnk, piidBase>::
 			data = {offsetofclass(itf, impl), offsetUnk, piidBase};
 
 #define COM_INTERFACE_ENTRY_PASSTHROUGH(itf, punk)\
 	{&_ATL_IIDOF(itf),\
-	(DWORD)&::PassthroughAPP::Detail::PassthroughItfHelper<\
+	(DWORD_PTR)&::PassthroughAPP::Detail::PassthroughItfHelper<\
 		itf, _ComMapClass,\
-		(DWORD)offsetof(_ComMapClass, punk),\
+		(DWORD_PTR)offsetof(_ComMapClass, punk),\
 		0\
 	>::data,\
 	::PassthroughAPP::Detail::QIPassthrough<_ComMapClass>::\
@@ -45,9 +53,9 @@ PassthroughItfData
 
 #define COM_INTERFACE_ENTRY_PASSTHROUGH2(itf, punk, itfBase)\
 	{&_ATL_IIDOF(itf),\
-	(DWORD)&::PassthroughAPP::Detail::PassthroughItfHelper<\
+	(DWORD_PTR)&::PassthroughAPP::Detail::PassthroughItfHelper<\
 		itf, _ComMapClass,\
-		(DWORD)offsetof(_ComMapClass, punk),\
+		(DWORD_PTR)offsetof(_ComMapClass, punk),\
 		&_ATL_IIDOF(itfBase)\
 	>::data,\
 	::PassthroughAPP::Detail::QIPassthrough<_ComMapClass>::\
@@ -77,10 +85,17 @@ PassthroughItfData
 template <class T>
 struct QIPassthrough
 {
-	static HRESULT WINAPI QueryInterfacePassthroughT(void* pv, REFIID riid,
-		LPVOID* ppv, DWORD dw);
+#ifdef WIN64
+static HRESULT WINAPI QueryInterfacePassthroughT(void* pv, REFIID riid,
+		LPVOID* ppv, DWORD_PTR dw);
 	static HRESULT WINAPI QueryInterfaceDebugT(void* pv, REFIID riid,
-		LPVOID* ppv, DWORD dw);
+		LPVOID* ppv, DWORD_PTR dw);
+#else
+	static HRESULT WINAPI QueryInterfacePassthroughT(void* pv, REFIID riid,
+		LPVOID* ppv, DWORD_PTR dw);
+	static HRESULT WINAPI QueryInterfaceDebugT(void* pv, REFIID riid,
+		LPVOID* ppv, DWORD_PTR dw);
+#endif
 };
 
 HRESULT WINAPI QueryInterfacePassthrough(void* pv, REFIID riid,
@@ -422,7 +437,7 @@ public:
 
 	// IInternetProtocolRoot
 	STDMETHODIMP Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-		IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved);
+		IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved);
 
 	STDMETHODIMP Read(	/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead);
 };

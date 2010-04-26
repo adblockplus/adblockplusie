@@ -451,7 +451,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 		// Destroy window
 		if (m_pWndProcStatus)
 		{
-			::SetWindowLong(m_hStatusBarWnd, GWL_WNDPROC, (LPARAM)(WNDPROC)m_pWndProcStatus);
+			::SetWindowLongPtr(m_hStatusBarWnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)m_pWndProcStatus);
 
 			m_pWndProcStatus = NULL;
 		}
@@ -974,7 +974,7 @@ bool CPluginClass::CreateStatusBarPane()
 	UpdateTheme();
 
 	// Subclass status bar
-	m_pWndProcStatus = (WNDPROC)SetWindowLong(hWndStatusBar, GWL_WNDPROC, (LPARAM)(WNDPROC)NewStatusProc);
+	m_pWndProcStatus = (WNDPROC)SetWindowLongPtr(hWndStatusBar, GWLP_WNDPROC, (LPARAM)(WNDPROC)NewStatusProc);
 
 	// Adjust pane
 	UINT nPartCount = ::SendMessage(m_hStatusBarWnd, SB_GETPARTS, 0, 0);
@@ -1801,7 +1801,10 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 		break;
 	}
 
-	return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+	LRESULT result = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+
+
+	return result;
 
 }
 
