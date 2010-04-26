@@ -15,9 +15,16 @@ namespace PassthroughAPP
 namespace Detail
 {
 
+#ifdef WIN64
+	template <class T>
+inline HRESULT WINAPI QIPassthrough<T>::
+	QueryInterfacePassthroughT(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR dw)
+#else
+
 template <class T>
 inline HRESULT WINAPI QIPassthrough<T>::
 	QueryInterfacePassthroughT(void* pv, REFIID riid, LPVOID* ppv, DWORD dw)
+#endif
 {
 	ATLASSERT(pv != 0);
 	T* pT = static_cast<T*>(pv);
@@ -36,10 +43,15 @@ inline HRESULT WINAPI QIPassthrough<T>::
 	return QueryInterfacePassthrough(
 		pv, riid, ppv, dw, punkTarget, punkWrapper);
 }
-
+#ifdef WIN64
+template <class T>
+inline HRESULT WINAPI QIPassthrough<T>::
+	QueryInterfaceDebugT(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR dw)
+#else
 template <class T>
 inline HRESULT WINAPI QIPassthrough<T>::
 	QueryInterfaceDebugT(void* pv, REFIID riid, LPVOID* ppv, DWORD dw)
+#endif
 {
 	ATLASSERT(pv != 0);
 	T* pT = static_cast<T*>(pv);
@@ -56,14 +68,19 @@ inline HRESULT WINAPI QIPassthrough<T>::
 
 	return QueryInterfaceDebug(pv, riid, ppv, dw, punkTarget);
 }
-
+#ifdef WIN64
+inline HRESULT WINAPI QueryInterfacePassthrough(void* pv, REFIID riid,
+	LPVOID* ppv, DWORD_PTR dw, IUnknown* punkTarget, IUnknown* punkWrapper)
+#else
 inline HRESULT WINAPI QueryInterfacePassthrough(void* pv, REFIID riid,
 	LPVOID* ppv, DWORD dw, IUnknown* punkTarget, IUnknown* punkWrapper)
+#endif
 {
 	ATLASSERT(pv != 0);
 	ATLASSERT(ppv != 0);
 	ATLASSERT(dw != 0);
 	ATLASSERT(punkTarget != 0);
+
 
 	const PassthroughItfData& data =
 		*reinterpret_cast<const PassthroughItfData*>(dw);
@@ -108,7 +125,7 @@ inline HRESULT WINAPI QueryInterfacePassthrough(void* pv, REFIID riid,
 }
 
 inline HRESULT WINAPI QueryInterfaceDebug(void* pv, REFIID riid,
-	LPVOID* ppv, DWORD dw, IUnknown* punkTarget)
+	LPVOID* ppv, DWORD_PTR dw, IUnknown* punkTarget)
 {
 	ATLASSERT(pv != 0);
 	ATLASSERT(ppv != 0);
@@ -729,7 +746,7 @@ inline CInternetProtocol<StartPolicy, ThreadModel>::CInternetProtocol() :
 template <class StartPolicy, class ThreadModel>
 inline STDMETHODIMP CInternetProtocol<StartPolicy, ThreadModel>::Start(
 	LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-	IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved)
+	IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved)
 {
 //	ATLASSERT(m_spInternetProtocol != 0);
 	if (!m_spInternetProtocol)
