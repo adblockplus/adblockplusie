@@ -599,7 +599,7 @@ STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
 				m_isInitializedOk = true;
 				if (!InitObject(true))
 				{
-					Unadvice();
+//					Unadvice();
 				}
 				UpdateStatusBar();
 			}
