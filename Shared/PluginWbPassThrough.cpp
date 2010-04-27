@@ -153,7 +153,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 			m_shouldBlock = true;
 			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 			pTargetProtocol->Start(L"", pOIProtSink, pOIBindInfo, grfPI, dwReserved);
-			pOIProtSink->ReportData(BSCF_DATAFULLYAVAILABLE, 0, 10);
+			pOIProtSink->ReportData(BSCF_DATAFULLYAVAILABLE, 0, 1);
 			return INET_E_REDIRECT_FAILED;
 		}
 	}
@@ -174,8 +174,8 @@ HRESULT WBPassthruSink::Read(void *pv, ULONG cb, ULONG* pcbRead)
 				//IE must've gone nuts if this happened, but let's be cool about it and report we have no more data
 				return S_FALSE;
 			}
-			*pcbRead = 10;
-			memcpy(pv, "Ad blocked", 10);
+			*pcbRead = 1;
+			memcpy(pv, " ", 1);
 
 			if (m_spInternetProtocolSink != NULL)
 			{
