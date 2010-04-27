@@ -2027,10 +2027,10 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
                     httpRequest.AddPluginId();
                     httpRequest.Add("username", system->GetUserName(), false);
                     httpRequest.Add("errors", settings->GetErrorList());
-                    httpRequest.Add("src", DOWNLOAD_SOURCE);
+//                    httpRequest.Add("src", DOWNLOAD_SOURCE);
 
 
-			        hr = browser->Navigate(CComBSTR(httpRequest.GetUrl()), NULL, NULL, NULL, NULL);
+			        hr = browser->Navigate(CComBSTR(httpRequest.GetUrl() + "&src=" + DOWNLOAD_SOURCE), NULL, NULL, NULL, NULL);
 					if (FAILED(hr))
 					{
 						DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_WELCOME, "Navigation::Welcome page failed")
