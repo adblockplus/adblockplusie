@@ -20,8 +20,36 @@ CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked
 		m_hMutex = OpenMutex(MUTEX_ALL_ACCESS, FALSE, "Global\\SimpleAdblock" + name);
 		if (m_hMutex == NULL)
 		{
-			DWORD error = GetLastError();
-	        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_MUTEX, PLUGIN_ERROR_MUTEX_CREATE + m_errorSubidBase, "Mutex::CreateMutex");
+		    m_hMutex = ::CreateMutex(NULL, FALSE, "Local\\SimpleAdblock" + name);
+			if (m_hMutex == NULL)
+			{
+				m_hMutex = OpenMutex(NULL, FALSE, "Local\\SimpleAdblock" + name);
+				if (m_hMutex == NULL)
+				{
+					DWORD error = GetLastError();
+					DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_MUTEX, PLUGIN_ERROR_MUTEX_CREATE + m_errorSubidBase, "Mutex::CreateMutex");
+				}
+			}
+			else
+			{
+				switch (::WaitForSingleObject(m_hMutex, 3000))
+				{
+					// The thread got ownership of the mutex
+					case WAIT_OBJECT_0: 
+						m_isLocked = true;
+						break;
+
+					case WAIT_TIMEOUT:
+						DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_MUTEX, PLUGIN_ERROR_MUTEX_WAIT_TIMEOUT + m_errorSubidBase, "Mutex::CreateMutex - Timeout");
+						m_hMutex = NULL;
+						break;
+
+					case WAIT_FAILED:
+						DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_MUTEX, PLUGIN_ERROR_MUTEX_WAIT + m_errorSubidBase, "Mutex::CreateMutex - Wait error");
+						break;
+				}
+			}
+
 		}
     }
     else
