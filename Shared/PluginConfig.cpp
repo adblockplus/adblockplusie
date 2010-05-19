@@ -262,21 +262,11 @@ void CPluginConfig::Create(bool forceCreate)
 
 				iniFile.UpdateSection("formatAvi", format);
 			}
-			// .flv (x-flv)
-			{
-    			CPluginIniFileW::TSectionData format;
-
-				format["type"] = "video/x-flv;flv-application/octet-stream";
-				format["category"] = "categoryFlv";
-				format["conversions"] = "Video;Audio";
-
-				iniFile.UpdateSection("formatFlv", format);
-			}
 			// .flv
 			{
     			CPluginIniFileW::TSectionData format;
 
-				format["type"] = "video/flv;flv-application/octet-stream";
+				format["type"] = "video/flv;flv-application/octet-stream;video/x-flv";
 				format["category"] = "categoryFlv";
 				format["conversions"] = "Video;Audio";
 
