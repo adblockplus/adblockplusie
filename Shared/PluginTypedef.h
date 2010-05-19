@@ -97,6 +97,8 @@ struct SDownloadFile
     int fileType;
 	int fileSize;
 	bool isAutoFilename;
+	CString cookie;
+
     SDownloadFileProperties properties;
 
     SDownloadFile() : fileType(0), fileSize(0), isAutoFilename(false)
@@ -111,6 +113,7 @@ struct SDownloadFile
         fileSize = org.fileSize;
         properties = org.properties;
 		isAutoFilename = org.isAutoFilename;
+		cookie = org.cookie;
     }
 };
 

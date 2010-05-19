@@ -2,6 +2,7 @@
 
 #include "PluginMutex.h"
 #include "PluginClient.h"
+#include "sddl.h"
 
 
 CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked(false), m_errorSubidBase(errorSubidBase), m_name(name)
@@ -15,7 +16,13 @@ CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked
 
     if (m_hMutex == NULL)
     {
-        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_MUTEX, PLUGIN_ERROR_MUTEX_CREATE + m_errorSubidBase, "Mutex::CreateMutex");
+		DWORD error = GetLastError();
+		m_hMutex = OpenMutex(MUTEX_ALL_ACCESS, FALSE, "Global\\SimpleAdblock" + name);
+		if (m_hMutex == NULL)
+		{
+			DWORD error = GetLastError();
+	        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_MUTEX, PLUGIN_ERROR_MUTEX_CREATE + m_errorSubidBase, "Mutex::CreateMutex");
+		}
     }
     else
     {

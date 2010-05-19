@@ -14,6 +14,7 @@
 #include "PluginMutex.h"
 #include "PluginProfiler.h"
 #include "DownloadSource.h"
+#include "sddl.h"
 
 
 #ifdef DEBUG_HIDE_EL
@@ -1087,7 +1088,116 @@ HMENU CPluginClass::CreatePluginMenu(const CString& url)
 
 	return hMenuTrackPopup;
 }
+BOOL CreateLowProcess(WCHAR* wszProcessName, WCHAR* cmdLine)
+{
+ 
+    BOOL                  fRet;
+    HANDLE                hToken        = NULL;
+    HANDLE                hNewToken     = NULL;
+    PSID                  pIntegritySid = NULL;
+    TOKEN_MANDATORY_LABEL TIL           = {0};
+    PROCESS_INFORMATION   ProcInfo      = {0};
+    STARTUPINFO           StartupInfo   = {0};
 
+
+
+ // Low integrity SID
+ WCHAR wszIntegritySid[20] = L"S-1-16-4096";
+
+
+    fRet = OpenProcessToken(GetCurrentProcess(),
+                            TOKEN_DUPLICATE |
+                              TOKEN_ADJUST_DEFAULT |
+                              TOKEN_QUERY |
+                              TOKEN_ASSIGN_PRIMARY,
+                            &hToken);
+
+    if (!fRet)
+    {
+        goto CleanExit;
+    }
+
+    fRet = DuplicateTokenEx(hToken,
+                            0,
+                            NULL,
+                            SecurityImpersonation,
+                            TokenPrimary,
+                            &hNewToken);
+
+    if (!fRet)
+    {
+        goto CleanExit;
+    }
+
+    fRet = ConvertStringSidToSid(wszIntegritySid, &pIntegritySid);
+
+    if (!fRet)
+    {
+        goto CleanExit;
+    }
+
+
+    TIL.Label.Attributes = SE_GROUP_INTEGRITY;
+    TIL.Label.Sid        = pIntegritySid;
+
+
+    //
+    // Set the process integrity level
+    //
+
+    fRet = SetTokenInformation(hNewToken,
+                               TokenIntegrityLevel,
+                               &TIL,
+                               sizeof(TOKEN_MANDATORY_LABEL) + GetLengthSid(pIntegritySid));
+
+    if (!fRet)
+    {
+        goto CleanExit;
+    }
+
+    //
+    // Create the new process at Low integrity
+    //
+
+    fRet  = CreateProcessAsUser(hNewToken,
+                                wszProcessName,
+                                cmdLine,
+                                NULL,
+                                NULL,
+                                FALSE,
+                                0,
+                                NULL,
+                                NULL,
+                                &StartupInfo,
+                                &ProcInfo);
+
+
+CleanExit:
+
+    if (ProcInfo.hProcess != NULL)
+    {
+        CloseHandle(ProcInfo.hProcess);
+    }
+
+    if (ProcInfo.hThread != NULL)
+    {
+        CloseHandle(ProcInfo.hThread);
+    }
+
+    LocalFree(pIntegritySid);
+
+    if (hNewToken != NULL)
+    {
+        CloseHandle(hNewToken);
+    }
+
+    if (hToken != NULL)
+    {
+        CloseHandle(hToken);
+    }
+
+    return fRet;
+}
 
 void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags)
 {
@@ -1249,6 +1359,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 	    }
 #endif // SUPPORT_WHITELIST
 
+
 #ifdef SUPPORT_FILE_DOWNLOAD
         {
             if (nCommand >= WM_DOWNLOAD_FILE && nCommand <= WM_DOWNLOAD_FILE_MAX)
@@ -1280,13 +1391,17 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				checksum.Add("/url", downloadFile.downloadUrl);
 				checksum.Add("/type", downloadFile.properties.content);
 				checksum.Add("/file", downloadFile.downloadFile);
+				checksum.Add("/cookie", downloadFile.cookie);
+				CString size;
+				size.Format(L"%d", downloadFile.fileSize);
+				checksum.Add("/size", size);
 
-				CString args = CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile + " /checksum:" + checksum.GetAsString();
+				CString args =  CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /checksum:" + checksum.GetAsString() + "";
 
 				LPWSTR szCmdline = _wcsdup(args);
 
-                if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, CREATE_PRESERVE_CODE_AUTHZ_LEVEL, NULL, NULL, &si, &pi))
-                {
+				if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, CREATE_PRESERVE_CODE_AUTHZ_LEVEL, NULL, NULL, &si, &pi))
+				{
 					DWORD dwError = ::CommDlgExtendedError();
 					DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
 				}
