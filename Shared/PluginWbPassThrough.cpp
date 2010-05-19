@@ -12,6 +12,8 @@
 #include "PluginSettings.h"
 #include "PluginClass.h"
 
+#include "wtypes.h"
+
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +44,11 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		memcpy((void*)m_curUrl, (void*)szUrl, IE_MAX_URL_LENGTH * 2);
 		m_curUrl[urlLegth] = '\0';
 	}
-
+					CString cookie;
+					ULONG len1 = 2048;
+					ULONG len2 = 2048;
+					BSTR oleStr = T2OLE(cookie.GetBuffer(len1));
+					HRESULT hrtmp = pOIBindInfo->GetBindString(BINDSTRING_HEADERS, &oleStr, len1, &len2);
 #ifdef SUPPORT_FILTER
 	int contentType = CFilter::contentTypeAny;
 
