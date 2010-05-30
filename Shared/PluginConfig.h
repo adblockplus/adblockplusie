@@ -39,6 +39,8 @@ public:
 	int GenerateFilterString(TCHAR* pBuffer, SDownloadFileProperties& properties, std::vector<std::pair<CString,CString>>& filterData, bool allowConversion) const;
 
 	void GetDownloadDomainTitles(TDownloadDomainTitles& domainTitles) const;
+
+	std::vector<CString> GetConversionExtenssions();
 };
 
 
