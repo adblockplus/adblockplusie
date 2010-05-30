@@ -620,3 +620,25 @@ void CPluginConfig::GetDownloadDomainTitles(TDownloadDomainTitles& domainTitles)
     }
     s_criticalSection.Unlock();
 }
+
+std::vector<CString> CPluginConfig::GetConversionExtenssions()
+{
+	std::vector<CString> returnVector;
+	for (TDownloadFileCategories::const_iterator it = m_downloadFileCategories.begin(); it != m_downloadFileCategories.end(); ++it)
+	{
+		bool isUnique = true;
+		for (std::vector<CString>::const_iterator ext = returnVector.begin(); ext != returnVector.end(); ++ext)
+		{
+			CString extenssion(ext->GetString());
+			if (extenssion == it->second.extension)
+			{
+				isUnique = false;
+			}
+		}
+		if (isUnique)
+		{
+			returnVector.push_back(it->second.extension);
+		}
+	}
+	return returnVector;
+}

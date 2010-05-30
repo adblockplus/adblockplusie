@@ -16,6 +16,11 @@
 #include "DownloadSource.h"
 #include "sddl.h"
 
+#ifdef PRODUCT_DOWNLOADHELPER
+#include "..\DownloadHelper\SettingsDialog.h"
+#include "pluginConfig.h"
+#endif
+
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -1284,12 +1289,52 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 			settings->ForceConfigurationUpdateOnStart();
 
-            CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
-            
-            httpRequest.AddPluginId();
-            httpRequest.Add("username", system->GetUserName(), false);
-			
-			url = httpRequest.GetUrl();
+#ifdef PRODUCT_DOWNLOADHELPER
+			CSettingsDialog settingsDialog;
+
+			CPluginConfig* config = CPluginConfig::GetInstance();
+			std::vector<CString> extenssions = config->GetConversionExtenssions();
+			for (std::vector<CString>::const_iterator ext = extenssions.begin(); ext != extenssions.end(); ++ext)
+			{
+				settingsDialog.m_extenssions.push_back(ext->GetString());
+			}
+			settingsDialog.m_defDirVal = settings->GetString("defaultDir");
+			CString fo = settings->GetString("defaultFormat", "0").GetString();
+			settingsDialog.m_defFormatVal = _wtoi(settings->GetString("defaultFormat", "0").GetString());
+			if (settings->GetString("closeWhenFinished", "false") == "true")
+			{
+				settingsDialog.m_closeWhenFinishedVal = TRUE;
+			} 
+			else 
+			{
+				settingsDialog.m_closeWhenFinishedVal = FALSE;
+			}
+			INT_PTR response = settingsDialog.DoModal();
+			if (response == IDOK)
+			{
+				settings->SetString("defaultDir", settingsDialog.m_defDirVal);
+				CString defFormat;
+				defFormat.Format(L"%d", settingsDialog.m_defFormatVal);
+				settings->SetString("defaultFormat", defFormat);
+				if (settingsDialog.m_closeWhenFinishedVal)
+				{
+					settings->SetString("closeWhenFinished", "true");
+				}
+				else
+				{
+					settings->SetString("closeWhenFinished", "false");
+				}
+				settings->Write(false);
+
+
+			}
+#endif
+   //         CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
+   //         
+   //         httpRequest.AddPluginId();
+   //         httpRequest.Add("username", system->GetUserName(), false);
+			//
+			//url = httpRequest.GetUrl();
 
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_SETTINGS;
 		}
@@ -1386,6 +1431,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 					DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_COMMON_FILES, "Download::common files folder retrieval failed");
 		        }
 
+				CPluginSettings* settings = CPluginSettings::GetInstance();
 				CPluginChecksum checksum;
 
 				checksum.Add("/url", downloadFile.downloadUrl);
@@ -1395,8 +1441,12 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				CString size;
 				size.Format(L"%d", downloadFile.fileSize);
 				checksum.Add("/size", size);
+				checksum.Add("/path", settings->GetString("defaultDir"));
+				checksum.Add("/format", settings->GetString("defaultFormat"));
+				checksum.Add("/autoclose", settings->GetString("closeWhenFinished"));
 
-				CString args =  CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /checksum:" + checksum.GetAsString() + "";
+
+				CString args =  CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /checksum:" + checksum.GetAsString() + " /path:" + settings->GetString("defaultDir") + " /format:" + settings->GetString("defaultFormat") + " /autoclose:" + settings->GetString("closeWhenFinished");
 
 				LPWSTR szCmdline = _wcsdup(args);
 
