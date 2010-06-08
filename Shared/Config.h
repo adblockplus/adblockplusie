@@ -31,6 +31,8 @@
 #define USERS_SCRIPT_WELCOME        "/user_welcome.php"
 #define USERS_SCRIPT_USER_SETTINGS  "/user_mysettings.php"
 #define USERS_SCRIPT_INVITATION     "/user_invitation.php"
+#define USERS_SCRIPT_ENTERLICENSE   "/user_enterlicense.php"
+#define USERS_SCRIPT_UPGRADE        "/user_upgrade.php"
 
 // ----------------------------------------------------------------------------
 // Define actual configurations
