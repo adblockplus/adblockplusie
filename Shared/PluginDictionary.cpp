@@ -29,6 +29,8 @@ CPluginDictionary::CPluginDictionary(bool forceCreate) : m_dictionaryLanguage("e
 	m_dictionaryConversions[L"FAQ"]				= L"MENU_FAQ";
 	m_dictionaryConversions[L"FEEDBACK"]		= L"MENU_FEEDBACK";
 	m_dictionaryConversions[L"INVITE_FRIENDS"]	= L"MENU_INVITE_FRIENDS";
+	m_dictionaryConversions[L"UPGRADE"]			= L"MENU_UPGRADE";
+	m_dictionaryConversions[L"ENTERLICENSE"]		= L"MENU_ENTERLICENSE";
 	m_dictionaryConversions[L"SETTINGS"]		= L"MENU_SETTINGS";
 	m_dictionaryConversions[L"ENABLE"]			= L"MENU_ENABLE";
 	m_dictionaryConversions[L"DISABLE"]			= L"MENU_DISABLE";
@@ -272,6 +274,8 @@ void CPluginDictionary::Create(bool forceCreate)
 		    m_dictionary["MENU_FAQ"] = "Frequently Asked Questions";
 		    m_dictionary["MENU_FEEDBACK"] = "Feedback";
 		    m_dictionary["MENU_INVITE_FRIENDS"] = "Invite friends";
+		    m_dictionary["MENU_UPGRADE"] = "Upgrade";
+		    m_dictionary["MENU_ENTERLICENSE"] = "Enter license key";
 		    m_dictionary["MENU_SETTINGS"] = "Settings";
 		    m_dictionary["MENU_ENABLE"] = "Enable IE Download Helper";
 		    m_dictionary["MENU_DISABLE"] = "Disable IE Download Helper";

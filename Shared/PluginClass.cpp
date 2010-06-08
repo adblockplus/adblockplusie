@@ -1282,6 +1282,32 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 		}
 		break;
 
+	case ID_ENTERLICENSE:
+		{
+			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ENTERLICENSE);
+			CPluginSettings* settings = CPluginSettings::GetInstance();
+			CPluginHttpRequest httpRequest(USERS_SCRIPT_ENTERLICENSE);
+			httpRequest.Add(L"plugin", system->GetPluginId());
+			httpRequest.Add(L"username", system->GetUserNameW());
+			httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
+			httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
+			CString url = httpRequest.GetUrl();
+			navigationErrorId = PLUGIN_ERROR_NAVIGATION_ENTERLICENSE;
+			break;
+		}
+	case ID_UPGRADE:
+		{
+			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_UPGRADE);
+			CPluginSettings* settings = CPluginSettings::GetInstance();
+			CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
+			httpRequest.Add(L"plugin", system->GetPluginId());
+			httpRequest.Add(L"username", system->GetUserNameW());
+			httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
+			httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
+			CString url = httpRequest.GetUrl();
+			navigationErrorId = PLUGIN_ERROR_NAVIGATION_UPGRADE;
+			break;
+		}
 	case ID_SETTINGS:
 		{
 		    // Update settings server side on next IE start, as they have possibly changed
@@ -1713,6 +1739,23 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.dwTypeData = ctext.GetBuffer();
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_FEEDBACK, FALSE, &fmii);
+
+	// Upgrade
+	ctext = dictionary->Lookup("MENU_UPGRADE");
+	fmii.fMask  = MIIM_STATE | MIIM_STRING;
+	fmii.fState = MFS_ENABLED;
+	fmii.dwTypeData = ctext.GetBuffer();
+	fmii.cch = ctext.GetLength();
+	::SetMenuItemInfo(hMenu, ID_UPGRADE, FALSE, &fmii);
+
+	// Enter license key
+	ctext = dictionary->Lookup("MENU_ENTERLICENSE");
+	fmii.fMask  = MIIM_STATE | MIIM_STRING;
+	fmii.fState = MFS_ENABLED;
+	fmii.dwTypeData = ctext.GetBuffer();
+	fmii.cch = ctext.GetLength();
+	::SetMenuItemInfo(hMenu, ID_ENTERLICENSE, FALSE, &fmii);
+
 
 	// Settings
 	ctext = dictionary->Lookup("MENU_SETTINGS");
