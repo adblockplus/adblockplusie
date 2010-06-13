@@ -38,6 +38,7 @@ public:
 
     // General plugin status
 	bool IsPluginActivated() const;
+	bool IsPluginRegistered() const;
 	bool IsPluginActivateEnabled() const;
 	bool IsPluginExpired() const;
 
@@ -77,6 +78,7 @@ private:
     bool m_isValidPluginUpdate;
     bool m_isValidPluginInfoPanel;
     bool m_isValidDictionary;
+	bool m_isPluginRegistered;
 #ifdef SUPPORT_WHITELIST
     bool m_isValidWhiteList;
 #endif

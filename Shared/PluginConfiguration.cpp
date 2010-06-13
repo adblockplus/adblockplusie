@@ -323,6 +323,12 @@ bool CPluginConfiguration::Download()
     }
 
 #endif // #ifdef SUPPORT_WHITELIST
+    it = settingsData.find("registration");
+    if (it != settingsData.end())
+    {
+        m_isPluginRegistered = it->second == "true";
+        DEBUG_SETTINGS("Settings::Configuration registration detected:" + it->second);
+    }
 
     m_isValid = isOk;
 
@@ -377,6 +383,10 @@ bool CPluginConfiguration::IsPluginActivated() const
     return m_isPluginActivated;
 }
 
+bool CPluginConfiguration::IsPluginRegistered() const 
+{
+	return m_isPluginRegistered;
+}
 
 bool CPluginConfiguration::IsPluginActivateEnabled() const
 {

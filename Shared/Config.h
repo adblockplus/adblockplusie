@@ -18,21 +18,21 @@
 // Define default protocols, hosts, scripts and pages
 // ----------------------------------------------------------------------------
 
-#define USERS_PROTOCOL              "http://"
-#define USERS_PATH                  ""
+#define USERS_PROTOCOL              L"http://"
+#define USERS_PATH                  L""
 #define USERS_PORT                  INTERNET_DEFAULT_HTTP_PORT
 
-#define USERS_SCRIPT_ACTIVATE       "/user_activate.php"
-#define USERS_SCRIPT_SETTINGS       "/user_manager.php"
-#define USERS_SCRIPT_ABOUT          "/user_about.php"
-#define USERS_SCRIPT_FAQ            "/user_faq.php"
-#define USERS_SCRIPT_FEEDBACK       "/user_feedback.php"
-#define USERS_SCRIPT_INFO           "/user_info.php"
-#define USERS_SCRIPT_WELCOME        "/user_welcome.php"
-#define USERS_SCRIPT_USER_SETTINGS  "/user_mysettings.php"
-#define USERS_SCRIPT_INVITATION     "/user_invitation.php"
-#define USERS_SCRIPT_ENTERLICENSE   "/user_enterlicense.php"
-#define USERS_SCRIPT_UPGRADE        "/user_upgrade.php"
+#define USERS_SCRIPT_ACTIVATE       L"/user_activate.php"
+#define USERS_SCRIPT_SETTINGS       L"/user_manager.php"
+#define USERS_SCRIPT_ABOUT          L"/user_about.php"
+#define USERS_SCRIPT_FAQ            L"/user_faq.php"
+#define USERS_SCRIPT_FEEDBACK       L"/user_feedback.php"
+#define USERS_SCRIPT_INFO           L"/user_info.php"
+#define USERS_SCRIPT_WELCOME        L"/user_welcome.php"
+#define USERS_SCRIPT_USER_SETTINGS  L"/user_mysettings.php"
+#define USERS_SCRIPT_INVITATION     L"/user_invitation.php"
+#define USERS_SCRIPT_ENTERLICENSE   L"/user_enterlicense.php"
+#define USERS_SCRIPT_UPGRADE        L"/user_upgrade.php"
 
 // ----------------------------------------------------------------------------
 // Define actual configurations
@@ -67,8 +67,17 @@
  #endif
 
 #elif (defined PRODUCT_DOWNLOADHELPER_APP)
-
-// No product defined
+ #ifdef ADPLUGIN_TEST_MODE
+  #define USERS_HOST L"mytest.ie-downloadhelper.com"
+ #elif (defined ADPLUGIN_PRODUCTION_MODE)
+//  #undef  USERS_PORT
+//  #define USERS_PORT INTERNET_DEFAULT_HTTPS_PORT
+//  #undef  USERS_PROTOCOL
+//  #define USERS_PROTOCOL "https://"
+  #define USERS_HOST L"my.ie-downloadhelper.com"
+ #else
+  #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
+ #endif
 
 #else
  #error "Undefined product. Please specify PRODUCT_SIMPLEADBLOCK or PRODUCT_DOWNLOADHELPER in configuration"
@@ -284,6 +293,8 @@
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define BHO_NAME _T("Simple Adblock BHO/1.0")
 #elif (defined PRODUCT_DOWNLOADHELPER)
+ #define BHO_NAME _T("Download Helper BHO/1.0")
+#elif (defined PRODUCT_DOWNLOADHELPER_APP)
  #define BHO_NAME _T("Download Helper BHO/1.0")
 #endif
 

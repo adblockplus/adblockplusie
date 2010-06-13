@@ -91,6 +91,7 @@ public:
 	CPluginTab* GetTab();
 
     void UpdateStatusBar();
+	static DWORD WINAPI MainThreadProc(LPVOID pParam);
 
 private:
 
@@ -159,7 +160,6 @@ private:
     static HANDLE GetMainThreadHandle();
     static bool IsMainThreadDone(HANDLE mainThread);
 
-	static DWORD WINAPI MainThreadProc(LPVOID pParam);
 
 	static HINSTANCE s_hUxtheme;
 	static CSimpleArray<CPluginClass*> s_instances;
