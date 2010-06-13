@@ -6,6 +6,7 @@
 #include "PluginClient.h"
 #include "PluginSettings.h"
 #include "PluginSystem.h"
+#include "config.h"
 
 #include <winhttp.h>
 

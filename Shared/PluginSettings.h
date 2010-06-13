@@ -26,6 +26,7 @@
 #define SETTING_PLUGIN_UPDATE_TIME      L"pluginupdatetime"
 #define SETTING_PLUGIN_SELFTEST         L"pluginselftest"
 #define SETTING_LANGUAGE                L"language"
+#define SETTING_PLUGIN_REGISTRATION     L"registration"
 #ifdef SUPPORT_FILTER
 #define SETTING_FILTER_VERSION          L"filterversion"
 #endif
@@ -127,17 +128,17 @@ public:
 	bool Write(bool bDebug=true);
 
 	static CString GetDataPathParent();
-	static CString GetDataPath(const CString& filename="");
+	static CString GetDataPath(const CString& filename=L"");
 
-	static CString GetTempPath(const CString& filename="");
-    static CString GetTempFile(const CString& prefix, const CString& extension="");
+	static CString GetTempPath(const CString& filename=L"");
+    static CString GetTempFile(const CString& prefix, const CString& extension=L"");
 
     bool Has(const CString& key) const;
     void Remove(const CString& key);
 
     CString GetPluginId();
 
-	CString GetString(const CString& key, const CString& defaultValue="") const;
+	CString GetString(const CString& key, const CString& defaultValue=L"") const;
 	void SetString(const CString& key, const CString& value);
 
 	int GetValue(const CString& key, int defaultValue=0) const;
