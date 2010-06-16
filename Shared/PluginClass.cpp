@@ -1326,7 +1326,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			}
 			settingsDialog.m_defDirVal = settings->GetString("defaultDir");
 			CString fo = settings->GetString("defaultFormat", "0").GetString();
-			settingsDialog.m_defFormatVal = _wtoi(settings->GetString("defaultFormat", "0").GetString());
+			settingsDialog.m_defFormatVal = _wtoi(settings->GetString("defaultFormat", "-1").GetString());
 			if (settings->GetString("closeWhenFinished", "false") == "true")
 			{
 				settingsDialog.m_closeWhenFinishedVal = TRUE;
@@ -1340,6 +1340,10 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			{
 				settings->SetString("defaultDir", settingsDialog.m_defDirVal);
 				CString defFormat;
+				if (settingsDialog.m_defFormatVal != -1)
+				{
+					settingsDialog.m_defFormatVal--;
+				}
 				defFormat.Format(L"%d", settingsDialog.m_defFormatVal);
 				settings->SetString("defaultFormat", defFormat);
 				if (settingsDialog.m_closeWhenFinishedVal)
@@ -1740,15 +1744,23 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_FEEDBACK, FALSE, &fmii);
 
+	if (settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
+	{	
+		RemoveMenu(hMenu, 5, MF_BYPOSITION);
+		RemoveMenu(hMenu, 5, MF_BYPOSITION);
+		RemoveMenu(hMenu, 5, MF_BYPOSITION);
+		
+	}
+
 	// Upgrade
 	ctext = dictionary->Lookup("MENU_UPGRADE");
 	fmii.fMask  = MIIM_STATE | MIIM_STRING;
-	fmii.fState = MFS_ENABLED;
 	fmii.dwTypeData = ctext.GetBuffer();
+	fmii.fState = MFS_ENABLED;
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_UPGRADE, FALSE, &fmii);
 
-	// Enter license key
+		// Enter license key
 	ctext = dictionary->Lookup("MENU_ENTERLICENSE");
 	fmii.fMask  = MIIM_STATE | MIIM_STRING;
 	fmii.fState = MFS_ENABLED;
