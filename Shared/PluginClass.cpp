@@ -1325,7 +1325,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				settingsDialog.m_extenssions.push_back(ext->GetString());
 			}
 			settingsDialog.m_defDirVal = settings->GetString("defaultDir");
-			CString fo = settings->GetString("defaultFormat", "0").GetString();
+			CString fo = settings->GetString("defaultFormat", "-1").GetString();
 			settingsDialog.m_defFormatVal = _wtoi(settings->GetString("defaultFormat", "-1").GetString());
 			if (settings->GetString("closeWhenFinished", "false") == "true")
 			{
@@ -1472,11 +1472,11 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				size.Format(L"%d", downloadFile.fileSize);
 				checksum.Add("/size", size);
 				checksum.Add("/path", settings->GetString("defaultDir"));
-				checksum.Add("/format", settings->GetString("defaultFormat"));
+				checksum.Add("/format", settings->GetString("defaultFormat", L"-1"));
 				checksum.Add("/autoclose", settings->GetString("closeWhenFinished"));
 
 
-				CString args =  CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /checksum:" + checksum.GetAsString() + " /path:" + settings->GetString("defaultDir") + " /format:" + settings->GetString("defaultFormat") + " /autoclose:" + settings->GetString("closeWhenFinished");
+				CString args =  CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /checksum:" + checksum.GetAsString() + " /path:" + settings->GetString("defaultDir") + " /format:" + settings->GetString("defaultFormat", L"-1") + " /autoclose:" + settings->GetString("closeWhenFinished");
 
 				LPWSTR szCmdline = _wcsdup(args);
 
