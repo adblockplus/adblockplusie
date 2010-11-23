@@ -955,13 +955,102 @@ bool CPluginClass::CreateStatusBarPane()
 #endif
 	}
 
+/*
+	// ****TEST
+	HWND hWndTest = ::GetWindow(GetParent(GetParent(hBrowserWnd)), GW_CHILD);
+	HWND hWndToolbar = NULL;
+	TCHAR szTitle[MAX_PATH];
+	while (hWndTest)
+	{
+		memset(szClassName, 0, MAX_PATH);
+		memset(szTitle, 0, MAX_PATH);
+		::GetClassName(hWndTest, szClassName, MAX_PATH);
+		::GetWindowText(hWndTest, szTitle, MAX_PATH);
+		if (_tcscmp(szClassName,_T("WorkerW")) == 0)
+		{
+			hWndTest = ::GetWindow(hWndTest, GW_CHILD);
+
+			while (hWndTest)
+			{
+				memset(szClassName, 0, MAX_PATH);
+				memset(szTitle, 0, MAX_PATH);
+				::GetClassName(hWndTest, szClassName, MAX_PATH);
+				::GetWindowText(hWndTest, szTitle, MAX_PATH);
+				if (_tcscmp(szClassName,_T("ReBarWindow32")) == 0)
+				{
+					hWndTest = ::GetWindow(hWndTest, GW_CHILD);
+
+					while (hWndTest)
+					{
+						memset(szClassName, 0, MAX_PATH);
+						memset(szTitle, 0, MAX_PATH);
+						::GetClassName(hWndTest, szClassName, MAX_PATH);
+						::GetWindowText(hWndTest, szTitle, MAX_PATH);
+						if (_tcscmp(szClassName,_T("TabBandClass")) == 0)
+						{
+							WINDOWPLACEMENT wndpl;
+							memset(&wndpl, 0, sizeof(WINDOWPLACEMENT));
+							GetWindowPlacement(hWndTest, &wndpl);
+							wndpl.rcNormalPosition.right = wndpl.rcNormalPosition.right - 70;
+							SetWindowPlacement(hWndTest, &wndpl);
+						}
+						if (_tcscmp(szClassName,_T("ControlBandClass")) == 0)
+						{
+							WINDOWPLACEMENT wndpl;
+							memset(&wndpl, 0, sizeof(WINDOWPLACEMENT));
+							GetWindowPlacement(hWndTest, &wndpl);
+							wndpl.rcNormalPosition.left = wndpl.rcNormalPosition.left - 70;
+							SetWindowPlacement(hWndTest, &wndpl);
+
+							hWndToolbar = hWndTest;
+						}
+						hWndTest = ::GetWindow(hWndTest, GW_HWNDNEXT);
+					}
+				}
+				hWndTest = ::GetWindow(hWndTest, GW_HWNDNEXT);
+			}
+
+			break;
+		}
+
+		hWndTest = ::GetWindow(hWndTest, GW_HWNDNEXT);
+	}
+
+	// Calculate pane height
+	CRect rcToolBar;
+	::GetClientRect(hWndToolbar, &rcToolBar);
+	
+	WINDOWPLACEMENT wndpl;
+	memset(&wndpl, 0, sizeof(WINDOWPLACEMENT));
+	GetWindowPlacement(hWndToolbar, &wndpl);
+//	wndpl.rcNormalPosition.left = wndpl.rcNormalPosition.left - 70;
+	wndpl.rcNormalPosition.right = wndpl.rcNormalPosition.right + 70;
+
+	SetWindowPlacement(hWndToolbar, &wndpl);
+
+	// Create pane window
+	HWND hWndNewPane2 = ::CreateWindowEx(
+		NULL,
+		MAKEINTATOM(GetAtomPaneClass()),
+		_T(""),
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+		rcToolBar.Width() - 70,0,70,rcToolBar.Height(),
+		hWndToolbar,
+		(HMENU)3671,
+		_Module.m_hInst,
+		NULL);
+
+
+	// *** END TEST
+*/
+
 	// Create pane window
 	HWND hWndNewPane = ::CreateWindowEx(
 		NULL,
 		MAKEINTATOM(GetAtomPaneClass()),
 		_T(""),
-		WS_CHILD | WS_VISIBLE,
-		0,0,0,0,
+		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+		rcStatusBar.Width() - 200,0,m_nPaneWidth,rcStatusBar.Height(),
 		hWndStatusBar,
 		(HMENU)3671,
 		_Module.m_hInst,
@@ -1281,7 +1370,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 #endif
 		}
 		break;
-
+#ifdef PRODUCT_DOWNLOADHELPER
 	case ID_ENTERLICENSE:
 		{
 			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ENTERLICENSE);
@@ -1308,6 +1397,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_UPGRADE;
 			break;
 		}
+#endif
 	case ID_SETTINGS:
 		{
 		    // Update settings server side on next IE start, as they have possibly changed
@@ -1751,7 +1841,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 		RemoveMenu(hMenu, 5, MF_BYPOSITION);
 		
 	}
-
+#ifdef PRODUCT_DOWNLOADHELPER
 	// Upgrade
 	ctext = dictionary->Lookup("MENU_UPGRADE");
 	fmii.fMask  = MIIM_STATE | MIIM_STRING;
@@ -1767,7 +1857,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.dwTypeData = ctext.GetBuffer();
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_ENTERLICENSE, FALSE, &fmii);
-
+#endif
 
 	// Settings
 	ctext = dictionary->Lookup("MENU_SETTINGS");
