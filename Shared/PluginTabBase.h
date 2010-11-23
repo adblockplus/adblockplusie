@@ -21,9 +21,9 @@ protected:
 
 	CString m_documentDomain;
 	CString m_documentUrl;
-
+public:
 	CPluginClass* m_plugin;
-
+protected:
 	bool m_isActivated;
 
 	HANDLE m_hThread;

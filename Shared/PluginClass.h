@@ -104,12 +104,13 @@ private:
 	CComPtr<IConnectionPoint> GetConnectionPoint();
 	CComPtr<IConnectionPoint> GetConnectionPointPropSink();
 
+public:
 	HWND GetBrowserHWND() const;
 	HWND GetTabHWND() const;
     CComQIPtr<IWebBrowser2> GetBrowser() const;
 
 	STDMETHODIMP OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags);
-
+private:
 
 	CString GetBrowserUrl() const;
 
@@ -129,7 +130,9 @@ private:
 
     void Unadvice();
 
+public:
 	CComQIPtr<IWebBrowser2> m_webBrowser2;
+private:
 	DWORD m_nConnectionID;
 	HWND m_hBrowserWnd;
 	HWND m_hTabWnd;
