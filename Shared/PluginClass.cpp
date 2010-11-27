@@ -670,6 +670,10 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
         break;
 
     case DISPID_COMMANDSTATECHANGE:
+		if (m_hPaneWnd == NULL)
+		{
+			CreateStatusBarPane();
+		}
 		break;    
 
     case DISPID_STATUSTEXTCHANGE:
@@ -931,7 +935,7 @@ bool CPluginClass::CreateStatusBarPane()
 	if (!hWndStatusBar)
 	{
         DEBUG_ERROR_LOG(0, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_NO_STATUSBAR_WIN, "Class::CreateStatusBarPane - No status bar")
-		return false;
+		return true;
 	}
 
 	// Calculate pane height
@@ -2403,6 +2407,10 @@ void CPluginClass::UpdateStatusBar()
 {
     DEBUG_GENERAL("*** Updating statusbar")
 
+	if (m_hPaneWnd == NULL)
+	{
+		CreateStatusBarPane();
+	}
     if (!::InvalidateRect(m_hPaneWnd, NULL, FALSE))
 	{
 		DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_INVALIDATE_STATUSBAR, "Class::Invalidate statusbar");	
