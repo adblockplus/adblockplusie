@@ -1453,12 +1453,12 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 			}
 #endif
-   //         CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
-   //         
-   //         httpRequest.AddPluginId();
-   //         httpRequest.Add("username", system->GetUserName(), false);
-			//
-			//url = httpRequest.GetUrl();
+            CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
+            
+            httpRequest.AddPluginId();
+            httpRequest.Add("username", system->GetUserName(), false);
+			
+			url = httpRequest.GetUrl();
 
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_SETTINGS;
 		}
