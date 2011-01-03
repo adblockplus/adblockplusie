@@ -404,6 +404,47 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 						{
 							Unadvice();
 						}
+						if (m_hPaneWnd == NULL)
+						{
+							VARIANT_BOOL isVisible;
+							CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
+							if (browser)
+							{
+								HRESULT hr = S_OK;
+							
+								hr = browser->get_StatusBar(&isVisible);
+								if (SUCCEEDED(hr))
+								{
+									if (!isVisible)
+									{
+										if (!settings->GetBool("statusbarasked", false))
+										{
+											LRESULT res = MessageBox(NULL, L"The plugin menu is located in the statusbar, would you like to enable Internet Explorer's statusbar?", L"Enable status bar?", MB_YESNO);
+											settings->SetBool("statusbarasked", true);
+											settings->Write();
+											if (res == IDYES)
+											{
+												HKEY pHkey;
+												RegOpenCurrentUser(KEY_WRITE, &pHkey);
+												DWORD trueth = 1;
+												RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkey);
+												RegSetValueEx(pHkey, L"ShowStatusBar", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
+												hr = browser->put_StatusBar(TRUE);
+												if (FAILED(hr))
+												{
+													DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_PUT_STATUSBAR, "Class::Enable statusbar");
+												}
+												CreateStatusBarPane();
+											}
+										}
+									}
+								}
+								else
+								{
+									DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_STATUSBAR, "Class::Get statusbar state");
+								}
+							}
+						}
 					}
 					else
 					{
@@ -2310,6 +2351,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         {
 	        // Set the status bar visible, if it isn't
 	        // Otherwise the user won't see the icon the first time
+
 	        if (wParam == 1)
 	        {
                 // Redirect to welcome page
@@ -2317,18 +2359,24 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
                 CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
                 if (browser)
                 {
-					HRESULT hr = browser->get_StatusBar(&isVisible);
+					HRESULT hr = S_OK;
+				
+					hr = browser->get_StatusBar(&isVisible);
 					if (SUCCEEDED(hr))
 					{
 						if (!isVisible)
 						{
-							hr = browser->put_StatusBar(TRUE);
-							if (FAILED(hr))
+							LRESULT res = MessageBox(NULL, L"The plugin menu is located in the statusbar, would you like to enable Internet Explorer's statusbar?", L"Enable status bar?", MB_YESNO);
+							if (res == IDYES)
 							{
-								DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_PUT_STATUSBAR, "Class::Enable statusbar");
+								hr = browser->put_StatusBar(TRUE);
+								if (FAILED(hr))
+								{
+									DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_PUT_STATUSBAR, "Class::Enable statusbar");
+								}
 							}
 						}
-	                }
+					}
 					else
 					{
 						DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_STATUSBAR, "Class::Get statusbar state");
