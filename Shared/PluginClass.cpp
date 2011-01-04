@@ -419,7 +419,9 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 									{
 										if (!settings->GetBool("statusbarasked", false))
 										{
-											LRESULT res = MessageBox(NULL, L"The plugin menu is located in the statusbar, would you like to enable Internet Explorer's statusbar?", L"Enable status bar?", MB_YESNO);
+											SHANDLE_PTR pBrowserHWnd;
+											browser->get_HWND((SHANDLE_PTR*)&pBrowserHWnd);
+											LRESULT res = MessageBox((HWND)pBrowserHWnd, L"The plugin menu is located in the statusbar, would you like to enable Internet Explorer's statusbar?", L"Enable status bar?", MB_YESNO);
 											settings->SetBool("statusbarasked", true);
 											settings->Write();
 											if (res == IDYES)
