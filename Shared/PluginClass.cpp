@@ -1526,6 +1526,8 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 			}
 #endif
+#ifdef PRODUCT_SIMPLEADBLOCK
+
             CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
             
             httpRequest.AddPluginId();
@@ -1534,6 +1536,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			url = httpRequest.GetUrl();
 
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_SETTINGS;
+#endif
 		}
 		break;
 
