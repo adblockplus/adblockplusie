@@ -130,6 +130,9 @@ private:
 
     void Unadvice();
 
+	void ShowStatusBar();
+	bool IsStatusBarEnabled();
+
 public:
 	CComQIPtr<IWebBrowser2> m_webBrowser2;
 private:
