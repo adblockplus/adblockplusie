@@ -404,48 +404,9 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 						{
 							Unadvice();
 						}
-						if (m_hPaneWnd == NULL)
+						if ((m_hPaneWnd == NULL) || (!IsStatusBarEnabled()))
 						{
-							VARIANT_BOOL isVisible;
-							CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
-							if (browser)
-							{
-								HRESULT hr = S_OK;
-							
-								hr = browser->get_StatusBar(&isVisible);
-								if (SUCCEEDED(hr))
-								{
-									if (!isVisible)
-									{
-										if (!settings->GetBool("statusbarasked", false))
-										{
-											SHANDLE_PTR pBrowserHWnd;
-											browser->get_HWND((SHANDLE_PTR*)&pBrowserHWnd);
-											LRESULT res = MessageBox((HWND)pBrowserHWnd, L"The plugin menu is located in the statusbar, would you like to enable Internet Explorer's statusbar?", L"Enable status bar?", MB_YESNO);
-											settings->SetBool("statusbarasked", true);
-											settings->Write();
-											if (res == IDYES)
-											{
-												HKEY pHkey;
-												RegOpenCurrentUser(KEY_WRITE, &pHkey);
-												DWORD trueth = 1;
-												RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkey);
-												RegSetValueEx(pHkey, L"ShowStatusBar", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
-												hr = browser->put_StatusBar(TRUE);
-												if (FAILED(hr))
-												{
-													DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_PUT_STATUSBAR, "Class::Enable statusbar");
-												}
-												CreateStatusBarPane();
-											}
-										}
-									}
-								}
-								else
-								{
-									DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_STATUSBAR, "Class::Get statusbar state");
-								}
-							}
+							ShowStatusBar();
 						}
 					}
 					else
@@ -569,7 +530,76 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 	return IObjectWithSiteImpl<CPluginClass>::SetSite(unknownSite);
 }
 
+bool CPluginClass::IsStatusBarEnabled()
+{
+	HKEY pHkey;
+	HKEY pHkeySub;
+	RegOpenCurrentUser(KEY_QUERY_VALUE, &pHkey);
+	DWORD trueth = 1;
+	DWORD truethSize = sizeof(DWORD);
+	RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\Main", &pHkeySub);
+	LONG res = RegQueryValueEx(pHkeySub, L"StatusBarWeb", NULL, NULL, (BYTE*)&trueth, &truethSize);
+	RegCloseKey(pHkey);
+	if (res != ERROR_SUCCESS)
+	{
+		RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkeySub);
+		LONG res = RegQueryValueEx(pHkeySub, L"ShowStatusBar", NULL, NULL, (BYTE*)&trueth, &truethSize);
+		RegCloseKey(pHkey);
+	}
+	return trueth == 1;
+}
 
+void CPluginClass::ShowStatusBar()
+{
+	VARIANT_BOOL isVisible;
+
+    CPluginSettings* settings = CPluginSettings::GetInstance();
+
+	CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
+	if (browser)
+	{
+		HRESULT hr = S_OK;
+	
+		hr = browser->get_StatusBar(&isVisible);
+		if (SUCCEEDED(hr))
+		{
+			if (!isVisible)
+			{
+				if (!settings->GetBool("statusbarasked", false))
+				{
+					SHANDLE_PTR pBrowserHWnd;
+					browser->get_HWND((SHANDLE_PTR*)&pBrowserHWnd);
+					LRESULT res = MessageBox((HWND)pBrowserHWnd, L"The plugin menu is located in the statusbar, would you like to enable Internet Explorer's statusbar?", L"Enable status bar?", MB_YESNO);
+					settings->SetBool("statusbarasked", true);
+					settings->Write();
+					if (res == IDYES)
+					{
+						HKEY pHkey;
+						HKEY pHkeySub;
+						RegOpenCurrentUser(KEY_WRITE, &pHkey);
+						DWORD trueth = 1;
+						RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkeySub);
+						RegSetValueEx(pHkeySub, L"ShowStatusBar", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
+						RegCloseKey(pHkeySub);
+						RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\Main", &pHkeySub);
+						RegSetValueEx(pHkeySub, L"StatusBarWeb", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
+						RegCloseKey(pHkeySub);
+						hr = browser->put_StatusBar(TRUE);
+						if (FAILED(hr))
+						{
+							DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_PUT_STATUSBAR, "Class::Enable statusbar");
+						}
+						CreateStatusBarPane();
+					}
+				}
+			}
+		}
+		else
+		{
+			DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_STATUSBAR, "Class::Get statusbar state");
+		}
+	}
+}
 void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 {
 	if (pDispParams->cArgs < 7)
