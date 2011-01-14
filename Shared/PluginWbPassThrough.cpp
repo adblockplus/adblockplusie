@@ -11,6 +11,8 @@
 #endif
 #include "PluginSettings.h"
 #include "PluginClass.h"
+#include "PluginHttpRequest.h"
+#include "PluginSystem.h"
 
 #include "wtypes.h"
 
@@ -119,9 +121,83 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
 			if (client->ShouldBlock(src, contentType, domain, true))
 			{
+                isBlocked = true;
+
+				CPluginSettings* settings = CPluginSettings::GetInstance();
+				//is plugin registered
+				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
+				{
+					//is the limit exceeded?
+					if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0))
+					{
+						SYSTEMTIME stNow;
+						GetSystemTime(&stNow);
+						WORD limitDay = settings->GetValue(SETTING_PLUGIN_LIMITDAY, 0);
+						if (limitDay != stNow.wDay)
+						{
+							//Reset blocked ads counter
+							settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
+							settings->Write();
+						}
+						//don't block. We've already blocked all the trial ads.
+						isBlocked = false;
+					} 
+					else 
+					{
+						//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
+						settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
+						settings->Write();
+					}
+					if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) == settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0))
+					{
+						CString messageString;
+						messageString.Format(L"The free version of Simple Adblock only blocks %d adrequest a day. To enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
+
+						//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
+						settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
+						SYSTEMTIME stNow;
+						GetSystemTime(&stNow);						
+						settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);						
+						settings->Write();
+
+						LRESULT res = MessageBox(NULL, messageString, L"Upgrade to Simple Adblock Pro", MB_OKCANCEL);
+						if (res == IDOK)
+						{
+							CPluginSettings* settings = CPluginSettings::GetInstance();
+							CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
+							CPluginSystem* system = CPluginSystem::GetInstance();
+							httpRequest.Add(L"plugin", system->GetPluginId());
+							httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
+							httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
+							CString url = httpRequest.GetUrl();
+
+							CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());							
+							CComQIPtr<IWebBrowser2> browser = tab->m_plugin->GetBrowser();    
+							if (!url.IsEmpty() && browser)
+							{
+								VARIANT vFlags;
+								vFlags.vt = VT_I4;
+								vFlags.intVal = navOpenInNewTab;
+
+								HRESULT hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
+								if (FAILED(hr))
+								{
+									vFlags.intVal = navOpenInNewWindow;
+
+									hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
+									if (FAILED(hr))
+									{
+										DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, 0, "Navigation::Failed")
+									}
+								}
+							}
+						}
+
+					}
+				}
+
 				DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
 
-                isBlocked = true;
 			}
 #ifdef ENABLE_DEBUG_RESULT_IGNORED
 			else
