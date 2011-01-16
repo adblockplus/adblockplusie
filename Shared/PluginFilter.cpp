@@ -1679,7 +1679,7 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
 		//is the limit exceeded?
-		if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0))
+		if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
 		{
 			return false;
 		} 
@@ -1732,7 +1732,7 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 		if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 		{
 			//is the limit exceeded?
-			if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0))
+			if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
 			{
 				SYSTEMTIME stNow;
 				GetSystemTime(&stNow);
@@ -1752,48 +1752,6 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 				//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
 				settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
 				settings->Write();
-			}
-			if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) == settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0))
-			{
-				CString messageString;
-				messageString.Format(L"The free version of Simple Adblock only blocks %d adrequest a day. To enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
-
-				//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
-				settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
-				SYSTEMTIME stNow;
-				GetSystemTime(&stNow);						
-				settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);						
-				settings->Write();
-
-				LRESULT res = MessageBox(NULL, messageString, L"Upgrade to Simple Adblock Pro", MB_OKCANCEL);
-				if (res == IDOK)
-				{
-					CPluginSettings* settings = CPluginSettings::GetInstance();
-					CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
-					CPluginSystem* system = CPluginSystem::GetInstance();
-					httpRequest.Add(L"plugin", system->GetPluginId());
-					httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
-					httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
-					CString url = httpRequest.GetUrl();
-
-					CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());							
-					CComQIPtr<IWebBrowser2> browser = tab->m_plugin->GetBrowser();    
-					if (!url.IsEmpty() && browser)
-					{
-						VARIANT vFlags;
-						vFlags.vt = VT_I4;
-						vFlags.intVal = navOpenInNewTab;
-
-						HRESULT hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
-						if (FAILED(hr))
-						{
-							vFlags.intVal = navOpenInNewWindow;
-
-							hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
-						}
-					}
-				}
-
 			}
 		}
 	}
