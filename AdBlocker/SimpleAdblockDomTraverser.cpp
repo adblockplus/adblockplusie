@@ -33,7 +33,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
 		//is the limit exceeded?
-		if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0))
+		if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
 		{
 			return false;
 		} 

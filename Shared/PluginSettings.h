@@ -27,6 +27,7 @@
 #define SETTING_PLUGIN_SELFTEST         L"pluginselftest"
 #define SETTING_LANGUAGE                L"language"
 #define SETTING_PLUGIN_REGISTRATION     L"registration"
+#define SETTING_PLUGIN_TRIALEXPIRED		L"trialexpired"
 #define SETTING_PLUGIN_ADBLOCKLIMIT		L"adblocklimit"
 #define SETTING_PLUGIN_ADBLOCKCOUNT		L"adblockcount"
 #define SETTING_PLUGIN_LIMITDAY			L"limitday"
