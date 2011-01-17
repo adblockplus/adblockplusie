@@ -294,7 +294,6 @@ void CPluginSettings::Clear()
 	{
 		m_properties.clear();
 
-		m_properties[SETTING_PLUGIN_ACTIVATED] = "false";
 		m_properties[SETTING_PLUGIN_EXPIRED] = "false";
 		m_properties[SETTING_PLUGIN_VERSION] = IEPLUGIN_VERSION;
 		m_properties[SETTING_LANGUAGE] = "en";
@@ -1226,7 +1225,42 @@ void CPluginSettings::TogglePluginEnabled()
         WriteTab(false);
     }
 }
+void CPluginSettings::SetPluginDisabled()
+{
+    CPluginSettingsTabLock lock;
+    if (lock.IsLocked())
+    {
+        ReadTab(false);
 
+        s_criticalSectionLocal.Lock();
+        {
+            m_isPluginEnabledTab = false;
+            m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = "false";
+            m_isDirtyTab = true;
+        }
+        s_criticalSectionLocal.Unlock();
+        
+        WriteTab(false);
+    }
+}
+void CPluginSettings::SetPluginEnabled()
+{
+    CPluginSettingsTabLock lock;
+    if (lock.IsLocked())
+    {
+        ReadTab(false);
+
+        s_criticalSectionLocal.Lock();
+        {
+            m_isPluginEnabledTab = true;
+            m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = "true";
+            m_isDirtyTab = true;
+        }
+        s_criticalSectionLocal.Unlock();
+        
+        WriteTab(false);
+    }
+}
 
 bool CPluginSettings::GetPluginEnabled() const
 {

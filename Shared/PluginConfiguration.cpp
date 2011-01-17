@@ -188,21 +188,6 @@ bool CPluginConfiguration::Download()
         DEBUG_SETTINGS("Settings::Configuration dictionary version:" + it->second);
     }
 
-    it = settingsData.find("pluginactivated");
-    if (it != settingsData.end())
-    {
-        m_isPluginActivated = it->second == "true";
-        m_isValidPluginActivated = true;
-        DEBUG_SETTINGS("Settings::Configuration plugin activated:" + it->second);
-    }
-
-    it = settingsData.find("pluginactivateenabled");
-    if (it != settingsData.end())
-    {
-        m_isPluginActivateEnabled = it->second == "true";
-        m_isValidPluginActivateEnabled = true;
-        DEBUG_SETTINGS("Settings::Configuration plugin activate enabled:" + it->second);
-    }
 
     it = settingsData.find("pluginexpired");
     if (it != settingsData.end())
@@ -354,17 +339,6 @@ bool CPluginConfiguration::IsValidUserId() const
    return m_isValidUserId;
 }
 
-
-bool CPluginConfiguration::IsValidPluginActivated() const
-{
-   return m_isValidPluginActivated;
-}
-
-
-bool CPluginConfiguration::IsValidPluginActivateEnabled() const
-{
-   return m_isValidPluginActivateEnabled;
-}
 
 
 bool CPluginConfiguration::IsValidPluginExpired() const
