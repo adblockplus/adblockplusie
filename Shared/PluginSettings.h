@@ -16,8 +16,6 @@
 #define SETTING_USER_ID                 L"userid"
 #define SETTING_PLUGIN_ID	            L"pluginuniqueid"
 #define SETTING_PLUGIN_INFO_PANEL	    L"plugininfopanel"
-#define SETTING_PLUGIN_ACTIVATED        L"pluginactivated"
-#define SETTING_PLUGIN_ACTIVATE_ENABLED L"pluginactivateenabled"
 #define SETTING_PLUGIN_EXPIRED          L"pluginexpired"
 #define SETTING_PLUGIN_PASSWORD         L"pluginpassword"
 #define SETTING_PLUGIN_VERSION          L"pluginversion"
@@ -217,6 +215,8 @@ public:
     bool DecrementTabCount();
 
     void TogglePluginEnabled();
+	void SetPluginDisabled();
+	void SetPluginEnabled();
     bool GetPluginEnabled() const;
 
     void AddError(const CString& error, const CString& errorCode);

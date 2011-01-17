@@ -558,7 +558,7 @@ void CPluginClass::ShowStatusBar()
 	CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
 	if (browser)
 	{
-		HRESULT hr = S_OK;
+		HRESULT hr = S_OK; 
 	
 		hr = browser->get_StatusBar(&isVisible);
 		if (SUCCEEDED(hr))
@@ -594,9 +594,54 @@ void CPluginClass::ShowStatusBar()
 				}
 			}
 		}
-		else
+		else 
 		{
 			DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_STATUSBAR, "Class::Get statusbar state");
+		}
+	}
+}
+
+void CPluginClass::DisplayActivateMessage()
+{
+	CPluginSettings* settings = CPluginSettings::GetInstance();
+	CString messageString;
+	messageString.Format(L"The free version of Simple Adblock only blocks %d adrequest a day. To enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
+
+	settings->SetPluginDisabled();
+	//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
+	settings->SetValue(SETTING_PLUGIN_TRIALEXPIRED, true);
+	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
+	SYSTEMTIME stNow;
+	GetSystemTime(&stNow);						
+	settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);						
+	settings->Write();
+
+	LRESULT res = MessageBox(NULL, messageString, L"Upgrade to Simple Adblock Pro", MB_OKCANCEL);
+	if (res == IDOK)
+	{
+		CPluginSettings* settings = CPluginSettings::GetInstance();
+		CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
+		CPluginSystem* system = CPluginSystem::GetInstance();
+		httpRequest.Add(L"plugin", system->GetPluginId());
+		httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
+		httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
+		CString url = httpRequest.GetUrl();
+
+		CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());							
+		CComQIPtr<IWebBrowser2> browser = tab->m_plugin->GetBrowser();    
+		if (!url.IsEmpty() && browser)
+		{
+			VARIANT vFlags;
+			vFlags.vt = VT_I4;
+			vFlags.intVal = navOpenInNewTab;
+
+			HRESULT hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
+			if (FAILED(hr))
+			{
+				vFlags.intVal = navOpenInNewWindow;
+
+				hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
+			}
 		}
 	}
 }
@@ -609,50 +654,12 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
-		if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0))
+		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) != 0))
 		{
 			//is the limit exceeded?
 			if (!settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
 			{
-				CString messageString;
-				messageString.Format(L"The free version of Simple Adblock only blocks %d adrequest a day. To enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
-
-				//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
-				settings->SetValue(SETTING_PLUGIN_TRIALEXPIRED, true);
-				settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
-				SYSTEMTIME stNow;
-				GetSystemTime(&stNow);						
-				settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);						
-				settings->Write();
-
-				LRESULT res = MessageBox(NULL, messageString, L"Upgrade to Simple Adblock Pro", MB_OKCANCEL);
-				if (res == IDOK)
-				{
-					CPluginSettings* settings = CPluginSettings::GetInstance();
-					CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
-					CPluginSystem* system = CPluginSystem::GetInstance();
-					httpRequest.Add(L"plugin", system->GetPluginId());
-					httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
-					httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
-					CString url = httpRequest.GetUrl();
-
-					CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());							
-					CComQIPtr<IWebBrowser2> browser = tab->m_plugin->GetBrowser();    
-					if (!url.IsEmpty() && browser)
-					{
-						VARIANT vFlags;
-						vFlags.vt = VT_I4;
-						vFlags.intVal = navOpenInNewTab;
-
-						HRESULT hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
-						if (FAILED(hr))
-						{
-							vFlags.intVal = navOpenInNewWindow;
-
-							hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
-						}
-					}
-				}
+				DisplayActivateMessage();
 			}
 		}
 	}
@@ -1475,6 +1482,11 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 		{
 	        CPluginSettings* settings = CPluginSettings::GetInstance();
 
+			if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
+			{
+				DisplayActivateMessage();
+				break;
+			}
 			settings->TogglePluginEnabled();
 
 			// Enable / disable mime filter
@@ -1784,7 +1796,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	m_tab->OnUpdateSettings();
 
     // Plugin activate
-    if (settings->GetBool(SETTING_PLUGIN_ACTIVATE_ENABLED,false) && !settings->GetBool(SETTING_PLUGIN_ACTIVATED,false))
+    if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
     {
         ctext = dictionary->Lookup("MENU_ACTIVATE");
 	    fmii.fMask  = MIIM_STATE | MIIM_STRING;
@@ -1967,10 +1979,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 
 	if (settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{	
-		RemoveMenu(hMenu, 5, MF_BYPOSITION);
-		RemoveMenu(hMenu, 5, MF_BYPOSITION);
-		RemoveMenu(hMenu, 5, MF_BYPOSITION);
-		
+//		RemoveMenu(hMenu, 0, MF_BYPOSITION);	
 	}
 #ifdef PRODUCT_DOWNLOADHELPER
 	// Upgrade

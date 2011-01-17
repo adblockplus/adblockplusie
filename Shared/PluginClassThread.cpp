@@ -350,14 +350,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 
                 settings->ForceConfigurationUpdateOnStart(false);
 
-                if (configuration->IsValidPluginActivated())
-                {
-                    settings->SetBool(SETTING_PLUGIN_ACTIVATED, configuration->IsPluginActivated());
-                }
-                if (configuration->IsValidPluginActivateEnabled())
-                {
-                    settings->SetBool(SETTING_PLUGIN_ACTIVATE_ENABLED, configuration->IsPluginActivateEnabled());
-                }
                 if (configuration->IsValidPluginExpired())
                 {
                     settings->SetBool(SETTING_PLUGIN_EXPIRED, configuration->IsPluginExpired());

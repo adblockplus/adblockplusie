@@ -20,8 +20,6 @@ public:
     // Is configuration valid
     bool IsValid() const;
     bool IsValidUserId() const;
-    bool IsValidPluginActivated() const;
-    bool IsValidPluginActivateEnabled() const;
     bool IsValidPluginExpired() const;
     bool IsValidPluginUpdate() const;
     bool IsValidPluginInfoPanel() const;
