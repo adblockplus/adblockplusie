@@ -65,7 +65,7 @@ public:
 
 	virtual void OnActivate();
 	virtual void OnUpdate();
-	virtual bool OnUpdateSettings();
+	virtual bool OnUpdateSettings(bool forceUpdate);
 	virtual bool OnUpdateConfig();
 	virtual void OnNavigate(const CString& url);
 	virtual void OnDownloadComplete(IWebBrowser2* browser);

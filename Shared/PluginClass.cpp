@@ -1793,7 +1793,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     settings->RefreshTab();
 
     // Update settings
-	m_tab->OnUpdateSettings();
+	m_tab->OnUpdateSettings(false);
 
     // Plugin activate
     if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
