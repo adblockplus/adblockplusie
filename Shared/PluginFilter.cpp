@@ -1679,7 +1679,7 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
 		//is the limit exceeded?
-		if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
+		if (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= 1000000) 
 		{
 			return false;
 		} 
@@ -1731,19 +1731,9 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 		//is plugin registered
 		if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 		{
-			//is the limit exceeded?
-			if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
+			//is the limit exceeded? When the upgrade dialog is displayed adblockcount is set to 1000000
+			if (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= 1000000)
 			{
-				SYSTEMTIME stNow;
-				GetSystemTime(&stNow);
-				WORD limitDay = settings->GetValue(SETTING_PLUGIN_LIMITDAY, 0);
-				if (limitDay != stNow.wDay)
-				{
-					//Reset blocked ads counter
-					settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
-					settings->Write();
-				}
-				//don't block. We've already blocked all the trial ads.
 				return false;
 			} 
 
