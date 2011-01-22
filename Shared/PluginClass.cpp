@@ -605,29 +605,11 @@ void CPluginClass::DisplayActivateMessage()
 {
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 	
-	SYSTEMTIME stNow;
-	GetSystemTime(&stNow);
-	WORD limitDay = settings->GetValue(SETTING_PLUGIN_LIMITDAY, 0);
-	if (limitDay != stNow.wDay)
-	{
-		//Reset blocked ads counter
-		settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
-		settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);
-		settings->SetBool(SETTING_PLUGIN_TRIALEXPIRED, false);
-		settings->Write();
-		settings->Read();
-		return;
-	}
-
 	CString messageString;
 	messageString.Format(L"The free version of Simple Adblock only blocks %d adrequest a day. To enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
 
-	settings->SetPluginDisabled();
-	//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
-	settings->SetValue(SETTING_PLUGIN_TRIALEXPIRED, true);
-	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
-	GetSystemTime(&stNow);						
-	settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);						
+	//Adblockcount=1000000 when Activationmessage has been displayed
+	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 1000000);
 	settings->Write();
 
 	LRESULT res = MessageBox(NULL, messageString, L"Upgrade to Simple Adblock Pro", MB_OKCANCEL);
@@ -666,18 +648,26 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
     	return; 
 	}
 	CPluginSettings* settings = CPluginSettings::GetInstance();
+
+	//Reset adblockcount every day
+	SYSTEMTIME stNow;
+	GetSystemTime(&stNow);
+	WORD limitDay = settings->GetValue(SETTING_PLUGIN_LIMITDAY, 0);
+	if (limitDay != stNow.wDay)
+	{
+		settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
+		settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);
+		settings->Write();
+		settings->Read();
+	}
+
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
-		if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) >= 0)
+		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) 
+			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) < 1000000) 
+			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
 		{
-			if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) != 0))
-			{
-				//is the limit exceeded?
-				if (!settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
-				{
-					DisplayActivateMessage();
-				}
-			}
+			DisplayActivateMessage();
 		}
 	}
 
@@ -1506,9 +1496,12 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			{
 				if (settings->GetPluginEnabled())
 				{
-					if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
+					if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 					{
-						DisplayActivateMessage();
+						if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
+						{
+							DisplayActivateMessage();
+						}
 					}
 					else
 					{
