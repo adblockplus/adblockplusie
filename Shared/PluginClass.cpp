@@ -604,6 +604,21 @@ void CPluginClass::ShowStatusBar()
 void CPluginClass::DisplayActivateMessage()
 {
 	CPluginSettings* settings = CPluginSettings::GetInstance();
+	
+	SYSTEMTIME stNow;
+	GetSystemTime(&stNow);
+	WORD limitDay = settings->GetValue(SETTING_PLUGIN_LIMITDAY, 0);
+	if (limitDay != stNow.wDay)
+	{
+		//Reset blocked ads counter
+		settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
+		settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);
+		settings->SetBool(SETTING_PLUGIN_TRIALEXPIRED, false);
+		settings->Write();
+		settings->Read();
+		return;
+	}
+
 	CString messageString;
 	messageString.Format(L"The free version of Simple Adblock only blocks %d adrequest a day. To enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
 
@@ -611,7 +626,6 @@ void CPluginClass::DisplayActivateMessage()
 	//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
 	settings->SetValue(SETTING_PLUGIN_TRIALEXPIRED, true);
 	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
-	SYSTEMTIME stNow;
 	GetSystemTime(&stNow);						
 	settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);						
 	settings->Write();
@@ -649,17 +663,20 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 {
 	if (pDispParams->cArgs < 7)
 	{
-    	return;
+    	return; 
 	}
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
-		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) != 0))
+		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) >= 0)
 		{
-			//is the limit exceeded?
-			if (!settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
+			if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) != 0))
 			{
-				DisplayActivateMessage();
+				//is the limit exceeded?
+				if (!settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
+				{
+					DisplayActivateMessage();
+				}
 			}
 		}
 	}
@@ -1480,13 +1497,8 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 	case ID_PLUGIN_ENABLE:
 		{
-	        CPluginSettings* settings = CPluginSettings::GetInstance();
+			CPluginSettings* settings = CPluginSettings::GetInstance();
 
-			if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
-			{
-				DisplayActivateMessage();
-				break;
-			}
 			settings->TogglePluginEnabled();
 
 			// Enable / disable mime filter
@@ -1494,7 +1506,14 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			{
 				if (settings->GetPluginEnabled())
 				{
-					s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
+					if (settings->GetValue(SETTING_PLUGIN_TRIALEXPIRED, false))
+					{
+						DisplayActivateMessage();
+					}
+					else
+					{
+						s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
+					}
 				}
 				else
 				{
