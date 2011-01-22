@@ -1264,7 +1264,13 @@ void CPluginSettings::SetPluginEnabled()
 
 bool CPluginSettings::GetPluginEnabled() const
 {
-    return m_isPluginEnabledTab;
+	//Display plugin as disabled if limit is passed
+	CPluginSettings* settings = CPluginSettings::GetInstance();
+	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)>=1000000))
+	{
+		return false;
+	}
+	return m_isPluginEnabledTab;
 }
 
 

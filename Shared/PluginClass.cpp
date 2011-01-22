@@ -1489,24 +1489,25 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 		{
 			CPluginSettings* settings = CPluginSettings::GetInstance();
 
+			//Display activation menu if enabling expired plugin
+			if (!settings->GetPluginEnabled())
+			{
+				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)>=1000000))
+				{		
+					DisplayActivateMessage();
+					return;
+				}
+			}
+
 			settings->TogglePluginEnabled();
 
 			// Enable / disable mime filter
 			s_criticalSectionLocal.Lock();
 			{
+				//Display activation menu if enabling expired plugin
 				if (settings->GetPluginEnabled())
 				{
-					if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-					{
-						if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
-						{
-							DisplayActivateMessage();
-						}
-					}
-					else
-					{
-						s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
-					}
+					s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
 				}
 				else
 				{
@@ -2293,8 +2294,15 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
 #endif // SUPPORT_WHITELIST
 		else
 		{
+			//Deativate adblock icon if adblock limit reached
+			CPluginSettings* settings = CPluginSettings::GetInstance();
+			if (!settings->GetPluginEnabled()) {
+				hIcon = GetIcon(ICON_PLUGIN_DEACTIVATED);
+				return hIcon;
+			}
 			hIcon = GetIcon(ICON_PLUGIN_ENABLED);
 		}
+
 #endif // PRODUCT_SIMPLEADBLOCK
 
 #ifdef PRODUCT_DOWNLOADHELPER
