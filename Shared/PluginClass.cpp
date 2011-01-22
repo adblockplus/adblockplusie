@@ -668,7 +668,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
-		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) >= 0)
+		if (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) >= 0)
 		{
 			if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) != 0))
 			{
