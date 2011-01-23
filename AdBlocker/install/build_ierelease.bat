@@ -5,9 +5,9 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=0.8.8
-set release=134
-set comment=Prod Release 0.8.8, Beta Second IE9 run
+set version=1.0.0
+set release=152
+set comment=Prod Release 1.0.0
 
 
 :: 32 bit machine
