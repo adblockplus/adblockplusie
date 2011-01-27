@@ -14,6 +14,9 @@
  #define FILTERS_HOST "ie-downloadhelper.com/download"
 #endif
 
+#ifdef ENTERPRISE
+	#define INSTALLER_ID "82rydquihd983y4u"
+#endif
 // ----------------------------------------------------------------------------
 // Define default protocols, hosts, scripts and pages
 // ----------------------------------------------------------------------------

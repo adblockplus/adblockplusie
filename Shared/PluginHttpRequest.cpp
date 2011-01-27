@@ -166,6 +166,10 @@ CString CPluginHttpRequest::GetUrl()
     if (m_addChecksum)
     {
         m_url += m_urlPrefix + "checksum=" + m_checksum->GetAsString();
+#ifdef ENTERPRISE
+        m_urlPrefix = "&";
+        m_url = m_url + "installer_id=" + INSTALLER_ID;
+#endif
         m_urlPrefix = "&";
     }
 
