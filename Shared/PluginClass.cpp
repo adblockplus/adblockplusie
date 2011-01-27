@@ -1551,6 +1551,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			break;
 		}
 #endif
+#ifndef ENTERPRISE
 	case ID_SETTINGS:
 		{
 		    // Update settings server side on next IE start, as they have possibly changed
@@ -1615,7 +1616,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 #endif
 		}
 		break;
-
+#endif
 	case ID_INVITEFRIENDS:
 		{
 			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_INVITATION);
@@ -1808,6 +1809,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     // Update settings
 	m_tab->OnUpdateSettings(false);
 
+#ifndef ENTERPRISE
     // Plugin activate
     if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
     {
@@ -1822,7 +1824,9 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     {
         ::DeleteMenu(hMenu, ID_PLUGIN_ACTIVATE, FALSE);
     }
-
+#else
+	::DeleteMenu(hMenu, ID_PLUGIN_ACTIVATE, FALSE);
+#endif
     // Plugin update
     if (settings->IsPluginUpdateAvailable())
     {
@@ -1974,6 +1978,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_FAQ, FALSE, &fmii);
     
+#ifndef ENTERPRISE
 	// About
 	ctext = dictionary->Lookup("MENU_ABOUT");
 	fmii.fMask = MIIM_STATE | MIIM_STRING;
@@ -1981,7 +1986,9 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.dwTypeData = ctext.GetBuffer();
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_ABOUT, FALSE, &fmii);
-
+#else
+	::DeleteMenu(hMenu, ID_ABOUT, FALSE);
+#endif
 	// Feedback
     ctext = dictionary->Lookup("MENU_FEEDBACK");
 	fmii.fMask = MIIM_STATE | MIIM_STRING;
@@ -2011,14 +2018,19 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_ENTERLICENSE, FALSE, &fmii);
 #endif
+ 
 
 	// Settings
+#ifndef ENTERPRISE
 	ctext = dictionary->Lookup("MENU_SETTINGS");
 	fmii.fMask  = MIIM_STATE | MIIM_STRING;
 	fmii.fState = MFS_ENABLED;
 	fmii.dwTypeData = ctext.GetBuffer();
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_SETTINGS, FALSE, &fmii);
+#else
+	RemoveMenu(hMenu, ID_SETTINGS, MF_BYCOMMAND);
+#endif	
 
 	// Plugin enable
     if (settings->GetPluginEnabled())
