@@ -1827,6 +1827,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 #else
 	::DeleteMenu(hMenu, ID_PLUGIN_ACTIVATE, FALSE);
 #endif
+#ifndef ENTERPRISE
     // Plugin update
     if (settings->IsPluginUpdateAvailable())
     {
@@ -1841,7 +1842,9 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     {
         ::DeleteMenu(hMenu, ID_PLUGIN_UPDATE, FALSE);
     }
-
+#else 
+	::DeleteMenu(hMenu, ID_PLUGIN_UPDATE, FALSE);
+#endif
     #ifdef SUPPORT_WHITELIST
     {
 	    // White list domain
