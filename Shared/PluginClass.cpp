@@ -1978,7 +1978,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_FAQ, FALSE, &fmii);
     
-#ifndef ENTERPRISE
 	// About
 	ctext = dictionary->Lookup("MENU_ABOUT");
 	fmii.fMask = MIIM_STATE | MIIM_STRING;
@@ -1986,9 +1985,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.dwTypeData = ctext.GetBuffer();
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_ABOUT, FALSE, &fmii);
-#else
-	::DeleteMenu(hMenu, ID_ABOUT, FALSE);
-#endif
+
 	// Feedback
     ctext = dictionary->Lookup("MENU_FEEDBACK");
 	fmii.fMask = MIIM_STATE | MIIM_STRING;
@@ -2532,6 +2529,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 		    }
 	        else
 	        {
+#ifndef ENTERPRISE
                 // Redirect to info page
                 CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
                 if (browser)
@@ -2557,6 +2555,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 						}
 					}
 		        }
+#endif
 		    }
 		}
 		break;
