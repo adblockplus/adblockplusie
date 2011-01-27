@@ -2472,6 +2472,8 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 		}
 		break;
 
+#ifndef ENTERPRISE
+
 	case WM_LAUNCH_INFO:
         {
 	        // Set the status bar visible, if it isn't
@@ -2529,7 +2531,6 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 		    }
 	        else
 	        {
-#ifndef ENTERPRISE
                 // Redirect to info page
                 CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
                 if (browser)
@@ -2555,10 +2556,10 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 						}
 					}
 		        }
-#endif
 		    }
 		}
 		break;
+#endif
 		
     case WM_DESTROY:
         break;

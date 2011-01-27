@@ -92,6 +92,10 @@ void CPluginHttpRequest::AddPluginId()
     Add("password", settings->GetString(SETTING_PLUGIN_PASSWORD));
 
     Add("version", IEPLUGIN_VERSION);
+
+#ifdef ENTERPRISE
+	Add("installer_id", INSTALLER_ID);
+#endif
 }
 
 void CPluginHttpRequest::AddOsInfo()
@@ -166,10 +170,6 @@ CString CPluginHttpRequest::GetUrl()
     if (m_addChecksum)
     {
         m_url += m_urlPrefix + "checksum=" + m_checksum->GetAsString();
-#ifdef ENTERPRISE
-        m_urlPrefix = "&";
-        m_url = m_url + "installer_id=" + INSTALLER_ID;
-#endif
         m_urlPrefix = "&";
     }
 
