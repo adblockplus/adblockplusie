@@ -2027,7 +2027,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	::SetMenuItemInfo(hMenu, ID_SETTINGS, FALSE, &fmii);
 #else
 	RemoveMenu(hMenu, ID_SETTINGS, MF_BYCOMMAND);
-	RemoveMenu(hMenu, 4, MF_BYPOSITION);
+	RemoveMenu(hMenu, 5, MF_BYPOSITION);
 #endif	
 
 	// Plugin enable
