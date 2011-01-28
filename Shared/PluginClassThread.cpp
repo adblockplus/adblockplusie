@@ -194,6 +194,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     // Should update plugin ?
     // --------------------------------------------------------------------
 
+#ifndef ENTERPRISE
     if (!IsMainThreadDone(hMainThread) && settings->IsPluginUpdateAvailable())
     {
         DEBUG_THREAD(L"Thread::Should update plugin");
@@ -227,6 +228,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 	    }
     }
 
+#endif
 	// --------------------------------------------------------------------
 	// Main loop
 	// --------------------------------------------------------------------
