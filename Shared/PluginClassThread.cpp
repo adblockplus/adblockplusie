@@ -524,6 +524,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
 #endif // SUPPORT_FILTER
 
+#ifndef ENTERPRISE
 	    // --------------------------------------------------------------------
 	    // Update plugin
 	    // --------------------------------------------------------------------
@@ -558,7 +559,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
             {
             }
         }
-
+#endif
         // ----------------------------------------------------------------
         // End loop
         // ----------------------------------------------------------------
