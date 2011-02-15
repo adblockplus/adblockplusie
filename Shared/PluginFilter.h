@@ -88,6 +88,7 @@ public:
         filterTypeBlocking = 0,
         filterTypeWhiteList = 1,
         filterTypeElementHide = 2,
+		filterTypeUnknown = 3
     } filterType;
 
     int m_contentType;
