@@ -1308,7 +1308,12 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 				    else if (filter.Find(L"#") >= 0)
 				    {
 					    filterType = CFilter::filterTypeElementHide;
-				    }
+				    } 
+					//Anything we do not support
+					else if (filter.Find(L"*") == 0)
+					{
+						filterType = CFilter::filterTypeUnknown;
+					}
 				    // Else, it is a general rule
 				    else
 				    {
@@ -1320,7 +1325,7 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 				    {
 					    AddFilterElementHide(filter, filename);
 				    }
-				    else
+				    else if (filterType != CFilter::filterTypeUnknown)
 				    {
 					    AddFilter(filter, filename, filterType);
 				    }
