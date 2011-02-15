@@ -869,7 +869,10 @@ void CPluginFilter::AddFilter(CString filterString, CString filterFile, int filt
 
 	int keyLength = 4;
 	int startCharacter = 0;
-
+	if (filterParts.size() < 1)
+	{
+		return;
+	}
     CString filterPart = filterParts[0];
     filterPart.MakeLower();
 
@@ -1309,7 +1312,7 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 				    {
 					    filterType = CFilter::filterTypeElementHide;
 				    } 
-					//Anything we do not support
+					//Anything we do not support here
 					else if (filter.Find(L"*") == 0)
 					{
 						filterType = CFilter::filterTypeUnknown;
