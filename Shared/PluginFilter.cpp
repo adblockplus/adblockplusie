@@ -252,7 +252,7 @@ bool CPluginFilter::AddFilterElementHide(CString filterText, CString filterFile)
         else if (isalnum(firstTag))
         {
             int pos = filterString.FindOneOf(L".#[(");
-            if (pos > 0)
+            if (pos > 0) 
             {
                 tag = filterString.Left(pos).MakeLower();
             }
@@ -1312,20 +1312,23 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 				BYTE* buf = (BYTE*)fileContent.GetString();
 				UINT srcLength = fileContent.GetLength() * 2;
 				hr = pMultiLanguage->ConvertString(NULL, encodingInfos[scores - 1].nCodePage, 1252, (BYTE*)buf, &srcLength, NULL, &dstSize);
-				char* bufferTmp = new char[dstSize];
+				char* bufferTmp = new char[dstSize + 1];
 				hr = pMultiLanguage->ConvertString(NULL, encodingInfos[scores - 1].nCodePage, 1252, (BYTE*)buf, &srcLength, (BYTE*)bufferTmp, &dstSize);
 				bufferTmp[dstSize] = 0;
-				//Unicode
+				//Unicode 
 				if ((encodingInfos[0].nCodePage == 1200) || (encodingInfos[0].nCodePage == 1201))
 				{
 					//remove BOM for Unicode
 					fileContent = (char*)bufferTmp;
 					fileContent.Delete(0, 1);
+
 				}
 				else 
 				{
-					fileContent = (wchar_t*)bufferTmp;
+					wchar_t* fileContentBuffer = fileContent.GetBufferSetLength(dstSize);
+					memcpy(fileContentBuffer, bufferTmp, dstSize);
 				}
+				delete [] bufferTmp;
 
 			}
 
