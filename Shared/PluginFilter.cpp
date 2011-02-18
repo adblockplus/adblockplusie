@@ -13,6 +13,7 @@
 #include "PluginSettings.h"
 #include "PluginSystem.h"
 #include "PluginClass.h"
+#include "mlang.h"
 
 #if (defined PRODUCT_SIMPLEADBLOCK)
 
@@ -1257,13 +1258,47 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
             LPBYTE pByteBuffer = (LPBYTE)pBuffer;
             DWORD dwBytesRead = 0;
             BOOL bRead = TRUE;
+
+			//Init MLang
+			CoInitialize(NULL);
+			HRESULT hr = S_OK;
+			CComPtr<IMultiLanguage2> pMultiLanguage;
+			hr = CoCreateInstance(CLSID_CMultiLanguage, NULL, CLSCTX_INPROC_SERVER, IID_IMultiLanguage2, (void**)&pMultiLanguage); 
+
+
+			bool codepageAvailable = false;
+			DetectEncodingInfo encodingInfos[10];
+			int scores = 10;
             while ((bRead = ::ReadFile(hFile, pBuffer, 8192, &dwBytesRead, NULL)) == TRUE && dwBytesRead > 0)
             {
-                pByteBuffer[dwBytesRead] = 0;
+				//detect codepage based on first buffer
+				if (!codepageAvailable)
+				{
+					unsigned int srcLength = fileContent.GetLength();
+					char* buf = (char*)fileContent.GetBufferSetLength(fileContent.GetLength());
+					hr = pMultiLanguage->DetectInputCodepage(0, 0, (char*)pBuffer, (int*)&dwBytesRead, encodingInfos, &scores);
+					codepageAvailable = true;
+				}
 
-                fileContent += buffer;
+
+
+				//Unicode
+				if ((encodingInfos[0].nCodePage == 1200) || (encodingInfos[0].nCodePage == 1201))
+				{
+					fileContent += CString((wchar_t*)buffer, dwBytesRead / 2);
+				}
+				else
+				{
+					pByteBuffer[dwBytesRead] = 0;
+	                fileContent += buffer;
+				}
             }
 
+			//Remove the BOM for UTF-8
+			if (((BYTE)fileContent.GetAt(0) == 0x3F) && ((BYTE)fileContent.GetAt(1) == 0xBB) && ((BYTE)fileContent.GetAt(2) == 0x57))
+			{
+				fileContent.Delete(0, 3);
+			}
             // Read error        
             if (!bRead)
             {
@@ -1271,8 +1306,28 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
             }
             else
             {
-                isRead = true;
-            }
+				isRead = true;
+
+				UINT dstSize = 0;
+				BYTE* buf = (BYTE*)fileContent.GetString();
+				UINT srcLength = fileContent.GetLength() * 2;
+				hr = pMultiLanguage->ConvertString(NULL, encodingInfos[scores - 1].nCodePage, 1252, (BYTE*)buf, &srcLength, NULL, &dstSize);
+				char* bufferTmp = new char[dstSize];
+				hr = pMultiLanguage->ConvertString(NULL, encodingInfos[scores - 1].nCodePage, 1252, (BYTE*)buf, &srcLength, (BYTE*)bufferTmp, &dstSize);
+				bufferTmp[dstSize] = 0;
+				//Unicode
+				if ((encodingInfos[0].nCodePage == 1200) || (encodingInfos[0].nCodePage == 1201))
+				{
+					//remove BOM for Unicode
+					fileContent = (char*)bufferTmp;
+					fileContent.Delete(0, 1);
+				}
+				else 
+				{
+					fileContent = (wchar_t*)bufferTmp;
+				}
+
+			}
 
             // Close file
             ::CloseHandle(hFile);
@@ -1323,15 +1378,22 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 					    filterType = CFilter::filterTypeBlocking;
 				    }
 
-				    // Element hiding not supported yet
-				    if (filterType == CFilter::filterTypeElementHide)
-				    {
-					    AddFilterElementHide(filter, filename);
-				    }
-				    else if (filterType != CFilter::filterTypeUnknown)
-				    {
-					    AddFilter(filter, filename, filterType);
-				    }
+					try
+					{
+						// Element hiding not supported yet
+						if (filterType == CFilter::filterTypeElementHide)
+						{
+							AddFilterElementHide(filter, filename);
+						}
+						else if (filterType != CFilter::filterTypeUnknown)
+						{
+							AddFilter(filter, filename, filterType);
+						}
+					}
+					catch(...)
+					{
+						//just ignore all errors we might get when adding filters
+					}
 			    }
 
                 filter = fileContent.Tokenize(L"\n\r", pos);
