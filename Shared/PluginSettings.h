@@ -93,6 +93,7 @@ private:
 
 #ifdef SUPPORT_FILTER
 	CPluginSettings::TFilterUrlList m_filterUrlList;
+	std::map<CString, CString> m_filterFileNameList;
 #endif
 
 	CString m_settingsVersion;
@@ -156,9 +157,12 @@ public:
 #ifdef SUPPORT_FILTER
 
 	void SetFilterUrlList(const TFilterUrlList& filters);
+	void SetFilterFileNamesList(const std::map<CString, CString>& filters);
 	TFilterUrlList GetFilterUrlList() const;
+	std::map<CString, CString> GetFilterFileNamesList() const;
 
     void AddFilterUrl(const CString& url, int version);
+    void AddFilterFileName(const CString& url, const CString& fileName);
 #endif // SUPPORT_FILTER
 
 #ifdef SUPPORT_WHITELIST

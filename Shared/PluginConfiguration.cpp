@@ -267,10 +267,12 @@ bool CPluginConfiguration::Download()
             
             CPluginIniFile::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
             CPluginIniFile::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
+            CPluginIniFile::TSectionData::iterator fileNameIt = filters.find("filter" + filterCountStr + "filename");
 
             if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
             {
                 m_filterUrlList[CString(filterIt->second)] = atoi(versionIt->second);
+				m_filterFileNameList[CString(filterIt->second)] = fileNameIt->second;
             }
 
         } while (bContinue);
@@ -468,6 +470,10 @@ TFilterUrlList CPluginConfiguration::GetFilterUrlList() const
 	return m_filterUrlList;
 }
 
+std::map<CString, CString> CPluginConfiguration::GetFilterFileNamesList() const
+{
+	return m_filterFileNameList;
+}
 #endif // SUPPORT_FILTER
 
 #ifdef SUPPORT_WHITELIST

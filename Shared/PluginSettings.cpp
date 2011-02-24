@@ -308,6 +308,9 @@ void CPluginSettings::Clear()
 	{
 	    m_filterUrlList.clear();
 		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
+
+		m_filterFileNameList.clear();
+		m_filterFileNameList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "filter1.txt";
 	}
 	s_criticalSectionFilters.Unlock();
 
@@ -664,6 +667,20 @@ void CPluginSettings::SetFilterUrlList(const TFilterUrlList& filters)
 	s_criticalSectionFilters.Unlock();
 }
 
+void CPluginSettings::SetFilterFileNamesList(const std::map<CString, CString>& filters) 
+{
+    DEBUG_SETTINGS(L"Settings::SetFilterUrlList")
+
+	s_criticalSectionFilters.Lock();
+	{
+		if (m_filterFileNameList != filters)
+		{
+    		m_filterFileNameList = filters;
+    		m_isDirty = true;
+		}
+	}
+	s_criticalSectionFilters.Unlock();
+}
 
 TFilterUrlList CPluginSettings::GetFilterUrlList() const
 {
@@ -678,7 +695,18 @@ TFilterUrlList CPluginSettings::GetFilterUrlList() const
 	return filterUrlList;
 }
 
+std::map<CString, CString> CPluginSettings::GetFilterFileNamesList() const
+{
+	std::map<CString, CString> filterFileNamesList;
 
+	s_criticalSectionFilters.Lock();
+	{
+		filterFileNamesList = m_filterFileNameList;
+	}
+	s_criticalSectionFilters.Unlock();
+
+	return filterFileNamesList;
+}
 void CPluginSettings::AddFilterUrl(const CString& url, int version) 
 {
 	s_criticalSectionFilters.Lock();
@@ -693,6 +721,19 @@ void CPluginSettings::AddFilterUrl(const CString& url, int version)
 	s_criticalSectionFilters.Unlock();
 }
 
+void CPluginSettings::AddFilterFileName(const CString& url, const CString& fileName) 
+{
+	s_criticalSectionFilters.Lock();
+	{
+		std::map<CString, CString>::iterator it = m_filterFileNameList.find(url);
+		if (it == m_filterFileNameList.end() || it->second != fileName)
+		{
+            m_filterFileNameList[url] = fileName;
+		    m_isDirty = true;
+	    }
+    }
+	s_criticalSectionFilters.Unlock();
+}
 #endif // SUPPORT_FILTER
 
 bool CPluginSettings::Write(bool isDebug)
@@ -746,6 +787,12 @@ bool CPluginSettings::Write(bool isDebug)
 
 			    filters[L"filter" + filterCountStr] = it->first;
 			    filters[L"filter" + filterCountStr + L"v"] = filterVersion;
+				if (m_filterFileNameList.size() > 0)
+				{
+					std::map<CString, CString>::iterator fni = m_filterFileNameList.find(it->first);
+					CString fileName = fni->second;
+					filters[L"filter" + filterCountStr + "fileName"] = fileName;
+				}
 		    }
 	    }
         s_criticalSectionFilters.Unlock();

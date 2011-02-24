@@ -1520,7 +1520,8 @@ bool CPluginFilter::IsMatchFilter(const CFilter& filter, CString src, const CStr
     {
         if (index == 0 && filter.m_isFromStartDomain)
         {
-            int domainPos = src.Find(srcDomain);
+			CString loweredDomain = srcDomain;
+			int domainPos = src.Find(loweredDomain.MakeLower());
             int lastPos = src.Find('/', domainPos);
             
             bool bFoundDomain = false;
@@ -1977,12 +1978,12 @@ bool CPluginFilter::IsSubdomain(const CString& subdomain, const CString& domain)
 
 void CPluginFilter::CreateFilters()
 {
-    CPluginFilterLock lock("easylist.txt");
+    CPluginFilterLock lock("filter1.txt");
     if (lock.IsLocked())
     {
         // Check file existence
         std::ifstream is;
-	    is.open(CPluginSettings::GetDataPath("easylist.txt"), std::ios_base::in);
+	    is.open(CPluginSettings::GetDataPath("filter1.txt"), std::ios_base::in);
 	    if (is.is_open())
 	    {
             is.close();
@@ -1990,7 +1991,7 @@ void CPluginFilter::CreateFilters()
         }
 
         // Open file
-        HANDLE hFile = ::CreateFile(CPluginSettings::GetDataPath("easylist.txt"), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
+        HANDLE hFile = ::CreateFile(CPluginSettings::GetDataPath("filter1.txt"), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);  
         if (hFile == INVALID_HANDLE_VALUE)
         {
 		    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_FILTER, PLUGIN_ERROR_FILTER_CREATE_FILE_OPEN, "Filter::Create - CreateFile");
@@ -11317,6 +11318,7 @@ void CPluginFilter::CreateFilters()
                 CPluginSettings* settings = CPluginSettings::GetInstance();
 
                 settings->AddFilterUrl(CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt", 1);
+                settings->AddFilterFileName(CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt", "filter1.txt");
 		        settings->Write();
             }
             else
