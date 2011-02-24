@@ -475,13 +475,16 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 {
                     TFilterUrlList filterUrlList = configuration->GetFilterUrlList();
                     TFilterUrlList currentFilterUrlList = settings->GetFilterUrlList();
+                    std::map<CString, CString> fileNamesList = configuration->GetFilterFileNamesList();
 
                     // Compare downloaded URL string with persistent URLs
                     for (TFilterUrlList::iterator it = filterUrlList.begin(); it != filterUrlList.end(); ++it) 
                     {
                         CString downloadFilterName = it->first;
 
-                        CString filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
+//                        CString filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
+						std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);						
+						CString filename = fni->second;
                         int version = it->second;
 
                         TFilterUrlList::const_iterator fi = currentFilterUrlList.find(downloadFilterName);
@@ -492,6 +495,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                     }
 
                     settings->SetFilterUrlList(filterUrlList);
+					settings->SetFilterFileNamesList(fileNamesList);
                     settings->SetValue(SETTING_FILTER_VERSION, configuration->GetFilterVersion());
                     settings->Write();
 

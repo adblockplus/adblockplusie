@@ -56,6 +56,7 @@ public:
 #ifdef SUPPORT_FILTER
 	int GetFilterVersion() const;	
 	TFilterUrlList GetFilterUrlList() const;
+	std::map<CString, CString> GetFilterFileNamesList() const;
 #endif // SUPPORT_FILTER
 
 #ifdef SUPPORT_WHITELIST
@@ -110,6 +111,7 @@ private:
 #ifdef SUPPORT_FILTER
 	int m_filterVersion;
 	TFilterUrlList m_filterUrlList;
+	std::map<CString, CString> m_filterFileNameList;
 #endif
 
 #ifdef SUPPORT_WHITELIST
