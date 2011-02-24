@@ -790,8 +790,11 @@ bool CPluginSettings::Write(bool isDebug)
 				if (m_filterFileNameList.size() > 0)
 				{
 					std::map<CString, CString>::iterator fni = m_filterFileNameList.find(it->first);
-					CString fileName = fni->second;
-					filters[L"filter" + filterCountStr + "fileName"] = fileName;
+					if (fni != m_filterFileNameList.end())
+					{
+						CString fileName = fni->second;
+						filters[L"filter" + filterCountStr + "fileName"] = fileName;
+					}
 				}
 		    }
 	    }

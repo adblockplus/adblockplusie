@@ -272,7 +272,10 @@ bool CPluginConfiguration::Download()
             if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
             {
                 m_filterUrlList[CString(filterIt->second)] = atoi(versionIt->second);
-				m_filterFileNameList[CString(filterIt->second)] = fileNameIt->second;
+				if (fileNameIt != filters.end())
+				{
+					m_filterFileNameList[CString(filterIt->second)] = fileNameIt->second;
+				}
             }
 
         } while (bContinue);
@@ -316,7 +319,7 @@ bool CPluginConfiguration::Download()
         m_isPluginRegistered = it->second == "true";
         DEBUG_SETTINGS("Settings::Configuration registration detected:" + it->second);
     }
-
+ 
 	m_adBlockLimit = -1;
     it = settingsData.find("adblocklimit");
     if (it != settingsData.end())
