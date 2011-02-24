@@ -483,8 +483,16 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                         CString downloadFilterName = it->first;
 
 //                        CString filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
-						std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);						
-						CString filename = fni->second;
+						std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
+						CString filename = "";
+						if (fni != fileNamesList.end())
+						{
+							filename = fni->second;
+						}
+						else
+						{
+							filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
+						}
                         int version = it->second;
 
                         TFilterUrlList::const_iterator fi = currentFilterUrlList.find(downloadFilterName);
