@@ -238,10 +238,16 @@ bool CPluginSettings::Read(bool bDebug)
             	            
 				            CPluginIniFileW::TSectionData::iterator filterIt = filters.find(L"filter" + filterCountStr);
 				            CPluginIniFileW::TSectionData::iterator versionIt = filters.find(L"filter" + filterCountStr + "v");
+				            CPluginIniFileW::TSectionData::iterator fileNameIt = filters.find(L"filter" + filterCountStr + "fileName");
 
 				            if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
 				            {
 					            m_filterUrlList[filterIt->second] = _wtoi(versionIt->second);
+				            }
+
+				            if (filterIt != filters.end() && fileNameIt != filters.end())
+				            {
+								m_filterFileNameList[filterIt->second] = fileNameIt->second;
 				            }
 
 			            } while (bContinue);
