@@ -348,6 +348,7 @@
 // Personal filter filename
 #ifdef SUPPORT_FILTER
  #define PERSONAL_FILTER_FILE "filter_personal.txt"
+ #define PERSONAL_FILTER_FILE_OLD "easylist_personal.txt"
 #endif
 
 // Install MSI filename

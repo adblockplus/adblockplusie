@@ -1199,6 +1199,17 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 #endif
         DEBUG_GENERAL("*** Loading filter:" + m_dataPath + filename);
 
+		//Rename old filter file if exists
+		if (filename == PERSONAL_FILTER_FILE)
+		{
+	        HANDLE hFile = ::CreateFile(m_dataPath + PERSONAL_FILTER_FILE_OLD, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
+			if (hFile != INVALID_HANDLE_VALUE)
+			{
+				_wrename(m_dataPath + PERSONAL_FILTER_FILE_OLD, m_dataPath + filename);
+			}
+			CloseHandle(hFile);
+		}
+
         // Read file
         HANDLE hFile = ::CreateFile(m_dataPath + filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
         if (hFile == INVALID_HANDLE_VALUE)
