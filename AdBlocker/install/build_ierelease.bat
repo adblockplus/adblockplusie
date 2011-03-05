@@ -1,5 +1,5 @@
 ::input parameters
-::prod, test, dev, sites
+::prod, test, dev, sites, enterprise
 
 @echo off
 cls
@@ -54,10 +54,16 @@ if %1 == sites  (
   goto prod_build_sites
 )
 
+if %1 == enterprise  (
+  echo CREATE ENTERPRISE INSTALLERS
+  echo ******************
+  goto prod_build_enterprise
+)
+
 :invalid
 echo ******************
 echo Please enter valid input
-echo Input parameters are: prod, test, dev or setvar
+echo Input parameters are: prod, test, dev, setvar or enterprise
 goto end
         
 
@@ -65,13 +71,16 @@ goto end
 
 @echo on
 echo #define DOWNLOAD_SOURCE "home" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 devenv ..\..\AdPlugin.sln /rebuild "Release Production"
+devenv ..\..\AdPlugin.sln /rebuild "Release production 64 bit|x64"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
 copy adblock.msi downloadfiles\simpleadblock.msi
 copy adblock.msi installers\simpleadblock%version%.msi
 
 echo #define DOWNLOAD_SOURCE "update" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblockupdate.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblockupdate.aip
 copy adblockupdate.msi downloadfiles\simpleadblockupdate.msi
@@ -85,12 +94,14 @@ goto end
 
 @echo on
 echo #define DOWNLOAD_SOURCE "test" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 devenv ..\..\AdPlugin.sln /rebuild "Release Test"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
 copy adblock.msi downloadfiles\simpleadblocktest.msi
 
 echo #define DOWNLOAD_SOURCE "update" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblockupdate.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblockupdate.aip
 copy adblockupdate.msi downloadfiles\simpleadblocktestupdate.msi
@@ -102,12 +113,14 @@ goto end
 :dev_build
 @echo on
 echo #define DOWNLOAD_SOURCE "dev" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 devenv ..\..\AdPlugin.sln /rebuild "Release Development"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
 copy adblock.msi downloadfiles\simpleadblockdevelopment.msi
 
 echo #define DOWNLOAD_SOURCE "update" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblockupdate.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblockupdate.aip
 copy adblockupdate.msi downloadfiles\simpleadblockdevelopmentupdate.msi
@@ -121,7 +134,9 @@ goto end
 @echo on
 FOR /L %%i IN (1 1 10) DO (
      echo #define DOWNLOAD_SOURCE "%%i" > ..\..\Shared\DownloadSource.h
+	 echo. > ..\..\Adblocker\EnterpriseId.h
      devenv ..\..\AdPlugin.sln /rebuild "Release Production"
+	 devenv ..\..\AdPlugin.sln /rebuild "Release production 64 bit|x64"
      "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
      "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip
      copy adblock.msi downloadfiles\simpleadblock-%%i.msi
@@ -129,6 +144,22 @@ FOR /L %%i IN (1 1 10) DO (
 @echo off
 goto end
 
+:prod_build_enterprise
+
+@echo on
+echo #define DOWNLOAD_SOURCE "home" > ..\..\Shared\DownloadSource.h
+echo #define INSTALLER_ID "%2" > ..\..\Adblocker\EnterpriseId.h
+devenv ..\..\AdPlugin.sln /rebuild "Release Production"
+devenv ..\..\AdPlugin.sln /rebuild "Release production 64 bit|x64"
+"%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblockenterprise.aip /SetVersion %version%
+"%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblockenterprise.aip
+copy adblockenterprise.msi downloadfiles\enterprise\simpleadblock-%2.msi
+
+echo %version%;%release%;%date%;%1-%2;%comment% >> installers\simpleadblock_buildlog.dat
+@echo off
+goto end
+
 :end
 echo #define DOWNLOAD_SOURCE "test" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 @echo on
