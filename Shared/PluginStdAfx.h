@@ -75,6 +75,10 @@ extern CComModule _Module;
 #endif
 
 #if (defined PRODUCT_SIMPLEADBLOCK)
+ #include "..\AdBlocker\EnterpriseId.h"
+#if (defined INSTALLER_ID)
+	#define ENTERPRISE
+#endif
  #include "..\AdBlocker\Resource.h"
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #include "..\DownloadHelper\Resource.h"
