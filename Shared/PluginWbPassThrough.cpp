@@ -162,8 +162,8 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 			m_shouldBlock = true;
 			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 			pTargetProtocol->Start(L"", pOIProtSink, pOIBindInfo, grfPI, dwReserved);
-			pOIProtSink->ReportData(BSCF_DATAFULLYAVAILABLE, 0, 1);
-			return INET_E_REDIRECT_FAILED;
+//			pOIProtSink->ReportData(BSCF_DATAFULLYAVAILABLE, 0, 1);
+			return INET_E_CANNOT_LOAD_DATA;
 		}
 	}
 #endif // SUPPORT_FILTER
