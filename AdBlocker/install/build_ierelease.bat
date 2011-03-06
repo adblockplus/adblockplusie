@@ -5,9 +5,9 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=1.0.1
-set release=172
-set comment=Release 1.0.1
+set version=1.0.2
+set release=177
+set comment=Release 1.0.2
 
 
 :: 32 bit machine
@@ -63,7 +63,7 @@ if %1 == enterprise  (
 :invalid
 echo ******************
 echo Please enter valid input
-echo Input parameters are: prod, test, dev, setvar or enterprise
+echo Input parameters are: prod, test, dev, setvar or enterprise EnterpriseId
 goto end
         
 
