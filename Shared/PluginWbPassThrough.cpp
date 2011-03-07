@@ -35,22 +35,11 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     CPluginClient::UnescapeUrl(src);
 	m_url = szUrl;
 	
-	SIZE_T urlLegth = wcslen(szUrl);
-	if (urlLegth < IE_MAX_URL_LENGTH)
-	{
-		memcpy((void*)m_curUrl, (void*)szUrl, urlLegth * 2);
-		m_curUrl[urlLegth] = '\0';
-	} 
-	else 
-	{
-		memcpy((void*)m_curUrl, (void*)szUrl, IE_MAX_URL_LENGTH * 2);
-		m_curUrl[urlLegth] = '\0';
-	}
-					CString cookie;
-					ULONG len1 = 2048;
-					ULONG len2 = 2048;
-					BSTR oleStr = T2OLE(cookie.GetBuffer(len1));
-					HRESULT hrtmp = pOIBindInfo->GetBindString(BINDSTRING_HEADERS, &oleStr, len1, &len2);
+	CString cookie;
+	ULONG len1 = 2048;
+	ULONG len2 = 2048;
+	BSTR oleStr = T2OLE(cookie.GetBuffer(len1));
+	HRESULT hrtmp = pOIBindInfo->GetBindString(BINDSTRING_HEADERS, &oleStr, len1, &len2);
 #ifdef SUPPORT_FILTER
 	int contentType = CFilter::contentTypeAny;
 
