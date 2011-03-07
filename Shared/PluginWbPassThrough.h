@@ -12,8 +12,6 @@ class WBPassthruSink :
 
 public:
 
-	//Maximum URL length in IE
-	WCHAR m_curUrl[IE_MAX_URL_LENGTH];
 	bool m_shouldBlock;
 	bool m_lastDataReported;
 	IInternetProtocol* m_pTargetProtocol;
