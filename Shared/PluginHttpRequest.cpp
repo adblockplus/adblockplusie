@@ -150,7 +150,7 @@ void CPluginHttpRequest::Add(const CString& arg, const CString& value, bool addT
         if (addToChecksum)
         {
             m_checksum->Add(arg);
-            m_checksum->Add(value);
+			m_checksum->Add(valueEncoded);
         }
         
         m_urlPrefix = "&";
