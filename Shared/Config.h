@@ -98,9 +98,9 @@
 #endif
 
 // How long time sleep in background thread (ms)
-#define TIMER_THREAD_SLEEP_USER_REGISTRATION 30000
+#define TIMER_THREAD_SLEEP_USER_REGISTRATION 10000
 #define TIMER_THREAD_SLEEP_MAIN_LOOP 60000
-#define TIMER_THREAD_SLEEP_TAB_LOOP 30000
+#define TIMER_THREAD_SLEEP_TAB_LOOP 10000
 
 // ----------------------------------------------------------------------------
 // Debug

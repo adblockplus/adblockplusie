@@ -45,10 +45,16 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
 	CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
     CPluginClient* client = CPluginClient::GetInstance();
-    if (tab && client)
-	{
-		CString documentUrl = tab->GetDocumentUrl();
 
+	CString domain = "";
+	CString documentUrl = "";
+	if (tab)
+	{
+		domain = tab->GetDocumentDomain();
+		documentUrl = tab->GetDocumentUrl();
+	}
+	if (client)
+	{
 		// Page is identical to document => don't block
 		if (documentUrl == src)
 		{
@@ -56,12 +62,11 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		}
 		else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsUrlWhiteListed(documentUrl))
 		{
-	        CString domain = tab->GetDocumentDomain();
 
 			contentType = CFilter::contentTypeAny;
 
 #ifdef SUPPORT_FRAME_CACHING
-            if (tab->IsFrameCached(src))
+            if ((tab != 0) && (tab->IsFrameCached(src)))
             {
                 contentType = CFilter::contentTypeSubdocument;
             }
@@ -114,6 +119,25 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
 				DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
 
+				CPluginSettings* settings = CPluginSettings::GetInstance();
+				//is plugin registered
+				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
+				{
+					//is the limit exceeded?
+					if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0))
+						&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
+					{
+						return false;
+					} 
+
+					else 
+					{
+						//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
+						settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
+						settings->Write();
+					}
+				}
+
 			}
 #ifdef ENABLE_DEBUG_RESULT_IGNORED
 			else
@@ -151,9 +175,9 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 			m_shouldBlock = true;
 			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 			pTargetProtocol->Start(L"", pOIProtSink, pOIBindInfo, grfPI, dwReserved);
-//			pOIProtSink->ReportData(BSCF_DATAFULLYAVAILABLE, 0, 1);
-			return INET_E_CANNOT_LOAD_DATA;
-		}
+			pOIProtSink->ReportData(BSCF_DATAFULLYAVAILABLE, 1, 0);
+			return INET_E_REDIRECT_FAILED;
+		} 
 	}
 #endif // SUPPORT_FILTER
 	return isBlocked ? S_FALSE : BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
@@ -177,6 +201,7 @@ HRESULT WBPassthruSink::Read(void *pv, ULONG cb, ULONG* pcbRead)
 
 			if (m_spInternetProtocolSink != NULL)
 			{
+				m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
 				m_spInternetProtocolSink->ReportResult(S_OK, 0, NULL);
 			}
 			m_lastDataReported = true;

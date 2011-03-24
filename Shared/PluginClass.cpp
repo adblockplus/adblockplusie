@@ -609,7 +609,7 @@ void CPluginClass::DisplayActivateMessage()
 	messageString.Format(L"The free version of Simple Adblock only blocks %d adrequest a day. To enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
 
 	//Adblockcount=1000000 when Activationmessage has been displayed
-	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 1000000);
+	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
 	settings->Write();
 
 	LRESULT res = MessageBox(NULL, messageString, L"Upgrade to Simple Adblock Pro", MB_OKCANCEL);
@@ -664,7 +664,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
 		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) 
-			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) < 1000000) 
+			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) 
 			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
 		{
 			DisplayActivateMessage();
@@ -755,13 +755,9 @@ STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
 // This gets called whenever there's a browser event
 STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pvarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr)
 {
-	if (!pDispParams)
-	{
-		return E_INVALIDARG;
-	}
-
 	switch (dispidMember)
 	{
+
 	case DISPID_WINDOWSTATECHANGED:
 		return OnTabChanged(pDispParams, wFlags);
 		break;
@@ -803,10 +799,6 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
 	case DISPID_BEFORENAVIGATE:
 		DEBUG_NAVI("Navi::BeforeNavigate")
 		return S_OK;
-
-    case DISPID_PROGRESSCHANGE:
-        break;
-
     case DISPID_COMMANDSTATECHANGE:
 		if (m_hPaneWnd == NULL)
 		{
@@ -1492,7 +1484,9 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			//Display activation menu if enabling expired plugin
 			if (!settings->GetPluginEnabled())
 			{
-				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)>=1000000))
+				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && 
+					(settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >=settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) && 
+					(settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
 				{		
 					DisplayActivateMessage();
 					return;
