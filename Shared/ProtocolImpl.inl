@@ -141,7 +141,7 @@ inline HRESULT WINAPI QueryInterfaceDebug(void* pv, REFIID riid,
 		OLECHAR wszBuff[39];
 		int i = StringFromGUID2(riid, wszBuff, 39);
 		USES_CONVERSION;
-		ATLTRACE(_T("=====>Unrecognized interface supported by target unknown=%s\n"), OLE2T(wszBuff));
+//		ATLTRACE(_T("=====>Unrecognized interface supported by target unknown=%s\n"), OLE2T(wszBuff));
 		//ATLASSERT(false);
 	}
 

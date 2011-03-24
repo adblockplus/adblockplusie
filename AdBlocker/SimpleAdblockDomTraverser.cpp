@@ -34,9 +34,10 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
 		//is the limit exceeded?
-		if (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= 1000000)
+		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) && 
+			(settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
 		{
-			return false;
+			return true;
 		} 
 	}
 
@@ -55,7 +56,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
         return false;
     }
 
-	// Images 
+	// Images
     if (tag == "img")
     {
 		CComVariant vAttr;

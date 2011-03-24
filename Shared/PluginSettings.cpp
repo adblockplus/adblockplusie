@@ -1322,7 +1322,9 @@ bool CPluginSettings::GetPluginEnabled() const
 {
 	//Display plugin as disabled if limit is passed
 	CPluginSettings* settings = CPluginSettings::GetInstance();
-	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)>=1000000))
+	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && 
+		(settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) && 
+		(settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
 	{
 		return false;
 	}
