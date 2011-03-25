@@ -1298,6 +1298,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\EnterpriseId.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Shared\Plugin.h"
 				>
 			</File>
