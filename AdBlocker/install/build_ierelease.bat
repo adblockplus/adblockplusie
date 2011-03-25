@@ -5,9 +5,9 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=1.0.2
-set release=177
-set comment=Release 1.0.2
+set version=1.0.3
+set release=183
+set comment=release 1.0.3
 
 
 :: 32 bit machine
