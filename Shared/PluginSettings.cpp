@@ -70,6 +70,8 @@ CPluginSettings::CPluginSettings() :
     m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
     m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
+
+	s_instance = NULL;
 #ifdef SUPPORT_WHITELIST
     m_isDirtyWhitelist = false;
 #endif
@@ -118,6 +120,19 @@ CPluginSettings::CPluginSettings() :
     }
 
     Write();
+}
+
+CPluginSettings::~CPluginSettings()
+{
+	if (s_instance != NULL)
+	{
+		delete s_instance;
+	}
+
+	if (s_dataPathParent != NULL)
+	{
+		delete s_dataPathParent;
+	}
 }
 
 
