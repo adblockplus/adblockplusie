@@ -9,6 +9,10 @@
 #include "PluginTypedef.h"
 #include "Plugin.h"
 #include "PluginTab.h"
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 
 #define ICON_PLUGIN_DISABLED 0
 #define ICON_PLUGIN_ENABLED 1

@@ -33,6 +33,7 @@ class CPluginApp : public CWinApp
 public:
 
 	CPluginApp();
+	~CPluginApp();
 
 	virtual BOOL InitInstance();
 
@@ -48,8 +49,16 @@ CPluginApp theApp;
 
 CPluginApp::CPluginApp()
 {
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+
+	_CrtDumpMemoryLeaks();
 }
 
+
+CPluginApp::~CPluginApp()
+{
+
+}
 BOOL CPluginApp::InitInstance()
 {
 	TCHAR szFilename[MAX_PATH];
@@ -71,6 +80,19 @@ BOOL CPluginApp::InitInstance()
 
 STDAPI DllCanUnloadNow(void)
 {
+	if (_Module.GetLockCount() == 0)
+	{
+/*		CPluginSettings* settings = CPluginSettings::GetInstance();
+		delete settings;
+
+		CPluginClient* client = CPluginClient::GetInstance();
+		delete client;
+
+		CPluginSystem* system = CPluginSystem::GetInstance();
+		delete system;
+*/
+		_CrtDumpMemoryLeaks();
+	}
     return (_Module.GetLockCount() == 0) ? S_OK : S_FALSE;
 }
 

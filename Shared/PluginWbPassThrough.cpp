@@ -27,6 +27,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved,
 		IInternetProtocol* pTargetProtocol)
 {
+
 	m_pTargetProtocol = pTargetProtocol;
     bool isBlocked = false;
 	m_shouldBlock = false;

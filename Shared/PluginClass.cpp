@@ -66,6 +66,8 @@ CPluginTab* CPluginClass::s_activeTab = NULL;
 
 CPluginClass::CPluginClass()
 {
+	_CrtDumpMemoryLeaks();
+
     m_isAdviced = false;
     m_nConnectionID = 0;
     m_hTabWnd = NULL;
@@ -341,6 +343,7 @@ void CPluginClass::LaunchUpdater(const CString& strPath)
 // so we should handle that it is called this way several times during a session
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
+
     CPluginSettings* settings = CPluginSettings::GetInstance();
 
 	if (unknownSite) 
@@ -643,6 +646,7 @@ void CPluginClass::DisplayActivateMessage()
 }
 void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 {
+
 	if (pDispParams->cArgs < 7)
 	{
     	return; 

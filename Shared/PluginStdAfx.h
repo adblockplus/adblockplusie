@@ -5,6 +5,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+
+
 //#define STRICT
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
@@ -92,10 +94,18 @@ extern CComModule _Module;
  #include "..\DownloadHelperApp\DownloadDebug.h"
 #endif
 
+
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
+
 #ifdef _MSC_VER
  #pragma warning(push)
  // warning C4996: function call with parameters that might be unsafe
  #pragma warning(disable : 4996)
 #endif
 
+
+#define _CRTDBG_MAPALLOC 
 #endif // not _STDAFX_H
