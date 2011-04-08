@@ -102,7 +102,6 @@ private:
 	static WCHAR* s_dataPath;
 	static WCHAR* s_dataPathParent;
 
-	static CPluginSettings* s_instance;
 
 	static CComAutoCriticalSection s_criticalSectionLocal;
 #ifdef SUPPORT_FILTER
@@ -122,6 +121,8 @@ private:
 public:
 
 	~CPluginSettings();
+
+	static CPluginSettings* s_instance;
 
     static bool HasInstance();
     static CPluginSettings* GetInstance();

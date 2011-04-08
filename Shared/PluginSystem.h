@@ -7,7 +7,6 @@ class CPluginSystem
 private:
 
 	static CComAutoCriticalSection s_criticalSection;
-	static CPluginSystem* s_instance;
 
 	CString m_pluginId;
 
@@ -15,6 +14,7 @@ private:
 	CPluginSystem();
 
 public:
+	static CPluginSystem* s_instance;
 
 	static CPluginSystem* CPluginSystem::GetInstance();
 

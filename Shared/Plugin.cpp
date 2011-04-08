@@ -82,15 +82,21 @@ STDAPI DllCanUnloadNow(void)
 {
 	if (_Module.GetLockCount() == 0)
 	{
-/*		CPluginSettings* settings = CPluginSettings::GetInstance();
-		delete settings;
+		if (CPluginSettings::s_instance != NULL)
+		{
+			delete CPluginSettings::s_instance;
+		}
 
-		CPluginClient* client = CPluginClient::GetInstance();
-		delete client;
+		if (CPluginClient::s_instance != NULL)
+		{
+			delete CPluginClient::s_instance;
+		}
 
-		CPluginSystem* system = CPluginSystem::GetInstance();
-		delete system;
-*/
+		if (CPluginSystem::s_instance != NULL)
+		{
+			delete CPluginSystem::s_instance;
+		}
+
 		_CrtDumpMemoryLeaks();
 	}
     return (_Module.GetLockCount() == 0) ? S_OK : S_FALSE;
