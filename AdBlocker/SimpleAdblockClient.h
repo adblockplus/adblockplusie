@@ -23,13 +23,13 @@ private:
 
     std::map<CString,bool> m_cacheBlockedSources;
 
-	static CSimpleAdblockClient* s_instance;
 
 	// Private constructor used by the singleton pattern
 	CSimpleAdblockClient();
 
 public:
 
+	static CSimpleAdblockClient* s_instance;
 	~CSimpleAdblockClient();
 
 	static CSimpleAdblockClient* GetInstance();

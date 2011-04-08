@@ -124,15 +124,12 @@ CPluginSettings::CPluginSettings() :
 
 CPluginSettings::~CPluginSettings()
 {
-	if (s_instance != NULL)
-	{
-		delete s_instance;
-	}
 
 	if (s_dataPathParent != NULL)
 	{
 		delete s_dataPathParent;
 	}
+	s_instance = NULL;
 }
 
 
