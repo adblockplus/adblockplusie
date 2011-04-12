@@ -178,7 +178,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 //			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 //			pTargetProtocol->Start(L"", pOIProtSink, pOIBindInfo, grfPI, dwReserved);
 //			pOIProtSink->ReportData(BSCF_SKIPDRAINDATAFORFILEURLS, 1, 0);
-			return INET_E_DATA_NOT_AVAILABLE;
+			return INET_E_REDIRECT_FAILED;
 		} 
 	}
 #endif // SUPPORT_FILTER
