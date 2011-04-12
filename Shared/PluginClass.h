@@ -116,11 +116,13 @@ public:
     CComQIPtr<IWebBrowser2> GetBrowser() const;
 
 	STDMETHODIMP OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags);
+
+	static CPluginMimeFilterClient* s_mimeFilter;
+
 private:
 
 	CString GetBrowserUrl() const;
 
-	static CPluginMimeFilterClient* s_mimeFilter;
 
 	bool InitObject(bool bBHO);
 	void CloseTheme();

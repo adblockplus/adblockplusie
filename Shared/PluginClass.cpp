@@ -66,7 +66,7 @@ CPluginTab* CPluginClass::s_activeTab = NULL;
 
 CPluginClass::CPluginClass()
 {
-	_CrtDumpMemoryLeaks();
+//	_CrtDumpMemoryLeaks();
 
     m_isAdviced = false;
     m_nConnectionID = 0;
