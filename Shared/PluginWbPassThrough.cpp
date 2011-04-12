@@ -167,6 +167,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 	}
 
 
+
 	//TODO: cleanup here
 	//Fixes the iframe back button issue
 	if (client->GetIEVersion() > 6)
@@ -174,10 +175,10 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		if ((contentType == CFilter::contentTypeSubdocument) && (isBlocked)) 
 		{
 			m_shouldBlock = true;
-			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
-			pTargetProtocol->Start(L"", pOIProtSink, pOIBindInfo, grfPI, dwReserved);
-			pOIProtSink->ReportData(BSCF_DATAFULLYAVAILABLE, 1, 0);
-			return INET_E_REDIRECT_FAILED;
+//			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+//			pTargetProtocol->Start(L"", pOIProtSink, pOIBindInfo, grfPI, dwReserved);
+//			pOIProtSink->ReportData(BSCF_SKIPDRAINDATAFORFILEURLS, 1, 0);
+			return INET_E_DATA_NOT_AVAILABLE;
 		} 
 	}
 #endif // SUPPORT_FILTER
@@ -195,6 +196,7 @@ HRESULT WBPassthruSink::Read(void *pv, ULONG cb, ULONG* pcbRead)
 			if (cb <= 1)
 			{
 				//IE must've gone nuts if this happened, but let's be cool about it and report we have no more data
+				m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
 				return S_FALSE;
 			}
 			*pcbRead = 1;
@@ -202,8 +204,8 @@ HRESULT WBPassthruSink::Read(void *pv, ULONG cb, ULONG* pcbRead)
 
 			if (m_spInternetProtocolSink != NULL)
 			{
-				m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
-				m_spInternetProtocolSink->ReportResult(S_OK, 0, NULL);
+//				m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
+				m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
 			}
 			m_lastDataReported = true;
 		}

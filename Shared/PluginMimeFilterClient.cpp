@@ -48,3 +48,14 @@ CPluginMimeFilterClient::~CPluginMimeFilterClient()
     	spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
 	}
 }
+
+void CPluginMimeFilterClient::Unregister()
+{
+	CComPtr<IInternetSession> spSession;
+
+	::CoInternetGetSession(0, &spSession, 0);
+	if (spSession)
+	{
+    	spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
+	}
+}

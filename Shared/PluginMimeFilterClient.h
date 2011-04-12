@@ -10,6 +10,8 @@ public:
 	CPluginMimeFilterClient();
 	~CPluginMimeFilterClient();
 
+	void Unregister();
+
 	CComPtr<IClassFactory> m_classFactory;
 	CComPtr<IClassFactory> m_spCFHTTP;
 };

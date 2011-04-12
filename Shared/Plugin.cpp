@@ -12,6 +12,8 @@
 #include "PluginSystem.h"
 #include "PluginSettings.h"
 #include "PluginDictionary.h"
+#include "PluginMimeFilterClient.h"
+
 #ifdef SUPPORT_FILTER
  #include "PluginFilter.h"
 #endif
@@ -48,10 +50,10 @@ END_MESSAGE_MAP()
 CPluginApp theApp;
 
 CPluginApp::CPluginApp()
-{
+{   
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 
-	_CrtDumpMemoryLeaks();
+//	_CrtDumpMemoryLeaks();
 }
 
 
@@ -80,6 +82,12 @@ BOOL CPluginApp::InitInstance()
 
 STDAPI DllCanUnloadNow(void)
 {
+	LONG count = _Module.GetLockCount();
+	while (count > 0)
+	{
+		_Module.Unlock();
+		count = _Module.GetLockCount();
+	}
 	if (_Module.GetLockCount() == 0)
 	{
 		if (CPluginSettings::s_instance != NULL)
@@ -95,6 +103,13 @@ STDAPI DllCanUnloadNow(void)
 		if (CPluginSystem::s_instance != NULL)
 		{
 			delete CPluginSystem::s_instance;
+		}
+
+		if (CPluginClass::s_mimeFilter != NULL)
+		{
+			CPluginClass::s_mimeFilter->Unregister();
+			delete CPluginClass::s_mimeFilter;
+			CPluginClass::s_mimeFilter = NULL;
 		}
 
 		_CrtDumpMemoryLeaks();
