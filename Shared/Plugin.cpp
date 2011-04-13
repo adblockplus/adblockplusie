@@ -83,11 +83,6 @@ BOOL CPluginApp::InitInstance()
 STDAPI DllCanUnloadNow(void)
 {
 	LONG count = _Module.GetLockCount();
-	while (count > 0)
-	{
-		_Module.Unlock();
-		count = _Module.GetLockCount();
-	}
 	if (_Module.GetLockCount() == 0)
 	{
 		if (CPluginSettings::s_instance != NULL)
