@@ -14,7 +14,7 @@ public:
 
 	bool m_shouldBlock;
 	bool m_lastDataReported;
-	IInternetProtocol* m_pTargetProtocol;
+	CComPtr<IInternetProtocol> m_pTargetProtocol;
 	CString m_url;
 
 public:
@@ -26,6 +26,8 @@ public:
 	BEGIN_SERVICE_MAP(WBPassthruSink)
 		SERVICE_ENTRY(IID_IHttpNegotiate)
 	END_SERVICE_MAP()
+
+	WBPassthruSink();
 
 	STDMETHODIMP BeginningTransaction(
 		/* [in] */ LPCWSTR szURL,

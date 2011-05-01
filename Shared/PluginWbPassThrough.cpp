@@ -18,6 +18,11 @@
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
+
+WBPassthruSink::WBPassthruSink()
+{
+	m_pTargetProtocol = NULL;
+}
 ////////////////////////////////////////////////////////////////////////////////////////
 //WBPassthruSink
 //Monitor and/or cancel every request and responde
@@ -33,14 +38,13 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 	m_shouldBlock = false;
 	m_lastDataReported = false;
     CString src = szUrl;
-    CPluginClient::UnescapeUrl(src);
+	DEBUG_GENERAL(src);
+//    CPluginClient::UnescapeUrl(src);
 	m_url = szUrl;
 	
 	CString cookie;
 	ULONG len1 = 2048;
 	ULONG len2 = 2048;
-	BSTR oleStr = T2OLE(cookie.GetBuffer(len1));
-	HRESULT hrtmp = pOIBindInfo->GetBindString(BINDSTRING_HEADERS, &oleStr, len1, &len2);
 #ifdef SUPPORT_FILTER
 	int contentType = CFilter::contentTypeAny;
 
@@ -117,6 +121,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 			if (client->ShouldBlock(src, contentType, domain, true))
 			{
                 isBlocked = true;
+//				m_shouldBlock = true;
 
 				DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
 
@@ -175,13 +180,14 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		if ((contentType == CFilter::contentTypeSubdocument) && (isBlocked)) 
 		{
 			m_shouldBlock = true;
-//			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
-//			pTargetProtocol->Start(L"", pOIProtSink, pOIBindInfo, grfPI, dwReserved);
-//			pOIProtSink->ReportData(BSCF_SKIPDRAINDATAFORFILEURLS, 1, 0);
+			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+			pTargetProtocol->Start(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved);
+//			m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
 			return INET_E_REDIRECT_FAILED;
 		} 
 	}
 #endif // SUPPORT_FILTER
+
 	return isBlocked ? S_FALSE : BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 }
 
@@ -205,20 +211,18 @@ HRESULT WBPassthruSink::Read(void *pv, ULONG cb, ULONG* pcbRead)
 			if (m_spInternetProtocolSink != NULL)
 			{
 //				m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
-				m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
+				m_spInternetProtocolSink->ReportResult(S_OK, 0, NULL);
 			}
 			m_lastDataReported = true;
+			m_shouldBlock = false;
+			return S_OK;
 		}
-		return S_FALSE;
+		return S_OK;
 	}
 	else 
 	{
-		if (m_pTargetProtocol != NULL)
-		{
-			return m_pTargetProtocol->Read(pv, cb, pcbRead);
-		}
-		else 
-			return S_FALSE;
+
+		return m_pTargetProtocol->Read(pv, cb, pcbRead);
 	}
 	return S_OK;
 }

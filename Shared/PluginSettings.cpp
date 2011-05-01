@@ -1152,6 +1152,7 @@ void CPluginSettings::EraseTab()
     WriteTab();
 }
 
+
 bool CPluginSettings::IncrementTabCount()
 {
     int tabCount = 1;
@@ -1176,7 +1177,15 @@ bool CPluginSettings::IncrementTabCount()
             }
 
             it = m_propertiesTab.find(SETTING_TAB_START_TIME);
-            if (it != m_propertiesTab.end() && it->second != today)
+
+			//Is this a first IE instance?
+			HWND ieWnd = FindWindow(L"IEFrame", NULL);
+			if (ieWnd != NULL)
+			{
+				ieWnd = FindWindowEx(NULL, ieWnd, L"IEFrame", NULL);
+
+			}
+            if ((it != m_propertiesTab.end() && it->second != today))
             {
                 tabCount = 1;        
             }

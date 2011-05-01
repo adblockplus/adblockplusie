@@ -46,6 +46,7 @@ CPluginMimeFilterClient::~CPluginMimeFilterClient()
 	if (spSession)
 	{
     	spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
+		m_spCFHTTP.Release();
 	}
 }
 
