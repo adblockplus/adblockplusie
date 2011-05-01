@@ -175,6 +175,7 @@ CPluginClass::~CPluginClass()
     CPluginSettings* settings = CPluginSettings::GetInstance();
     
     settings->DecrementTabCount();
+
 }
 
 
@@ -500,9 +501,13 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 			{
 				s_threadInstances.erase(it);
 			}
+			if (s_instances.GetSize() == 0)
+			{
+				CPluginClientFactory::ReleaseMimeFilterClientInstance();
+			}
 		}
 		s_criticalSectionLocal.Unlock();
-
+ 
 		if (hMainThread != NULL)
 		{
 		    s_isMainThreadDone = true;
@@ -802,7 +807,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
 
 	case DISPID_BEFORENAVIGATE:
 		DEBUG_NAVI("Navi::BeforeNavigate")
-		return S_OK;
+		return VARIANT_TRUE;
     case DISPID_COMMANDSTATECHANGE:
 		if (m_hPaneWnd == NULL)
 		{
@@ -860,6 +865,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
 		}
 		break;
 
+	case DISPID_ONQUIT:
 	case DISPID_QUIT:
 		{
 		    Unadvice();
@@ -878,7 +884,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
 		break;
 	}
 
-	return S_OK;
+	return VARIANT_TRUE;
 }
 
 bool CPluginClass::InitObject(bool bBHO)
@@ -2564,6 +2570,8 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 		
     case WM_DESTROY:
         break;
+	case SC_CLOSE:
+		break;
 
     case WM_UPDATEUISTATE:
         {
