@@ -176,6 +176,11 @@ CPluginClass::~CPluginClass()
     
     settings->DecrementTabCount();
 
+//	if (s_instances.GetSize() <= 1)
+//	{
+//		CPluginClientFactory::ReleaseMimeFilterClientInstance();		
+//	}
+
 }
 
 
