@@ -37,29 +37,25 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     bool isBlocked = false;
 	m_shouldBlock = false;
 	m_lastDataReported = false;
-    CString src = szUrl;
+    CString src;
+	src.Append(szUrl);
 	DEBUG_GENERAL(src);
-//    CPluginClient::UnescapeUrl(src);
+    CPluginClient::UnescapeUrl(src);
 	m_url = szUrl;
 	
 	CString cookie;
 	ULONG len1 = 2048;
 	ULONG len2 = 2048;
+
 #ifdef SUPPORT_FILTER
 	int contentType = CFilter::contentTypeAny;
 
 	CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
     CPluginClient* client = CPluginClient::GetInstance();
 
-	CString domain = "";
-	CString documentUrl = "";
-	if (tab)
+    if (tab && client)
 	{
-		domain = tab->GetDocumentDomain();
-		documentUrl = tab->GetDocumentUrl();
-	}
-	if (client)
-	{
+		CString documentUrl = tab->GetDocumentUrl();
 		// Page is identical to document => don't block
 		if (documentUrl == src)
 		{
@@ -67,6 +63,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		}
 		else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsUrlWhiteListed(documentUrl))
 		{
+		        CString domain = tab->GetDocumentDomain();
 
 			contentType = CFilter::contentTypeAny;
 
