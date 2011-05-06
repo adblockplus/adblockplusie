@@ -15,6 +15,7 @@ CPluginMimeFilterClient::CPluginMimeFilterClient() : m_classFactory(NULL), m_spC
 	// We register mime filters here
 	// Register asynchronous protocol
 	CComPtr<IInternetSession> spSession;
+	m_spCFHTTP = NULL;
 	HRESULT hr = ::CoInternetGetSession(0, &spSession, 0);
 	if (FAILED(hr) || !spSession)
 	{
@@ -46,7 +47,11 @@ CPluginMimeFilterClient::~CPluginMimeFilterClient()
 	if (spSession)
 	{
     	spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
-		m_spCFHTTP.Release();
+		if (m_spCFHTTP != NULL)
+		{
+			m_spCFHTTP.Release();
+			m_spCFHTTP = NULL;
+		}
 	}
 }
 
