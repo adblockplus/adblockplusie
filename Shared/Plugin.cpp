@@ -103,7 +103,7 @@ STDAPI DllCanUnloadNow(void)
 		if (CPluginClass::s_mimeFilter != NULL)
 		{
 			CPluginClass::s_mimeFilter->Unregister();
-			delete CPluginClass::s_mimeFilter;
+//			delete CPluginClass::s_mimeFilter;
 			CPluginClass::s_mimeFilter = NULL;
 		}
 
