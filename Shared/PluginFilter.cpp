@@ -1399,17 +1399,17 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 						// Element hiding not supported yet
 						if (filterType == CFilter::filterTypeElementHide)
 						{ 
-							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
-							{
+//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
+//							{
 								AddFilterElementHide(filter, filename);
-							}
+//							}
 						}
 						else if (filterType != CFilter::filterTypeUnknown)
 						{
-							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
-							{
+//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
+//							{
 								AddFilter(filter, filename, filterType);
-							}
+//							}
 						}
 					}
 					catch(...)
