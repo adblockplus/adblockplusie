@@ -1399,10 +1399,10 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 						// Element hiding not supported yet
 						if (filterType == CFilter::filterTypeElementHide)
 						{ 
-//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
-//							{
+							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
+							{
 								AddFilterElementHide(filter, filename);
-//							}
+							}
 						}
 						else if (filterType != CFilter::filterTypeUnknown)
 						{
@@ -1734,11 +1734,15 @@ const CFilter* CPluginFilter::MatchFilter(int filterType, const CString& src, in
 				}
 			}
 		}
+		
 	}
     s_criticalSectionFilterMap.Unlock();
 
-
-    return filter;
+if (filter != NULL)
+{
+	CPluginDebug::DebugResultBlocking(filterType + "!!!!!!", src, filter->m_filterText, filter->m_filterFile); 
+}
+	return filter;
 }
 
 
