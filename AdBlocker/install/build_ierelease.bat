@@ -5,9 +5,9 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=1.0.6
-set release=194
-set comment=release 1.0.6 
+set version=1.0.7
+set release=199
+set comment=second release 1.0.7 
 
 
 :: 32 bit machine
@@ -80,7 +80,6 @@ copy adblock.msi downloadfiles\simpleadblock.msi
 copy adblock.msi installers\simpleadblock%version%.msi
 
 echo #define DOWNLOAD_SOURCE "update" > ..\..\Shared\DownloadSource.h
-echo. > ..\..\Adblocker\EnterpriseId.h
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblockupdate.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblockupdate.aip
 copy adblockupdate.msi downloadfiles\simpleadblockupdate.msi

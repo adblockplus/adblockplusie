@@ -1738,10 +1738,6 @@ const CFilter* CPluginFilter::MatchFilter(int filterType, const CString& src, in
 	}
     s_criticalSectionFilterMap.Unlock();
 
-if (filter != NULL)
-{
-	CPluginDebug::DebugResultBlocking(filterType + "!!!!!!", src, filter->m_filterText, filter->m_filterFile); 
-}
 	return filter;
 }
 
