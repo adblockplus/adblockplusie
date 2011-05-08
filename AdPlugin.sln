@@ -42,7 +42,8 @@ Global
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Production|Mixed Platforms.Build.0 = Debug Production|Win32
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Production|Win32.ActiveCfg = Debug Production|Win32
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Production|Win32.Build.0 = Debug Production|Win32
-		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Production|x64.ActiveCfg = Debug Production|Win32
+		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Production|x64.ActiveCfg = Debug Production|x64
+		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Production|x64.Build.0 = Debug Production|x64
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Test|Any CPU.ActiveCfg = Debug Test|Win32
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Test|Any CPU.Build.0 = Debug Test|Win32
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Test|Mixed Platforms.ActiveCfg = Debug Test|Win32

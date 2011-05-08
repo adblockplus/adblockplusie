@@ -1041,6 +1041,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="true"
 				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib iepmapi.lib"
 				OutputFile="$(OutDir)\SimpleAdblock.dll"
 				LinkIncremental="2"
