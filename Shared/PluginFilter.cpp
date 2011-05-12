@@ -807,6 +807,10 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
 
 void CPluginFilter::AddFilter(CString filterString, CString filterFile, int filterType)
 {
+	//We don't accept too short filters. Those are suspicious.
+	if (filterString.GetLength() < 5)
+		return;
+
     CString raw = filterString;
     
 	// Here we should find a key for the filter
@@ -1458,7 +1462,7 @@ void CPluginFilter::ParseFilters(const TFilterFileList& list)
     }
 
 #ifdef PERSONAL_FILTER_FILE
-//    ReadFilter(PERSONAL_FILTER_FILE);
+    ReadFilter(PERSONAL_FILTER_FILE);
 #endif
 
 #ifdef ENABLE_DEBUG_SELFTEST
