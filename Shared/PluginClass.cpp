@@ -622,7 +622,7 @@ void CPluginClass::DisplayActivateMessage()
 	messageString.Format(L"The free version of Simple Adblock only blocks %d adrequest a day. To enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
 
 	//Adblockcount=1000000 when Activationmessage has been displayed
-	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
+	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) + 1);
 	settings->Write();
 
 	LRESULT res = MessageBox(NULL, messageString, L"Upgrade to Simple Adblock Pro", MB_OKCANCEL);
@@ -677,8 +677,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{
-		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0)) 
-			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) < settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) 
+		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) == settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) 
 			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
 		{
 			DisplayActivateMessage();
