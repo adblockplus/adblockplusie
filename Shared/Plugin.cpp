@@ -138,6 +138,7 @@ void InitPlugin(bool isInstall)
 
     settings->Remove(SETTING_PLUGIN_SELFTEST);
 	settings->SetValue(SETTING_PLUGIN_INFO_PANEL, isInstall ? 1 : 2);
+	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
     settings->Write();
 
 	if (isInstall)
