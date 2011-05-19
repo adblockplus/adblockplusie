@@ -619,7 +619,7 @@ void CPluginClass::DisplayActivateMessage()
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 	
 	CString messageString;
-	messageString.Format(L"The daily adblocklimit has been reached and ads are no longer blocked.\nThe free version of Simple Adblock only blocks %d adrequest a day.\n\nTo enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
+	messageString.Format(L"The daily adblocklimit has been reached and no-more ads are blocked today.\nThe free version of Simple Adblock only blocks %d adrequests a day.\n\nTo enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
 
 	//Adblockcount=1000000 when Activationmessage has been displayed
 	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) + 1);
