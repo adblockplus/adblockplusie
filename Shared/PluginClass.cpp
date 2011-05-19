@@ -673,6 +673,13 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 		settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);
 		settings->Write();
 		settings->Read();
+
+		//Also register a mime filter if it's not registered yet
+		if (s_mimeFilter == NULL)
+		{
+			s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
+		}
+
 	}
 
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
