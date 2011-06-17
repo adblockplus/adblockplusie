@@ -121,7 +121,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 //				m_shouldBlock = true;
 
 				DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
-
+#ifndef PRODUCT_DOWNLOADHELPER
 				CPluginSettings* settings = CPluginSettings::GetInstance();
 				//is plugin registered
 				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
@@ -140,6 +140,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 						settings->Write();
 					}
 				}
+#endif
 
 			}
 #ifdef ENABLE_DEBUG_RESULT_IGNORED

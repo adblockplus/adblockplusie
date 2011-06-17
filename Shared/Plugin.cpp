@@ -138,7 +138,9 @@ void InitPlugin(bool isInstall)
 
     settings->Remove(SETTING_PLUGIN_SELFTEST);
 	settings->SetValue(SETTING_PLUGIN_INFO_PANEL, isInstall ? 1 : 2);
+#ifndef PRODUCT_DOWNLOADHELPER
 	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
+#endif
     settings->Write();
 
 	if (isInstall)
