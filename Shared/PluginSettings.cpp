@@ -1341,6 +1341,7 @@ void CPluginSettings::SetPluginEnabled()
 
 bool CPluginSettings::GetPluginEnabled() const
 {
+#ifndef PRODUCT_DOWNLOADHELPER
 	//Display plugin as disabled if limit is passed
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && 
@@ -1349,6 +1350,7 @@ bool CPluginSettings::GetPluginEnabled() const
 	{
 		return false;
 	}
+#endif
 	return m_isPluginEnabledTab;
 }
 

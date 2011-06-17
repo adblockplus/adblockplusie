@@ -662,7 +662,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
     	return; 
 	}
 	CPluginSettings* settings = CPluginSettings::GetInstance();
-
+#ifndef PRODUCT_DOWNLOADHELPER
 	//Reset adblockcount every day
 	SYSTEMTIME stNow;
 	GetSystemTime(&stNow);
@@ -690,7 +690,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 			DisplayActivateMessage();
 		}
 	}
-
+#endif
 
 	// Get the IWebBrowser2 interface
 	CComQIPtr<IWebBrowser2, &IID_IWebBrowser2> WebBrowser2Ptr;
@@ -1501,7 +1501,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 	case ID_PLUGIN_ENABLE:
 		{
 			CPluginSettings* settings = CPluginSettings::GetInstance();
-
+#ifndef PRODUCT_DOWNLOADHELPER
 			//Display activation menu if enabling expired plugin
 			if (!settings->GetPluginEnabled())
 			{
@@ -1513,7 +1513,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 					return;
 				}
 			}
-
+#endif
 			settings->TogglePluginEnabled();
 
 			// Enable / disable mime filter

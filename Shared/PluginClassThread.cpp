@@ -433,7 +433,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 settings->SetString(SETTING_REG_SUCCEEDED, "true");     
 
 				settings->SetBool(SETTING_PLUGIN_REGISTRATION, configuration->IsPluginRegistered());
+#ifdef PRODUCT_SIMPLEADBLOCK
 				settings->SetValue(SETTING_PLUGIN_ADBLOCKLIMIT, configuration->GetAdBlockLimit());
+#endif
 
                 settings->Write();
                 
