@@ -2012,26 +2012,33 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_FEEDBACK, FALSE, &fmii);
 
+#ifdef PRODUCT_DOWNLOADHELPER
 	if (settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{	
-//		RemoveMenu(hMenu, 0, MF_BYPOSITION);	
+		RemoveMenu(hMenu, 5, MF_BYPOSITION);	
+		RemoveMenu(hMenu, 5, MF_BYPOSITION);	
+		RemoveMenu(hMenu, 5, MF_BYPOSITION);			
 	}
-#ifdef PRODUCT_DOWNLOADHELPER
-	// Upgrade
-	ctext = dictionary->Lookup("MENU_UPGRADE");
-	fmii.fMask  = MIIM_STATE | MIIM_STRING;
-	fmii.dwTypeData = ctext.GetBuffer();
-	fmii.fState = MFS_ENABLED;
-	fmii.cch = ctext.GetLength();
-	::SetMenuItemInfo(hMenu, ID_UPGRADE, FALSE, &fmii);
+	else
+	{
+		// Upgrade
+		ctext = dictionary->Lookup("MENU_UPGRADE");
+		fmii.fMask  = MIIM_STATE | MIIM_STRING;
+		fmii.dwTypeData = ctext.GetBuffer();
+		fmii.fState = MFS_ENABLED;
+		fmii.cch = ctext.GetLength();
+		::SetMenuItemInfo(hMenu, ID_UPGRADE, FALSE, &fmii);
 
-		// Enter license key
-	ctext = dictionary->Lookup("MENU_ENTERLICENSE");
-	fmii.fMask  = MIIM_STATE | MIIM_STRING;
-	fmii.fState = MFS_ENABLED;
-	fmii.dwTypeData = ctext.GetBuffer();
-	fmii.cch = ctext.GetLength();
-	::SetMenuItemInfo(hMenu, ID_ENTERLICENSE, FALSE, &fmii);
+			// Enter license key
+		ctext = dictionary->Lookup("MENU_ENTERLICENSE");
+		fmii.fMask  = MIIM_STATE | MIIM_STRING;
+		fmii.fState = MFS_ENABLED;
+		fmii.dwTypeData = ctext.GetBuffer();
+		fmii.cch = ctext.GetLength();
+		::SetMenuItemInfo(hMenu, ID_ENTERLICENSE, FALSE, &fmii);
+	}
+	
+
 #endif
  
 
