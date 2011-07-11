@@ -32,9 +32,13 @@ CPluginDictionary::CPluginDictionary(bool forceCreate) : m_dictionaryLanguage("e
 	m_dictionaryConversions[L"UPGRADE"]			= L"MENU_UPGRADE";
 	m_dictionaryConversions[L"ENTERLICENSE"]		= L"MENU_ENTERLICENSE";
 	m_dictionaryConversions[L"SETTINGS"]		= L"MENU_SETTINGS";
+	m_dictionaryConversions[L"ENABLE_CONVERSSION"]	= L"MENU_ENABLE_CONVERSSION";
 	m_dictionaryConversions[L"ENABLE"]			= L"MENU_ENABLE";
 	m_dictionaryConversions[L"DISABLE"]			= L"MENU_DISABLE";
 	m_dictionaryConversions[L"DISABLE_ON"]		= L"MENU_DISABLE_ON";
+
+	m_dictionaryConversions[L"DOWNLOADLIMIT_MESSAGE"]		= L"DOWNLOAD_LIMIT_MESSAGE";
+	m_dictionaryConversions[L"DOWNLOADLIMIT_TITLE"]			= L"DOWNLOAD_LIMIT_TITLE";
 
 	m_dictionaryConversions[L"DOWNLOAD_TITLE"]				= L"DOWNLOAD_UPDATE_TITLE";
 	m_dictionaryConversions[L"DOWNLOAD_PROGRESS_TEXT"]		= L"DOWNLOAD_PLEASE_WAIT";
@@ -277,9 +281,13 @@ void CPluginDictionary::Create(bool forceCreate)
 		    m_dictionary["MENU_UPGRADE"] = "Upgrade";
 		    m_dictionary["MENU_ENTERLICENSE"] = "Enter license key";
 		    m_dictionary["MENU_SETTINGS"] = "Settings";
+		    m_dictionary["MENU_ENABLE_CONVERSSION"] = "Enable converssion";
 		    m_dictionary["MENU_ENABLE"] = "Enable IE Download Helper";
 		    m_dictionary["MENU_DISABLE"] = "Disable IE Download Helper";
 		    m_dictionary["MENU_DISABLE_ON"] = "Disable IE Download Helper on...";
+
+			m_dictionary["DOWNLOAD_LIMIT_MESSAGE"] = "The free version of IE DownloadHelper can download files up %d MB. To enjoy unlimited downloads please upgrade.";
+			m_dictionary["DOWNLOAD_LIMIT_TITLE"] = "Upgrade to IE DownloadHelper Pro";
 
             // Update dialog
 		    m_dictionary["UPDATE_TITLE"] = "Update IE Download Helper";

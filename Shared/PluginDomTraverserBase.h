@@ -456,8 +456,6 @@ void CPluginDomTraverserBase<T>::ClearCache()
 template <class T>
 void CPluginDomTraverserBase<T>::ShowNotification(CPluginTab* tab)
 {
-	VARIANT_BOOL isBusy;    
-
 	if (tab->m_plugin->GetTabHWND() == NULL)
 	{
 		return;

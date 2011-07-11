@@ -34,6 +34,7 @@
 #define USERS_SCRIPT_ENTERLICENSE   L"/user_enterlicense.php"
 #define USERS_SCRIPT_UPGRADE        L"/user_upgrade.php"
 
+#define ENABLE_CONVERSSION_URL		L"http://my.ie-downloadhelper.com/user_enableffmpeg.php?plugin=c023ba90250a3d406e0a9f970c1909bef0338a37&user=7669335912535317&version=3.2&checksum=11232"
 // ----------------------------------------------------------------------------
 // Define actual configurations
 // ----------------------------------------------------------------------------

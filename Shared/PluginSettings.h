@@ -28,6 +28,12 @@
 #define SETTING_PLUGIN_ADBLOCKLIMIT		L"adblocklimit"
 #define SETTING_PLUGIN_ADBLOCKCOUNT		L"adblockcount"
 #define SETTING_PLUGIN_LIMITDAY			L"limitday"
+#define SETTING_FFMPEG					L"ffmpeg"
+#define SETTING_CLOSE_WHEN_FINISHED     L"closeWhenFinished"
+#define SETTING_DEFAULT_FORMAT			L"defaultFormat"
+#define SETTING_DEFAULT_DIR				L"defaultDir"
+#define SETTING_DOWNLOAD_LIMIT			L"downloadlimit"
+
 #ifdef SUPPORT_FILTER
 #define SETTING_FILTER_VERSION          L"filterversion"
 #endif
