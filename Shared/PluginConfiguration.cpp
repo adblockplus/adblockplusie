@@ -327,6 +327,14 @@ bool CPluginConfiguration::Download()
         m_adBlockLimit = atoi(it->second);
         DEBUG_SETTINGS("Settings::Configuration adblocklimit detected:" + it->second);
     }
+
+	m_downloadLimit = 10;
+	it = settingsData.find("downloadlimit");
+    if (it != settingsData.end())
+    {
+        m_downloadLimit = atoi(it->second);
+        DEBUG_SETTINGS("Settings::Configuration downloadlimit detected:" + it->second);
+    }
     m_isValid = isOk;
 
 	return isOk;
@@ -377,6 +385,10 @@ bool CPluginConfiguration::IsPluginRegistered() const
 int CPluginConfiguration::GetAdBlockLimit() const 
 {
 	return m_adBlockLimit;
+}
+int CPluginConfiguration::GetDownloadLimit() const 
+{
+	return m_downloadLimit;
 }
 
 

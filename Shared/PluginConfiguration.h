@@ -41,6 +41,7 @@ public:
 	bool IsPluginExpired() const;
 
 	int GetAdBlockLimit() const;
+	int GetDownloadLimit() const;
 	CString GetUserId() const;
 
 	// Does there exists a new version, that can be downloaded and installed
@@ -80,6 +81,7 @@ private:
     bool m_isValidDictionary;
 	bool m_isPluginRegistered;
 	int m_adBlockLimit;
+	int m_downloadLimit;
 #ifdef SUPPORT_WHITELIST
     bool m_isValidWhiteList;
 #endif

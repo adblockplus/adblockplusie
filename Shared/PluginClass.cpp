@@ -1566,6 +1566,12 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			break;
 		}
 #endif
+	case ID_ENABLE_CONVERSSION:
+		{
+			url = ENABLE_CONVERSSION_URL;
+			navigationErrorId = PLUGIN_ERROR_NAVIGATION_ENABLE_CONVERSSION;			
+			break;
+		}
 #ifndef ENTERPRISE
 	case ID_SETTINGS:
 		{
@@ -1575,6 +1581,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			settings->ForceConfigurationUpdateOnStart();
 
 #ifdef PRODUCT_DOWNLOADHELPER
+
 			CSettingsDialog settingsDialog;
 
 			CPluginConfig* config = CPluginConfig::GetInstance();
@@ -1583,10 +1590,12 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			{
 				settingsDialog.m_extenssions.push_back(ext->GetString());
 			}
-			settingsDialog.m_defDirVal = settings->GetString("defaultDir");
-			CString fo = settings->GetString("defaultFormat", "-1").GetString();
-			settingsDialog.m_defFormatVal = _wtoi(settings->GetString("defaultFormat", "-1").GetString());
-			if (settings->GetString("closeWhenFinished", "false") == "true")
+			settingsDialog.m_defDirVal = settings->GetString(SETTING_DEFAULT_DIR);
+			CString fo = settings->GetString(SETTING_DEFAULT_FORMAT, "-1").GetString();
+			settingsDialog.m_defFormatVal = _wtoi(settings->GetString(SETTING_DEFAULT_FORMAT, "-1").GetString());
+			settingsDialog.m_ffmpegPath = settings->GetString(SETTING_FFMPEG);
+			settingsDialog.m_defaultFfmpegPath = settings->GetString(SETTING_FFMPEG);
+			if (settings->GetString(SETTING_CLOSE_WHEN_FINISHED, "false") == "true")
 			{
 				settingsDialog.m_closeWhenFinishedVal = TRUE;
 			} 
@@ -1597,21 +1606,30 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			INT_PTR response = settingsDialog.DoModal();
 			if (response == IDOK)
 			{
-				settings->SetString("defaultDir", settingsDialog.m_defDirVal);
+				settings->SetString(SETTING_DEFAULT_DIR, settingsDialog.m_defDirVal);
 				CString defFormat;
 				if (settingsDialog.m_defFormatVal != -1)
 				{
 					settingsDialog.m_defFormatVal--;
 				}
 				defFormat.Format(L"%d", settingsDialog.m_defFormatVal);
-				settings->SetString("defaultFormat", defFormat);
+				settings->SetString(SETTING_DEFAULT_FORMAT, defFormat);
 				if (settingsDialog.m_closeWhenFinishedVal)
 				{
-					settings->SetString("closeWhenFinished", "true");
+					settings->SetString(SETTING_CLOSE_WHEN_FINISHED, "true");
 				}
 				else
 				{
-					settings->SetString("closeWhenFinished", "false");
+					settings->SetString(SETTING_CLOSE_WHEN_FINISHED, "false");
+				}
+
+				if (settingsDialog.m_ffmpegPath.IsEmpty())
+				{
+					settings->Remove(SETTING_FFMPEG);
+				}
+				else
+				{
+					settings->SetString(SETTING_FFMPEG, settingsDialog.m_ffmpegPath);
 				}
 				settings->Write(false);
 
@@ -1724,6 +1742,33 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 		        }
 
 				CPluginSettings* settings = CPluginSettings::GetInstance();
+				if (settings->GetValue(SETTING_DOWNLOAD_LIMIT) > 0)
+				{
+					if (downloadFile.fileSize >= settings->GetValue(SETTING_DOWNLOAD_LIMIT))
+					{
+						CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
+						CString message;
+						message.Format(dictionary->Lookup(L"DOWNLOAD_LIMIT_MESSAGE"), settings->GetValue(SETTING_DOWNLOAD_LIMIT));
+						int res = MessageBox(this->m_hBrowserWnd, message, dictionary->Lookup(L"DOWNLOAD_LIMIT_TITLE"), MB_OKCANCEL);
+						if (res == IDOK)
+						{
+							url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_UPGRADE);
+							CPluginSettings* settings = CPluginSettings::GetInstance();
+							CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
+							httpRequest.Add(L"plugin", system->GetPluginId());
+							httpRequest.Add(L"username", system->GetUserNameW());
+							httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
+							httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
+							CString url = httpRequest.GetUrl();
+							navigationErrorId = PLUGIN_ERROR_NAVIGATION_UPGRADE;
+							break;
+						}
+						else
+						{
+							return;
+						}
+					}
+				}
 				CPluginChecksum checksum;
 
 				checksum.Add("/url", downloadFile.downloadUrl);
@@ -2038,7 +2083,20 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 		::SetMenuItemInfo(hMenu, ID_ENTERLICENSE, FALSE, &fmii);
 	}
 	
-
+	if (settings->GetString(SETTING_FFMPEG).IsEmpty())
+	{
+		ctext = dictionary->Lookup("MENU_ENABLE_CONVERSSION");
+		fmii.fMask  = MIIM_STATE | MIIM_STRING;
+		fmii.fState = MFS_ENABLED;
+		fmii.dwTypeData = ctext.GetBuffer();
+		fmii.cch = ctext.GetLength();
+		::SetMenuItemInfo(hMenu, ID_ENABLE_CONVERSSION, FALSE, &fmii);
+	} 
+	else
+	{
+		DeleteMenu(hMenu, ID_ENABLE_CONVERSSION, FALSE);
+		RemoveMenu(hMenu, 7, MF_BYPOSITION);
+	}
 #endif
  
 
