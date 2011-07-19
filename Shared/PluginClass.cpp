@@ -2080,7 +2080,14 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	{	
 		DeleteMenu(hMenu, ID_UPGRADE, FALSE);
 		DeleteMenu(hMenu, ID_ENTERLICENSE, FALSE);
-		RemoveMenu(hMenu, 5, MF_BYPOSITION);	
+		if (settings->IsPluginUpdateAvailable())
+		{
+			RemoveMenu(hMenu, 6, MF_BYPOSITION);	
+		}
+		else
+		{
+			RemoveMenu(hMenu, 5, MF_BYPOSITION);	
+		}
 //		RemoveMenu(hMenu, 5, MF_BYPOSITION);	
 		//RemoveMenu(hMenu, 5, MF_BYPOSITION);	
 		//RemoveMenu(hMenu, 5, MF_BYPOSITION);			
@@ -2116,14 +2123,16 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	else
 	{
 		DeleteMenu(hMenu, ID_ENABLE_CONVERSSION, FALSE);
-		if (settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
+		int index = 6;
+		if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 		{	
-			RemoveMenu(hMenu, 6, MF_BYPOSITION);
+			index += 3;
 		}
-		else
+		if (settings->IsPluginUpdateAvailable())
 		{
-			RemoveMenu(hMenu, 9, MF_BYPOSITION);
+			index += 1;
 		}
+		RemoveMenu(hMenu, index, MF_BYPOSITION);
 	}
 	DeleteMenu(hMenu, ID_PLUGIN_ACTIVATE, FALSE);
 #endif
