@@ -316,6 +316,8 @@ void CPluginSettings::Clear()
 		m_properties[SETTING_PLUGIN_VERSION] = IEPLUGIN_VERSION;
 		m_properties[SETTING_LANGUAGE] = "en";
 		m_properties[SETTING_DICTIONARY_VERSION] = "1";
+		m_properties[SETTING_PLUGIN_REGISTRATION] = "false";
+		m_properties[SETTING_DOWNLOAD_LIMIT] = "10";
 	}
 	s_criticalSectionLocal.Unlock();
 
