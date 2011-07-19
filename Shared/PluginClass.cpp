@@ -2106,7 +2106,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	
 	if (settings->GetString(SETTING_FFMPEG).IsEmpty())
 	{
-		ctext = dictionary->Lookup("MENU_ENABLE_CONVERSSION");
+		ctext = dictionary->Lookup("MENU_ENABLE_CONVERSION");
 		fmii.fMask  = MIIM_STATE | MIIM_STRING;
 		fmii.fState = MFS_ENABLED;
 		fmii.dwTypeData = ctext.GetBuffer();
