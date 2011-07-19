@@ -74,6 +74,7 @@ BOOL CPluginApp::InitInstance()
 
     _Module.Init(ObjectMap, AfxGetInstanceHandle(), &LIBID_PluginLib);
 
+
 	CWinApp::InitInstance();
 
 	return TRUE;

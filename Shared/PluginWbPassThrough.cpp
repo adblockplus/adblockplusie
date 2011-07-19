@@ -261,7 +261,6 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
 
 	CComPtr<IHttpNegotiate> spHttpNegotiate;
 	QueryServiceFromClient(&spHttpNegotiate);
-
 	return spHttpNegotiate ? spHttpNegotiate->BeginningTransaction(szURL, szHeaders,dwReserved, pszAdditionalHeaders) : S_OK;
 }
 
@@ -318,6 +317,30 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 				if (isDownloadFile)
 				{
 					// Find length
+					ULONG fetched = 0;
+					WCHAR* res[50];
+					HRESULT hres;
+					CComPtr<IWinInetHttpInfo> pWinInetInfo;
+					hres = m_spTargetProtocol.QueryInterface(&pWinInetInfo);
+					if (pWinInetInfo != NULL)
+					{
+						CStringA referer;
+						DWORD len = MAX_PATH;
+						DWORD flags = 0x80000000;
+						//HTTP_QUERY_REFERER = 35; HTTP_QUERY_FLAG_REQUEST_HEADERS = 0x80000000
+						hres = pWinInetInfo->QueryInfo(35 | 0x80000000, referer.GetBufferSetLength(MAX_PATH), &len, NULL, NULL);
+						downloadFileProperties.properties.referer.Format(L"%S", referer); 
+						referer = L"";
+					}
+
+					CStringA location;
+					DWORD len = 1024;
+					//INTERNET_OPTION_URL = 34
+					hres = pWinInetInfo->QueryOption(34, location.GetBufferSetLength(1024), &len);
+					if (hres == S_OK)
+					{
+						m_url.Format(L"%S", location);
+					}
 					CStringA contentLength = szResponseHeaders;
 
 					int posLength = contentLength.Find("Content-Length: ");
