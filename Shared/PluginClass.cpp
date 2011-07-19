@@ -78,6 +78,7 @@ CPluginClass::CPluginClass()
     m_hTheme = NULL;
 	m_isInitializedOk = false;
 
+
 	m_tab = new CPluginTab(this);
 
     // Load / create settings
@@ -1565,13 +1566,13 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_UPGRADE;
 			break;
 		}
-#endif
 	case ID_ENABLE_CONVERSSION:
 		{
 			url = ENABLE_CONVERSSION_URL;
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_ENABLE_CONVERSSION;			
 			break;
 		}
+#endif
 #ifndef ENTERPRISE
 	case ID_SETTINGS:
 		{
@@ -1744,7 +1745,8 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				CPluginSettings* settings = CPluginSettings::GetInstance();
 				if (settings->GetValue(SETTING_DOWNLOAD_LIMIT) > 0)
 				{
-					if (downloadFile.fileSize >= settings->GetValue(SETTING_DOWNLOAD_LIMIT))
+					int fileSizeInMb = downloadFile.fileSize / 1024000;
+					if (fileSizeInMb >= settings->GetValue(SETTING_DOWNLOAD_LIMIT))
 					{
 						CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
 						CString message;
@@ -1775,6 +1777,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				checksum.Add("/type", downloadFile.properties.content);
 				checksum.Add("/file", downloadFile.downloadFile);
 				checksum.Add("/cookie", downloadFile.cookie);
+				checksum.Add("/referer", downloadFile.properties.properties.referer);
 				CString size;
 				size.Format(L"%d", downloadFile.fileSize);
 				checksum.Add("/size", size);
@@ -1783,7 +1786,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				checksum.Add("/autoclose", settings->GetString("closeWhenFinished"));
 
 
-				CString args =  CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /checksum:" + checksum.GetAsString() + " /path:" + settings->GetString("defaultDir") + " /format:" + settings->GetString("defaultFormat", L"-1") + " /autoclose:" + settings->GetString("closeWhenFinished");
+				CString args =  CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /referer:" + downloadFile.properties.properties.referer + " /checksum:" + checksum.GetAsString() + " /path:" + settings->GetString("defaultDir") + " /format:" + settings->GetString("defaultFormat", L"-1") + " /autoclose:" + settings->GetString("closeWhenFinished");
 
 				LPWSTR szCmdline = _wcsdup(args);
 
@@ -2057,12 +2060,30 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.cch = ctext.GetLength();
 	::SetMenuItemInfo(hMenu, ID_FEEDBACK, FALSE, &fmii);
 
+	// Plugin enable
+    if (settings->GetPluginEnabled())
+    {
+        ctext = dictionary->Lookup("MENU_DISABLE");
+    }
+    else
+    {
+        ctext = dictionary->Lookup("MENU_ENABLE");
+    }
+    fmii.fMask  = MIIM_STATE | MIIM_STRING;
+    fmii.fState = client ? MFS_ENABLED : MFS_DISABLED;
+    fmii.dwTypeData = ctext.GetBuffer();
+	fmii.cch = ctext.GetLength();
+    ::SetMenuItemInfo(hMenu, ID_PLUGIN_ENABLE, FALSE, &fmii);
+
 #ifdef PRODUCT_DOWNLOADHELPER
 	if (settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
 	{	
+		DeleteMenu(hMenu, ID_UPGRADE, FALSE);
+		DeleteMenu(hMenu, ID_ENTERLICENSE, FALSE);
 		RemoveMenu(hMenu, 5, MF_BYPOSITION);	
-		RemoveMenu(hMenu, 5, MF_BYPOSITION);	
-		RemoveMenu(hMenu, 5, MF_BYPOSITION);			
+//		RemoveMenu(hMenu, 5, MF_BYPOSITION);	
+		//RemoveMenu(hMenu, 5, MF_BYPOSITION);	
+		//RemoveMenu(hMenu, 5, MF_BYPOSITION);			
 	}
 	else
 	{
@@ -2095,8 +2116,16 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	else
 	{
 		DeleteMenu(hMenu, ID_ENABLE_CONVERSSION, FALSE);
-		RemoveMenu(hMenu, 7, MF_BYPOSITION);
+		if (settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
+		{	
+			RemoveMenu(hMenu, 6, MF_BYPOSITION);
+		}
+		else
+		{
+			RemoveMenu(hMenu, 9, MF_BYPOSITION);
+		}
 	}
+	DeleteMenu(hMenu, ID_PLUGIN_ACTIVATE, FALSE);
 #endif
  
 
@@ -2113,20 +2142,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	RemoveMenu(hMenu, 5, MF_BYPOSITION);
 #endif	
 
-	// Plugin enable
-    if (settings->GetPluginEnabled())
-    {
-        ctext = dictionary->Lookup("MENU_DISABLE");
-    }
-    else
-    {
-        ctext = dictionary->Lookup("MENU_ENABLE");
-    }
-    fmii.fMask  = MIIM_STATE | MIIM_STRING;
-    fmii.fState = client ? MFS_ENABLED : MFS_DISABLED;
-    fmii.dwTypeData = ctext.GetBuffer();
-	fmii.cch = ctext.GetLength();
-    ::SetMenuItemInfo(hMenu, ID_PLUGIN_ENABLE, FALSE, &fmii);
+
 
     // Download files
     #ifdef SUPPORT_FILE_DOWNLOAD

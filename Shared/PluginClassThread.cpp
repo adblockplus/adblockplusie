@@ -436,7 +436,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 #ifdef PRODUCT_SIMPLEADBLOCK
 				settings->SetValue(SETTING_PLUGIN_ADBLOCKLIMIT, configuration->GetAdBlockLimit());
 #endif
-
+#ifdef PRODUCT_DOWNLOADHELPER
+				settings->SetValue(SETTING_DOWNLOAD_LIMIT, configuration->GetDownloadLimit());
+#endif
                 settings->Write();
                 
                 configuration->Invalidate();

@@ -55,6 +55,7 @@ struct SDownloadFileCategory
     CString extension;
 	CString ffmpegArgs;
     CString description;
+	CString referer;
 
     SDownloadFileCategory()
     {
