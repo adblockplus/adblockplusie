@@ -164,7 +164,7 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://ie-downloadhelper.com/dow
 				::GetModuleFileName((HINSTANCE)&__ImageBase, strDLLPath1, _MAX_PATH);
 				CString dllPath;
 				dllPath.Format(L"%s", strDLLPath1);
-				dllPath = dllPath.Left(dllPath.GetLength() - CString(L"DownloadHelper.dll").GetLength());
+				dllPath = dllPath.Left(dllPath.GetLength() - CString(DLLNAME).GetLength());
 				CString ffmpegLocation = dllPath + CString("ffmpeg.exe");
 				CFileStatus fileStatus;
 				if (CFile::GetStatus(ffmpegLocation, fileStatus))
@@ -1760,7 +1760,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				::GetModuleFileName((HINSTANCE)&__ImageBase, strDLLPath1, _MAX_PATH);
 				CString dllPath;
 				dllPath.Format(L"%s", strDLLPath1);
-				dllPath = dllPath.Left(dllPath.GetLength() - CString(L"DownloadHelper.dll").GetLength());
+				dllPath = dllPath.Left(dllPath.GetLength() - CString(DLLNAME).GetLength());
 
 				CPluginSettings* settings = CPluginSettings::GetInstance();
 				if (settings->GetValue(SETTING_DOWNLOAD_LIMIT) > 0)
