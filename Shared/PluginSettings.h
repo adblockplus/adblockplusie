@@ -29,6 +29,7 @@
 #define SETTING_PLUGIN_ADBLOCKCOUNT		L"adblockcount"
 #define SETTING_PLUGIN_LIMITDAY			L"limitday"
 #define SETTING_FFMPEG					L"ffmpeg"
+#define SETTING_FFMPEG_CHECK			L"ffmpeg_check"
 #define SETTING_CLOSE_WHEN_FINISHED     L"closeWhenFinished"
 #define SETTING_DEFAULT_FORMAT			L"defaultFormat"
 #define SETTING_DEFAULT_DIR				L"defaultDir"
