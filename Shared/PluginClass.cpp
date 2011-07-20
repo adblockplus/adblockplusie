@@ -154,6 +154,27 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://ie-downloadhelper.com/dow
 
         int info = settings->GetValue(SETTING_PLUGIN_INFO_PANEL, 0);
 
+
+		CString ffmpegLocation = settings->GetString(SETTING_FFMPEG, L"");
+		if (ffmpegLocation.IsEmpty())
+		{
+			if (!settings->GetBool(SETTING_FFMPEG_CHECK, false))
+			{
+				LPTSTR  strDLLPath1 = new TCHAR[_MAX_PATH];
+				::GetModuleFileName((HINSTANCE)&__ImageBase, strDLLPath1, _MAX_PATH);
+				CString dllPath;
+				dllPath.Format(L"%s", strDLLPath1);
+				dllPath = dllPath.Left(dllPath.GetLength() - CString(L"DownloadHelper.dll").GetLength());
+				CString ffmpegLocation = dllPath + CString("ffmpeg.exe");
+				CFileStatus fileStatus;
+				if (CFile::GetStatus(ffmpegLocation, fileStatus))
+				{
+					settings->SetString(SETTING_FFMPEG, ffmpegLocation);					
+				}
+				settings->SetBool(SETTING_FFMPEG_CHECK, true);
+			}
+		}
+
 #ifdef ENABLE_DEBUG_RESULT
         CPluginDebug::DebugResultClear();
 #endif
@@ -1735,12 +1756,11 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				PROCESS_INFORMATION pi;
 				::ZeroMemory(&pi, sizeof(pi));
 
-	            char lpData[MAX_PATH] = "";
-
-		        if (!::SHGetSpecialFolderPathA(NULL, lpData, CSIDL_PROGRAM_FILES_COMMON, TRUE))
-		        {
-					DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_COMMON_FILES, "Download::common files folder retrieval failed");
-		        }
+				LPTSTR  strDLLPath1 = new TCHAR[_MAX_PATH];
+				::GetModuleFileName((HINSTANCE)&__ImageBase, strDLLPath1, _MAX_PATH);
+				CString dllPath;
+				dllPath.Format(L"%s", strDLLPath1);
+				dllPath = dllPath.Left(dllPath.GetLength() - CString(L"DownloadHelper.dll").GetLength());
 
 				CPluginSettings* settings = CPluginSettings::GetInstance();
 				if (settings->GetValue(SETTING_DOWNLOAD_LIMIT) > 0)
@@ -1786,7 +1806,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 				checksum.Add("/autoclose", settings->GetString("closeWhenFinished"));
 
 
-				CString args =  CString(L"\"") + CString(lpData) + CString(L"\\Download Helper\\DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /referer:" + downloadFile.properties.properties.referer + " /checksum:" + checksum.GetAsString() + " /path:" + settings->GetString("defaultDir") + " /format:" + settings->GetString("defaultFormat", L"-1") + " /autoclose:" + settings->GetString("closeWhenFinished");
+				CString args =  CString(L"\"") + CString(dllPath) + CString(L"DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /referer:" + downloadFile.properties.properties.referer + " /checksum:" + checksum.GetAsString() + " /path:" + settings->GetString("defaultDir") + " /format:" + settings->GetString("defaultFormat", L"-1") + " /autoclose:" + settings->GetString("closeWhenFinished");
 
 				LPWSTR szCmdline = _wcsdup(args);
 
