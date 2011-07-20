@@ -361,6 +361,11 @@
  #define STATUSBAR_PANE_NAME "SimpleAdblockStatusBarPane"
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #define STATUSBAR_PANE_NAME "DownloadHelperStatusBarPane"
+	#if (defined WIN64)
+		#define DLLNAME "DownloadHelperx64.dll"
+	#else
+		#define DLLNAME "DownloadHelper.dll"
+	#endif
 #endif
 
 // Status bar pane number
@@ -369,6 +374,7 @@
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #define STATUSBAR_PANE_NUMBER 3
 #endif
+
 
 
 #endif // _CONFIG_H
