@@ -124,6 +124,7 @@ private:
 	CString GetBrowserUrl() const;
 
 
+	static DWORD WINAPI StartInitObject(LPVOID thisPtr);
 	bool InitObject(bool bBHO);
 	void CloseTheme();
 	void UpdateTheme();

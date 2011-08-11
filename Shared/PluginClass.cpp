@@ -82,7 +82,7 @@ CPluginClass::CPluginClass()
 	m_tab = new CPluginTab(this);
 
     // Load / create settings
-    CPluginSettings* settings = CPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstanceLight();
 
     CPluginSystem* system = CPluginSystem::GetInstance();
 
@@ -154,7 +154,7 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://ie-downloadhelper.com/dow
 
         int info = settings->GetValue(SETTING_PLUGIN_INFO_PANEL, 0);
 
-
+#ifdef PRODUCT_DOWNLOADHELPER
 		CString ffmpegLocation = settings->GetString(SETTING_FFMPEG, L"");
 		if (ffmpegLocation.IsEmpty())
 		{
@@ -174,6 +174,7 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://ie-downloadhelper.com/dow
 				settings->SetBool(SETTING_FFMPEG_CHECK, true);
 			}
 		}
+#endif
 
 #ifdef ENABLE_DEBUG_RESULT
         CPluginDebug::DebugResultClear();
@@ -363,6 +364,22 @@ void CPluginClass::LaunchUpdater(const CString& strPath)
 	::CloseHandle(pi.hThread);
 }
 
+DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
+{
+	if (thisPtr == NULL)
+		return 0;
+	if (!((CPluginClass*)thisPtr)->InitObject(true))
+	{
+		((CPluginClass*)thisPtr)->Unadvice();
+	}
+
+	if ((((CPluginClass*)thisPtr)->m_hPaneWnd == NULL) || (!((CPluginClass*)thisPtr)->IsStatusBarEnabled()))
+	{
+		((CPluginClass*)thisPtr)->ShowStatusBar();
+	}
+}
+
+
 
 // This gets called when a new browser window is created (which also triggers the
 // creation of this object). The pointer passed in should be to a IWebBrowser2
@@ -372,7 +389,7 @@ void CPluginClass::LaunchUpdater(const CString& strPath)
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
 
-    CPluginSettings* settings = CPluginSettings::GetInstance();
+    CPluginSettings* settings = CPluginSettings::GetInstanceLight();
 
 	if (unknownSite) 
 	{
@@ -430,15 +447,13 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 						m_isAdviced = true;
 
 						//TODO: Lets try and load the status bar only when it's first opened
+						DWORD id;
+						HANDLE handle = ::CreateThread(NULL, 0, StartInitObject, (LPVOID)this, NULL, &id);
+						if (handle == NULL)
+						{
+							DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, "Class::Thread - Failed to create main thread");
+						}
 
-						if (!InitObject(true))
-						{
-							Unadvice();
-						}
-						if ((m_hPaneWnd == NULL) || (!IsStatusBarEnabled()))
-						{
-							ShowStatusBar();
-						}
 					}
 					else
 					{
