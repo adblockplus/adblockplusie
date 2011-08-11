@@ -124,6 +124,7 @@ private:
 
 	// Private constructor used by the singleton pattern
 	CPluginSettings();	
+	CPluginSettings(bool isLight);	
 
 public:
 
@@ -131,8 +132,10 @@ public:
 
 	static CPluginSettings* s_instance;
 
+	static bool s_isLightOnly;
     static bool HasInstance();
     static CPluginSettings* GetInstance();
+	static CPluginSettings* GetInstanceLight();
  
     bool Read(bool bDebug=true);
 	bool Write(bool bDebug=true);
@@ -181,15 +184,19 @@ public:
 #endif // SUPPORT_WHITELIST
 
     void SetMainProcessId();
+	void SetMainProcessId(DWORD id);
     bool IsMainProcess(DWORD dwProcessId=0) const;
 
     void SetMainUiThreadId();
+	void SetMainUiThreadId(DWORD id);
     bool IsMainUiThread(DWORD dwThread=0) const;
 
     void SetMainThreadId();
+    void SetMainThreadId(DWORD id);
     bool IsMainThread(DWORD dwThread=0) const;
 
     void SetWorkingThreadId();
+	void SetWorkingThreadId(DWORD id);
     bool IsWorkingThread(DWORD dwThread=0) const;
 
     void SetFirstRun();

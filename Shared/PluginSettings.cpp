@@ -56,6 +56,7 @@ WCHAR* CPluginSettings::s_dataPath;
 WCHAR* CPluginSettings::s_dataPathParent;
 
 CPluginSettings* CPluginSettings::s_instance = NULL;
+bool CPluginSettings::s_isLightOnly = false;
 
 CComAutoCriticalSection CPluginSettings::s_criticalSectionLocal;
 #ifdef SUPPORT_FILTER
@@ -71,7 +72,10 @@ CPluginSettings::CPluginSettings() :
     m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
 
+
+	CPluginSettings *lightInstance = s_instance;
 	s_instance = NULL;
+
 #ifdef SUPPORT_WHITELIST
     m_isDirtyWhitelist = false;
 #endif
@@ -119,8 +123,30 @@ CPluginSettings::CPluginSettings() :
         m_isDirty = true;
     }
 
+	if (s_isLightOnly)
+	{
+		this->SetMainProcessId(lightInstance->m_dwMainProcessId);
+		this->SetMainThreadId(lightInstance->m_dwMainThreadId);
+		this->SetMainUiThreadId(lightInstance->m_dwMainUiThreadId);
+		this->SetWorkingThreadId(lightInstance->m_dwWorkingThreadId);
+	}
     Write();
 }
+
+CPluginSettings::CPluginSettings(bool isLight) : 
+m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
+m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
+{
+
+	s_instance = NULL;
+#ifdef SUPPORT_WHITELIST
+	m_isDirtyWhitelist = false;
+#endif
+
+	Clear();
+	ClearTab();
+}
+
 
 CPluginSettings::~CPluginSettings()
 {
@@ -139,9 +165,29 @@ CPluginSettings* CPluginSettings::GetInstance()
 
 	s_criticalSectionLocal.Lock();
 	{
-		if (!s_instance)
+		if ((!s_instance) || (s_isLightOnly))
 		{
 			s_instance = new CPluginSettings();
+			s_isLightOnly = false;
+		}
+
+		instance = s_instance;
+	}
+	s_criticalSectionLocal.Unlock();
+
+	return instance;
+}
+
+CPluginSettings* CPluginSettings::GetInstanceLight() 
+{
+	CPluginSettings* instance = NULL;
+
+	s_criticalSectionLocal.Lock();
+	{
+		if (!s_instance)
+		{
+			s_instance = new CPluginSettings(true);
+			s_isLightOnly = true;
 		}
 
 		instance = s_instance;
@@ -951,6 +997,12 @@ void CPluginSettings::SetMainProcessId()
     m_dwMainProcessId = ::GetCurrentProcessId();
 }
 
+void CPluginSettings::SetMainProcessId(DWORD id)
+{
+	m_dwMainProcessId = id;
+}
+
+
 bool CPluginSettings::IsMainUiThread(DWORD dwThreadId) const
 {
     if (dwThreadId == 0)
@@ -965,6 +1017,10 @@ void CPluginSettings::SetMainUiThreadId()
     m_dwMainUiThreadId = ::GetCurrentThreadId();
 }
 
+void CPluginSettings::SetMainUiThreadId(DWORD id)
+{
+	m_dwMainUiThreadId = id;
+}
 bool CPluginSettings::IsMainThread(DWORD dwThreadId) const
 {
     if (dwThreadId == 0)
@@ -979,6 +1035,11 @@ void CPluginSettings::SetMainThreadId()
     m_dwMainThreadId = ::GetCurrentThreadId();
 }
 
+void CPluginSettings::SetMainThreadId(DWORD id)
+{
+	m_dwMainThreadId = id;
+}
+
 bool CPluginSettings::IsWorkingThread(DWORD dwThreadId) const
 {
     if (dwThreadId == 0)
@@ -991,6 +1052,11 @@ bool CPluginSettings::IsWorkingThread(DWORD dwThreadId) const
 void CPluginSettings::SetWorkingThreadId()
 {
     m_dwWorkingThreadId = ::GetCurrentThreadId();
+}
+
+void CPluginSettings::SetWorkingThreadId(DWORD id)
+{
+	m_dwWorkingThreadId = id;
 }
 
 void CPluginSettings::SetFirstRun()
@@ -1158,6 +1224,12 @@ void CPluginSettings::EraseTab()
 bool CPluginSettings::IncrementTabCount()
 {
     int tabCount = 1;
+
+
+	if (s_isLightOnly)
+	{
+		return false;
+	}
 
     CPluginSettingsTabLock lock;
     if (lock.IsLocked())
