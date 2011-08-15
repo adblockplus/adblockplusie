@@ -82,7 +82,7 @@ CPluginClass::CPluginClass()
 	m_tab = new CPluginTab(this);
 
     // Load / create settings
-    CPluginSettings* settings = CPluginSettings::GetInstanceLight();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
 
     CPluginSystem* system = CPluginSystem::GetInstance();
 
@@ -389,7 +389,7 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
 
-    CPluginSettings* settings = CPluginSettings::GetInstanceLight();
+    CPluginSettings* settings = CPluginSettings::GetInstance();
 
 	if (unknownSite) 
 	{
