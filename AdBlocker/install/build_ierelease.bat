@@ -5,9 +5,9 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=1.0.9
-set release=209
-set comment=Second Release 1.0.9 
+set version=1.1.0
+set release=236
+set comment=Release 1.1.0 Optimized startup time 
 
 
 :: 32 bit machine
