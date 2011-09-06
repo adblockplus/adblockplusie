@@ -6,6 +6,7 @@
  #include "PluginSettings.h"
  #include "PluginClient.h"
  #include "PluginClientFactory.h"
+ #include "../AdBlocker/AdblockPlusConvertor.h"
 #endif
 
 #include "PluginMutex.h"
@@ -1228,6 +1229,9 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
                 if (!downloadPath.IsEmpty())
                 {
                     client->RequestFilterDownload(filename, downloadPath);
+					AdblockPlusConvertor convertor;
+
+					convertor.Convert(downloadPath + filename, downloadPath + filename + L".css");
                 }
                 else if (filename == PERSONAL_FILTER_FILE)
                 {

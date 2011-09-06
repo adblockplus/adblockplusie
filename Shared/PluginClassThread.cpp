@@ -24,7 +24,9 @@
 
 #include "ProtocolImpl.h"
 #include "ProtocolCF.h"
-
+#ifdef PRODUCT_SIMPLEADBLOCK
+#include "../Adblocker/AdblockPlusConvertor.h"
+#endif
 
 HANDLE CPluginClass::s_hMainThread = NULL;
 bool CPluginClass::s_isMainThreadDone = false;
@@ -503,6 +505,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                         if (fi == currentFilterUrlList.end() || fi->second != version)
                         {
                             CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
+
+							
+							AdblockPlusConvertor::Convert(CPluginSettings::GetDataPath(filename), CPluginSettings::GetDataPath(filename + ".css"));
                         }
                     }
 
