@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="SimpleAdblock"
 	ProjectGUID="{24AAF1A9-ACC0-4BEB-B781-084734D939B5}"
 	RootNamespace="SimpleAdblock"
@@ -29,6 +29,7 @@
 			UseOfATL="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -52,16 +53,20 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="0"
+				AdditionalOptions="/MP"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../Shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;PRODUCT_SIMPLEADBLOCK;ADPLUGIN_PRODUCTION_MODE"
-				StringPooling="false"
-				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
+				FloatingPointModel="2"
 				DefaultCharIsUnsigned="false"
 				TreatWChar_tAsBuiltInType="true"
+				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="PluginStdAfx.h"
 				PrecompiledHeaderFile="$(IntDir)\Plugin.pch"
@@ -84,18 +89,22 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppw.lib comDlg32.lib"
+				AdditionalDependencies="winhttp.lib"
 				OutputFile="$(OutDir)\SimpleAdblock.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
+				GenerateManifest="false"
+				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="nafxcw.lib LIBCMT.lib"
 				ModuleDefinitionFile=".\$(TargetName).def"
 				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(IntDir)\$(TargetName).pdb"
 				SubSystem="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				BaseAddress="0x66000000"
 				ImportLibrary="$(IntDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
@@ -692,7 +701,7 @@
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="0"
 				AdditionalIncludeDirectories="../Shared"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_SIMPLEADBLOCK;ADPLUGIN_PRODUCTION_MODE;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_SIMPLEADBLOCK;"
 				StringPooling="false"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -723,11 +732,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib iepmapi.lib "
+				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib"
 				OutputFile="$(OutDir)\SimpleAdblock.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="nafxcwd.lib LIBCMTD.lib"
 				ModuleDefinitionFile=".\$(TargetName).def"
 				GenerateDebugInformation="true"
@@ -1096,6 +1106,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AdblockPlusConvertor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Shared\Plugin.cpp"
 				>
 			</File>
@@ -1290,6 +1304,10 @@
 			</File>
 			<File
 				RelativePath=".\AdBlockerGuids.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AdblockPlusConvertor.h"
 				>
 			</File>
 			<File
