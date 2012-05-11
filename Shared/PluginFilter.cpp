@@ -1340,6 +1340,10 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 				UINT dstSize = 0;
 				BYTE* buf = (BYTE*)fileContent.GetString();
 				UINT srcLength = fileContent.GetLength();
+				if (((encodingInfos[scores - 1].nCodePage) == 1200) || ((encodingInfos[scores - 1].nCodePage) == 1201))
+				{
+					srcLength = srcLength * 2;
+				}
 				hr = pMultiLanguage->ConvertString(NULL, encodingInfos[scores - 1].nCodePage, 1252, (BYTE*)buf, &srcLength, NULL, &dstSize);
 				char* bufferTmp = new char[dstSize + 1];
 				hr = pMultiLanguage->ConvertString(NULL, encodingInfos[scores - 1].nCodePage, 1252, (BYTE*)buf, &srcLength, (BYTE*)bufferTmp, &dstSize);
