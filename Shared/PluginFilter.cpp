@@ -181,7 +181,7 @@ bool CPluginFilter::AddFilterElementHide(CString filterText, CString filterFile)
         DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (no tag)")
         return false;
     }
-    
+	DEBUG_FILTER("Input: " + filterText + " filterFile" + filterFile);
     bool isOldFormat = true;
     if (filterText.GetAt(delimiterPos + 1) == '#')
     {
@@ -812,6 +812,7 @@ void CPluginFilter::AddFilter(CString filterString, CString filterFile, int filt
 	if (filterString.GetLength() < 5)
 		return;
 
+//	CPluginDebug::Debug("Input: " + filterString);
     CString raw = filterString;
     
 	// Here we should find a key for the filter
@@ -1115,14 +1116,19 @@ void CPluginFilter::AddFilter(CString filterString, CString filterFile, int filt
             }
         }
     }
+//	CPluginDebug::Debug("Output: " + filter.m_filterText);
 
     // Add the filter
     if (dwKey != 0)
     {
-	    filterMap[dwKeyMap][dwKey] = filter;
+//		if (filter.m_filterText.Find(L".com^$third-party") == 0)
+//			return;
+		filterMap[dwKeyMap][dwKey] = filter;
 	}
     else
     {
+//		if (filter.m_filterText.Find(L".com^$third-party") == 0)
+//			return;
         m_filterMapDefault[filterType].push_back(filter);
 	}
 }
@@ -1217,6 +1223,8 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 			}
 		}
 
+//		if(filename.Find(L"filter2.txt") >= 0)
+//			return true;
         // Read file
         HANDLE hFile = ::CreateFile(m_dataPath + filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
         if (hFile == INVALID_HANDLE_VALUE)
@@ -1331,7 +1339,7 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 
 				UINT dstSize = 0;
 				BYTE* buf = (BYTE*)fileContent.GetString();
-				UINT srcLength = fileContent.GetLength() * 2;
+				UINT srcLength = fileContent.GetLength();
 				hr = pMultiLanguage->ConvertString(NULL, encodingInfos[scores - 1].nCodePage, 1252, (BYTE*)buf, &srcLength, NULL, &dstSize);
 				char* bufferTmp = new char[dstSize + 1];
 				hr = pMultiLanguage->ConvertString(NULL, encodingInfos[scores - 1].nCodePage, 1252, (BYTE*)buf, &srcLength, (BYTE*)bufferTmp, &dstSize);
@@ -1347,7 +1355,9 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 				else 
 				{
 					wchar_t* fileContentBuffer = fileContent.GetBufferSetLength(dstSize);
+					memset(fileContentBuffer, 0, dstSize); 
 					memcpy(fileContentBuffer, bufferTmp, dstSize);
+//					fileContent.Truncate(dstSize);
 				}
 				delete [] bufferTmp;
 
@@ -1371,7 +1381,7 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
             while (pos >= 0)
             {
 			    // If the line is not commented out
-			    if (!filter.Trim().IsEmpty() && filter.GetAt(0) != '!' && filter.GetAt(0) != '[')
+				if (!filter.Trim().IsEmpty() && filter.GetAt(0) != '!' && filter.GetAt(0) != '[')
 			    {
 				    int filterType = 0;
 
@@ -1404,21 +1414,24 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 
 					try
 					{
-						// Element hiding not supported yet
-						if (filterType == CFilter::filterTypeElementHide)
-						{ 
-//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
-//							{
-								AddFilterElementHide(filter, filename);
-//							}
-						}
-						else if (filterType != CFilter::filterTypeUnknown)
-						{
-//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
-//							{
-								AddFilter(filter, filename, filterType);
-//							}
-						}
+//						if ((filter.Find(L"^") < 0))
+//						{
+							// Element hiding not supported yet
+							if (filterType == CFilter::filterTypeElementHide)
+							{ 
+	//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
+	//							{
+									AddFilterElementHide(filter, filename);
+	//							}
+							}
+							else if (filterType != CFilter::filterTypeUnknown)
+							{
+	//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
+	//							{
+									AddFilter(filter, filename, filterType);
+	//							}
+							}
+//						}
 					}
 					catch(...)
 					{
@@ -1426,7 +1439,21 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 					}
 			    }
 
+				CString tmp = L"";
+				tmp.Format(L"Current %d, Total %d", pos, fileContent.GetLength());
                 filter = fileContent.Tokenize(L"\n\r", pos);
+				int nextPos = fileContent.Find(L"\n", pos + 1);
+				if (nextPos < 0)
+				{
+//					CPluginDebug::Debug(tmp);
+					filter = "";
+					pos = -1;
+
+				}
+				if ((filter.GetLength() > 5000) || (fileContent.GetLength() - 5 <= pos))
+				{
+					filter = "";
+				}
 		    }
 	    }
 	    s_criticalSectionFilterMap.Unlock();
