@@ -1237,9 +1237,9 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
                 if (!downloadPath.IsEmpty())
                 {
                     client->RequestFilterDownload(filename, downloadPath);
-					AdblockPlusConvertor convertor;
+//					AdblockPlusConvertor convertor;
 
-					convertor.Convert(downloadPath + filename, downloadPath + filename + L".css");
+//					convertor.Convert(downloadPath + filename, downloadPath + filename + L".css");
                 }
                 else if (filename == PERSONAL_FILTER_FILE)
                 {
