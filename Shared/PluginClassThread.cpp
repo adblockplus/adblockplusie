@@ -507,7 +507,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                             CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
 
 							
-							AdblockPlusConvertor::Convert(CPluginSettings::GetDataPath(filename), CPluginSettings::GetDataPath(filename + ".css"));
+//							AdblockPlusConvertor::Convert(CPluginSettings::GetDataPath(filename), CPluginSettings::GetDataPath(filename + ".css"));
                         }
                     }
 
