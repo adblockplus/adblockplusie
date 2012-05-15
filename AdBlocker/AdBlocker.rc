@@ -39,12 +39,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Simple Adblock"
             VALUE "FileDescription", "Simple Adblock Module"
-            VALUE "FileVersion", "0, 1, 0, 1"
+            VALUE "FileVersion", "0, 1, 1, 2"
             VALUE "InternalName", "Simple Adblock"
             VALUE "LegalCopyright", "Copyright 2011"
             VALUE "OriginalFilename", "SimpleAdblock.dll"
             VALUE "ProductName", "Simple AdBlock"
-            VALUE "ProductVersion", "0, 1, 0, 1"
+            VALUE "ProductVersion", "0, 1, 1, 2"
         END
     END
     BLOCK "VarFileInfo"
