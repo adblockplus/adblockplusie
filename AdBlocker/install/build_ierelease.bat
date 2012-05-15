@@ -5,9 +5,9 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=1.1.1
-set release=243
-set comment=Release 1.1.1 Fix filter format issue 
+set version=1.1.2
+set release=245
+set comment=Release 1.1.2 Fix filter format issue 
 
 
 :: 32 bit machine
