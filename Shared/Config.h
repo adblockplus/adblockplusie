@@ -41,6 +41,9 @@
 
 // AdBlocker configuration
 
+#define CONFIG_IN_REGISTRY
+
+
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #ifdef ADPLUGIN_TEST_MODE
   #define USERS_HOST L"mytest.simple-adblock.com"
@@ -103,9 +106,6 @@
 #define TIMER_THREAD_SLEEP_MAIN_LOOP 60000
 #define TIMER_THREAD_SLEEP_TAB_LOOP 10000
 
-// ----------------------------------------------------------------------------
-// Debug
-// ----------------------------------------------------------------------------
 
 // Should we to on debug information
 #ifdef _DEBUG
@@ -254,6 +254,10 @@
 // ----------------------------------------------------------------------------
 // Miscellaneous
 // ----------------------------------------------------------------------------
+
+//For debugging production build
+//#define ENABLE_DEBUG_INFO
+
 
 // Max elements in white list menus
 #define DOMAIN_HISTORY_MAX_COUNT 5

@@ -61,7 +61,7 @@
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="../Shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;PRODUCT_SIMPLEADBLOCK;ADPLUGIN_PRODUCTION_MODE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;PRODUCT_SIMPLEADBLOCK;ADPLUGIN_PRODUCTION_MODE;ENTERPRISE"
 				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				DefaultCharIsUnsigned="false"
@@ -89,7 +89,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="winhttp.lib"
+				AdditionalDependencies="winhttp.lib Msi.lib"
 				OutputFile="$(OutDir)\SimpleAdblock.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -518,7 +518,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib iepmapi.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib iepmapi.lib Msi.lib"
 				OutputFile="$(OutDir)\SimpleAdblock.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
@@ -732,7 +732,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib Msi.lib"
 				OutputFile="$(OutDir)\SimpleAdblock.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"

@@ -94,7 +94,7 @@ void CPluginHttpRequest::AddPluginId()
     Add("version", IEPLUGIN_VERSION);
 
 #ifdef ENTERPRISE
-	Add("installerid", INSTALLER_ID);
+//	Add("installerid", INSTALLER_ID);
 #endif
 }
 

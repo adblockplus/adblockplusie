@@ -391,8 +391,14 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
     CPluginSettings* settings = CPluginSettings::GetInstance();
 
+	CPluginSystem* system = CPluginSystem::GetInstance(); 
+
+//	system->SetPluginId(L"testcanged");
+
+
 	if (unknownSite) 
 	{
+
 //		s_activeTab = m_tab;
 
         if (settings->IsMainProcess() && settings->IsMainUiThread())
@@ -659,6 +665,7 @@ void CPluginClass::DisplayActivateMessage()
 	messageString.Format(L"The daily adblocklimit has been reached and no-more ads are blocked today.\nThe free version of Simple Adblock only blocks %d adrequests a day.\n\nTo enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
 
 	//Adblockcount=1000000 when Activationmessage has been displayed
+
 	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) + 1);
 	settings->Write();
 
@@ -938,6 +945,8 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
 bool CPluginClass::InitObject(bool bBHO)
 {
 	// Load theme module
+
+
 	s_criticalSectionLocal.Lock();
 	{
 	    if (!s_hUxtheme)

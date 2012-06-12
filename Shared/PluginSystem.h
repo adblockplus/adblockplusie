@@ -25,6 +25,7 @@ public:
     CString GetUserName() const;
     CString GetComputerName() const;
 	CString GetPluginId();
+	void SetPluginId(CString pluginId);
     CString GetMacId(bool addSeparator=false) const;
 
 private:
