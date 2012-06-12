@@ -13,6 +13,7 @@
 #include "PluginSettings.h"
 #include "PluginDictionary.h"
 #include "PluginMimeFilterClient.h"
+#include "Msiquery.h"
 
 #ifdef SUPPORT_FILTER
  #include "PluginFilter.h"
@@ -128,7 +129,7 @@ STDAPI DllUnregisterServer(void)
     return _Module.UnregisterServer(TRUE);
 }
 
-void InitPlugin(bool isInstall)
+void InitPlugin(bool isInstall, CString pluginId)
 {
 	CPluginSystem* system = CPluginSystem::GetInstance();
 
@@ -139,6 +140,13 @@ void InitPlugin(bool isInstall)
 
     settings->Remove(SETTING_PLUGIN_SELFTEST);
 	settings->SetValue(SETTING_PLUGIN_INFO_PANEL, isInstall ? 1 : 2);
+
+	if (!pluginId.IsEmpty())
+	{
+		system->SetPluginId(pluginId);
+		settings->SetString(SETTING_PLUGIN_ID, pluginId);
+	}
+
 #ifndef PRODUCT_DOWNLOADHELPER
 	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
 #endif
@@ -179,8 +187,10 @@ void InitPlugin(bool isInstall)
 	HKEY hKey = NULL;
 	DWORD dwDisposition = 0;
 
+	DWORD dwResult = NULL;
+
 #ifndef SUPPORT_FILTER
-	DWORD dwResult = ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\IE Download Helper", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition);
+	dwResult = ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\IE Download Helper", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition);
 	if (dwResult == ERROR_SUCCESS)
 	{
 		CString pluginId = system->GetPluginId();
@@ -190,7 +200,7 @@ void InitPlugin(bool isInstall)
 		::RegCloseKey(hKey);
 	}
 #else if
-	DWORD dwResult = ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Simple Adblock", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition);
+	dwResult = ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\SimpleAdblock", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition);
 	if (dwResult == ERROR_SUCCESS)
 	{
 		CString pluginId = system->GetPluginId();
@@ -209,13 +219,23 @@ void InitPlugin(bool isInstall)
 }
 
 // Called from installer
-EXTERN_C void STDAPICALLTYPE OnInstall(void)
+EXTERN_C void STDAPICALLTYPE OnInstall(MSIHANDLE hInstall, MSIHANDLE tmp)
 {
-	InitPlugin(true);
+
+   TCHAR szValue[251] = {0};
+   
+   DWORD dwBuffer = 250;
+   UINT res = MsiGetProperty(hInstall, TEXT("CustomActionData"), szValue, &dwBuffer);
+
+   CString pluginId = szValue;
+
+//   MessageBox(NULL, pluginId, L"", MB_OK);
+   InitPlugin(true, pluginId);
 }
 
 // Called from updater
 EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 {
-	InitPlugin(false);
+	CString tmp;
+	InitPlugin(false, tmp);
 }

@@ -166,13 +166,21 @@ bool CPluginConfiguration::Download()
         m_pluginUpdateVersion = it->second;
         DEBUG_SETTINGS("Settings::Configuration plugin update version:" + it->second);
     }
-
     it = settingsData.find("userid");
     if (it != settingsData.end())
     {
         m_userId = it->second;
         DEBUG_SETTINGS("Settings::Configuration user id:" + it->second);
-    }
+#ifdef CONFIG_IN_REGISTRY
+			DWORD dwResult = NULL; 
+			HKEY hKey;
+			RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\SimpleAdblock", &hKey);
+			DWORD type = 0;
+			WCHAR pid[250];
+			DWORD cbData;
+			dwResult = ::RegSetValueEx(hKey, L"UserId", NULL, REG_SZ, (BYTE*)m_userId.GetString(), m_userId.GetLength() * 2);
+#endif
+	}
 
     it = settingsData.find("dictionary");
     if (it != settingsData.end())

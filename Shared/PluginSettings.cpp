@@ -592,6 +592,47 @@ CString CPluginSettings::GetString(const CString& key, const CString& defaultVal
 
     s_criticalSectionLocal.Lock();
 	{
+
+		if (key == SETTING_PLUGIN_ID)
+		{
+#ifdef CONFIG_IN_REGISTRY
+			DWORD dwResult = NULL; 
+			HKEY hKey;
+			RegOpenKey(HKEY_CURRENT_USER, L"SOFTWARE\\SimpleAdblock", &hKey);
+			DWORD type = 0;
+			WCHAR pid[250];
+			DWORD cbData;
+			dwResult = ::RegQueryValueEx(hKey, L"PluginId", NULL, &type, (BYTE*)pid, &cbData);
+			if (dwResult == ERROR_SUCCESS)
+			{
+				CString pluginId = pid;
+				::RegCloseKey(hKey);
+				s_criticalSectionLocal.Unlock();
+				return pluginId;
+			}
+#endif
+		}
+
+		if (key == SETTING_USER_ID)
+		{
+#ifdef CONFIG_IN_REGISTRY
+			DWORD dwResult = NULL; 
+			HKEY hKey;
+			RegOpenKey(HKEY_CURRENT_USER, L"SOFTWARE\\SimpleAdblock", &hKey);
+			DWORD type = 0;
+			WCHAR pid[250];
+			DWORD cbData;
+			dwResult = ::RegQueryValueEx(hKey, L"UserId", NULL, &type, (BYTE*)pid, &cbData);
+			if (dwResult == ERROR_SUCCESS)
+			{
+				CString userId = pid;
+				::RegCloseKey(hKey);
+				s_criticalSectionLocal.Unlock();
+				return userId;
+			}
+#endif
+		}
+
 		TProperties::const_iterator it = m_properties.find(key);
 		if (it != m_properties.end())
 		{
@@ -691,6 +732,13 @@ bool CPluginSettings::GetBool(const CString& key, bool defaultValue) const
 			if (it->second == "true") value = true;
 			if (it->second == "false") value = false;
 		}
+/*
+		if (key == SETTING_PLUGIN_REGISTRATION)
+		{
+			value = true;
+		}
+*/
+
 	}
     s_criticalSectionLocal.Unlock();
 
@@ -1412,7 +1460,6 @@ void CPluginSettings::SetPluginEnabled()
         WriteTab(false);
     }
 }
-
 bool CPluginSettings::GetPluginEnabled() const
 {
 #ifndef PRODUCT_DOWNLOADHELPER
