@@ -199,7 +199,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppw.lib comDlg32.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppw.lib comDlg32.lib Msi.lib"
 				OutputFile="$(OutDir)\SimpleAdblock.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
