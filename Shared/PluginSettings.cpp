@@ -363,7 +363,9 @@ void CPluginSettings::Clear()
 		m_properties[SETTING_LANGUAGE] = "en";
 		m_properties[SETTING_DICTIONARY_VERSION] = "1";
 		m_properties[SETTING_PLUGIN_REGISTRATION] = "false";
+#ifdef PRODUCT_DOWNLOADHELPER
 		m_properties[SETTING_DOWNLOAD_LIMIT] = "15";
+#endif
 	}
 	s_criticalSectionLocal.Unlock();
 
