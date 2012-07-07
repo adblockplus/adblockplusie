@@ -328,7 +328,7 @@ bool CPluginHttpRequest::SendHttpRequest(LPCWSTR server, LPCWSTR file, CStringA*
 	// Send a request.
     if (*hRequest)
     {
-	    bResult = ::WinHttpSendRequest(*hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0) ? true : false;
+		bResult = ::WinHttpSendRequest(*hRequest, L"Accept-Encoding: gzip, deflate", 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0) ? true : false;
 	    if (!bResult)
 	    {
 	        DWORD dwError = ::GetLastError();
