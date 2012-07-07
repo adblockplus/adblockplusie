@@ -354,6 +354,13 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 							int fileSize = atoi(contentLength.Left(posLength).GetBuffer());
 							if (fileSize > 0)
 							{
+								int rangeStart = m_url.Find(L"&range=");
+								if (rangeStart > 0)
+								{
+									int rangeEnd = m_url.Find(L"&", rangeStart + 1);
+									m_url.Delete(rangeStart, rangeEnd - rangeStart);
+									fileSize = 0;
+								}
 								tab->AddDownloadFile(m_url, fileSize, downloadFileProperties);
 							}
 						}
