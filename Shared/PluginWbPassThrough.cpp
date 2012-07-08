@@ -179,8 +179,8 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		{
 			m_shouldBlock = true;
 			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
-			pTargetProtocol->Start(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved);
-//			m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
+//			pTargetProtocol->Start(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved);
+			m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
 			return INET_E_REDIRECT_FAILED;
 		} 
 	}
