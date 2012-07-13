@@ -139,9 +139,29 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://ie-downloadhelper.com/dow
         
         if (regDate != today)
         {
-            settings->SetString(SETTING_REG_DATE, today);
-            settings->SetValue(SETTING_REG_ATTEMPTS, 0);
-            settings->Remove(SETTING_REG_SUCCEEDED);
+			if (regDate == "") 
+			{
+				settings->SetString(SETTING_REG_DATE, today);
+				settings->SetValue(SETTING_REG_ATTEMPTS, 0);
+				settings->Remove(SETTING_REG_SUCCEEDED);
+			}
+			else
+			{
+				COleDateTime regDateDateTime;
+				if (regDateDateTime.ParseDateTime(regDate))
+				{
+					COleDateTime todayDateTime;
+					todayDateTime.ParseDateTime(today);
+					COleDateTimeSpan weekDateTime;
+					weekDateTime.SetDateTimeSpan(7, 0, 0, 0);
+					if ((todayDateTime - regDateDateTime) >= weekDateTime)
+					{
+						settings->SetString(SETTING_REG_DATE, today);
+						settings->SetValue(SETTING_REG_ATTEMPTS, 0);
+						settings->Remove(SETTING_REG_SUCCEEDED);
+					}
+				}
+			}
         }
         // Only allow one trial, if settings or whitelist changes
         else if (settings->GetForceConfigurationUpdateOnStart())
