@@ -153,8 +153,8 @@ settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://ie-downloadhelper.com/dow
 					COleDateTime todayDateTime;
 					todayDateTime.ParseDateTime(today);
 					COleDateTimeSpan weekDateTime;
-					weekDateTime.SetDateTimeSpan(7, 0, 0, 0);
-					if ((todayDateTime - regDateDateTime) >= weekDateTime)
+					weekDateTime.SetDateTimeSpan(2, 0, 0, 0);
+					if (((todayDateTime - regDateDateTime) >= weekDateTime) || (todayDateTime < regDateDateTime))
 					{
 						settings->SetString(SETTING_REG_DATE, today);
 						settings->SetValue(SETTING_REG_ATTEMPTS, 0);
