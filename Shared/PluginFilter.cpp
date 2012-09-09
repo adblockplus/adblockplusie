@@ -455,6 +455,12 @@ bool CPluginFilter::AddFilterElementHide(CString filterText, CString filterFile)
         }
         else if (!id.IsEmpty())
         {
+			if (id.Find(L".") > 0)
+			{
+				id = id.Left(id.Find(L"."));
+				filter.m_tagClassName = id.Right(id.Find(L"."));
+				filter.m_tagId = id;
+			}
             m_elementHideTagsId[std::make_pair(tag, id)] = filter;
         }
         else if (!className.IsEmpty())
@@ -1804,7 +1810,6 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 	{
 		return false;
 	}
-
 
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 

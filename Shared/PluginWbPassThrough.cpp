@@ -105,7 +105,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 			    {
 				    contentType = CFilter::contentTypeObjectSubrequest;
 			    }
-			    else if (ext == L".jsp" || ext == L".php")
+			    else if (ext == L".jsp" || ext == L".php" || ext == L"html")
 			    {
 				    contentType = CFilter::contentTypeSubdocument;
 			    }
@@ -114,7 +114,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 				    contentType = CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
 			    }
 	        }
-
 			if (client->ShouldBlock(src, contentType, domain, true))
 			{
                 isBlocked = true;
@@ -170,16 +169,29 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 	}
 
 
+	if (tab == NULL)
+	{
+//		if (src.Find(L"/adsense/") > 0)
+		if (client->ShouldBlock(src, NULL, L"", true))
+		{
+			isBlocked = true;
+
+		}
+	}
 
 	//TODO: cleanup here
 	//Fixes the iframe back button issue
 	if (client->GetIEVersion() > 6)
 	{
-		if ((contentType == CFilter::contentTypeSubdocument) && (isBlocked)) 
+		if (((contentType == CFilter::contentTypeSubdocument))&& (isBlocked)) 
 		{
 			m_shouldBlock = true;
 			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 //			pTargetProtocol->Start(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved);
+//			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_SSLUX_NAVBLOCKED, NULL);
+//			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_ENDDOWNLOADDATA, L"");
+			
+//			m_spInternetProtocolSink->ReportData(BSCF_LASTDATANOTIFICATION, 0, 0);
 			m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
 			return INET_E_REDIRECT_FAILED;
 		} 
