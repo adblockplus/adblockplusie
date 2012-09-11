@@ -175,6 +175,44 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		if (client->ShouldBlock(src, NULL, L"", true))
 		{
 			isBlocked = true;
+                CString srcExt = src;
+
+			    int pos = 0;
+			    if ((pos = src.Find('?')) > 0)
+			    {
+				    srcExt = src.Left(pos);
+			    }
+
+			    CString ext = srcExt.Right(4);
+
+			    if (ext == L".jpg" || ext == L".gif" || ext == L".png")
+			    {
+				    contentType = CFilter::contentTypeImage;
+			    }
+			    else if (ext == L".css")
+			    {
+				    contentType = CFilter::contentTypeStyleSheet;
+			    }
+			    else if (ext.Right(3) == L".js")
+			    {
+				    contentType = CFilter::contentTypeScript;
+			    }
+			    else if (ext == L".xml")
+			    {
+				    contentType = CFilter::contentTypeXmlHttpRequest;
+			    }
+			    else if (ext == L".swf")
+			    {
+				    contentType = CFilter::contentTypeObjectSubrequest;
+			    }
+			    else if (ext == L".jsp" || ext == L".php" || ext == L"html")
+			    {
+				    contentType = CFilter::contentTypeSubdocument;
+			    }
+			    else
+			    {
+				    contentType = CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
+			    }
 
 		}
 	}
@@ -183,6 +221,15 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 	//Fixes the iframe back button issue
 	if (client->GetIEVersion() > 6)
 	{
+		if ((contentType == CFilter::contentTypeImage) && (isBlocked))
+		{
+			m_shouldBlock = true;
+			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+//			m_spInternetProtocolSink->ReportResult(S_FALSE, 0, L"");
+			
+			return INET_E_REDIRECT_FAILED;
+
+		}
 		if (((contentType == CFilter::contentTypeSubdocument))&& (isBlocked)) 
 		{
 			m_shouldBlock = true;
@@ -191,8 +238,10 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 //			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_SSLUX_NAVBLOCKED, NULL);
 //			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_ENDDOWNLOADDATA, L"");
 			
-//			m_spInternetProtocolSink->ReportData(BSCF_LASTDATANOTIFICATION, 0, 0);
-			m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
+//			BaseClass::ReportData(BSCF_DATAFULLYAVAILABLE, 0, 0);
+			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
+			m_spInternetProtocolSink->ReportResult(INET_E_REDIRECT_FAILED, 0, L"res://mshtml.dll/blank.htm");
+			
 			return INET_E_REDIRECT_FAILED;
 		} 
 	}
