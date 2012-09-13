@@ -234,13 +234,15 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		{
 			m_shouldBlock = true;
 			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
-//			pTargetProtocol->Start(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved);
-//			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_SSLUX_NAVBLOCKED, NULL);
-//			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_ENDDOWNLOADDATA, L"");
-			
-//			BaseClass::ReportData(BSCF_DATAFULLYAVAILABLE, 0, 0);
+
 			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
-			m_spInternetProtocolSink->ReportResult(INET_E_REDIRECT_FAILED, 0, L"res://mshtml.dll/blank.htm");
+
+			//Here we check if we are running on Windows 8 Consumer Preview. 
+			//For some reason on that environment the next line causes IE to crash
+			if (CPluginSettings::GetInstance()->GetWindowsBuildNumber() != 8250)
+			{
+				m_spInternetProtocolSink->ReportResult(INET_E_REDIRECT_FAILED, 0, L"res://mshtml.dll/blank.htm");
+			}
 			
 			return INET_E_REDIRECT_FAILED;
 		} 
