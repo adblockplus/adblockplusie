@@ -86,6 +86,8 @@ CPluginSettings::CPluginSettings() :
     m_settingsFileWhitelist = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
 #endif
 
+	m_WindowsBuildNumber = 0;
+
     Clear();
     ClearTab();
 #ifdef SUPPORT_WHITELIST
@@ -740,11 +742,11 @@ bool CPluginSettings::GetBool(const CString& key, bool defaultValue) const
 			The next clause has to be uncommented if registration check has to be disabled.
 			TODO: Don't forget to comment it out
 		*/
-		if (key == SETTING_PLUGIN_REGISTRATION)
+/*		if (key == SETTING_PLUGIN_REGISTRATION)
 		{
 			value = true;
 		}
-
+*/
 
 	}
     s_criticalSectionLocal.Unlock();
@@ -2111,6 +2113,27 @@ bool CPluginSettings::RefreshWhitelist()
     }
 
     return true;
+}
+
+DWORD CPluginSettings::GetWindowsBuildNumber()
+{
+	if (m_WindowsBuildNumber == 0)
+	{
+	   OSVERSIONINFOEX osvi;
+	   SYSTEM_INFO si;
+	   BOOL bOsVersionInfoEx;
+	   DWORD dwType;
+
+	   ZeroMemory(&si, sizeof(SYSTEM_INFO));
+	   ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+
+	   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+	   bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
+
+	   m_WindowsBuildNumber = osvi.dwBuildNumber;
+	}
+
+   return m_WindowsBuildNumber;
 }
 
 #endif // SUPPORT_WHITELIST

@@ -256,6 +256,7 @@ public:
 private:
 
 	bool m_isDirtyWhitelist;
+	DWORD m_WindowsBuildNumber;
 
 	TDomainList m_whitelist;
 	TDomainList m_whitelistToGo;
@@ -277,6 +278,7 @@ public:
 	TDomainList GetWhiteListedDomainList(bool isToGo=false) const;
 
     bool RefreshWhitelist();
+	DWORD GetWindowsBuildNumber();
 
 #endif //SUPPORT_WHITELIST
 
