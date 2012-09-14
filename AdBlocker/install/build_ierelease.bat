@@ -5,9 +5,9 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=1.1.2
-set release=250
-set comment=Release 1.1.2 Enterprise installer 
+set version=1.1.4
+set release=260
+set comment=Release 1.1.4 Improved adblocking 
 
 
 :: 32 bit machine
@@ -71,6 +71,7 @@ goto end
 
 @echo on
 echo #define DOWNLOAD_SOURCE "home" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 devenv ..\..\AdPlugin.sln /rebuild "Release Production"
 devenv ..\..\AdPlugin.sln /rebuild "Release production 64 bit|x64"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
@@ -92,6 +93,7 @@ goto end
 
 @echo on
 echo #define DOWNLOAD_SOURCE "test" > ..\..\Shared\DownloadSource.h
+echo. > ..\..\Adblocker\EnterpriseId.h
 devenv ..\..\AdPlugin.sln /rebuild "Release Test"
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /edit adblock.aip /SetVersion %version%
 "%pathAdvancedInstaller%\AdvancedInstaller.com" /rebuild adblock.aip

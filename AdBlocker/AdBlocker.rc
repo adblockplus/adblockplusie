@@ -21,8 +21,8 @@ IDR_PLUGIN_MIMEFILTER REGISTRY                "AdBlockerMimeFilter.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,1,2
- PRODUCTVERSION 0,1,1,2
+ FILEVERSION 0,1,1,4
+ PRODUCTVERSION 0,1,1,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -39,12 +39,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Simple Adblock"
             VALUE "FileDescription", "Simple Adblock Module"
-            VALUE "FileVersion", "0, 1, 1, 2"
+            VALUE "FileVersion", "0, 1, 1, 4"
             VALUE "InternalName", "Simple Adblock"
-            VALUE "LegalCopyright", "Copyright 2011"
+            VALUE "LegalCopyright", "Copyright 2012"
             VALUE "OriginalFilename", "SimpleAdblock.dll"
             VALUE "ProductName", "Simple AdBlock"
-            VALUE "ProductVersion", "0, 1, 1, 2"
+            VALUE "ProductVersion", "0, 1, 1, 4"
         END
     END
     BLOCK "VarFileInfo"
