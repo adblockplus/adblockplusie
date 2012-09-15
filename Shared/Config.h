@@ -41,7 +41,6 @@
 
 // AdBlocker configuration
 
-#define CONFIG_IN_REGISTRY
 
 
 #if (defined PRODUCT_SIMPLEADBLOCK)
@@ -233,7 +232,7 @@
  #define SUPPORT_WHITELIST
  #undef  SUPPORT_FILE_DOWNLOAD
  #undef  SUPPORT_CONFIG
- #define SUPPORT_DOM_TRAVERSER
+// #define SUPPORT_DOM_TRAVERSER
  #define SUPPORT_FRAME_CACHING
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #undef  SUPPORT_FILTER

@@ -80,7 +80,9 @@ extern CComModule _Module;
  #include "..\AdBlocker\EnterpriseId.h"
 #if (defined INSTALLER_ID)
 	#define ENTERPRISE
+	#define CONFIG_IN_REGISTRY
 #endif
+
  #include "..\AdBlocker\Resource.h"
 #elif (defined PRODUCT_DOWNLOADHELPER)
  #include "..\DownloadHelper\Resource.h"
