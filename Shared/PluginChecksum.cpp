@@ -48,19 +48,6 @@ void CPluginChecksum::Add(BYTE value)
         m_r = (cipher + m_r) * m_c1 + m_c2;
         m_sum += cipher;
     }
-
-/*
-    CString r;
-    r.Format(L"%d", m_r);
-
-    CString cip;
-    cip.Format(L"%d", cipher);
-
-    CString v;
-    v.Format(L"%d", value);
-    
-    DEBUG_THREAD("val:" + v + " r:" + r + " cipher:" + cip)
-*/
 }
 
 

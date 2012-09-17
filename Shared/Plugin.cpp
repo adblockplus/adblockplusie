@@ -52,8 +52,8 @@ CPluginApp theApp;
 
 CPluginApp::CPluginApp()
 {
+	//Use next two lines to check for memory leaks 
 //	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-
 //	_CrtDumpMemoryLeaks();
 }
 
@@ -105,7 +105,6 @@ STDAPI DllCanUnloadNow(void)
 		if (CPluginClass::s_mimeFilter != NULL)
 		{
 			CPluginClass::s_mimeFilter->Unregister();
-//			delete CPluginClass::s_mimeFilter;
 			CPluginClass::s_mimeFilter = NULL;
 		}
 
@@ -229,7 +228,6 @@ EXTERN_C void STDAPICALLTYPE OnInstall(MSIHANDLE hInstall, MSIHANDLE tmp)
 
    CString pluginId = szValue;
 
-//   MessageBox(NULL, pluginId, L"", MB_OK);
    InitPlugin(true, pluginId);
 }
 

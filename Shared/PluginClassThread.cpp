@@ -24,9 +24,6 @@
 
 #include "ProtocolImpl.h"
 #include "ProtocolCF.h"
-#ifdef PRODUCT_SIMPLEADBLOCK
-#include "../Adblocker/AdblockPlusConvertor.h"
-#endif
 
 HANDLE CPluginClass::s_hMainThread = NULL;
 bool CPluginClass::s_isMainThreadDone = false;
@@ -147,50 +144,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
             }
         }
     }
-
-    // --------------------------------------------------------------------
-    // Generate list of BHO guids
-    // --------------------------------------------------------------------
-/*
-	if (!IsMainThreadDone(hMainThread))
-	{
-	    HKEY hKey;
-
-        CString debugText;
-        
-        debugText += L"--------------------------------------------------------------------------------";
-        debugText += L"\nBHO list";
-        debugText += L"\n--------------------------------------------------------------------------------";
-
-	    // Open the handler
-	    if ((::RegOpenKeyEx(HKEY_LOCAL_MACHINE, _T("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects"), 0, KEY_ENUMERATE_SUB_KEYS, &hKey)) == ERROR_SUCCESS)
-	    {
-            TCHAR szKeyName[255];
-            DWORD dwIndex = 0;
-            DWORD dwResult = 0;
-
-            do
-            {
-                DWORD dwKeyNameSize = 255;
-
-                dwResult = ::RegEnumKeyEx(hKey, dwIndex++, szKeyName, &dwKeyNameSize, NULL, NULL, NULL, NULL);
-                if (dwResult == ERROR_SUCCESS || dwResult == ERROR_MORE_DATA)
-                {
-                    debugText += L"\n" + CString(szKeyName);
-                }
-            }
-            while (dwResult == ERROR_SUCCESS || dwResult == ERROR_MORE_DATA);
-            
-            ::RegCloseKey(hKey);
-	    }
-	    else
-	    {
-            debugText += L"\nError opening registry";
-	    }
-
-        DEBUG_GENERAL(debugText)
-    }
-*/
 
 	// --------------------------------------------------------------------
     // Should update plugin ?
@@ -488,7 +441,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                     {
                         CString downloadFilterName = it->first;
 
-//                        CString filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
 						std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
 						CString filename = "";
 						if (fni != fileNamesList.end())
@@ -505,9 +457,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                         if (fi == currentFilterUrlList.end() || fi->second != version)
                         {
                             CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
-
-							
-//							AdblockPlusConvertor::Convert(CPluginSettings::GetDataPath(filename), CPluginSettings::GetDataPath(filename + ".css"));
                         }
                     }
 

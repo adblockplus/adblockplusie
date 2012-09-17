@@ -117,7 +117,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 			if (client->ShouldBlock(src, contentType, domain, true))
 			{
                 isBlocked = true;
-//				m_shouldBlock = true;
 
 				DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
 #ifndef PRODUCT_DOWNLOADHELPER
@@ -171,53 +170,51 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
 	if (tab == NULL)
 	{
-//		if (src.Find(L"/adsense/") > 0)
 		if (client->ShouldBlock(src, NULL, L"", true))
 		{
 			isBlocked = true;
-                CString srcExt = src;
+            CString srcExt = src;
 
-			    int pos = 0;
-			    if ((pos = src.Find('?')) > 0)
-			    {
-				    srcExt = src.Left(pos);
-			    }
+		    int pos = 0;
+		    if ((pos = src.Find('?')) > 0)
+		    {
+			    srcExt = src.Left(pos);
+		    }
 
-			    CString ext = srcExt.Right(4);
+		    CString ext = srcExt.Right(4);
 
-			    if (ext == L".jpg" || ext == L".gif" || ext == L".png")
-			    {
-				    contentType = CFilter::contentTypeImage;
-			    }
-			    else if (ext == L".css")
-			    {
-				    contentType = CFilter::contentTypeStyleSheet;
-			    }
-			    else if (ext.Right(3) == L".js")
-			    {
-				    contentType = CFilter::contentTypeScript;
-			    }
-			    else if (ext == L".xml")
-			    {
-				    contentType = CFilter::contentTypeXmlHttpRequest;
-			    }
-			    else if (ext == L".swf")
-			    {
-				    contentType = CFilter::contentTypeObjectSubrequest;
-			    }
-			    else if (ext == L".jsp" || ext == L".php" || ext == L"html")
-			    {
-				    contentType = CFilter::contentTypeSubdocument;
-			    }
-			    else
-			    {
-				    contentType = CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
-			    }
+		    if (ext == L".jpg" || ext == L".gif" || ext == L".png")
+		    {
+			    contentType = CFilter::contentTypeImage;
+		    }
+		    else if (ext == L".css")
+		    {
+			    contentType = CFilter::contentTypeStyleSheet;
+		    }
+		    else if (ext.Right(3) == L".js")
+		    {
+			    contentType = CFilter::contentTypeScript;
+		    }
+		    else if (ext == L".xml")
+		    {
+			    contentType = CFilter::contentTypeXmlHttpRequest;
+		    }
+		    else if (ext == L".swf")
+		    {
+			    contentType = CFilter::contentTypeObjectSubrequest;
+		    }
+		    else if (ext == L".jsp" || ext == L".php" || ext == L"html")
+		    {
+			    contentType = CFilter::contentTypeSubdocument;
+		    }
+		    else
+		    {
+			    contentType = CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
+		    }
 
 		}
 	}
 
-	//TODO: cleanup here
 	//Fixes the iframe back button issue
 	if (client->GetIEVersion() > 6)
 	{
@@ -225,7 +222,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 		{
 			m_shouldBlock = true;
 			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
-//			m_spInternetProtocolSink->ReportResult(S_FALSE, 0, L"");
 			
 			return INET_E_REDIRECT_FAILED;
 
@@ -271,7 +267,6 @@ HRESULT WBPassthruSink::Read(void *pv, ULONG cb, ULONG* pcbRead)
 
 			if (m_spInternetProtocolSink != NULL)
 			{
-//				m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
 				m_spInternetProtocolSink->ReportResult(S_OK, 0, NULL);
 			}
 			m_lastDataReported = true;

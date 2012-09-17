@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="SimpleAdblock"
 	ProjectGUID="{24AAF1A9-ACC0-4BEB-B781-084734D939B5}"
 	RootNamespace="SimpleAdblock"
@@ -1106,10 +1106,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\AdblockPlusConvertor.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\Shared\Plugin.cpp"
 				>
 			</File>
@@ -1307,23 +1303,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\AdblockPlusConvertor.h"
-				>
-			</File>
-			<File
 				RelativePath="..\Shared\Config.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Shared\DownloadSource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\EnterpriseId.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Logger.h"
 				>
 			</File>
 			<File
@@ -1513,26 +1497,6 @@
 			</File>
 			<File
 				RelativePath=".\SimpleAdblock.def"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="User Files"
-			>
-			<File
-				RelativePath="..\..\..\..\..\..\Application Data\Simple Adblock\debug_result.txt"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\..\Application Data\Simple Adblock\dictionary_w.ini"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\..\Application Data\Simple Adblock\easylist.txt"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\..\..\Application Data\Simple Adblock\settings.ini"
 				>
 			</File>
 		</Filter>
