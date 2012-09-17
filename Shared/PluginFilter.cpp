@@ -6,7 +6,6 @@
  #include "PluginSettings.h"
  #include "PluginClient.h"
  #include "PluginClientFactory.h"
- #include "../AdBlocker/AdblockPlusConvertor.h"
 #endif
 
 #include "PluginMutex.h"
@@ -818,7 +817,6 @@ void CPluginFilter::AddFilter(CString filterString, CString filterFile, int filt
 	if (filterString.GetLength() < 5)
 		return;
 
-//	CPluginDebug::Debug("Input: " + filterString);
     CString raw = filterString;
     
 	// Here we should find a key for the filter
@@ -1122,19 +1120,14 @@ void CPluginFilter::AddFilter(CString filterString, CString filterFile, int filt
             }
         }
     }
-//	CPluginDebug::Debug("Output: " + filter.m_filterText);
 
     // Add the filter
     if (dwKey != 0)
     {
-//		if (filter.m_filterText.Find(L".com^$third-party") == 0)
-//			return;
 		filterMap[dwKeyMap][dwKey] = filter;
 	}
     else
     {
-//		if (filter.m_filterText.Find(L".com^$third-party") == 0)
-//			return;
         m_filterMapDefault[filterType].push_back(filter);
 	}
 }
@@ -1229,8 +1222,6 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 			}
 		}
 
-//		if(filename.Find(L"filter2.txt") >= 0)
-//			return true;
         // Read file
         HANDLE hFile = ::CreateFile(m_dataPath + filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);  
         if (hFile == INVALID_HANDLE_VALUE)
@@ -1243,9 +1234,6 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
                 if (!downloadPath.IsEmpty())
                 {
                     client->RequestFilterDownload(filename, downloadPath);
-//					AdblockPlusConvertor convertor;
-
-//					convertor.Convert(downloadPath + filename, downloadPath + filename + L".css");
                 }
                 else if (filename == PERSONAL_FILTER_FILE)
                 {
@@ -1367,7 +1355,6 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 					wchar_t* fileContentBuffer = fileContent.GetBufferSetLength(dstSize);
 					memset(fileContentBuffer, 0, dstSize); 
 					memcpy(fileContentBuffer, bufferTmp, dstSize);
-//					fileContent.Truncate(dstSize);
 				}
 				delete [] bufferTmp;
 
@@ -1424,24 +1411,15 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 
 					try
 					{
-//						if ((filter.Find(L"^") < 0))
-//						{
-							// Element hiding not supported yet
-							if (filterType == CFilter::filterTypeElementHide)
-							{ 
-	//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
-	//							{
-									AddFilterElementHide(filter, filename);
-	//							}
-							}
-							else if (filterType != CFilter::filterTypeUnknown)
-							{
-	//							if ((filter.Find('[') < 0) && (filter.Find('^') < 0))
-	//							{
-									AddFilter(filter, filename, filterType);
-	//							}
-							}
-//						}
+						// Element hiding not supported yet
+						if (filterType == CFilter::filterTypeElementHide)
+						{ 
+							AddFilterElementHide(filter, filename);
+						}
+						else if (filterType != CFilter::filterTypeUnknown)
+						{
+							AddFilter(filter, filename, filterType);
+						}
 					}
 					catch(...)
 					{
@@ -1455,7 +1433,6 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 				int nextPos = fileContent.Find(L"\n", pos + 1);
 				if (nextPos < 0)
 				{
-//					CPluginDebug::Debug(tmp);
 					filter = "";
 					pos = -1;
 
@@ -1636,8 +1613,6 @@ bool CPluginFilter::IsMatchFilter(const CFilter& filter, CString src, const CStr
 
         startPos += length;
     }
-
-//    filter.m_hitCount++;
 
     return true;
 }

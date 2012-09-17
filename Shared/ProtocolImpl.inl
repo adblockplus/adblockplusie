@@ -141,8 +141,7 @@ inline HRESULT WINAPI QueryInterfaceDebug(void* pv, REFIID riid,
 		OLECHAR wszBuff[39];
 		int i = StringFromGUID2(riid, wszBuff, 39);
 		USES_CONVERSION;
-//		ATLTRACE(_T("=====>Unrecognized interface supported by target unknown=%s\n"), OLE2T(wszBuff));
-		//ATLASSERT(false);
+		ATLTRACE(_T("=====>Unrecognized interface supported by target unknown=%s\n"), OLE2T(wszBuff));
 	}
 
 	// We don't support this interface, so return an error.
@@ -238,11 +237,6 @@ inline STDMETHODIMP IInternetProtocolImpl::Start(
 inline STDMETHODIMP IInternetProtocolImpl::Continue(
 	/* [in] */ PROTOCOLDATA *pProtocolData)
 {
-	//TODO: cleanup here
-//	if (pProtocolData->grfFlags & PD_FORCE_SWITCH)
-//	{
-//		return S_OK;
-//	}
 	ATLASSERT(m_spInternetProtocol != 0);
 	return m_spInternetProtocol ?
 		m_spInternetProtocol->Continue(pProtocolData) :
@@ -558,7 +552,7 @@ inline STDMETHODIMP IInternetProtocolSinkImpl::QueryService(
 	/* [in] */ REFIID riid,
 	/* [out] */ void** ppvObject)
 {
-//	ATLASSERT(m_spServiceProvider != 0);
+	ATLASSERT(m_spServiceProvider != 0);
 	return m_spServiceProvider ?
 		m_spServiceProvider->QueryService(guidService, riid, ppvObject) :
 		E_UNEXPECTED;
@@ -569,7 +563,7 @@ inline STDMETHODIMP IInternetProtocolSinkImpl::GetBindInfo(
 	/* [out] */ DWORD *grfBINDF,
 	/* [in, out] */ BINDINFO *pbindinfo)
 {
-//	ATLASSERT(m_spInternetBindInfo != 0);
+	ATLASSERT(m_spInternetBindInfo != 0);
 	return m_spInternetBindInfo ?
 		m_spInternetBindInfo->GetBindInfo(grfBINDF, pbindinfo) :
 		E_UNEXPECTED;
@@ -581,7 +575,7 @@ inline STDMETHODIMP IInternetProtocolSinkImpl::GetBindString(
 	/* [in] */ ULONG cEl,
 	/* [in, out] */ ULONG *pcElFetched)
 {
-//	ATLASSERT(m_spInternetBindInfo != 0);
+	ATLASSERT(m_spInternetBindInfo != 0);
 	return m_spInternetBindInfo ?
 		m_spInternetBindInfo->GetBindString(ulStringType, ppwzStr, cEl,
 			pcElFetched) :
@@ -596,7 +590,7 @@ inline HRESULT CInternetProtocolSinkWithSP<T, ThreadModel>::OnStart(
 	IInternetBindInfo *pOIBindInfo,	DWORD grfPI, DWORD dwReserved,
 	IInternetProtocol* pTargetProtocol)
 {
-//	ATLASSERT(m_spServiceProvider == 0);
+	ATLASSERT(m_spServiceProvider == 0);
 	if (m_spServiceProvider)
 	{
 		return E_UNEXPECTED;
@@ -647,7 +641,7 @@ template<class Base>
 inline CComObjectSharedRef<Base>::CComObjectSharedRef(IUnknown* punkOuter) :
 	m_punkOuter(punkOuter)
 {
-//	ATLASSERT(m_punkOuter != 0);
+	ATLASSERT(m_punkOuter != 0);
 }
 
 template<class Base>
@@ -748,7 +742,7 @@ inline STDMETHODIMP CInternetProtocol<StartPolicy, ThreadModel>::Start(
 	LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
 	IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved)
 {
-//	ATLASSERT(m_spInternetProtocol != 0);
+	ATLASSERT(m_spInternetProtocol != 0);
 	if (!m_spInternetProtocol)
 	{
 		return E_UNEXPECTED;

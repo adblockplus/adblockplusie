@@ -77,9 +77,7 @@ extern CComModule _Module;
 #endif
 
 #if (defined PRODUCT_SIMPLEADBLOCK)
- #include "..\AdBlocker\EnterpriseId.h"
-#if (defined INSTALLER_ID)
-	#define ENTERPRISE
+#if (defined ENTERPRISE)
 	#define CONFIG_IN_REGISTRY
 #endif
 

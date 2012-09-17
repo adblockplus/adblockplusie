@@ -206,11 +206,7 @@ STDMETHODIMP CBSCallbackImpl::OnLowResource(DWORD)
 STDMETHODIMP CBSCallbackImpl::OnProgress(ULONG ulProgress, ULONG ulProgressMax, ULONG ulStatusCode, LPCWSTR szStatusText)
 {	
 	if (m_hWnd != NULL && ::IsWindow(m_pBar))
-	{
-		// inform the dialog box to display current status, don't use PostMessage
-		//CPluginDownloadDialog::DOWNLOADSTATUS downloadStatus = { ulProgress, ulProgressMax, ulStatusCode, szStatusText };
-		//::SendMessage(m_hWnd, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(&downloadStatus));
-		
+	{		
 		switch (ulStatusCode) 
 		{
 		case 1: // url
@@ -246,7 +242,6 @@ STDMETHODIMP CBSCallbackImpl::OnProgress(ULONG ulProgress, ULONG ulProgressMax, 
 	{
 		if (::WaitForSingleObject(m_hEventStop, 0) == WAIT_OBJECT_0)
 		{
-			//::SendMessage(m_hWnd, WM_SETTEXT, 0, (LPARAM)_T(""));	
 			return E_ABORT;  // canceled by the user
 		}
 	}

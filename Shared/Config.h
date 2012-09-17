@@ -34,7 +34,6 @@
 #define USERS_SCRIPT_ENTERLICENSE   L"/user_enterlicense.php"
 #define USERS_SCRIPT_UPGRADE        L"/user_upgrade.php"
 
-#define ENABLE_CONVERSSION_URL		L"http://my.ie-downloadhelper.com/user_enableffmpeg.php?plugin=c023ba90250a3d406e0a9f970c1909bef0338a37&user=7669335912535317&version=3.2&checksum=11232"
 // ----------------------------------------------------------------------------
 // Define actual configurations
 // ----------------------------------------------------------------------------
@@ -42,28 +41,21 @@
 // AdBlocker configuration
 
 
-
 #if (defined PRODUCT_SIMPLEADBLOCK)
+#define SADOMAIN L"simple-adblock.com"
  #ifdef ADPLUGIN_TEST_MODE
   #define USERS_HOST L"mytest.simple-adblock.com"
  #elif (defined ADPLUGIN_PRODUCTION_MODE)
-//  #undef  USERS_PORT
-//  #define USERS_PORT INTERNET_DEFAULT_HTTPS_PORT
-//  #undef  USERS_PROTOCOL
-//  #define USERS_PROTOCOL "https://"
   #define USERS_HOST L"my.simple-adblock.com"
  #else
   #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
  #endif
 
 #elif (defined PRODUCT_DOWNLOADHELPER)
+#define ENABLE_CONVERSSION_URL		L"http://my.ie-downloadhelper.com/user_enableffmpeg.php?plugin=c023ba90250a3d406e0a9f970c1909bef0338a37&user=7669335912535317&version=3.2&checksum=11232"
  #ifdef ADPLUGIN_TEST_MODE
   #define USERS_HOST L"mytest.ie-downloadhelper.com"
  #elif (defined ADPLUGIN_PRODUCTION_MODE)
-//  #undef  USERS_PORT
-//  #define USERS_PORT INTERNET_DEFAULT_HTTPS_PORT
-//  #undef  USERS_PROTOCOL
-//  #define USERS_PROTOCOL "https://"
   #define USERS_HOST L"my.ie-downloadhelper.com"
  #else
   #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
@@ -73,10 +65,6 @@
  #ifdef ADPLUGIN_TEST_MODE
   #define USERS_HOST L"mytest.ie-downloadhelper.com"
  #elif (defined ADPLUGIN_PRODUCTION_MODE)
-//  #undef  USERS_PORT
-//  #define USERS_PORT INTERNET_DEFAULT_HTTPS_PORT
-//  #undef  USERS_PROTOCOL
-//  #define USERS_PROTOCOL "https://"
   #define USERS_HOST L"my.ie-downloadhelper.com"
  #else
   #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"

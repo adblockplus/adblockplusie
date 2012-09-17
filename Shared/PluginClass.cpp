@@ -66,6 +66,7 @@ CPluginTab* CPluginClass::s_activeTab = NULL;
 
 CPluginClass::CPluginClass()
 {
+	//Use this line to debug memory leaks
 //	_CrtDumpMemoryLeaks();
 
     m_isAdviced = false;
@@ -108,12 +109,6 @@ CPluginClass::CPluginClass()
             settings->SetFirstRun();
         }
 		
-/*
-#ifdef _DEBUG
-settings->SetString(SETTING_PLUGIN_UPDATE_VERSION, "9.9.9");
-settings->SetString(SETTING_PLUGIN_UPDATE_URL, "http://ie-downloadhelper.com/download/downloadhelper_update_test 2.1.msi");
-#endif
-*/
         // Update?
         CString oldVersion = settings->GetString(SETTING_PLUGIN_VERSION);
 	    if (settings->IsFirstRunUpdate() || settings->GetString(SETTING_PLUGIN_UPDATE_VERSION) == IEPLUGIN_VERSION || oldVersion != IEPLUGIN_VERSION)
@@ -218,12 +213,6 @@ CPluginClass::~CPluginClass()
     CPluginSettings* settings = CPluginSettings::GetInstance();
     
     settings->DecrementTabCount();
-
-//	if (s_instances.GetSize() <= 1)
-//	{
-//		CPluginClientFactory::ReleaseMimeFilterClientInstance();		
-//	}
-
 }
 
 
@@ -397,6 +386,7 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 	{
 		((CPluginClass*)thisPtr)->ShowStatusBar();
 	}
+	return 0;
 }
 
 
@@ -413,14 +403,8 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
 	CPluginSystem* system = CPluginSystem::GetInstance(); 
 
-//	system->SetPluginId(L"testcanged");
-
-
 	if (unknownSite) 
 	{
-
-//		s_activeTab = m_tab;
-
         if (settings->IsMainProcess() && settings->IsMainUiThread())
         {
             DEBUG_GENERAL(L"================================================================================\nMAIN TAB UI\n================================================================================")
@@ -461,7 +445,6 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 		try 
 		{
 			// Check if loaded as BHO
-			// niels question - what is the difference on these two modes
 			if (GetBrowser())
 			{
 				CComPtr<IConnectionPoint> pPoint = GetConnectionPoint();
@@ -472,7 +455,6 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 					{
 						m_isAdviced = true;
 
-						//TODO: Lets try and load the status bar only when it's first opened
 						DWORD id;
 						HANDLE handle = ::CreateThread(NULL, 0, StartInitObject, (LPVOID)this, NULL, &id);
 						if (handle == NULL)
@@ -683,8 +665,6 @@ void CPluginClass::DisplayActivateMessage()
 	
 	CString messageString;
 	messageString.Format(L"The daily adblocklimit has been reached and no-more ads are blocked today.\nThe free version of Simple Adblock only blocks %d adrequests a day.\n\nTo enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
-
-	//Adblockcount=1000000 when Activationmessage has been displayed
 
 	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) + 1);
 	settings->Write();
@@ -1175,96 +1155,6 @@ bool CPluginClass::CreateStatusBarPane()
 		m_nPaneWidth = 22;
 #endif
 	}
-
-/*
-	// ****TEST
-	HWND hWndTest = ::GetWindow(GetParent(GetParent(hBrowserWnd)), GW_CHILD);
-	HWND hWndToolbar = NULL;
-	TCHAR szTitle[MAX_PATH];
-	while (hWndTest)
-	{
-		memset(szClassName, 0, MAX_PATH);
-		memset(szTitle, 0, MAX_PATH);
-		::GetClassName(hWndTest, szClassName, MAX_PATH);
-		::GetWindowText(hWndTest, szTitle, MAX_PATH);
-		if (_tcscmp(szClassName,_T("WorkerW")) == 0)
-		{
-			hWndTest = ::GetWindow(hWndTest, GW_CHILD);
-
-			while (hWndTest)
-			{
-				memset(szClassName, 0, MAX_PATH);
-				memset(szTitle, 0, MAX_PATH);
-				::GetClassName(hWndTest, szClassName, MAX_PATH);
-				::GetWindowText(hWndTest, szTitle, MAX_PATH);
-				if (_tcscmp(szClassName,_T("ReBarWindow32")) == 0)
-				{
-					hWndTest = ::GetWindow(hWndTest, GW_CHILD);
-
-					while (hWndTest)
-					{
-						memset(szClassName, 0, MAX_PATH);
-						memset(szTitle, 0, MAX_PATH);
-						::GetClassName(hWndTest, szClassName, MAX_PATH);
-						::GetWindowText(hWndTest, szTitle, MAX_PATH);
-						if (_tcscmp(szClassName,_T("TabBandClass")) == 0)
-						{
-							WINDOWPLACEMENT wndpl;
-							memset(&wndpl, 0, sizeof(WINDOWPLACEMENT));
-							GetWindowPlacement(hWndTest, &wndpl);
-							wndpl.rcNormalPosition.right = wndpl.rcNormalPosition.right - 70;
-							SetWindowPlacement(hWndTest, &wndpl);
-						}
-						if (_tcscmp(szClassName,_T("ControlBandClass")) == 0)
-						{
-							WINDOWPLACEMENT wndpl;
-							memset(&wndpl, 0, sizeof(WINDOWPLACEMENT));
-							GetWindowPlacement(hWndTest, &wndpl);
-							wndpl.rcNormalPosition.left = wndpl.rcNormalPosition.left - 70;
-							SetWindowPlacement(hWndTest, &wndpl);
-
-							hWndToolbar = hWndTest;
-						}
-						hWndTest = ::GetWindow(hWndTest, GW_HWNDNEXT);
-					}
-				}
-				hWndTest = ::GetWindow(hWndTest, GW_HWNDNEXT);
-			}
-
-			break;
-		}
-
-		hWndTest = ::GetWindow(hWndTest, GW_HWNDNEXT);
-	}
-
-	// Calculate pane height
-	CRect rcToolBar;
-	::GetClientRect(hWndToolbar, &rcToolBar);
-	
-	WINDOWPLACEMENT wndpl;
-	memset(&wndpl, 0, sizeof(WINDOWPLACEMENT));
-	GetWindowPlacement(hWndToolbar, &wndpl);
-//	wndpl.rcNormalPosition.left = wndpl.rcNormalPosition.left - 70;
-	wndpl.rcNormalPosition.right = wndpl.rcNormalPosition.right + 70;
-
-	SetWindowPlacement(hWndToolbar, &wndpl);
-
-	// Create pane window
-	HWND hWndNewPane2 = ::CreateWindowEx(
-		NULL,
-		MAKEINTATOM(GetAtomPaneClass()),
-		_T(""),
-		WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-		rcToolBar.Width() - 70,0,70,rcToolBar.Height(),
-		hWndToolbar,
-		(HMENU)3671,
-		_Module.m_hInst,
-		NULL);
-
-
-	// *** END TEST
-*/
-
 	// Create pane window
 	HWND hWndNewPane = ::CreateWindowEx(
 		NULL,
@@ -2688,7 +2578,6 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
                     httpRequest.AddPluginId();
                     httpRequest.Add("username", system->GetUserName(), false);
                     httpRequest.Add("errors", settings->GetErrorList());
-//                    httpRequest.Add("src", DOWNLOAD_SOURCE);
 
 
 			        hr = browser->Navigate(CComBSTR(httpRequest.GetUrl() + "&src=" + DOWNLOAD_SOURCE), NULL, NULL, NULL, NULL);
@@ -2780,7 +2669,7 @@ void CPluginClass::Unadvice()
 		        HRESULT hr = pPoint->Unadvise(m_nConnectionID);
 		        if (FAILED(hr))
 		        {
-//??        		    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_UNADVICE, "Class::Unadvice - Unadvise");
+        		    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_UNADVICE, "Class::Unadvice - Unadvise");
 		        }
 	        }
 

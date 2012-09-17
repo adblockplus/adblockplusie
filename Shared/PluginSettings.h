@@ -1,5 +1,5 @@
 /**
- * This class contains all client functionality af the IE plugin
+ * This class contains all client functionality of the IE plugin
  *
  * Exception errors are tested by calls to ExceptionsTest from: Main ...
  */

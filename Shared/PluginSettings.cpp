@@ -736,18 +736,6 @@ bool CPluginSettings::GetBool(const CString& key, bool defaultValue) const
 			if (it->second == "true") value = true;
 			if (it->second == "false") value = false;
 		}
-
-
-		/*
-			The next clause has to be uncommented if registration check has to be disabled.
-			TODO: Don't forget to comment it out
-		*/
-/*		if (key == SETTING_PLUGIN_REGISTRATION)
-		{
-			value = true;
-		}
-*/
-
 	}
     s_criticalSectionLocal.Unlock();
 
