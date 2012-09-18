@@ -6,9 +6,6 @@
 #ifdef SUPPORT_FILTER
 #include "PluginFilter.h"
 #endif
-#ifdef PRODUCT_DOWNLOADHELPER
-#include "PluginConfig.h"
-#endif
 #include "PluginSettings.h"
 #include "PluginClass.h"
 #include "PluginHttpRequest.h"
@@ -119,7 +116,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
                 isBlocked = true;
 
 				DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
-#ifndef PRODUCT_DOWNLOADHELPER
+
 				CPluginSettings* settings = CPluginSettings::GetInstance();
 				//is plugin registered
 				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
@@ -138,8 +135,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 						settings->Write();
 					}
 				}
-#endif
-
 			}
 #ifdef ENABLE_DEBUG_RESULT_IGNORED
 			else
@@ -331,107 +326,6 @@ STDMETHODIMP WBPassthruSink::OnResponse(DWORD dwResponseCode, LPCWSTR szResponse
 
 	CComPtr<IHttpNegotiate> spHttpNegotiate;
 	QueryServiceFromClient(&spHttpNegotiate);
-
-#ifdef PRODUCT_DOWNLOADHELPER
-
-	CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
-    CPluginClient* client = CPluginClient::GetInstance();
-    if (tab && client)
-    {
-		CPluginConfig* config = CPluginConfig::GetInstance();
-        
-        CString contentType = szResponseHeaders;
-
-        int pos = contentType.Find(L"Content-Type: ");
-        if (pos >= 0)
-        {
-            contentType = contentType.Mid(pos + 14);
-            
-            pos = contentType.FindOneOf(L"; \n\r");
-            if (pos > 0)
-            {				
-				bool isDownloadFile = false;
-				SDownloadFileProperties downloadFileProperties;
-
-				contentType = contentType.Left(pos);
-				if (config->GetDownloadProperties(contentType, downloadFileProperties))
-                {
-					isDownloadFile = true;
-                }
-				// Special hacks
-				else if (contentType == "text/plain")
-				{
-					CString domain = tab->GetDocumentDomain();
-					if (domain == "fragstein.org" && m_url.Find(L".flv") == m_url.GetLength() - 4)
-					{
-						isDownloadFile = config->GetDownloadProperties("video/x-flv", downloadFileProperties);
-					}
-					else if (domain == "metacafe.com" && m_url.Find(L"http://akvideos.metacafe.com/ItemFiles/") == 0)
-					{
-						isDownloadFile = config->GetDownloadProperties("video/x-flv", downloadFileProperties);
-					}
-				}
-
-				if (isDownloadFile)
-				{
-					// Find length
-					ULONG fetched = 0;
-					WCHAR* res[50];
-					HRESULT hres;
-					CComPtr<IWinInetHttpInfo> pWinInetInfo;
-					hres = m_spTargetProtocol.QueryInterface(&pWinInetInfo);
-					if (pWinInetInfo != NULL)
-					{
-						CStringA referer;
-						DWORD len = MAX_PATH;
-						DWORD flags = 0x80000000;
-						//HTTP_QUERY_REFERER = 35; HTTP_QUERY_FLAG_REQUEST_HEADERS = 0x80000000
-						hres = pWinInetInfo->QueryInfo(35 | 0x80000000, referer.GetBufferSetLength(MAX_PATH), &len, NULL, NULL);
-						downloadFileProperties.properties.referer.Format(L"%S", referer); 
-						referer = L"";
-					}
-
-					CStringA location;
-					DWORD len = 1024;
-					//INTERNET_OPTION_URL = 34
-					hres = pWinInetInfo->QueryOption(34, location.GetBufferSetLength(1024), &len);
-					if (hres == S_OK)
-					{
-						m_url.Format(L"%S", location);
-					}
-					CStringA contentLength = szResponseHeaders;
-
-					int posLength = contentLength.Find("Content-Length: ");
-					if (posLength > 0)
-					{
-						contentLength = contentLength.Mid(posLength + 16);
-			            
-						posLength = contentLength.FindOneOf("; \n\r");
-						if (posLength > 0)
-						{
-							int fileSize = atoi(contentLength.Left(posLength).GetBuffer());
-							if (fileSize > 0)
-							{
-								int rangeStart = m_url.Find(L"&range=");
-								if (rangeStart > 0)
-								{
-									int rangeEnd = m_url.Find(L"&", rangeStart + 1);
-									m_url.Delete(rangeStart, rangeEnd - rangeStart);
-									fileSize = 0;
-								}
-								tab->AddDownloadFile(m_url, fileSize, downloadFileProperties);
-							}
-						}
-					}
-				}
-            }
-        }
-		else
-		{
-		}
-    }
-
-#endif // PRODUCT_DOWNLOADHELPER
 
 	return spHttpNegotiate ? spHttpNegotiate->OnResponse(dwResponseCode, szResponseHeaders, szRequestHeaders, pszAdditionalRequestHeaders) : S_OK;
 }

@@ -64,34 +64,23 @@ extern CComModule _Module;
 #include "PluginDebugMacros.h"
 #include "PluginErrorCodes.h"
 
-#if (defined PRODUCT_SIMPLEADBLOCK || defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #include "Config.h"
 #endif
 
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #include "..\AdBlocker\Version.h"
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #include "..\DownloadHelper\Version.h"
-#elif (defined PRODUCT_DOWNLOADHELPER_APP)
- #include "..\DownloadHelper\Version.h"
 #endif
 
 #if (defined PRODUCT_SIMPLEADBLOCK)
 #if (defined ENTERPRISE)
 	#define CONFIG_IN_REGISTRY
 #endif
-
  #include "..\AdBlocker\Resource.h"
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #include "..\DownloadHelper\Resource.h"
-#elif (defined PRODUCT_DOWNLOADHELPER_APP)
- #include "..\DownloadHelperApp\Resource.h"
 #endif
 
-#if (defined PRODUCT_SIMPLEADBLOCK || defined PRODUCT_DOWNLOADHELPER)
+#if (defined PRODUCT_SIMPLEADBLOCK)
  #include "PluginDebug.h"
-#elif (defined PRODUCT_DOWNLOADHELPER_APP)
- #include "..\DownloadHelperApp\DownloadDebug.h"
 #endif
 
 

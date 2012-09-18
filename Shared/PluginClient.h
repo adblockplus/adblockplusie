@@ -5,9 +5,6 @@
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #include "../AdBlocker/SimpleAdblockClient.h"
  typedef CSimpleAdblockClient CPluginClient;
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #include "../DownloadHelper/DownloadHelperClient.h"
- typedef CDownloadHelperClient CPluginClient;
 #endif
 
 

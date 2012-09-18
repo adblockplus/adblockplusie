@@ -6,8 +6,6 @@
 
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #include "../AdBlocker/SimpleAdblockTab.h"
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #include "../DownloadHelper/DownloadHelperTab.h"
 #endif
 
 

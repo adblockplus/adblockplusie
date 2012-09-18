@@ -16,11 +16,6 @@
 #include "DownloadSource.h"
 #include "sddl.h"
 
-#ifdef PRODUCT_DOWNLOADHELPER
-#include "..\DownloadHelper\SettingsDialog.h"
-#include "pluginConfig.h"
-#endif
-
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -168,28 +163,6 @@ CPluginClass::CPluginClass()
         }
 
         int info = settings->GetValue(SETTING_PLUGIN_INFO_PANEL, 0);
-
-#ifdef PRODUCT_DOWNLOADHELPER
-		CString ffmpegLocation = settings->GetString(SETTING_FFMPEG, L"");
-		if (ffmpegLocation.IsEmpty())
-		{
-			if (!settings->GetBool(SETTING_FFMPEG_CHECK, false))
-			{
-				LPTSTR  strDLLPath1 = new TCHAR[_MAX_PATH];
-				::GetModuleFileName((HINSTANCE)&__ImageBase, strDLLPath1, _MAX_PATH);
-				CString dllPath;
-				dllPath.Format(L"%s", strDLLPath1);
-				dllPath = dllPath.Left(dllPath.GetLength() - CString(DLLNAME).GetLength());
-				CString ffmpegLocation = dllPath + CString("ffmpeg.exe");
-				CFileStatus fileStatus;
-				if (CFile::GetStatus(ffmpegLocation, fileStatus))
-				{
-					settings->SetString(SETTING_FFMPEG, ffmpegLocation);					
-				}
-				settings->SetBool(SETTING_FFMPEG_CHECK, true);
-			}
-		}
-#endif
 
 #ifdef ENABLE_DEBUG_RESULT
         CPluginDebug::DebugResultClear();
@@ -706,7 +679,6 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
     	return; 
 	}
 	CPluginSettings* settings = CPluginSettings::GetInstance();
-#ifndef PRODUCT_DOWNLOADHELPER
 	//Reset adblockcount every day
 	SYSTEMTIME stNow;
 	GetSystemTime(&stNow);
@@ -734,7 +706,6 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 			DisplayActivateMessage();
 		}
 	}
-#endif
 
 	// Get the IWebBrowser2 interface
 	CComQIPtr<IWebBrowser2, &IID_IWebBrowser2> WebBrowser2Ptr;
@@ -1457,7 +1428,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 	case ID_PLUGIN_ENABLE:
 		{
 			CPluginSettings* settings = CPluginSettings::GetInstance();
-#ifndef PRODUCT_DOWNLOADHELPER
 			//Display activation menu if enabling expired plugin
 			if (!settings->GetPluginEnabled())
 			{
@@ -1469,7 +1439,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 					return;
 				}
 			}
-#endif
 			settings->TogglePluginEnabled();
 
 			// Enable / disable mime filter
@@ -1494,40 +1463,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 #endif
 		}
 		break;
-#ifdef PRODUCT_DOWNLOADHELPER
-	case ID_ENTERLICENSE:
-		{
-			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ENTERLICENSE);
-			CPluginSettings* settings = CPluginSettings::GetInstance();
-			CPluginHttpRequest httpRequest(USERS_SCRIPT_ENTERLICENSE);
-			httpRequest.Add(L"plugin", system->GetPluginId());
-			httpRequest.Add(L"username", system->GetUserNameW());
-			httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
-			httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
-			CString url = httpRequest.GetUrl();
-			navigationErrorId = PLUGIN_ERROR_NAVIGATION_ENTERLICENSE;
-			break;
-		}
-	case ID_UPGRADE:
-		{
-			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_UPGRADE);
-			CPluginSettings* settings = CPluginSettings::GetInstance();
-			CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
-			httpRequest.Add(L"plugin", system->GetPluginId());
-			httpRequest.Add(L"username", system->GetUserNameW());
-			httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
-			httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
-			CString url = httpRequest.GetUrl();
-			navigationErrorId = PLUGIN_ERROR_NAVIGATION_UPGRADE;
-			break;
-		}
-	case ID_ENABLE_CONVERSSION:
-		{
-			url = ENABLE_CONVERSSION_URL;
-			navigationErrorId = PLUGIN_ERROR_NAVIGATION_ENABLE_CONVERSSION;			
-			break;
-		}
-#endif
 #ifndef ENTERPRISE
 	case ID_SETTINGS:
 		{
@@ -1536,62 +1471,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 			settings->ForceConfigurationUpdateOnStart();
 
-#ifdef PRODUCT_DOWNLOADHELPER
-
-			CSettingsDialog settingsDialog;
-
-			CPluginConfig* config = CPluginConfig::GetInstance();
-			std::vector<CString> extenssions = config->GetConversionExtenssions();
-			for (std::vector<CString>::const_iterator ext = extenssions.begin(); ext != extenssions.end(); ++ext)
-			{
-				settingsDialog.m_extenssions.push_back(ext->GetString());
-			}
-			settingsDialog.m_defDirVal = settings->GetString(SETTING_DEFAULT_DIR);
-			CString fo = settings->GetString(SETTING_DEFAULT_FORMAT, "-1").GetString();
-			settingsDialog.m_defFormatVal = _wtoi(settings->GetString(SETTING_DEFAULT_FORMAT, "-1").GetString());
-			settingsDialog.m_ffmpegPath = settings->GetString(SETTING_FFMPEG);
-			settingsDialog.m_defaultFfmpegPath = settings->GetString(SETTING_FFMPEG);
-			if (settings->GetString(SETTING_CLOSE_WHEN_FINISHED, "false") == "true")
-			{
-				settingsDialog.m_closeWhenFinishedVal = TRUE;
-			} 
-			else 
-			{
-				settingsDialog.m_closeWhenFinishedVal = FALSE;
-			}
-			INT_PTR response = settingsDialog.DoModal();
-			if (response == IDOK)
-			{
-				settings->SetString(SETTING_DEFAULT_DIR, settingsDialog.m_defDirVal);
-				CString defFormat;
-				if (settingsDialog.m_defFormatVal != -1)
-				{
-					settingsDialog.m_defFormatVal--;
-				}
-				defFormat.Format(L"%d", settingsDialog.m_defFormatVal);
-				settings->SetString(SETTING_DEFAULT_FORMAT, defFormat);
-				if (settingsDialog.m_closeWhenFinishedVal)
-				{
-					settings->SetString(SETTING_CLOSE_WHEN_FINISHED, "true");
-				}
-				else
-				{
-					settings->SetString(SETTING_CLOSE_WHEN_FINISHED, "false");
-				}
-
-				if (settingsDialog.m_ffmpegPath.IsEmpty())
-				{
-					settings->Remove(SETTING_FFMPEG);
-				}
-				else
-				{
-					settings->SetString(SETTING_FFMPEG, settingsDialog.m_ffmpegPath);
-				}
-				settings->Write(false);
-
-
-			}
-#endif
 #ifdef PRODUCT_SIMPLEADBLOCK
 
             CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
@@ -2029,69 +1908,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	fmii.cch = ctext.GetLength();
     ::SetMenuItemInfo(hMenu, ID_PLUGIN_ENABLE, FALSE, &fmii);
 
-#ifdef PRODUCT_DOWNLOADHELPER
-	if (settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-	{	
-		DeleteMenu(hMenu, ID_UPGRADE, FALSE);
-		DeleteMenu(hMenu, ID_ENTERLICENSE, FALSE);
-		if (settings->IsPluginUpdateAvailable())
-		{
-			RemoveMenu(hMenu, 6, MF_BYPOSITION);	
-		}
-		else
-		{
-			RemoveMenu(hMenu, 5, MF_BYPOSITION);	
-		}
-//		RemoveMenu(hMenu, 5, MF_BYPOSITION);	
-		//RemoveMenu(hMenu, 5, MF_BYPOSITION);	
-		//RemoveMenu(hMenu, 5, MF_BYPOSITION);			
-	}
-	else
-	{
-		// Upgrade
-		ctext = dictionary->Lookup("MENU_UPGRADE");
-		fmii.fMask  = MIIM_STATE | MIIM_STRING;
-		fmii.dwTypeData = ctext.GetBuffer();
-		fmii.fState = MFS_ENABLED;
-		fmii.cch = ctext.GetLength();
-		::SetMenuItemInfo(hMenu, ID_UPGRADE, FALSE, &fmii);
-
-			// Enter license key
-		ctext = dictionary->Lookup("MENU_ENTERLICENSE");
-		fmii.fMask  = MIIM_STATE | MIIM_STRING;
-		fmii.fState = MFS_ENABLED;
-		fmii.dwTypeData = ctext.GetBuffer();
-		fmii.cch = ctext.GetLength();
-		::SetMenuItemInfo(hMenu, ID_ENTERLICENSE, FALSE, &fmii);
-	}
-	
-	if (settings->GetString(SETTING_FFMPEG).IsEmpty())
-	{
-		ctext = dictionary->Lookup("MENU_ENABLE_CONVERSION");
-		fmii.fMask  = MIIM_STATE | MIIM_STRING;
-		fmii.fState = MFS_ENABLED;
-		fmii.dwTypeData = ctext.GetBuffer();
-		fmii.cch = ctext.GetLength();
-		::SetMenuItemInfo(hMenu, ID_ENABLE_CONVERSSION, FALSE, &fmii);
-	} 
-	else
-	{
-		DeleteMenu(hMenu, ID_ENABLE_CONVERSSION, FALSE);
-		int index = 6;
-		if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-		{	
-			index += 3;
-		}
-		if (settings->IsPluginUpdateAvailable())
-		{
-			index += 1;
-		}
-		RemoveMenu(hMenu, index, MF_BYPOSITION);
-	}
-	DeleteMenu(hMenu, ID_PLUGIN_ACTIVATE, FALSE);
-#endif
- 
-
 	// Settings
 #ifndef ENTERPRISE
 	ctext = dictionary->Lookup("MENU_SETTINGS");
@@ -2376,24 +2192,6 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
 		}
 
 #endif // PRODUCT_SIMPLEADBLOCK
-
-#ifdef PRODUCT_DOWNLOADHELPER
- #ifdef SUPPORT_WHITELIST
-	    if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsUrlWhiteListed(url))
- #else
-		if (CPluginSettings::GetInstance()->IsPluginEnabled())
- #endif
-		{
-			if (tab->HasDownloadFiles())
-			{
-    			hIcon = GetIcon(ICON_PLUGIN_ENABLED);
-			}
-			else
-			{
-				hIcon = GetIcon(ICON_PLUGIN_DISABLED);
-			}
-		}
-#endif
 	}
 
 	return hIcon;
