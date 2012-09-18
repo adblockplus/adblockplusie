@@ -237,6 +237,15 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 			
 			return INET_E_REDIRECT_FAILED;
 		} 
+		if ((isBlocked)) 
+		{
+			m_shouldBlock = true;
+			BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+			m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/javascript");
+			m_spInternetProtocolSink->ReportResult(INET_E_REDIRECT_FAILED, 0, L"res://mshtml.dll/blank.htm");
+			
+			return INET_E_REDIRECT_FAILED;
+		}
 	}
 #endif // SUPPORT_FILTER
 
