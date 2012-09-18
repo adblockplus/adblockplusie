@@ -269,68 +269,6 @@ void CPluginDictionary::Create(bool forceCreate)
 		    m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
 		    m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update Simple Adblock, your Internet Explorer will close before installation";
 
-#elif (defined PRODUCT_DOWNLOADHELPER)
-
-            // Popup menu
-		    m_dictionary["MENU_UPDATE"] = "Update IE Download Helper to newest version";
-		    m_dictionary["MENU_ABOUT"] = "About IE Download Helper";
-		    m_dictionary["MENU_ACTIVATE"] = "Activate IE Download Helper";
-		    m_dictionary["MENU_FAQ"] = "Frequently Asked Questions";
-		    m_dictionary["MENU_FEEDBACK"] = "Feedback";
-		    m_dictionary["MENU_INVITE_FRIENDS"] = "Invite friends";
-		    m_dictionary["MENU_UPGRADE"] = "Upgrade";
-		    m_dictionary["MENU_ENTERLICENSE"] = "Enter license key";
-		    m_dictionary["MENU_SETTINGS"] = "Settings";
-		    m_dictionary["MENU_ENABLE_CONVERSION"] = "Enable converssion";
-		    m_dictionary["MENU_ENABLE"] = "Enable IE Download Helper";
-		    m_dictionary["MENU_DISABLE"] = "Disable IE Download Helper";
-		    m_dictionary["MENU_DISABLE_ON"] = "Disable IE Download Helper on...";
-
-			m_dictionary["DOWNLOAD_LIMIT_MESSAGE"] = "The free version of IE DownloadHelper can download files up %d MB. To enjoy unlimited downloads please upgrade.";
-			m_dictionary["DOWNLOAD_LIMIT_TITLE"] = "Upgrade to IE DownloadHelper Pro";
-
-            // Update dialog
-		    m_dictionary["UPDATE_TITLE"] = "Update IE Download Helper";
-		    m_dictionary["UPDATE_NEW_VERSION_EXISTS"] = "A new version of IE Download Helper is available";
-		    m_dictionary["UPDATE_DO_YOU_WISH_TO_DOWNLOAD"] = "Do you wish to download it now?";
-
-            // Download update dialog
-		    m_dictionary["DOWNLOAD_UPDATE_TITLE"] = "Download IE Download Helper";
-		    m_dictionary["DOWNLOAD_UPDATE_BUTTON"] = "Update";
-		    m_dictionary["DOWNLOAD_PLEASE_WAIT"] = "Please wait...";
-		    m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
-			m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update IE Download Helper, your Internet Explorer will close before installation";
-
-			// File download
-			m_dictionary["DOWNLOAD_FILE_SAVE_TITLE"] = "Save file";
-			m_dictionary["DOWNLOAD_FILE_NO_FILES"] = "No files to download";
-
-			// Download manager
-			m_dictionary["MANAGER_TITLE"] = "Download Manager";
-			m_dictionary["MANAGER_DOWNLOAD_TITLE"] = "File download";
-			m_dictionary["MANAGER_DOWNLOAD_PROGRESS_TEXT"] = "Downloaded";
-			m_dictionary["MANAGER_DOWNLOAD_PROGRESS_TEXT_OF"] = "of";
-			m_dictionary["MANAGER_DOWNLOAD_FILE"] = "File";
-			m_dictionary["MANAGER_DOWNLOAD_FILE_TEMP"] = "Temporary file";
-			m_dictionary["MANAGER_CONVERSION_TITLE"] = "File conversion";
-			m_dictionary["MANAGER_CONVERSION_FILE"] = "File";
-			m_dictionary["MANAGER_CONVERSION_NONE"] = "None";
-			m_dictionary["MANAGER_CONVERSION_AWAITING_DOWNLOAD"] = "Awating file download";
-			m_dictionary["MANAGER_CONVERSION_CONVERTED_SIZE"] = "Converted file size";
-			m_dictionary["MANAGER_CONVERSION_TIME_ELAPSED"] = "Elapsed time";
-			m_dictionary["MANAGER_STATUS_TITLE"] = "Status";
-			m_dictionary["MANAGER_STATUS_DONE"] = "Done";
-			m_dictionary["MANAGER_STATUS_PREPARING_DOWNLOAD"] = "Preparing download...";
-			m_dictionary["MANAGER_STATUS_DOWNLOADING"] = "Downloading...";
-			m_dictionary["MANAGER_STATUS_CONVERTING"] = "Converting...";
-			m_dictionary["MANAGER_ERROR_LAUNCH"] = "Unable to launch converter";
-			m_dictionary["MANAGER_ERROR_UNKNOWN"] = "Unknown error occured";
-			m_dictionary["MANAGER_ERROR_DOWNLOAD_FAILURE"] = "Download failed";
-			m_dictionary["MANAGER_ERROR_DOWNLOAD_FILE_NOT_FOUND"] = "Download failed. File not found";
-
-			m_dictionary["GENERAL_DOWNLOAD"] = "Download";
-
-			dictionaryVersion = 2;
 #endif
             // General texts
 		    m_dictionary["GENERAL_YES"] = "Yes";

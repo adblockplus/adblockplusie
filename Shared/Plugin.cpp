@@ -3,8 +3,6 @@
 #include "Plugin.h"
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #include "../AdBlocker/AdBlocker_i.c"
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #include "../DownloadHelper/DownloadHelper_i.c"
 #endif
 
 #include "PluginClass.h"
@@ -146,9 +144,7 @@ void InitPlugin(bool isInstall, CString pluginId)
 		settings->SetString(SETTING_PLUGIN_ID, pluginId);
 	}
 
-#ifndef PRODUCT_DOWNLOADHELPER
 	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
-#endif
     settings->Write();
 
 	if (isInstall)

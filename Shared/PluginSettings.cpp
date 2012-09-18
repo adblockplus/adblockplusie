@@ -365,9 +365,6 @@ void CPluginSettings::Clear()
 		m_properties[SETTING_LANGUAGE] = "en";
 		m_properties[SETTING_DICTIONARY_VERSION] = "1";
 		m_properties[SETTING_PLUGIN_REGISTRATION] = "false";
-#ifdef PRODUCT_DOWNLOADHELPER
-		m_properties[SETTING_DOWNLOAD_LIMIT] = "15";
-#endif
 	}
 	s_criticalSectionLocal.Unlock();
 
@@ -753,11 +750,7 @@ void CPluginSettings::SetBool(const CString& key, bool value)
 
 bool CPluginSettings::IsPluginEnabled() const
 {
-#if (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
-	return m_isPluginEnabledTab;
-#else
 	return m_isPluginEnabledTab && !GetBool(SETTING_PLUGIN_EXPIRED, false);
-#endif
 }
 
 
@@ -1459,7 +1452,6 @@ void CPluginSettings::SetPluginEnabled()
 }
 bool CPluginSettings::GetPluginEnabled() const
 {
-#ifndef PRODUCT_DOWNLOADHELPER
 	//Display plugin as disabled if limit is passed
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && 
@@ -1468,7 +1460,6 @@ bool CPluginSettings::GetPluginEnabled() const
 	{
 		return false;
 	}
-#endif
 	return m_isPluginEnabledTab;
 }
 

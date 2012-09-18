@@ -9,9 +9,6 @@
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define FILTERS_PROTOCOL "http://"
  #define FILTERS_HOST "simple-adblock.com/download/filterlists"
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #define FILTERS_PROTOCOL "http://"
- #define FILTERS_HOST "ie-downloadhelper.com/download"
 #endif
  
 // ----------------------------------------------------------------------------
@@ -50,28 +47,8 @@
  #else
   #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
  #endif
-
-#elif (defined PRODUCT_DOWNLOADHELPER)
-#define ENABLE_CONVERSSION_URL		L"http://my.ie-downloadhelper.com/user_enableffmpeg.php?plugin=c023ba90250a3d406e0a9f970c1909bef0338a37&user=7669335912535317&version=3.2&checksum=11232"
- #ifdef ADPLUGIN_TEST_MODE
-  #define USERS_HOST L"mytest.ie-downloadhelper.com"
- #elif (defined ADPLUGIN_PRODUCTION_MODE)
-  #define USERS_HOST L"my.ie-downloadhelper.com"
- #else
-  #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
- #endif
-
-#elif (defined PRODUCT_DOWNLOADHELPER_APP)
- #ifdef ADPLUGIN_TEST_MODE
-  #define USERS_HOST L"mytest.ie-downloadhelper.com"
- #elif (defined ADPLUGIN_PRODUCTION_MODE)
-  #define USERS_HOST L"my.ie-downloadhelper.com"
- #else
-  #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
- #endif
-
 #else
- #error "Undefined product. Please specify PRODUCT_SIMPLEADBLOCK or PRODUCT_DOWNLOADHELPER in configuration"
+ #error "Undefined product. Please specify PRODUCT_SIMPLEADBLOCK in configuration"
 #endif
 
 // ----------------------------------------------------------------------------
@@ -120,15 +97,9 @@
 
 #undef ENABLE_DEBUG_SELFTEST
 
-#if (defined PRODUCT_DOWNLOADHELPER_APP)
- #define DEBUG_FUNC CDownloadDebug::Debug
- #define DEBUG_ERROR_FUNC CDownloadDebug::DebugError
- #define DEBUG_ERROR_CODE_FUNC CDownloadDebug::DebugErrorCode
-#else
- #define DEBUG_FUNC CPluginDebug::Debug
- #define DEBUG_ERROR_FUNC CPluginDebug::DebugError
- #define DEBUG_ERROR_CODE_FUNC CPluginDebug::DebugErrorCode
-#endif
+#define DEBUG_FUNC CPluginDebug::Debug
+#define DEBUG_ERROR_FUNC CPluginDebug::DebugError
+#define DEBUG_ERROR_CODE_FUNC CPluginDebug::DebugErrorCode
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_GENERAL)
  #undef  DEBUG_GENERAL
@@ -205,11 +176,7 @@
 #endif
 
 #undef  DEBUG_ERROR_LOG
-#if (defined PRODUCT_DOWNLOADHELPER_APP)
- #define DEBUG_ERROR_LOG(err, id, subid, description) CDownloadDebug::LogPluginError(err, id, subid, description);
-#else
- #define DEBUG_ERROR_LOG(err, id, subid, description) CPluginClient::LogPluginError(err, id, subid, description);
-#endif
+#define DEBUG_ERROR_LOG(err, id, subid, description) CPluginClient::LogPluginError(err, id, subid, description);
 
 // ----------------------------------------------------------------------------
 // Features
@@ -222,20 +189,6 @@
  #undef  SUPPORT_CONFIG
  #define SUPPORT_DOM_TRAVERSER
  #define SUPPORT_FRAME_CACHING
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #undef  SUPPORT_FILTER
- #undef  SUPPORT_WHITELIST
- #define SUPPORT_FILE_DOWNLOAD
- #define SUPPORT_CONFIG
- #define SUPPORT_DOM_TRAVERSER
- #undef  SUPPORT_FRAME_CACHING
-#elif (defined PRODUCT_DOWNLOADHELPER_APP)
- #undef  SUPPORT_FILTER
- #undef  SUPPORT_WHITELIST
- #define SUPPORT_FILE_DOWNLOAD
- #define SUPPORT_CONFIG
- #undef  SUPPORT_DOM_TRAVERSER
- #undef  SUPPORT_FRAME_CACHING
 #endif
 
 // ----------------------------------------------------------------------------
@@ -284,31 +237,21 @@
 
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define BHO_NAME _T("Simple Adblock BHO/1.0")
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #define BHO_NAME _T("Download Helper BHO/1.0")
-#elif (defined PRODUCT_DOWNLOADHELPER_APP)
- #define BHO_NAME _T("Download Helper BHO/1.0")
 #endif
 
 // Name of ini file in Windows directory for uninstall
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define UNINSTALL_INI_FILE "SimpleAdblock.ini"
-#elif (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
- #define UNINSTALL_INI_FILE "DownloadHelper.ini"
 #endif
 
 // Name of user dir
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define USER_DIR "Simple Adblock\\"
-#elif (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
- #define USER_DIR "Download Helper\\"
 #endif
 
 // Prefix on temp dir files
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define TEMP_FILE_PREFIX "ab_"
-#elif (defined PRODUCT_DOWNLOADHELPER || defined PRODUCT_DOWNLOADHELPER_APP)
- #define TEMP_FILE_PREFIX "dh_"
 #endif
 
 // Dictionary filename
@@ -343,27 +286,16 @@
 // Install MSI filename
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define INSTALL_MSI_FILE "simpleadblock.msi"
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #define INSTALL_MSI_FILE "downloadhelper.msi"
 #endif
 
 // Status bar pane name
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define STATUSBAR_PANE_NAME "SimpleAdblockStatusBarPane"
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #define STATUSBAR_PANE_NAME "DownloadHelperStatusBarPane"
-	#if (defined WIN64)
-		#define DLLNAME "DownloadHelperx64.dll"
-	#else
-		#define DLLNAME "DownloadHelper.dll"
-	#endif
 #endif
 
 // Status bar pane number
 #if (defined PRODUCT_SIMPLEADBLOCK)
  #define STATUSBAR_PANE_NUMBER 2
-#elif (defined PRODUCT_DOWNLOADHELPER)
- #define STATUSBAR_PANE_NUMBER 3
 #endif
 
 
