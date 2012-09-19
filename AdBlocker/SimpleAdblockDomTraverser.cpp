@@ -102,7 +102,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
 
 			    if (!src.IsEmpty())
 			    {
-			        cache->m_isHidden = client->ShouldBlock(src, CFilter::contentTypeObject, m_domain);
+//			        cache->m_isHidden = client->ShouldBlock(src, CFilter::contentTypeObject, m_domain);
 		            if (cache->m_isHidden)
                     {
 	                    HideElement(pEl, "object", src, true, indent);
