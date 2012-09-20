@@ -5,9 +5,9 @@
 cls
 
 :: SET BUILD PARAMETERS!!!!!
-set version=1.1.4
-set release=260
-set comment=Release 1.1.4 Improved adblocking 
+set version=1.1.5
+set release=269
+set comment=release 1.1.5, bugfix crash in browser and fix performance on youtube 
 
 
 :: 32 bit machine
