@@ -19,7 +19,6 @@
 #define USERS_PATH                  L""
 #define USERS_PORT                  INTERNET_DEFAULT_HTTP_PORT
 
-#define USERS_SCRIPT_ACTIVATE       L"/user_activate.php"
 #define USERS_SCRIPT_SETTINGS       L"/user_manager.php"
 #define USERS_SCRIPT_ABOUT          L"/user_about.php"
 #define USERS_SCRIPT_FAQ            L"/user_faq.php"
@@ -28,7 +27,6 @@
 #define USERS_SCRIPT_WELCOME        L"/user_welcome.php"
 #define USERS_SCRIPT_USER_SETTINGS  L"/user_mysettings.php"
 #define USERS_SCRIPT_INVITATION     L"/user_invitation.php"
-#define USERS_SCRIPT_ENTERLICENSE   L"/user_enterlicense.php"
 #define USERS_SCRIPT_UPGRADE        L"/user_upgrade.php"
 
 // ----------------------------------------------------------------------------

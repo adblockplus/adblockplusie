@@ -102,8 +102,6 @@ private:
 	bool SetMenuBar(HMENU hMenu, const CString& url);	
 	HMENU CreatePluginMenu(const CString& url);
 
-	void DisplayActivateMessage();
-
 	void DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags);
 	bool CreateStatusBarPane();
 

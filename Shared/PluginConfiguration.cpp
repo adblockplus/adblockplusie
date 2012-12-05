@@ -196,15 +196,6 @@ bool CPluginConfiguration::Download()
         DEBUG_SETTINGS("Settings::Configuration dictionary version:" + it->second);
     }
 
-
-    it = settingsData.find("pluginexpired");
-    if (it != settingsData.end())
-    {
-        m_isPluginExpired = it->second == "true";
-        m_isValidPluginExpired = true;
-        DEBUG_SETTINGS("Settings::Configuration plugin expired:" + it->second);
-    }
-
     m_isValidPluginUpdate = 
         settingsData.find("pluginupdate") != settingsData.end() && 
         settingsData.find("pluginupdatev") != settingsData.end();

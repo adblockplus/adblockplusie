@@ -75,7 +75,6 @@ BEGIN
     POPUP "Popup"
     BEGIN
         MENUITEM "Update Simple Adblock",       ID_PLUGIN_UPDATE
-        MENUITEM "Activate Simple Adblock",     ID_PLUGIN_ACTIVATE
         MENUITEM "About Simple Adblock",        ID_ABOUT
         MENUITEM SEPARATOR
         MENUITEM "FAQ",                         ID_FAQ

@@ -116,25 +116,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
                 isBlocked = true;
 
 				DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
-
-				CPluginSettings* settings = CPluginSettings::GetInstance();
-				//is plugin registered
-				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-				{
-					//is the limit exceeded?
-					if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0))
-						&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
-					{
-						return false;
-					} 
-
-					else 
-					{
-						//Increment blocked ads counter if not registered and not yet exceeded the adblocklimit
-						settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) + 1);
-						settings->Write();
-					}
-				}
 			}
 #ifdef ENABLE_DEBUG_RESULT_IGNORED
 			else

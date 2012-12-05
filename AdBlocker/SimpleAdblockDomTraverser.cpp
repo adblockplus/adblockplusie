@@ -29,18 +29,6 @@ bool CPluginDomTraverser::OnIFrame(IHTMLElement* pEl, const CString& url, CStrin
 
 bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPluginDomTraverserCache* cache, bool isDebug, CString& indent)
 {
-	//is plugin registered
-	CPluginSettings* settings = CPluginSettings::GetInstance();
-	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-	{
-		//is the limit exceeded?
-		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) && 
-			(settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
-		{
-			return true;
-		} 
-	}
-
 	if (cache->m_isHidden)
 	{
 		return false;
