@@ -632,45 +632,6 @@ void CPluginClass::ShowStatusBar()
 	}
 }
 
-void CPluginClass::DisplayActivateMessage()
-{
-	CPluginSettings* settings = CPluginSettings::GetInstance();
-	
-	CString messageString;
-	messageString.Format(L"The daily adblocklimit has been reached and no-more ads are blocked today.\nThe free version of Simple Adblock only blocks %d adrequests a day.\n\nTo enjoy unlimited adblocking please upgrade.", settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0));
-
-	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) + 1);
-	settings->Write();
-
-	LRESULT res = MessageBox(NULL, messageString, L"Upgrade to Simple Adblock Pro", MB_OKCANCEL);
-	if (res == IDOK)
-	{
-		CPluginSettings* settings = CPluginSettings::GetInstance();
-		CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
-		CPluginSystem* system = CPluginSystem::GetInstance();
-		httpRequest.Add(L"plugin", system->GetPluginId());
-		httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
-		httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
-		CString url = httpRequest.GetUrl();
-
-		CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());							
-		CComQIPtr<IWebBrowser2> browser = tab->m_plugin->GetBrowser();    
-		if (!url.IsEmpty() && browser)
-		{
-			VARIANT vFlags;
-			vFlags.vt = VT_I4;
-			vFlags.intVal = navOpenInNewTab;
-
-			HRESULT hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
-			if (FAILED(hr))
-			{
-				vFlags.intVal = navOpenInNewWindow;
-
-				hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
-			}
-		}
-	}
-}
 void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 {
 
@@ -678,33 +639,10 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	{
     	return; 
 	}
-	CPluginSettings* settings = CPluginSettings::GetInstance();
-	//Reset adblockcount every day
-	SYSTEMTIME stNow;
-	GetSystemTime(&stNow);
-	WORD limitDay = settings->GetValue(SETTING_PLUGIN_LIMITDAY, 0);
-	if (limitDay != stNow.wDay)
+	//Register a mime filter if it's not registered yet
+	if (s_mimeFilter == NULL)
 	{
-		settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
-		settings->SetValue(SETTING_PLUGIN_LIMITDAY, stNow.wDay);
-		settings->Write();
-		settings->Read();
-
-		//Also register a mime filter if it's not registered yet
-		if (s_mimeFilter == NULL)
-		{
-			s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
-		}
-
-	}
-
-	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-	{
-		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) == settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) 
-			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
-		{
-			DisplayActivateMessage();
-		}
+		s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
 	}
 
 	// Get the IWebBrowser2 interface
@@ -1418,33 +1356,15 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 		}
         break;
 
-	case ID_PLUGIN_ACTIVATE:
-		{
-			url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ACTIVATE);
-			navigationErrorId = PLUGIN_ERROR_NAVIGATION_ACTIVATE;
-		}        
-		break;
-
 	case ID_PLUGIN_ENABLE:
 		{
 			CPluginSettings* settings = CPluginSettings::GetInstance();
-			//Display activation menu if enabling expired plugin
-			if (!settings->GetPluginEnabled())
-			{
-				if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && 
-					(settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >=settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) && 
-					(settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
-				{		
-					DisplayActivateMessage();
-					return;
-				}
-			}
+
 			settings->TogglePluginEnabled();
 
 			// Enable / disable mime filter
 			s_criticalSectionLocal.Lock();
 			{
-				//Display activation menu if enabling expired plugin
 				if (settings->GetPluginEnabled())
 				{
 					s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
@@ -1705,25 +1625,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     // Update settings
 	m_tab->OnUpdateSettings(false);
 
-#ifndef ENTERPRISE
-    // Plugin activate
-    if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-    {
-        ctext = dictionary->Lookup("MENU_ACTIVATE");
-	    fmii.fMask  = MIIM_STATE | MIIM_STRING;
-	    fmii.fState = MFS_ENABLED;
-        fmii.dwTypeData = ctext.GetBuffer();
-    	fmii.cch = ctext.GetLength();
-        ::SetMenuItemInfo(hMenu, ID_PLUGIN_ACTIVATE, FALSE, &fmii);
-    }
-    else
-    {
-        ::DeleteMenu(hMenu, ID_PLUGIN_ACTIVATE, FALSE);
-    }
-#else
-	::DeleteMenu(hMenu, ID_PLUGIN_ACTIVATE, FALSE);
-#endif
-#ifndef ENTERPRISE
     // Plugin update
     if (settings->IsPluginUpdateAvailable())
     {
@@ -1738,9 +1639,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     {
         ::DeleteMenu(hMenu, ID_PLUGIN_UPDATE, FALSE);
     }
-#else 
-	::DeleteMenu(hMenu, ID_PLUGIN_UPDATE, FALSE);
-#endif
     #ifdef SUPPORT_WHITELIST
     {
 	    // White list domain

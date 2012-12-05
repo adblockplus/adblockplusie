@@ -41,7 +41,6 @@
 #define ID_ABOUT                        35001
 #define ID_INVITEFRIENDS                35002
 #define ID_SETTINGS                     35003
-#define ID_PLUGIN_ACTIVATE              35005
 #define ID_PLUGIN_ENABLE                35004
 #define ID_FAQ                          35007
 #define ID_PLUGIN_UPDATE                35008

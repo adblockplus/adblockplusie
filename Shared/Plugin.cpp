@@ -144,7 +144,6 @@ void InitPlugin(bool isInstall, CString pluginId)
 		settings->SetString(SETTING_PLUGIN_ID, pluginId);
 	}
 
-	settings->SetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0);
     settings->Write();
 
 	if (isInstall)

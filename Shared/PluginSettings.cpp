@@ -360,11 +360,9 @@ void CPluginSettings::Clear()
 	{
 		m_properties.clear();
 
-		m_properties[SETTING_PLUGIN_EXPIRED] = "false";
 		m_properties[SETTING_PLUGIN_VERSION] = IEPLUGIN_VERSION;
 		m_properties[SETTING_LANGUAGE] = "en";
 		m_properties[SETTING_DICTIONARY_VERSION] = "1";
-		m_properties[SETTING_PLUGIN_REGISTRATION] = "false";
 	}
 	s_criticalSectionLocal.Unlock();
 
@@ -750,7 +748,7 @@ void CPluginSettings::SetBool(const CString& key, bool value)
 
 bool CPluginSettings::IsPluginEnabled() const
 {
-	return m_isPluginEnabledTab && !GetBool(SETTING_PLUGIN_EXPIRED, false);
+	return m_isPluginEnabledTab;
 }
 
 
@@ -1452,14 +1450,6 @@ void CPluginSettings::SetPluginEnabled()
 }
 bool CPluginSettings::GetPluginEnabled() const
 {
-	//Display plugin as disabled if limit is passed
-	CPluginSettings* settings = CPluginSettings::GetInstance();
-	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false) && 
-		(settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) && 
-		(settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
-	{
-		return false;
-	}
 	return m_isPluginEnabledTab;
 }
 

@@ -307,11 +307,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 
                 settings->ForceConfigurationUpdateOnStart(false);
 
-                if (configuration->IsValidPluginExpired())
-                {
-                    settings->SetBool(SETTING_PLUGIN_EXPIRED, configuration->IsPluginExpired());
-                }
-
 			    if (configuration->IsValidUserId())
                 {
 				    settings->SetString(SETTING_USER_ID, configuration->GetUserId());
@@ -387,10 +382,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
                 settings->SetString(SETTING_REG_SUCCEEDED, "true");     
 
-				settings->SetBool(SETTING_PLUGIN_REGISTRATION, configuration->IsPluginRegistered());
-#ifdef PRODUCT_SIMPLEADBLOCK
-				settings->SetValue(SETTING_PLUGIN_ADBLOCKLIMIT, configuration->GetAdBlockLimit());
-#endif
                 settings->Write();
                 
                 configuration->Invalidate();

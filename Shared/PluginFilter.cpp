@@ -1788,19 +1788,6 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 
 	CPluginSettings* settings = CPluginSettings::GetInstance();
 
- 
-	if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-	{
-		//is the limit exceeded?
-		if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0)) 
-			&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
-		{
-			return false;
-		} 
-	}
-
-
-
 	CString type;
 	if (addDebug)
 	{
@@ -1839,20 +1826,6 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 		DEBUG_FILTER("Filter::ShouldBlock " + type + " NO  src:" + src)
 	}
 
-
-	if (blockFilter)
-	{
-		//is plugin registered
-		if (!settings->GetBool(SETTING_PLUGIN_REGISTRATION, false))
-		{
-			//is the limit exceeded? When the upgrade dialog is displayed adblockcount is set to 1000000
-			if ((settings->GetValue(SETTING_PLUGIN_ADBLOCKCOUNT, 0) >= settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0))
-				&& (settings->GetValue(SETTING_PLUGIN_ADBLOCKLIMIT, 0) > 0))
-			{
-				return false;
-			} 
-		}
-	}
 	return blockFilter ? true : false;
 }
 
