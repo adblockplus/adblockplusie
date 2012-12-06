@@ -13,22 +13,13 @@
 
 // Main settings
 
-#define SETTING_USER_ID                 L"userid"
-#define SETTING_PLUGIN_ID	            L"pluginuniqueid"
 #define SETTING_PLUGIN_INFO_PANEL	    L"plugininfopanel"
-#define SETTING_PLUGIN_PASSWORD         L"pluginpassword"
 #define SETTING_PLUGIN_VERSION          L"pluginversion"
 #define SETTING_PLUGIN_UPDATE_URL       L"pluginupdateurl"
 #define SETTING_PLUGIN_UPDATE_VERSION   L"pluginupdateversion"
 #define SETTING_PLUGIN_UPDATE_TIME      L"pluginupdatetime"
 #define SETTING_PLUGIN_SELFTEST         L"pluginselftest"
 #define SETTING_LANGUAGE                L"language"
-#define SETTING_FFMPEG					L"ffmpeg"
-#define SETTING_FFMPEG_CHECK			L"ffmpeg_check"
-#define SETTING_CLOSE_WHEN_FINISHED     L"closeWhenFinished"
-#define SETTING_DEFAULT_FORMAT			L"defaultFormat"
-#define SETTING_DEFAULT_DIR				L"defaultDir"
-#define SETTING_DOWNLOAD_LIMIT			L"downloadlimit"
 
 #ifdef SUPPORT_FILTER
 #define SETTING_FILTER_VERSION          L"filterversion"
@@ -37,9 +28,6 @@
 #define SETTING_CONFIG_VERSION          L"configversion"
 #endif
 #define SETTING_LAST_UPDATE_TIME        L"lastupdatetime"
-#define SETTING_REG_DATE                L"regdate"
-#define SETTING_REG_ATTEMPTS            L"regattempts"
-#define SETTING_REG_SUCCEEDED           L"regsucceeded"
 #define SETTING_DICTIONARY_VERSION      L"dictionaryversion"
 
 // Tab settings

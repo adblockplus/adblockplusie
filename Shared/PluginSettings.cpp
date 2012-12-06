@@ -233,54 +233,6 @@ bool CPluginSettings::Read(bool bDebug)
             {
                 if (m_settingsFile->IsValidChecksum())
                 {
-	                s_criticalSectionLocal.Lock();
-		            {
-			            m_properties = m_settingsFile->GetSectionData("Settings");
-
-			            // Delete obsolete properties
-			            TProperties::iterator it = m_properties.find("pluginupdate");
-			            if (it != m_properties.end())
-			            {
-				            m_properties.erase(it);
-				            m_isDirty = true;
-			            }
-
-			            it = m_properties.find("pluginerrors");
-			            if (it != m_properties.end())
-			            {
-				            m_properties.erase(it);
-				            m_isDirty = true;
-			            }
-
-			            it = m_properties.find("pluginerrorcodes");
-			            if (it != m_properties.end())
-			            {
-				            m_properties.erase(it);
-				            m_isDirty = true;
-			            }
-
-			            it = m_properties.find("pluginenabled");
-			            if (it != m_properties.end())
-			            {
-				            m_properties.erase(it);
-				            m_isDirty = true;
-			            }
-
-			            // Convert property 'pluginid' to 'userid'
-			            if (m_properties.find(SETTING_USER_ID) == m_properties.end())
-			            {
-				            it = m_properties.find("pluginid");
-				            if (it != m_properties.end())
-				            {
-					            m_properties[SETTING_USER_ID] = it->second;
-
-					            m_properties.erase(it);
-					            m_isDirty = true;
-				            }
-			            }
-		            }
-		            s_criticalSectionLocal.Unlock();
-
 #ifdef SUPPORT_FILTER            	    
                     // Unpack filter URLs
                     CPluginIniFileW::TSectionData filters = m_settingsFile->GetSectionData("Filters");
@@ -591,47 +543,6 @@ CString CPluginSettings::GetString(const CString& key, const CString& defaultVal
 
     s_criticalSectionLocal.Lock();
 	{
-
-		if (key == SETTING_PLUGIN_ID)
-		{
-#ifdef CONFIG_IN_REGISTRY
-			DWORD dwResult = NULL; 
-			HKEY hKey;
-			RegOpenKey(HKEY_CURRENT_USER, L"SOFTWARE\\SimpleAdblock", &hKey);
-			DWORD type = 0;
-			WCHAR pid[250];
-			DWORD cbData;
-			dwResult = ::RegQueryValueEx(hKey, L"PluginId", NULL, &type, (BYTE*)pid, &cbData);
-			if (dwResult == ERROR_SUCCESS)
-			{
-				CString pluginId = pid;
-				::RegCloseKey(hKey);
-				s_criticalSectionLocal.Unlock();
-				return pluginId;
-			}
-#endif
-		}
-
-		if (key == SETTING_USER_ID)
-		{
-#ifdef CONFIG_IN_REGISTRY
-			DWORD dwResult = NULL; 
-			HKEY hKey;
-			RegOpenKey(HKEY_CURRENT_USER, L"SOFTWARE\\SimpleAdblock", &hKey);
-			DWORD type = 0;
-			WCHAR pid[250];
-			DWORD cbData;
-			dwResult = ::RegQueryValueEx(hKey, L"UserId", NULL, &type, (BYTE*)pid, &cbData);
-			if (dwResult == ERROR_SUCCESS)
-			{
-				CString userId = pid;
-				::RegCloseKey(hKey);
-				s_criticalSectionLocal.Unlock();
-				return userId;
-			}
-#endif
-		}
-
 		TProperties::const_iterator it = m_properties.find(key);
 		if (it != m_properties.end())
 		{

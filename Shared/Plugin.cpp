@@ -126,7 +126,7 @@ STDAPI DllUnregisterServer(void)
     return _Module.UnregisterServer(TRUE);
 }
 
-void InitPlugin(bool isInstall, CString pluginId)
+void InitPlugin(bool isInstall)
 {
 	CPluginSystem* system = CPluginSystem::GetInstance();
 
@@ -138,11 +138,6 @@ void InitPlugin(bool isInstall, CString pluginId)
     settings->Remove(SETTING_PLUGIN_SELFTEST);
 	settings->SetValue(SETTING_PLUGIN_INFO_PANEL, isInstall ? 1 : 2);
 
-	if (!pluginId.IsEmpty())
-	{
-		system->SetPluginId(pluginId);
-		settings->SetString(SETTING_PLUGIN_ID, pluginId);
-	}
 
     settings->Write();
 
@@ -183,27 +178,6 @@ void InitPlugin(bool isInstall, CString pluginId)
 
 	DWORD dwResult = NULL;
 
-#ifndef SUPPORT_FILTER
-	dwResult = ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\IE Download Helper", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition);
-	if (dwResult == ERROR_SUCCESS)
-	{
-		CString pluginId = system->GetPluginId();
-
-		::RegSetValueEx(hKey, L"PluginId", 0, REG_SZ, (const BYTE*)pluginId.GetBuffer(), 2*(pluginId.GetLength() + 1));
-
-		::RegCloseKey(hKey);
-	}
-#else if
-	dwResult = ::RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\SimpleAdblock", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &dwDisposition);
-	if (dwResult == ERROR_SUCCESS)
-	{
-		CString pluginId = system->GetPluginId();
-
-		::RegSetValueEx(hKey, L"PluginId", 0, REG_SZ, (const BYTE*)pluginId.GetBuffer(), 2*(pluginId.GetLength() + 1));
-
-		::RegCloseKey(hKey);
-	}
-#endif
 	// Post async plugin error
     CPluginError pluginError;
     while (CPluginClientBase::PopFirstPluginError(pluginError))
@@ -215,20 +189,11 @@ void InitPlugin(bool isInstall, CString pluginId)
 // Called from installer
 EXTERN_C void STDAPICALLTYPE OnInstall(MSIHANDLE hInstall, MSIHANDLE tmp)
 {
-
-   TCHAR szValue[251] = {0};
-   
-   DWORD dwBuffer = 250;
-   UINT res = MsiGetProperty(hInstall, TEXT("CustomActionData"), szValue, &dwBuffer);
-
-   CString pluginId = szValue;
-
-   InitPlugin(true, pluginId);
+   InitPlugin(true);
 }
 
 // Called from updater
 EXTERN_C void STDAPICALLTYPE OnUpdate(void)
 {
-	CString tmp;
-	InitPlugin(false, tmp);
+	InitPlugin(false);
 }

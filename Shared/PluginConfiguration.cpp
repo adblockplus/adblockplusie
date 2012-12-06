@@ -63,15 +63,6 @@ bool CPluginConfiguration::Download()
 
 	httpRequest.AddOsInfo();
 
-    httpRequest.Add("pc", system->GetComputerName(), false);
-    httpRequest.Add("username", system->GetUserName(), false);
-
-    CString newPluginId = system->GetPluginId();
-    if (newPluginId != settings->GetString(SETTING_PLUGIN_ID))
-    {
-        httpRequest.Add("newplugin", newPluginId);
-    }
-
     httpRequest.Add("errors", settings->GetErrorList());
 
 #ifdef SUPPORT_WHITELIST

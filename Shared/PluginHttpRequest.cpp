@@ -80,22 +80,7 @@ void CPluginHttpRequest::AddPluginId()
 
     CPluginSystem* system = CPluginSystem::GetInstance();
 
-    if (settings->Has(SETTING_PLUGIN_ID))
-    {
-        Add("plugin", settings->GetString(SETTING_PLUGIN_ID));
-    }
-    else
-    {
-	    Add("plugin", system->GetPluginId());
-    }
-    Add("user", settings->GetString(SETTING_USER_ID));
-    Add("password", settings->GetString(SETTING_PLUGIN_PASSWORD));
-
     Add("version", IEPLUGIN_VERSION);
-
-#ifdef ENTERPRISE
-//	Add("installerid", INSTALLER_ID);
-#endif
 }
 
 void CPluginHttpRequest::AddOsInfo()

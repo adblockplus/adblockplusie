@@ -97,10 +97,9 @@ CPluginClass::CPluginClass()
 		    settings->SetFirstRunUpdate();
         }
 
-        // First run or deleted settings file)
-        if (!settings->Has(SETTING_PLUGIN_ID))
+        // First run or deleted settings file (dictionary version = 1)
+		if (settings->GetString(SETTING_DICTIONARY_VERSION, L"1").Compare(L"1") == 0)
         {
-            settings->SetString(SETTING_PLUGIN_ID, system->GetPluginId());
             settings->SetFirstRun();
         }
 		
@@ -110,57 +109,12 @@ CPluginClass::CPluginClass()
         {
             settings->SetString(SETTING_PLUGIN_VERSION, IEPLUGIN_VERSION);
 
-            settings->Remove(SETTING_REG_DATE);
-            settings->Remove(SETTING_PLUGIN_UPDATE_TIME);
+			settings->Remove(SETTING_PLUGIN_UPDATE_TIME);
             settings->Remove(SETTING_PLUGIN_UPDATE_VERSION);
             settings->Remove(SETTING_PLUGIN_UPDATE_URL);
 
 		    settings->SetFirstRunUpdate();
 	    }
-
-        // Ensure max REGISTRATION_MAX_ATTEMPTS registration attempts today
-        CString regDate = settings->GetString(SETTING_REG_DATE);
-
-        SYSTEMTIME systemTime;
-        ::GetSystemTime(&systemTime);
-
-        CString today;
-        today.Format(L"%d-%d-%d", systemTime.wYear, systemTime.wMonth, systemTime.wDay);
-        
-        if (regDate != today)
-        {
-			if (regDate == "") 
-			{
-				settings->SetString(SETTING_REG_DATE, today);
-				settings->SetValue(SETTING_REG_ATTEMPTS, 0);
-				settings->Remove(SETTING_REG_SUCCEEDED);
-			}
-			else
-			{
-				COleDateTime regDateDateTime;
-				if (regDateDateTime.ParseDateTime(regDate))
-				{
-					COleDateTime todayDateTime;
-					todayDateTime.ParseDateTime(today);
-					COleDateTimeSpan weekDateTime;
-					weekDateTime.SetDateTimeSpan(2, 0, 0, 0);
-					if (((todayDateTime - regDateDateTime) >= weekDateTime) || (todayDateTime < regDateDateTime))
-					{
-						settings->SetString(SETTING_REG_DATE, today);
-						settings->SetValue(SETTING_REG_ATTEMPTS, 0);
-						settings->Remove(SETTING_REG_SUCCEEDED);
-					}
-				}
-			}
-        }
-        // Only allow one trial, if settings or whitelist changes
-        else if (settings->GetForceConfigurationUpdateOnStart())
-        {
-            settings->SetValue(SETTING_REG_ATTEMPTS, REGISTRATION_MAX_ATTEMPTS - 1);
-            settings->Remove(SETTING_REG_SUCCEEDED);
-
-            settings->RemoveForceConfigurationUpdateOnStart();
-        }
 
         int info = settings->GetValue(SETTING_PLUGIN_INFO_PANEL, 0);
 
@@ -1394,10 +1348,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 #ifdef PRODUCT_SIMPLEADBLOCK
 
             CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
-            
-            httpRequest.AddPluginId();
-            httpRequest.Add("username", system->GetUserName(), false);
-			
+            			
 			url = httpRequest.GetUrl();
 
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_SETTINGS;
@@ -2271,9 +2222,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 
                     CPluginHttpRequest httpRequest(USERS_SCRIPT_WELCOME);
 
-                    httpRequest.AddPluginId();
-                    httpRequest.Add("username", system->GetUserName(), false);
-                    httpRequest.Add("errors", settings->GetErrorList());
+					httpRequest.Add("errors", settings->GetErrorList());
 
 
 			        hr = browser->Navigate(CComBSTR(httpRequest.GetUrl() + "&src=" + DOWNLOAD_SOURCE), NULL, NULL, NULL, NULL);
@@ -2293,9 +2242,8 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
                 if (browser)
                 {
                     CPluginHttpRequest httpRequest(USERS_SCRIPT_INFO);
-                    
-                    httpRequest.AddPluginId();
-    			    httpRequest.Add("info", wParam);
+
+					httpRequest.Add("info", wParam);
 
                     VARIANT vFlags;
                     vFlags.vt = VT_I4;
