@@ -50,11 +50,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     debugText += L"\n================================================================================";
 
     debugText += L"\nPlugin version:    " + CString(IEPLUGIN_VERSION);
-    debugText += L"\nPlugin id:         " + system->GetPluginId();
-    debugText += L"\nMAC address:       " + system->GetMacId(true);
-    debugText += L"\nComputer name:     " + system->GetComputerName();
-    debugText += L"\nUser id:           " + settings->GetString(SETTING_USER_ID, "N/A");
-    debugText += L"\nUser name:         " + system->GetUserName();
     debugText += L"\nBrowser version:   " + system->GetBrowserVersion();
     debugText += L"\nBrowser language:  " + system->GetBrowserLanguage();
 
@@ -149,7 +144,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
     // Should update plugin ?
     // --------------------------------------------------------------------
 
-#ifndef ENTERPRISE
     if (!IsMainThreadDone(hMainThread) && settings->IsPluginUpdateAvailable())
     {
         DEBUG_THREAD(L"Thread::Should update plugin");
@@ -183,17 +177,12 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 	    }
     }
 
-#endif
 	// --------------------------------------------------------------------
 	// Main loop
 	// --------------------------------------------------------------------
 
 	DWORD mainLoopIteration = 1;
-	
-	bool hasUser = false;
-	int regAttempts = 1;
-	int regAttemptsThread = 1;
-				
+					
 	while (!IsMainThreadDone(hMainThread))
 	{
 	    CString sMainLoopIteration;
@@ -207,50 +196,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
         DEBUG_GENERAL(debugText)
         
-        if (settings->Has(SETTING_REG_SUCCEEDED))
-        {
-            regAttempts = REGISTRATION_MAX_ATTEMPTS;
-        }
-        else
-        {
-            regAttempts = settings->GetValue(SETTING_REG_ATTEMPTS);
-        }
-        regAttempts = max(regAttempts, regAttemptsThread) + 1;
-
-	    // --------------------------------------------------------------------
-	    // Register user
-	    // --------------------------------------------------------------------
-
-        if (!IsMainThreadDone(hMainThread))
-        {
-            DEBUG_THREAD("Thread::Register user");
-
-            hasUser = settings->Has(SETTING_USER_ID);
-
-	        if (!hasUser && regAttempts <= REGISTRATION_MAX_ATTEMPTS)
-	        {
-		        DWORD nUserTimerBase = GetTickCount() / TIMER_INTERVAL_USER_REGISTRATION;
-
-				if (nUserTimerBase >= nNextUserTimerBase || mainLoopIteration == 1 && !settings->IsFirstRun())
-		        {
-                    DEBUG_THREAD("Thread::Register user (action)");
-
-			        try 
-			        {
-			            isConfigutationLoaded = configuration->Download();
-			        }
-			        catch (...)
-			        {
-			        }
-
-			        nNextUserTimerBase = nUserTimerBase + nUserTimerBaseStep;
-			        nUserTimerBaseStep *= 2;
-
-			        regAttemptsThread++;
-		        }
-	        }
-        }
-
 	    // --------------------------------------------------------------------
 	    // Load configuration
 	    // --------------------------------------------------------------------
@@ -259,7 +204,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
         {
             DEBUG_THREAD("Thread::Load configuration");
 
-	        if (hasUser && !isConfigutationLoaded && regAttempts <= REGISTRATION_MAX_ATTEMPTS)
+	        if (!isConfigutationLoaded)
 	        {
 		        // Initialize serverClient module
 		        // we try an initialization in each loop
@@ -279,8 +224,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
 			        nNextServerClientTimerBase = nServerClientTimerBase + nServerClientTimerBaseStep;
 			        nServerClientTimerBaseStep *= 2;
-
-			        regAttemptsThread++;
 		        }
 	        }
         }
@@ -306,11 +249,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 DEBUG_THREAD("Thread::Update settings (action)");
                 
                 settings->ForceConfigurationUpdateOnStart(false);
-
-			    if (configuration->IsValidUserId())
-                {
-				    settings->SetString(SETTING_USER_ID, configuration->GetUserId());
-                }
 
 			    if (configuration->IsValidPluginUpdate() && configuration->GetPluginUpdateVersion() != IEPLUGIN_VERSION)
                 {
@@ -369,18 +307,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                     settings->ReplaceWhiteListedDomains(configuration->GetWhiteList());
                 }
 #endif // SUPPORT_WHITELIST
-
-                // Check pluginID
-                CString newPluginId = system->GetPluginId();
-        	    
-                if (newPluginId != settings->GetString(SETTING_PLUGIN_ID))
-                {
-                    DEBUG_GENERAL(L"*** pluginId has changed from " + settings->GetString(SETTING_PLUGIN_ID) + CString(L" to ") + newPluginId)
-
-                    settings->SetString(SETTING_PLUGIN_ID, newPluginId);                
-                }
-
-                settings->SetString(SETTING_REG_SUCCEEDED, "true");     
 
                 settings->Write();
                 
@@ -459,12 +385,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 }
 #endif // SUPPORT_FILTER
 		    }
-		    // Plugin not loaded
-		    else if (regAttempts <= REGISTRATION_MAX_ATTEMPTS)
-		    {
-		        settings->SetValue(SETTING_REG_ATTEMPTS, regAttempts);
-			    settings->Write();
-            } 
         }
 
 	    // --------------------------------------------------------------------
@@ -534,15 +454,8 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 		    {
 			    // Non-hanging sleep
 			    Sleep(50);
-
-			    if (hasUser || regAttempts >= REGISTRATION_MAX_ATTEMPTS)
-			    {
-				    if (sleepLoopIteration++ % (TIMER_THREAD_SLEEP_MAIN_LOOP / 50) == 0)
-				    {
-					    isDone = true;
-				    }
-			    }
-			    else if (sleepLoopIteration++ % (TIMER_THREAD_SLEEP_USER_REGISTRATION / 50) == 0)
+				
+				if (sleepLoopIteration++ % (TIMER_THREAD_SLEEP_USER_REGISTRATION / 50) == 0)
 			    {
 				    isDone = true;
 			    }
