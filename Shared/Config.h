@@ -29,6 +29,9 @@
 #define USERS_SCRIPT_INVITATION     L"/user_invitation.php"
 #define USERS_SCRIPT_UPGRADE        L"/user_upgrade.php"
 
+#define USERS_LOCAL_USER_SETTINGS_HTML  L"user_mysettings.html"
+#define USERS_LOCAL_USER_SETTINGS_UPDATED_HTML  L"user_mysettings_updated.html"
+
 // ----------------------------------------------------------------------------
 // Define actual configurations
 // ----------------------------------------------------------------------------

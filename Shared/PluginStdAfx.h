@@ -98,3 +98,6 @@ extern CComModule _Module;
 
 #define _CRTDBG_MAPALLOC 
 #endif // not _STDAFX_H
+
+#define USE_CONSOLE
+#include "Console.h"
