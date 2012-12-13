@@ -1,4 +1,4 @@
-﻿#include "PluginStdAfx.h"
+#include "PluginStdAfx.h"
 
 #include "PluginSettings.h"
 #include "PluginSystem.h"
@@ -19,7 +19,7 @@ CSimpleAdblockClient::CSimpleAdblockClient() : CPluginClientBase()
 {
     m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
 }
-CSimpleAdblockClient::~CSimpleAdblockClient() 
+CSimpleAdblockClient::~CSimpleAdblockClient()
 {
 	s_instance = NULL;
 }
@@ -37,7 +37,7 @@ CSimpleAdblockClient* CSimpleAdblockClient::GetInstance()
 
 		    s_instance = client;
 	    }
-	    
+
 	    instance = s_instance;
     }
     s_criticalSectionLocal.Unlock();
@@ -49,7 +49,7 @@ CSimpleAdblockClient* CSimpleAdblockClient::GetInstance()
 bool CSimpleAdblockClient::ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug)
 {
     bool isBlocked = false;
-    
+
 	bool isCached = false;
 
 	CPluginSettings* settings = CPluginSettings::GetInstance();
@@ -62,7 +62,7 @@ bool CSimpleAdblockClient::ShouldBlock(CString src, int contentType, const CStri
         if (isCached)
         {
             isBlocked = it->second;
-        }        
+        }
     }
     m_criticalSectionCache.Unlock();
 
@@ -108,7 +108,7 @@ bool CSimpleAdblockClient::DownloadFirstMissingFilter()
 
     CString filterFilename;
     CString filterDownloadPath;
-    
+
     m_criticalSectionFilter.Lock();
     {
         TFilterFileList::iterator it = m_filterDownloads.begin();
@@ -125,12 +125,12 @@ bool CSimpleAdblockClient::DownloadFirstMissingFilter()
     if (!filterFilename.IsEmpty() && m_filter->DownloadFilterFile(filterDownloadPath, filterFilename))
     {
         isDownloaded = true;
-        
+
         CPluginSettings* settings = CPluginSettings::GetInstance();
 
         settings->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
     }
-    
+
     return isDownloaded;
 }
 
@@ -141,7 +141,7 @@ bool CSimpleAdblockClient::DownloadFirstMissingFilter()
 void CSimpleAdblockClient::ReadFilters()
 {
     CPluginSettings* settings = CPluginSettings::GetInstance();
-    
+
     // Check existence of filter file
     if (settings->IsMainProcess())
     {
@@ -158,18 +158,18 @@ void CSimpleAdblockClient::ReadFilters()
 	{
 	    DEBUG_FILTER(L"Filter::ReadFilters - adding url:" + it->first)
 
-		CString filename = ""; 
+		CString filename = "";
 		if (filterFileNameList.find(it->first) != filterFileNameList.end() )
 		{
 			filename = filterFileNameList.find(it->first)->second;
 		}
 		else
 		{
-			filename = it->first.Right(it->first.GetLength() - it->first.ReverseFind('/') - 1);  
+			filename = it->first.Right(it->first.GetLength() - it->first.ReverseFind('/') - 1);
 		}
-		filterFileNames.insert(std::make_pair(filename, it->first));  
+		filterFileNames.insert(std::make_pair(filename, it->first));
 	}
-	
+
 	// Create our filter class which can be used from now on
     std::auto_ptr<CPluginFilter> filter = std::auto_ptr<CPluginFilter>(new CPluginFilter(filterFileNames, CPluginSettings::GetDataPath()));
 
@@ -187,10 +187,10 @@ bool CSimpleAdblockClient::IsElementHidden(const CString& tag, IHTMLElement* pEl
 {
     bool isHidden;
 	m_criticalSectionFilter.Lock();
-	{    
+	{
 		isHidden = m_filter.get() && m_filter->IsElementHidden(tag, pEl, domain, indent);
 	}
-	m_criticalSectionFilter.Unlock();    
+	m_criticalSectionFilter.Unlock();
     return isHidden;
 }
 
@@ -201,7 +201,7 @@ bool CSimpleAdblockClient::IsUrlWhiteListed(const CString& url)
     {
         m_criticalSectionFilter.Lock();
 		{
-			isWhitelisted = m_filter.get() && m_filter->ShouldWhiteList(url); 
+			isWhitelisted = m_filter.get() && m_filter->ShouldWhiteList(url);
 		}
         m_criticalSectionFilter.Unlock();
 
