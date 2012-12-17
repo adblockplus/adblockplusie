@@ -15,8 +15,7 @@
 #include "PluginProfiler.h"
 #include "DownloadSource.h"
 #include "sddl.h"
-#include "PluginUtil.h"
-#include "PluginUserSettings.h"
+
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -636,9 +635,6 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 	}
 	else if (GetBrowser().IsEqualObject(WebBrowser2Ptr))
 	{
-    if (PluginUserSettings::Process(GetBrowser(), m_tab->GetDocumentUrl(), url, *pDispParams->rgvarg[0].pboolVal))
-      return;
-
 		m_tab->OnNavigate(url);
 
         DEBUG_GENERAL(L"================================================================================\nBegin main navigation url:" + url + "\n================================================================================")
@@ -1344,8 +1340,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 #ifndef ENTERPRISE
 	case ID_SETTINGS:
 		{
-      CONSOLE("ID_SETTINGS");
-/*
 		    // Update settings server side on next IE start, as they have possibly changed
 	        CPluginSettings* settings = CPluginSettings::GetInstance();
 
@@ -1359,9 +1353,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 			navigationErrorId = PLUGIN_ERROR_NAVIGATION_SETTINGS;
 #endif
-*/
-
-      url = UserSettingsUrl();
 		}
 		break;
 #endif
