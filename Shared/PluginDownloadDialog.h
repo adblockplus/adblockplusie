@@ -86,7 +86,6 @@ protected:
 	CString m_path;
 	CString m_errorText;
 	CString m_postText;
-	CProgressCtrl m_progress;
 
 public:
 	LRESULT OnBnClickedInstallbtn(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
