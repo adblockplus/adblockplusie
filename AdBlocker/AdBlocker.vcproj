@@ -732,7 +732,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				RegisterOutput="true"
-				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib Msi.lib"
+				AdditionalDependencies="odbc32.lib odbccp32.lib winhttp.lib comsuppwd.lib comDlg32.lib shlwapi.lib Msi.lib .\V8\lib\debug_x32\v8_base.lib"
 				OutputFile="$(OutDir)\SimpleAdblock.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -1462,6 +1462,14 @@
 				RelativePath=".\Version.h"
 				>
 			</File>
+			<Filter
+				Name="V8"
+				>
+				<File
+					RelativePath=".\V8\v8.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

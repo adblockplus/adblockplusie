@@ -27,54 +27,37 @@ BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(CLSID_PluginClass, CPluginClass)
 END_OBJECT_MAP()
 
-
-class CPluginApp : public CWinApp
+//Dll Entry Point
+BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD fdwReason, LPVOID reserved)
 {
 
-public:
+    switch( fdwReason ) 
+    { 
+        case DLL_PROCESS_ATTACH:
+			TCHAR szFilename[MAX_PATH];
+			GetModuleFileName(NULL, szFilename, MAX_PATH);
+			_tcslwr_s(szFilename);
 
-	CPluginApp();
-	~CPluginApp();
+			if (_tcsstr(szFilename, _T("explorer.exe")))
+			{
+				return FALSE;
+			}
 
-	virtual BOOL InitInstance();
+			_Module.Init(ObjectMap, _Module.GetModuleInstance(), &LIBID_PluginLib);
+            break;
 
-	DECLARE_MESSAGE_MAP()
-};
+        case DLL_THREAD_ATTACH:
+         // thread-specific initialization.
+            break;
 
-BEGIN_MESSAGE_MAP(CPluginApp, CWinApp)	
-END_MESSAGE_MAP()
+        case DLL_THREAD_DETACH:
+         // thread-specific cleanup.
+            break;
 
-
-
-CPluginApp theApp;
-
-CPluginApp::CPluginApp()
-{
-	//Use next two lines to check for memory leaks 
-//	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-//	_CrtDumpMemoryLeaks();
-}
-
-
-CPluginApp::~CPluginApp()
-{
-
-}
-BOOL CPluginApp::InitInstance()
-{
-	TCHAR szFilename[MAX_PATH];
-	GetModuleFileName(NULL, szFilename, MAX_PATH);
-	_tcslwr_s(szFilename);
-
-	if (_tcsstr(szFilename, _T("explorer.exe")))
-	{
-		return FALSE;
-	}
-
-    _Module.Init(ObjectMap, AfxGetInstanceHandle(), &LIBID_PluginLib);
-
-
-	CWinApp::InitInstance();
+        case DLL_PROCESS_DETACH:
+         // any necessary cleanup.
+            break;
+    }
 
 	return TRUE;
 }
@@ -177,7 +160,7 @@ void InitPlugin(bool isInstall)
 	DWORD dwDisposition = 0;
 
 	DWORD dwResult = NULL;
-
+	
 	// Post async plugin error
     CPluginError pluginError;
     while (CPluginClientBase::PopFirstPluginError(pluginError))

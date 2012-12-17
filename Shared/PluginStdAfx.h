@@ -14,23 +14,10 @@
 
 #define _ATL_APARTMENT_THREADED
 
-#define _AFX_ALL_WARNINGS
-#include <afxwin.h>								// MFC core and standard components
-#include <afxext.h>								// MFC extensions
-
-#ifndef _AFX_NO_OLE_SUPPORT
-#include <afxdtctl.h>							// MFC support for Internet Explorer 4 Common Controls
-#endif
-
-#ifndef _AFX_NO_AFXCMN_SUPPORT
-#include <afxcmn.h>								// MFC support for Windows Common Controls
-#endif
-
-#include "afx.h" 
-
 #define _CRT_SECURE_NO_DEPRECATE 1
 #include <atlbase.h>
 #include <atlstr.h>
+#include <atltypes.h>
 
 extern CComModule _Module;
 #include <comutil.h>
