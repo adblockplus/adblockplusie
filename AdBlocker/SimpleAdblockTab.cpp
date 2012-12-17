@@ -1,4 +1,4 @@
-#include "PluginStdAfx.h"
+﻿#include "PluginStdAfx.h"
 
 #include "PluginSettings.h"
 #include "PluginSystem.h"

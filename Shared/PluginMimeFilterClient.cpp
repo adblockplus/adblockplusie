@@ -62,6 +62,6 @@ void CPluginMimeFilterClient::Unregister()
 	::CoInternetGetSession(0, &spSession, 0);
 	if (spSession)
 	{
-    spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
+    	spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
 	}
 }

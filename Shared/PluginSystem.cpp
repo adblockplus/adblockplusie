@@ -1,4 +1,4 @@
-#include "PluginStdAfx.h"
+﻿#include "PluginStdAfx.h"
 
 // Internet / FTP
 #include <wininet.h>
@@ -51,7 +51,7 @@ CPluginSystem* CPluginSystem::GetInstance()
 
 		    s_instance = systemInstance;
 	    }
-
+	    
 	    system = s_instance;
     }
     s_criticalSection.Unlock();
