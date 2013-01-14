@@ -935,11 +935,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <None Include="..\Shared\ProtocolImpl.inl" />
     <None Include="AdBlocker.rgs" />
     <None Include="AdBlockerAvast.rgs" />
-    <None Include="AdBlockerListener.rgs" />
-    <None Include="AdBlockerListenerAvast.rgs" />
-    <None Include="AdBlockerMimeFilter.rgs" />
     <None Include="Adblock.def" />
-    <None Include="AdBlockerMimeFilterAvast.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AdBlocker.rc" />
