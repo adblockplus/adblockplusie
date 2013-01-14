@@ -86,5 +86,9 @@ extern CComModule _Module;
 #define _CRTDBG_MAPALLOC 
 #endif // not _STDAFX_H
 
+#ifndef countof
+#define countof(x) (sizeof(x)/sizeof(*x))
+#endif 
+
 #define USE_CONSOLE
 #include "Console.h"
