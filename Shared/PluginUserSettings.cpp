@@ -2,14 +2,15 @@
 #include "PluginUserSettings.h"
 #include <algorithm>
 #include "PluginSettings.h"
+#include "PluginClient.h"
 
-#define SET_LANGUAGE                L"SetLanguage"
-#define GET_LANGUAGE                L"GetLanguage"
-#define GET_WHITELIST_DOMAINS       L"GetWhitelistDomains"
-#define ADD_WHITELIST_DOMAIN        L"AddWhitelistDomain"
-#define REMOVE_WHITELIST_DOMAIN     L"RemoveWhitelistDomain"
+static const CString s_SetLanguage = L"SetLanguage";
+static const CString s_GetLanguage = L"GetLanguage";
+static const CString s_GetWhitelistDomains = L"GetWhitelistDomains";
+static const CString s_AddWhitelistDomain = L"AddWhitelistDomain";
+static const CString s_RemoveWhitelistDomain = L"RemoveWhitelistDomain";
 
-static const CString s_Methods[] = {SET_LANGUAGE, GET_LANGUAGE, GET_WHITELIST_DOMAINS, ADD_WHITELIST_DOMAIN, REMOVE_WHITELIST_DOMAIN};
+static const CString s_Methods[] = {s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain};
 
 CPluginUserSettings::CPluginUserSettings()
 {
@@ -27,6 +28,11 @@ STDMETHODIMP CPluginUserSettings::QueryInterface(REFIID riid, void **ppvObj)
     return E_NOINTERFACE;
 }
 
+
+/*
+Since CPluginUserSettings is not allocated on the heap, 'AddRef' and 'Release' don't need reference counting,  
+because CPluginUserSettings won't be deleted when reference counter == 0
+*/
 
 ULONG __stdcall CPluginUserSettings::AddRef()
 {
@@ -98,28 +104,32 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
     const CString& method = s_Methods[dispidMember];
 
-    if (SET_LANGUAGE == method)
+    if (s_SetLanguage == method)
     {
         if (1 != pDispparams->cArgs)
             return DISP_E_BADPARAMCOUNT;
 
         if (VT_BSTR != pDispparams->rgvarg[0].vt)
             return DISP_E_TYPEMISMATCH;
+
+        CComBSTR language = pDispparams->rgvarg[0].bstrVal;
+
+        settings->SetString(SETTING_LANGUAGE, (BSTR)language); 
     }
-    else if (GET_LANGUAGE == method)
+    else if (s_GetLanguage == method)
     {
         if (pDispparams->cArgs)
             return DISP_E_BADPARAMCOUNT;
 
         if (pVarResult)
         {
-            CString val = settings->GetString(SETTING_LANGUAGE);
+            CString language = settings->GetString(SETTING_LANGUAGE);
 
             pVarResult->vt = VT_BSTR; 
-            pVarResult->bstrVal = SysAllocString(val);
+            pVarResult->bstrVal = SysAllocString(language);
         }
     }
-    else if (GET_WHITELIST_DOMAINS == method)
+    else if (s_GetWhitelistDomains == method)
     {
         if (pDispparams->cArgs)
             return DISP_E_BADPARAMCOUNT;
@@ -141,7 +151,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
             pVarResult->bstrVal = SysAllocString(sWhiteList);
         }
     }
-    else if (ADD_WHITELIST_DOMAIN == method)
+    else if (s_AddWhitelistDomain == method)
     {
         if (1 != pDispparams->cArgs)
             return DISP_E_BADPARAMCOUNT;
@@ -158,7 +168,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
             }
         }
     }
-    else if (REMOVE_WHITELIST_DOMAIN == method)
+    else if (s_RemoveWhitelistDomain == method)
     {
         if (1 != pDispparams->cArgs)
             return DISP_E_BADPARAMCOUNT;
@@ -170,6 +180,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         if (settings->IsWhiteListedDomain((BSTR)domain)) 
 		{
             settings->AddWhiteListedDomain((BSTR)domain, 3, true);
+            CPluginClient::GetInstance()->ClearWhiteListCache();
         }
     }
     else 
