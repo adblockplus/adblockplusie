@@ -60,13 +60,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Simple Adblock"
-            VALUE "FileDescription", "Simple Adblock Module"
+            VALUE "CompanyName", "Adblock Plus"
+            VALUE "FileDescription", "Adblock Plus Module"
             VALUE "FileVersion", "0, 1, 1, 5"
-            VALUE "InternalName", "Simple Adblock"
+            VALUE "InternalName", "Adblock Plus"
             VALUE "LegalCopyright", "Copyright 2013"
             VALUE "OriginalFilename", "SimpleAdblock.dll"
-            VALUE "ProductName", "Simple AdBlock"
+            VALUE "ProductName", "Adblock Plus"
             VALUE "ProductVersion", "0, 1, 1, 5"
         END
     END
@@ -116,8 +116,8 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "Popup"
     BEGIN
-        MENUITEM "Update Simple Adblock",       ID_PLUGIN_UPDATE
-        MENUITEM "About Simple Adblock",        ID_ABOUT
+        MENUITEM "Update Adblock Plus",       ID_PLUGIN_UPDATE
+        MENUITEM "About Adblock Plus",        ID_ABOUT
         MENUITEM SEPARATOR
         MENUITEM "FAQ",                         ID_FAQ
         MENUITEM "Feedback",                    ID_FEEDBACK
@@ -138,19 +138,19 @@ END
 
 IDD_UPDATEDIALOG DIALOGEX 0, 0, 159, 86
 STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
-CAPTION "Update Simple Adblock"
+CAPTION "Update Adblock Plus"
 FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Yes",IDOK,22,65,50,14
     PUSHBUTTON      "No",IDCANCEL,82,65,50,14
-    LTEXT           "A new version of Simple Adblock is available for download",IDC_UPDATETEXT,7,10,142,17
+    LTEXT           "A new version of Adblock Plus is available for download",IDC_UPDATETEXT,7,10,142,17
     LTEXT           "Do you wish to download it now?",IDC_DOYOU,7,39,145,8
 END
 
 IDD_DOWNLOADDIALOG DIALOGEX 0, 0, 259, 68
 STYLE DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
-CAPTION "Download Simple Adblock"
+CAPTION "Download Adblock Plus"
 FONT 8, "Microsoft Sans Serif", 0, 0, 0x0
 BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,202,47,50,14
@@ -192,7 +192,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_PROJNAME            "Simple Adblock"
+    IDS_PROJNAME            "Adblock Plus"
 END
 
 #ifndef APSTUDIO_INVOKED

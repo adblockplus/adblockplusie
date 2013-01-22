@@ -1,7 +1,7 @@
 #include "PluginStdAfx.h"
 
 #include "Plugin.h"
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #include "../AdBlocker/AdBlocker_i.c"
 #endif
 

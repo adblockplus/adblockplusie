@@ -1,3 +1,3 @@
-#if (defined PRODUCT_SIMPLEADBLOCK)
- #define IEPLUGIN_VERSION "1.1.5" 
+#if (defined PRODUCT_ADBLOCKPLUS)
+ #define IEPLUGIN_VERSION "2.0.0a" 
 #endif

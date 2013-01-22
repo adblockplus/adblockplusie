@@ -3,7 +3,7 @@
 #include "PluginIniFile.h"
 #include "PluginChecksum.h"
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #include "PluginClient.h"
 #endif
 

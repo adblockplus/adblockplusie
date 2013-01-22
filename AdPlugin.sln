@@ -10,6 +10,8 @@ Global
 		Debug Production|x64 = Debug Production|x64
 		Debug Test|Win32 = Debug Test|Win32
 		Debug Test|x64 = Debug Test|x64
+		Release Avast|Win32 = Release Avast|Win32
+		Release Avast|x64 = Release Avast|x64
 		Release Production|Win32 = Release Production|Win32
 		Release Production|x64 = Release Production|x64
 		Release Test|Win32 = Release Test|Win32
@@ -28,6 +30,10 @@ Global
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Test|Win32.Build.0 = Debug Test|Win32
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Test|x64.ActiveCfg = Debug Test|x64
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Debug Test|x64.Build.0 = Debug Test|x64
+		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Release Avast|Win32.ActiveCfg = Release Avast|Win32
+		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Release Avast|Win32.Build.0 = Release Avast|Win32
+		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Release Avast|x64.ActiveCfg = Release Avast|x64
+		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Release Avast|x64.Build.0 = Release Avast|x64
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Release Production|Win32.ActiveCfg = Release Production|Win32
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Release Production|Win32.Build.0 = Release Production|Win32
 		{24AAF1A9-ACC0-4BEB-B781-084734D939B5}.Release Production|x64.ActiveCfg = Release Production|x64
