@@ -151,6 +151,7 @@ public:
 	bool IsPluginSelftestEnabled();
 
 	bool FilterlistExpired(CString filterlist) const;
+	bool FilterShouldLoad(CString filterlist) const;
 	bool SetFilterRefreshDate(CString filterlist, time_t refreshtime);
 
 #ifdef SUPPORT_FILTER

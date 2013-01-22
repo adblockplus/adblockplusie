@@ -73,6 +73,8 @@ CPluginSettings::CPluginSettings() :
     m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
 
+	//Message box. Can be used as a breakpoint to attach a debugger, if needed
+	MessageBox(NULL, L"Settings", L"", MB_OK);
 
 	CPluginSettings *lightInstance = s_instance;
 	s_instance = NULL;
@@ -81,7 +83,7 @@ CPluginSettings::CPluginSettings() :
     m_isDirtyWhitelist = false;
 #endif
 
-    m_settingsFile = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE), true));
+    m_settingsFile = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE), false));
     m_settingsFileTab = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_TAB), true));
 #ifdef SUPPORT_WHITELIST
     m_settingsFileWhitelist = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
@@ -770,6 +772,18 @@ bool CPluginSettings::FilterlistExpired(CString filterlist) const
 		return true;
 	return false;
 }
+
+bool CPluginSettings::FilterShouldLoad(CString filterlist) const
+{
+	std::map<CString, CString>::const_iterator it = m_filterLanguagesList.find(filterlist);
+	if (it == m_filterLanguagesList.end())
+		return false;
+	CPluginSettings* pluginSettings = CPluginSettings::GetInstance();
+	if (it->second == pluginSettings->GetString(SETTING_LANGUAGE))
+		return true;
+	return false;
+}
+
 
 bool CPluginSettings::SetFilterRefreshDate(CString filterlist, time_t refreshtime)
 {

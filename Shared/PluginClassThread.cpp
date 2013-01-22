@@ -249,7 +249,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                     TFilterUrlList currentFilterUrlList = settings->GetFilterUrlList();
                     std::map<CString, CString> fileNamesList = settings->GetFilterFileNamesList();
 
-                    // Compare downloaded URL string with persistent URLs
                     for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
                     {
                         CString downloadFilterName = it->first;
@@ -266,7 +265,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 						}
                         int version = it->second;
 
-                        if (settings->FilterlistExpired(downloadFilterName))
+                        if (settings->FilterlistExpired(downloadFilterName) && (settings->FilterShouldLoad(downloadFilterName)))
                         {
                             CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
 							settings->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
