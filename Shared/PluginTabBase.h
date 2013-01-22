@@ -6,6 +6,8 @@
  class CPluginDomTraverser;
 #endif
 
+#include "PluginUserSettings.h"
+
 
 class CPluginClass;
 
@@ -21,6 +23,7 @@ protected:
 
 	CString m_documentDomain;
 	CString m_documentUrl;
+    CPluginUserSettings m_pluginUserSettings;
 public:
 	CPluginClass* m_plugin;
 protected:
