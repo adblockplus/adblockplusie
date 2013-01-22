@@ -1,0 +1,259 @@
+html
+{
+  height: 100%;
+  font-family: Arial, Sans-serif;
+  font-size: 14px;
+  color: #a4a8ac;
+  background-color: #3b434a;
+  background-image: url(../img/background.png);
+  background-repeat: repeat-x;
+  _overflow-x: hidden;
+}
+
+body
+{
+  position: absolute;
+  right: 50%;
+  margin-right: -360px;
+  width: 720px;
+  color: #a3a7ab;
+  background: transparent;
+}
+
+img
+{
+  border: none;
+}
+
+header
+{
+  margin: 20px 0px;
+}
+
+#logo
+{
+  display: inline-block;
+  background-image: url(../img/avast-logo.png);
+  width: 230px;
+  height: 85px;
+  margin: 0px 10px;
+  margin-bottom: 20px;
+}
+
+#title
+{
+  position: absolute;
+  display: inline;
+  color: #fc9c00;
+  font-weight: normal;
+  font-size: 280%;
+  margin: 0px 10px;
+  margin-top: 15px;
+}
+
+#features
+{
+  display: block;
+  border-spacing: 10px;
+  padding: 0px;
+  white-space: nowrap;
+}
+
+.feature
+{
+  display: block;
+  list-style-type: none;
+  padding-bottom: 20px;
+  text-shadow: 0px 1px 2px black;
+}
+
+.feature-image, .feature-description
+{
+  display: inline-block;
+  vertical-align: top;
+}
+
+.feature-description
+{
+  width: 550px;
+  margin: 0px 10px;
+}
+
+.feature-title
+{
+  color: white;
+  font-weight: bold;
+}
+
+.feature-text
+{
+  margin: 0px 5px;
+  white-space: normal;
+}
+
+.feature-title, .feature-text
+{
+  display: inline;
+}
+
+.feature-image
+{
+  width: 57px;
+  height: 57px;
+  background-size: 57px 57px;
+  background-repeat: no-repeat;
+}
+
+#feature-language
+{
+  background-image: url(../img/features/language.png);
+}
+
+#feature-exceptions
+{
+  background-image: url(../img/features/whitelist.png);
+}
+
+#feature-acceptable
+{
+  background-image: url(../img/features/acceptable.png);
+}
+
+.feature-button
+{
+  cursor: pointer;
+  font-size: inherit;
+  color: #3b434a;
+  border-style: none;
+  border-radius: 3px;
+  padding: 5px;
+  background: #f8d500;
+  background: -ms-linear-gradient(top, #f8d500, #e9bb00);
+  background: linear-gradient(top, #f8d500, #e9bb00);
+  text-shadow: 2px 2px 2px #ccc;
+  box-shadow: 0 1px 0 0 #e9bb00, 0 2px 0 0 #f8d500;
+}
+
+.feature-button:hover
+{
+  box-shadow: 0px 2px 7px #f8d500, 0 1px 0 0 #f8d500;
+}
+
+.feature-button:active
+{
+  background: #e9bb00;
+  background: -ms-linear-gradient(bottom, #f8d500, #e9bb00);
+  background: linear-gradient(bottom, #f8d500, #e9bb00);
+  box-shadow: 0px 0px 7px #e9bb00;
+}
+
+select.feature-button
+{
+  color: #fff;
+  background: #aaa;
+  background: -ms-linear-gradient(top, #aaa, #888);
+  background: linear-gradient(top, #aaa, #888);
+  box-shadow: 0 1px 0 0 #888, 0 2px 0 0 #999;
+  text-shadow: 2px 2px 2px #888;
+}
+
+select.feature-button option
+{
+  color: #000;
+  background: #fff;
+}
+
+select.feature-button:hover
+{
+  box-shadow: 0px 2px 7px #888, 0 1px 0 0 #888;
+}
+
+.feature-button.disabled
+{
+  color: #fff;
+  background: #c5622b;
+  background: -ms-linear-gradient(top, #c5622b, #9d4f22);
+  background: linear-gradient(top, #c5622b, #9d4f22);
+  box-shadow: 0 1px 0 0 #c5622b, 0 2px 0 0 #9d4f22;
+  text-shadow: 2px 2px 2px #9d4f22;
+}
+
+.feature-button.disabled:hover
+{
+  box-shadow: 0px 2px 7px #9d4f22, 0 1px 0 0 #9d4f22;
+}
+
+.feature button.disabled:active
+{
+  background: #9d4f22;
+  background: -ms-linear-gradient(bottom, #c5622b, #9d4f22);
+  background: linear-gradient(bottom, #c5622b, #9d4f22);
+  box-shadow: 0px 0px 7px #9d4f22;
+}
+
+#exceptions
+{
+  display: none;
+}
+
+#exceptions.visible
+{
+  display: block;
+}
+
+#exceptions .row
+{
+  display: block;
+}
+
+#exceptions input
+{
+  height: 24px;
+}
+
+#exceptions select, #exceptions input
+{
+  width: 100%;
+  border: none;
+  background-color: white;
+}
+
+#exceptions input, #exceptions select, #exceptions button
+{
+  max-width: 220px;
+  *width: expression(this.scrollWidth > 220 ? "220px" : "none"); /* IE6 max-width fix */
+  margin: 2px;
+}
+
+.extra-wide
+{
+  width: 220px;
+}
+
+footer
+{
+  text-align: center;
+  font-size: 120%;
+  font-weight: bold;
+}
+
+footer a:link, footer a:visited
+{
+  color: white;
+  text-decoration: none;
+}
+
+#abp-logo
+{
+  display: inline-block;
+  padding: 5px;
+}
+
+#abp-logo div
+{
+  width: 32px;
+  height: 32px;
+  margin-right: 5px;
+  margin-bottom: -12px;
+  background-image: url(../img/adblockplus_32.png);
+}
