@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html lang="en">
+  <head>
+    <title>avast! Ad Blocker - powered by Adblock Plus</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="../static/css/settings.css" class="cssfx"/>
+    
+    <!--[if lt IE 7]>
+      <script src="../static/js/vendor/DD_belatedPNG.js"></script>
+      <script>DD_belatedPNG.fix("#logo, .feature-image, #abp-logo div");</script>
+    <![endif]-->
+    <!--[if lt IE 9]>
+      <script src="../static/js/vendor/html5shiv.js"></script>
+    <![endif]-->
+    <!--[if lt IE 10]>
+      <script src="../static/js/vendor/cssfx.min.js"></script>
+    <![endif]-->
+    <!-- Fixes cssfx issues in IE8. -->
+    <!--[if IE 8]>
+      <link rel="stylesheet" href="../static/css/empty.css" class="cssfx"/>
+    <![endif]-->
+  </head>
+ 
+  <body onload="init()">
+    <header>
+      <div id="logo"></div>
+      <h1 id="title">Ad Blocker</h1>
+    </header>
+
+    <ul id="features">
+      <li class="feature">
+        <div id="feature-language" class="feature-image"></div>
+        <div class="feature-description">
+          <div class="feature-title">Language:</div>
+          <p class="feature-text">
+            Select your language to get the most out of avast! Ad Blocker so that it can get rid of all ads on the websites you visit.
+          </p>
+        </div>
+        <select id="language">
+          <option value="en">English</option>
+          <option value="de">Deutsch</option>
+          <option value="fr">Fran&ccedil;ais</option>
+        </select>
+      </li>
+      <li class="feature">
+        <div id="feature-exceptions" class="feature-image"></div>
+        <div class="feature-description">
+          <div class="feature-title">Manage Blocking:</div>
+          <p class="feature-text">
+            You can disable adblocking for some websites. Manage your list of websites for which you want to see ads.
+          </p>
+
+          <div id="exceptions">
+            <div class="row">
+              <input id="newDomain" type="text"/>
+              <button id="addDomain" class="feature-button">Add</button>
+            </div>
+            <div class="row">
+              <select id="domain" size="5" multiple="true">
+              </select>
+            </div>
+            <button id="removeDomains" class="disabled extra-wide feature-button">Remove Selected</button>
+          </div>
+        </div>
+        <button id="manageExceptions" class="feature-button">Manage</button>
+      </li>
+      <!--
+      <li class="feature">
+        <div id="feature-acceptable" class="feature-image"></div>
+        <div class="feature-description">
+          <div class="feature-title">Acceptable Ads:</div>
+          <p class="feature-text">
+            We want to encourage websites using plain and unobtrusive advertising. That's why we have established strict guidelines to identify acceptable ads. Activate Acceptable Ads if you want to help websites with unobtrusive ads.
+          </p>
+        </div>
+        <button class="disabled feature-button">Deactivate</button>
+      </li>
+      -->
+    </ul>
+
+    <footer>
+      <a href="http://adblockplus.org/" target="_blank">
+        powered by
+        <div id="abp-logo"><div></div></div>
+        Adblock Plus
+      </a>
+    </footer>
+    
+    <script src="../static/js/settings.js"></script>
+    <script src="../static/js/IESettings.js"></script>
+  </body>
+</html>
