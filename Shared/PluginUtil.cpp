@@ -26,13 +26,13 @@ const CString& DllDir()
 
 const CString& HtmlDir()
 {
-  static CString s_htmlDir = DllDir().GetLength()?  (DllDir() + L"html\\") : L"";
+  static CString s_htmlDir = DllDir().GetLength()?  (DllDir() + L"html\\templates\\") : L"";
   return s_htmlDir;
 }
 
 const CString& UserSettingsFileUrl()
 {
-  static CString s_url = HtmlDir().GetLength()? (FileUrl(HtmlDir() + USERS_LOCAL_USER_SETTINGS_HTML)) : L"";
+  static CString s_url = HtmlDir().GetLength()? (FileUrl(HtmlDir() + "index.html")) : L"";
   return s_url;
 }
 
