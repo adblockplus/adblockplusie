@@ -4,50 +4,43 @@
 static CString sDllDir()
 {
   TCHAR filePath[MAX_PATH + 1];
-  GetModuleFileName(_AtlBaseModule.GetModuleInstance(), filePath, countof_1(filePath));
-  TCHAR* pLastBackslash = wcsrchr(filePath, L'\\');
-  *(pLastBackslash + 1) = L'\0';
+  filePath[0] = L'\0';
+
+  if (GetModuleFileName(_AtlBaseModule.GetModuleInstance(), filePath, countof(filePath) - 1))
+  {
+    TCHAR* pLastBackslash = wcsrchr(filePath, L'\\');
+    if (pLastBackslash)
+    {
+      *(pLastBackslash + 1) = L'\0';
+    }
+  }
 
   return filePath;
 }
 
-CString DllDir()
+const CString& DllDir()
 {
   static CString s_dllDir = sDllDir();
   return s_dllDir;
 }
 
-CString HtmlDir()
+const CString& HtmlDir()
 {
-  static CString s_htmlDir = DllDir() + L"html\\";
+  static CString s_htmlDir = DllDir().GetLength()?  (DllDir() + L"html\\") : L"";
   return s_htmlDir;
 }
 
-CString UserSettingsUrl()
+const CString& UserSettingsFileUrl()
 {
-  static CString s_userSettingsUrl = HtmlDir() + USERS_LOCAL_USER_SETTINGS_HTML;
-  return s_userSettingsUrl;
+  static CString s_url = HtmlDir().GetLength()? (FileUrl(HtmlDir() + USERS_LOCAL_USER_SETTINGS_HTML)) : L"";
+  return s_url;
 }
 
-
-CString UserSettingsUpdatedUrl()
+CString FileUrl(const CString& url)
 {
-  return HtmlDir() + USERS_LOCAL_USER_SETTINGS_UPDATED_HTML;
+  CString tmpUrl = url;
+  tmpUrl.Replace(L'\\', L'/');
+
+  return CString("file:///") + tmpUrl;
 }
 
-
-CString Bk2FwSlash(const CString str)
-{
-  CString b2f = str;
-  b2f.Replace(L'\\', L'/');
-  return b2f;
-}
-
-bool UrlTailEqual(const CString& url, const CString& str)
-{
-  int indx = url.GetLength() - str.GetLength();
-  if (indx < 0)
-    return false;
-
-  return -1 != url.Find(str, indx);
-}
