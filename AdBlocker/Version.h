@@ -1,3 +1,7 @@
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define IEPLUGIN_VERSION "2.0.0a" 
+#if (defined AVAST_ABP)
+ #define IEPLUGIN_VERSION "2.0.av" 
+#else
+ #define IEPLUGIN_VERSION "2.0.ab"
+#endif
 #endif
