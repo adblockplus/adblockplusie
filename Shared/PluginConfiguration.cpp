@@ -38,6 +38,9 @@ void CPluginConfiguration::Invalidate()
 
 bool CPluginConfiguration::Download()
 {
+	return true;
+	// The following code in this method is kepy for reference only. Remove it when the
+	// functionality has been implemented elsewhere (if not removed completely)
     CPluginSystem* system = CPluginSystem::GetInstance();
 
     bool isOk = true;
@@ -162,15 +165,6 @@ bool CPluginConfiguration::Download()
     {
         m_userId = it->second;
         DEBUG_SETTINGS("Settings::Configuration user id:" + it->second);
-#ifdef CONFIG_IN_REGISTRY
-			DWORD dwResult = NULL; 
-			HKEY hKey;
-			RegCreateKey(HKEY_CURRENT_USER, L"SOFTWARE\\SimpleAdblock", &hKey);
-			DWORD type = 0;
-			WCHAR pid[250];
-			DWORD cbData;
-			dwResult = ::RegSetValueEx(hKey, L"UserId", NULL, REG_SZ, (BYTE*)m_userId.GetString(), m_userId.GetLength() * 2);
-#endif
 	}
 
     it = settingsData.find("dictionary");
@@ -318,13 +312,6 @@ bool CPluginConfiguration::Download()
         DEBUG_SETTINGS("Settings::Configuration adblocklimit detected:" + it->second);
     }
 
-	m_downloadLimit = 10;
-	it = settingsData.find("downloadlimit");
-    if (it != settingsData.end())
-    {
-        m_downloadLimit = atoi(it->second);
-        DEBUG_SETTINGS("Settings::Configuration downloadlimit detected:" + it->second);
-    }
     m_isValid = isOk;
 
 	return isOk;
@@ -333,7 +320,9 @@ bool CPluginConfiguration::Download()
 
 bool CPluginConfiguration::IsValid() const
 {
-   return m_isValid;
+	// Since we don't need the settings to be of any specific kind, we just assume they are always valid
+	// This file will be refactored in future.
+	return true;
 }
 
 
@@ -376,10 +365,6 @@ int CPluginConfiguration::GetAdBlockLimit() const
 {
 	return m_adBlockLimit;
 }
-int CPluginConfiguration::GetDownloadLimit() const 
-{
-	return m_downloadLimit;
-}
 
 
 bool CPluginConfiguration::IsPluginActivateEnabled() const
@@ -412,7 +397,9 @@ bool CPluginConfiguration::IsValidWhiteList() const
 
 bool CPluginConfiguration::IsValidFilter() const
 {
-   return m_isValidFilter;
+	// We don't use configuration for now, so filters are always valid
+//   return m_isValidFilter;
+   return true;
 }
 
 #endif // SUPPORT_FILTER

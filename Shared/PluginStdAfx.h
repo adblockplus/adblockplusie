@@ -51,22 +51,22 @@ extern CComModule _Module;
 #include "PluginDebugMacros.h"
 #include "PluginErrorCodes.h"
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #include "Config.h"
 #endif
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #include "..\AdBlocker\Version.h"
 #endif
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
 #if (defined ENTERPRISE)
 	#define CONFIG_IN_REGISTRY
 #endif
  #include "..\AdBlocker\Resource.h"
 #endif
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #include "PluginDebug.h"
 #endif
 
@@ -90,5 +90,5 @@ extern CComModule _Module;
 #define countof(x) (sizeof(x)/sizeof(*x))
 #endif 
 
-#define USE_CONSOLE
+//#define USE_CONSOLE
 #include "Console.h"

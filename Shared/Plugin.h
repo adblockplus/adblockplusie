@@ -2,7 +2,7 @@
 #define _PLUGIN_H_
 
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #include "../AdBlocker/AdBlocker.h"
 #endif
 

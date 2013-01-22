@@ -51,10 +51,6 @@ CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
 std::map<UINT,CString> CPluginClass::s_menuDomains;
 #endif
 
-#ifdef SUPPORT_FILE_DOWNLOAD
-TMenuDownloadFiles CPluginClass::s_menuDownloadFiles;
-#endif
-
 bool CPluginClass::s_isPluginToBeUpdated = false;
 
 CPluginTab* CPluginClass::s_activeTab = NULL;
@@ -326,9 +322,10 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 // so we should handle that it is called this way several times during a session
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
+	MessageBox(NULL, L"", L"", MB_OK);
 
     CPluginSettings* settings = CPluginSettings::GetInstance();
-
+	
 	CPluginSystem* system = CPluginSystem::GetInstance(); 
 
 	if (unknownSite) 
@@ -1351,7 +1348,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 			settings->ForceConfigurationUpdateOnStart();
 
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
 
             CPluginHttpRequest httpRequest(USERS_SCRIPT_USER_SETTINGS);
             			
@@ -1428,93 +1425,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 		    }
 	    }
 #endif // SUPPORT_WHITELIST
-
-
-#ifdef SUPPORT_FILE_DOWNLOAD
-        {
-            if (nCommand >= WM_DOWNLOAD_FILE && nCommand <= WM_DOWNLOAD_FILE_MAX)
-		    {
-			    SDownloadFile downloadFile;
-    		
-			    s_criticalSectionLocal.Lock();
-			    {
-				    downloadFile = s_menuDownloadFiles[nCommand];
-			    }
-			    s_criticalSectionLocal.Unlock();
-
-				STARTUPINFO si;
-				::ZeroMemory(&si, sizeof(si));
-				si.cb = sizeof(si);
-
-				PROCESS_INFORMATION pi;
-				::ZeroMemory(&pi, sizeof(pi));
-
-				LPTSTR  strDLLPath1 = new TCHAR[_MAX_PATH];
-				::GetModuleFileName((HINSTANCE)&__ImageBase, strDLLPath1, _MAX_PATH);
-				CString dllPath;
-				dllPath.Format(L"%s", strDLLPath1);
-				dllPath = dllPath.Left(dllPath.GetLength() - CString(DLLNAME).GetLength());
-
-				CPluginSettings* settings = CPluginSettings::GetInstance();
-				if (settings->GetValue(SETTING_DOWNLOAD_LIMIT) > 0)
-				{
-					int fileSizeInMb = downloadFile.fileSize / 1024000;
-					if (fileSizeInMb >= settings->GetValue(SETTING_DOWNLOAD_LIMIT))
-					{
-						CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
-						CString message;
-						message.Format(dictionary->Lookup(L"DOWNLOAD_LIMIT_MESSAGE"), settings->GetValue(SETTING_DOWNLOAD_LIMIT));
-						int res = MessageBox(this->m_hBrowserWnd, message, dictionary->Lookup(L"DOWNLOAD_LIMIT_TITLE"), MB_OKCANCEL);
-						if (res == IDOK)
-						{
-							url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_UPGRADE);
-							CPluginSettings* settings = CPluginSettings::GetInstance();
-							CPluginHttpRequest httpRequest(USERS_SCRIPT_UPGRADE);
-							httpRequest.Add(L"plugin", system->GetPluginId());
-							httpRequest.Add(L"username", system->GetUserNameW());
-							httpRequest.Add(L"user", settings->GetString(SETTING_USER_ID));
-							httpRequest.Add(L"version", settings->GetString(SETTING_PLUGIN_VERSION));
-							CString url = httpRequest.GetUrl();
-							navigationErrorId = PLUGIN_ERROR_NAVIGATION_UPGRADE;
-							break;
-						}
-						else
-						{
-							return;
-						}
-					}
-				}
-				CPluginChecksum checksum;
-
-				checksum.Add("/url", downloadFile.downloadUrl);
-				checksum.Add("/type", downloadFile.properties.content);
-				checksum.Add("/file", downloadFile.downloadFile);
-				checksum.Add("/cookie", downloadFile.cookie);
-				checksum.Add("/referer", downloadFile.properties.properties.referer);
-				CString size;
-				size.Format(L"%d", downloadFile.fileSize);
-				checksum.Add("/size", size);
-				checksum.Add("/path", settings->GetString("defaultDir"));
-				checksum.Add("/format", settings->GetString("defaultFormat", L"-1"));
-				checksum.Add("/autoclose", settings->GetString("closeWhenFinished"));
-
-
-				CString args =  CString(L"\"") + CString(dllPath) + CString(L"DownloadHelper.exe\" /url:") + downloadFile.downloadUrl + " /type:" + downloadFile.properties.content + " /file:" + downloadFile.downloadFile  + " /size:" + size + " /cookie:" + downloadFile.cookie + " /referer:" + downloadFile.properties.properties.referer + " /checksum:" + checksum.GetAsString() + " /path:" + settings->GetString("defaultDir") + " /format:" + settings->GetString("defaultFormat", L"-1") + " /autoclose:" + settings->GetString("closeWhenFinished");
-
-				LPWSTR szCmdline = _wcsdup(args);
-
-				if (!::CreateProcess(NULL, szCmdline, NULL, NULL, FALSE, CREATE_PRESERVE_CODE_AUTHZ_LEVEL, NULL, NULL, &si, &pi))
-				{
-					DWORD dwError = ::CommDlgExtendedError();
-					DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DOWNLOAD, PLUGIN_ERROR_DOWNLOAD_CREATE_PROCESS, "Download::create process failed");
-				}
-
-				::CloseHandle(pi.hProcess);
-				::CloseHandle(pi.hThread);
-			}
-        }
-#endif // SUPPORT_FILE_DOWNLOAD
-
 		break;
 	}
 
@@ -1551,9 +1461,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	{
 #ifdef SUPPORT_WHITELIST
     	s_menuDomains.clear();
-#endif
-#ifdef SUPPORT_FILE_DOWNLOAD
-    	s_menuDownloadFiles.clear();
 #endif
 	}
 	s_criticalSectionLocal.Unlock();
@@ -1779,75 +1686,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 	RemoveMenu(hMenu, 5, MF_BYPOSITION);
 #endif	
 
-
-
-    // Download files
-    #ifdef SUPPORT_FILE_DOWNLOAD
-    {
-	    UINT index = WM_DOWNLOAD_FILE;
-
-        TDownloadFiles downloadFiles = tab->GetDownloadFiles();
-        if (downloadFiles.empty())
-        {
-	        ctext = dictionary->Lookup("DOWNLOAD_FILE_NO_FILES");
-
-            MENUITEMINFO smii;
-            memset(&smii, 0, sizeof(MENUITEMINFO));
-            smii.cbSize = sizeof(MENUITEMINFO);
-    		
-            smii.fMask = MIIM_STRING | MIIM_ID | MIIM_STATE;
-            smii.dwTypeData = ctext.GetBuffer();
-            smii.cch = ctext.GetLength();
-            smii.wID = index;
-            smii.fState = MFS_DISABLED;
-
-            InsertMenuItem(hMenu, index, FALSE, &smii);
-        }
-        else
-        {
-            for (TDownloadFiles::iterator it = downloadFiles.begin(); it != downloadFiles.end() && index < WM_DOWNLOAD_FILE_MAX; ++it)
-            {
-				CString fileItem;
-				CString download = dictionary->Lookup("GENERAL_DOWNLOAD");
-
-				if (it->second.fileSize > 1024000L)
-				{
-					fileItem.Format(L"%s - %s (%.1f Mb)", download.GetBuffer(), it->second.downloadFile.GetBuffer(), (float)it->second.fileSize / (float)1024000L);
-				}
-				else if (it->second.fileSize > 1024L)
-				{
-					fileItem.Format(L"%s - %s (%.1f Kb)", download.GetBuffer(), it->second.downloadFile.GetBuffer(), (float)it->second.fileSize / (float)1024L);
-				}
-				else if (it->second.fileSize > 0)
-				{
-					fileItem.Format(L"%s - %s (%u bytes)", download.GetBuffer(), it->second.downloadFile.GetBuffer(), it->second.fileSize);
-				}
-				else
-				{
-					fileItem.Format(L"%s - %s", download.GetBuffer(), it->second.downloadFile.GetBuffer());
-				}
-
-	            MENUITEMINFO smii;
-	            memset(&smii, 0, sizeof(MENUITEMINFO));
-	            smii.cbSize = sizeof(MENUITEMINFO);
-        		
-	            smii.fMask = MIIM_STRING | MIIM_ID;
-	            smii.dwTypeData = fileItem.GetBuffer();
-	            smii.cch = fileItem.GetLength();
-	            smii.wID = index;
-
-	            InsertMenuItem(hMenu, index, FALSE, &smii);
-    	        
-			    s_criticalSectionLocal.Lock();
-			    {
-		            s_menuDownloadFiles[index++] = it->second;
-                }
-			    s_criticalSectionLocal.Unlock();                 
-            }
-        }
-    }
-    #endif // SUPPORT_FILE_DOWNLOAD
-
 	ctext.ReleaseBuffer();
 
 	return true;
@@ -2028,7 +1866,7 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
 	{
 		CPluginClient* client = CPluginClient::GetInstance();
 
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
 		if (!CPluginSettings::GetInstance()->IsPluginEnabled())
 		{
 		}
@@ -2049,7 +1887,7 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
 			hIcon = GetIcon(ICON_PLUGIN_ENABLED);
 		}
 
-#endif // PRODUCT_SIMPLEADBLOCK
+#endif // PRODUCT_ADBLOCKPLUS
 	}
 
 	return hIcon;

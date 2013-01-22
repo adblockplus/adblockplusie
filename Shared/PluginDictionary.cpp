@@ -25,29 +25,20 @@ CPluginDictionary::CPluginDictionary(bool forceCreate) : m_dictionaryLanguage("e
 
 	m_dictionaryConversions[L"UPDATE"]			= L"MENU_UPDATE";
 	m_dictionaryConversions[L"ABOUT"]			= L"MENU_ABOUT";
-	m_dictionaryConversions[L"ACTIVATE"]		= L"MENU_ACTIVATE";
 	m_dictionaryConversions[L"FAQ"]				= L"MENU_FAQ";
 	m_dictionaryConversions[L"FEEDBACK"]		= L"MENU_FEEDBACK";
 	m_dictionaryConversions[L"INVITE_FRIENDS"]	= L"MENU_INVITE_FRIENDS";
 	m_dictionaryConversions[L"UPGRADE"]			= L"MENU_UPGRADE";
-	m_dictionaryConversions[L"ENTERLICENSE"]		= L"MENU_ENTERLICENSE";
 	m_dictionaryConversions[L"SETTINGS"]		= L"MENU_SETTINGS";
-	m_dictionaryConversions[L"ENABLE_CONVERSSION"]	= L"MENU_ENABLE_CONVERSION";
 	m_dictionaryConversions[L"ENABLE"]			= L"MENU_ENABLE";
 	m_dictionaryConversions[L"DISABLE"]			= L"MENU_DISABLE";
 	m_dictionaryConversions[L"DISABLE_ON"]		= L"MENU_DISABLE_ON";
 
-	m_dictionaryConversions[L"DOWNLOADLIMIT_MESSAGE"]		= L"DOWNLOAD_LIMIT_MESSAGE";
-	m_dictionaryConversions[L"DOWNLOADLIMIT_TITLE"]			= L"DOWNLOAD_LIMIT_TITLE";
-
-	m_dictionaryConversions[L"DOWNLOAD_TITLE"]				= L"DOWNLOAD_UPDATE_TITLE";
-	m_dictionaryConversions[L"DOWNLOAD_PROGRESS_TEXT"]		= L"DOWNLOAD_PLEASE_WAIT";
-	m_dictionaryConversions[L"DOWNLOAD_DOWNLOAD_ERROR_TEXT"]= L"DOWNLOAD_UPDATE_ERROR_TEXT";
-	m_dictionaryConversions[L"DOWNLOAD_POST_DOWNLOAD_TEXT"]	= L"DOWNLOAD_UPDATE_SUCCESS_TEXT";
-
 	m_dictionaryConversions[L"YES"]		= L"GENERAL_YES";
 	m_dictionaryConversions[L"NO"]		= L"GENERAL_NO";
 	m_dictionaryConversions[L"CANCEL"]	= L"GENERAL_CANCEL";
+
+	CString lang = CPluginSettings::GetSystemLanguage();
 
     bool isExisting = true;
     {
@@ -243,31 +234,31 @@ void CPluginDictionary::Create(bool forceCreate)
 	    {
 			m_dictionary.clear();
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
 
             // Popup menu
-		    m_dictionary["MENU_UPDATE"] = "Update Simple Adblock to newest version";
-		    m_dictionary["MENU_ABOUT"] = "About Simple Adblock";
-		    m_dictionary["MENU_ACTIVATE"] = "Activate Simple Adblock";
+		    m_dictionary["MENU_UPDATE"] = "Update Adblock Plus to newest version";
+		    m_dictionary["MENU_ABOUT"] = "About Adblock Plus";
+		    m_dictionary["MENU_ACTIVATE"] = "Activate Adblock Plus";
 		    m_dictionary["MENU_FAQ"] = "Frequently Asked Questions";
 		    m_dictionary["MENU_FEEDBACK"] = "Feedback";
 		    m_dictionary["MENU_INVITE_FRIENDS"] = "Invite friends";
 		    m_dictionary["MENU_SETTINGS"] = "Settings";
-		    m_dictionary["MENU_ENABLE"] = "Enable Simple Adblock";
-		    m_dictionary["MENU_DISABLE"] = "Disable Simple Adblock";
-		    m_dictionary["MENU_DISABLE_ON"] = "Disable Simple Adblock on...";
+		    m_dictionary["MENU_ENABLE"] = "Enable Adblock Plus";
+		    m_dictionary["MENU_DISABLE"] = "Disable Adblock Plus";
+		    m_dictionary["MENU_DISABLE_ON"] = "Disable Adblock Plus on...";
 
             // Update dialog
-		    m_dictionary["UPDATE_TITLE"] = "Update Simple Adblock";
-		    m_dictionary["UPDATE_NEW_VERSION_EXISTS"] = "A new version of Simple Adblock is available";
+		    m_dictionary["UPDATE_TITLE"] = "Update Adblock Plus";
+		    m_dictionary["UPDATE_NEW_VERSION_EXISTS"] = "A new version of Adblock Plus is available";
 		    m_dictionary["UPDATE_DO_YOU_WISH_TO_DOWNLOAD"] = "Do you wish to download it now?";
 
             // Download update dialog
-		    m_dictionary["DOWNLOAD_UPDATE_TITLE"] = "Download Simple Adblock";
+		    m_dictionary["DOWNLOAD_UPDATE_TITLE"] = "Download Adblock Plus";
 		    m_dictionary["DOWNLOAD_UPDATE_BUTTON"] = "Update";
 		    m_dictionary["DOWNLOAD_PLEASE_WAIT"] = "Please wait...";
 		    m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
-		    m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update Simple Adblock, your Internet Explorer will close before installation";
+		    m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update Adblock Plus, your Internet Explorer will close before installation";
 
 #endif
             // General texts
@@ -291,66 +282,9 @@ void CPluginDictionary::Create(bool forceCreate)
         {
             DEBUG_ERROR_LOG(iniFile.GetLastError(), PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_CREATE_FILE, L"Dictionary::Create - Write")
         }
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
         // Delete old
         ::DeleteFile(CPluginSettings::GetDataPath(L"dictionary.ini"));
 #endif
 	}
-}
-
-bool CPluginDictionary::Download(const CString& url, const CString& filename)
-{
-    CString tempFile = CPluginSettings::GetTempFile(TEMP_FILE_PREFIX);
-
-    DEBUG_GENERAL(L"*** Downloading dictionary:" + filename +  " (to " + tempFile + ")");
-
-    bool bResult = !tempFile.IsEmpty();
-    if (bResult)
-    {
-	    // if new filter urls are found download them and update the persistent data
-	    HRESULT hr = ::URLDownloadToFile(NULL, url, tempFile, 0, NULL);
-        if (SUCCEEDED(hr))
-        {
-            CPluginDictionaryLock lock;
-            if (lock.IsLocked())
-            {
-                // Move the temporary file to the new text file.
-                if (!::MoveFileEx(tempFile, CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), MOVEFILE_REPLACE_EXISTING))
-                {
-                    DWORD dwError = ::GetLastError();
-
-                    // Not same device? copy/delete instead
-                    if (dwError == ERROR_NOT_SAME_DEVICE)
-                    {
-                        if (!::CopyFile(tempFile, CPluginSettings::GetDataPath(DICTIONARY_INI_FILE), FALSE))
-                        {
-                            DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_COPY_FILE, L"Dictionary::Download - CopyFile(" + filename + L")")
-
-                            bResult = false;
-                        }
-
-                        ::DeleteFile(tempFile);
-                    }
-                    else
-                    {
-                        DEBUG_ERROR_LOG(dwError, PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_MOVE_FILE, L"Dictionary::Download - MoveFileEx(" + filename + L")")
-
-                        bResult = false;
-                    }
-                }
-            }
-            else
-            {
-                bResult = false;
-            }
-        }
-        else
-        {
-            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_DICTIONARY, PLUGIN_ERROR_DICTIONARY_DOWNLOAD_FILE, L"Dictionary::Download - URLDownloadToFile(" + CString(DICTIONARY_INI_FILE) + L")")
-
-            bResult = false;
-        }
-    }
-
-    return bResult;
 }
