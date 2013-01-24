@@ -3,14 +3,16 @@
 #include <algorithm>
 #include "PluginSettings.h"
 #include "PluginClient.h"
+#include "Locale.h"
 
+static const CString s_GetMessage = L"GetMessage";
 static const CString s_SetLanguage = L"SetLanguage";
 static const CString s_GetLanguage = L"GetLanguage";
 static const CString s_GetWhitelistDomains = L"GetWhitelistDomains";
 static const CString s_AddWhitelistDomain = L"AddWhitelistDomain";
 static const CString s_RemoveWhitelistDomain = L"RemoveWhitelistDomain";
 
-static const CString s_Methods[] = {s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain};
+static const CString s_Methods[] = {s_GetMessage, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain};
 
 CPluginUserSettings::CPluginUserSettings()
 {
@@ -104,7 +106,25 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
     const CString& method = s_Methods[dispidMember];
 
-    if (s_SetLanguage == method)
+    if (s_GetMessage == method)
+    {
+        if (1 != pDispparams->cArgs)
+            return DISP_E_BADPARAMCOUNT;
+
+        if (VT_BSTR != pDispparams->rgvarg[0].vt)
+            return DISP_E_TYPEMISMATCH;
+
+        if (pVarResult)
+        {
+            CComBSTR key = pDispparams->rgvarg[0].bstrVal;
+
+            CString value = GetLocaleValue((BSTR)key);
+
+            pVarResult->vt = VT_BSTR; 
+            pVarResult->bstrVal = SysAllocString(value);
+        }
+    }
+    else if (s_SetLanguage == method)
     {
         if (1 != pDispparams->cArgs)
             return DISP_E_BADPARAMCOUNT;
