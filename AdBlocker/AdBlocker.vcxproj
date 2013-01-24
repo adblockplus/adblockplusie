@@ -828,6 +828,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <Midl Include="AdBlocker.idl" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Shared\Locale.cpp" />
     <ClCompile Include="..\Shared\Plugin.cpp" />
     <ClCompile Include="..\Shared\PluginChecksum.cpp" />
     <ClCompile Include="..\Shared\PluginClass.cpp" />
@@ -869,6 +870,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <ClCompile Include="SimpleAdblockTab.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Shared\Locale.h" />
     <ClInclude Include="AdBlocker.h" />
     <ClInclude Include="AdBlockerGuids.h" />
     <ClInclude Include="..\Shared\Config.h" />
