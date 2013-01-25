@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+	<Product Name='Adblock Plus' Id='E05AE4F3-28E6-4B2B-9983-CCD6F5375491' UpgradeCode='490247F4-D9EF-4290-AA7D-377EE10A8308'
+    Language='1033' Codepage='1252' Version='1.0.0' Manufacturer='Adblock Plus'>
+
+    <Package Id='*' Keywords='Installer'
+      Description="Adblock Plus Installer"
+      Comments='Adblock Plus is a registered trademark of Adblock Plus' Manufacturer='Adblock Plus'
+      InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+    <Media Id='1' Cabinet='Sample.cab' EmbedCab='yes' DiskPrompt="CD-ROM #1" />
+    <Property Id='DiskPrompt' Value="Adblock Plus Installation [1]" />
+
+	<Property Id="PROCESSORARCHITECTURE">
+		<RegistrySearch Id="ProcessorArhitecture"
+						Root="HKLM"
+						Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+					    Name="PROCESSOR_ARCHITECTURE"
+						Type="raw"/>
+	</Property>
+
+	<Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+        <Directory Id='AdblockPlus' Name='Adblock Plus'>
+          <Directory Id='INSTALLDIR' Name='Adblock Plus'>
+
+			<Component Id='AdblockPlusDll32' Guid='2D3290D8-1DAD-4223-8D2F-C48DA05A810A'>
+				<File Id='AdblockPlusDll32' Name='AdblockPlus32.dll' DiskId='1' Source='AdblockPlus32.dll' KeyPath='yes' />
+			</Component>
+
+			<Component Id='AdblockPlusDll64' Guid='E52675D7-59B1-4C53-A3AD-E7A11436D2AB'>
+				<File Id='AdblockPlusDll64' Name='AdblockPlus64.dll' DiskId='1' Source='AdblockPlus64.dll' KeyPath='yes' />
+			</Component>
+
+		  </Directory>
+        </Directory>
+      </Directory>
+	
+    </Directory>
+		
+    <Feature Id='Complete' Title='Adblock Plus' Description='Adblock Plus' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
+		<Feature Id='AdblockPlusDll32' Title='AdblockPlusDll32' Description='AdblockPlusDll32' Level='1'>
+			<ComponentRef Id='AdblockPlusDll32' />
+		</Feature>
+
+		<Feature Id='AdblockPlusDll64' Title='AdblockPlusDll64' Description='AdblockPlusDll64' Level='1'>
+			<ComponentRef Id='AdblockPlusDll64' />
+		</Feature>
+	</Feature>
+
+	<CustomAction Id="Register32x86"
+		Directory="INSTALLDIR"
+		ExeCommand='regsvr32.exe /s "[INSTALLDIR]AdblockPlus32.dll"'
+		Return="check">
+	</CustomAction>
+
+	<CustomAction Id="Unregister32x86"
+		Directory="INSTALLDIR"
+		ExeCommand='regsvr32.exe /u /s "[INSTALLDIR]AdblockPlus32.dll"'>
+	</CustomAction>
+
+
+	<CustomAction Id="Register32x64"
+		Directory="INSTALLDIR"
+		ExeCommand='[SystemFolder]regsvr32.exe /s "[INSTALLDIR]AdblockPlus32.dll"'
+		Return="check">
+	</CustomAction>
+
+	<CustomAction Id="Unregister32x64"
+		Directory="INSTALLDIR"
+		ExeCommand='[SystemFolder]regsvr32.exe /u /s "[INSTALLDIR]AdblockPlus32.dll"'>
+	</CustomAction>
+
+
+	<CustomAction Id="Register64x64"
+		Directory="INSTALLDIR"
+		ExeCommand='[System64Folder]regsvr32.exe /s "[INSTALLDIR]AdblockPlus64.dll"'
+		Return="check">
+	</CustomAction>
+
+	<CustomAction Id="Unregister64x64"
+		Directory="INSTALLDIR"
+		ExeCommand='[System64Folder]regsvr32.exe /u /s "[INSTALLDIR]AdblockPlus64.dll"'>
+	</CustomAction>
+	
+	<InstallExecuteSequence>
+		<Custom Action="Register32x86" After="InstallFinalize">NOT Installed AND PROCESSORARCHITECTURE = "x86"</Custom>
+		<Custom Action="Unregister32x86" Before="InstallInitialize">Installed AND PROCESSORARCHITECTURE = "x86"</Custom>
+
+		<Custom Action="Register32x64" After="InstallFinalize">NOT Installed AND NOT(PROCESSORARCHITECTURE = "x86")</Custom>
+		<Custom Action="Unregister32x64" Before="InstallInitialize">Installed AND NOT(PROCESSORARCHITECTURE = "x86")</Custom>
+
+		<Custom Action="Register64x64" After="InstallFinalize">NOT Installed AND NOT(PROCESSORARCHITECTURE = "x86")</Custom>
+		<Custom Action="Unregister64x64" Before="InstallInitialize">Installed AND NOT(PROCESSORARCHITECTURE = "x86")</Custom>
+	</InstallExecuteSequence>
+		
+  </Product>
+</Wix>
