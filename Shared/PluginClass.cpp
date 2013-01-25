@@ -323,7 +323,7 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
 	//Message box. Can be used as a breakpoint to attach a debugger, if needed
-	MessageBox(NULL, L"", L"", MB_OK);
+//	MessageBox(NULL, L"", L"", MB_OK);
 
     CPluginSettings* settings = CPluginSettings::GetInstance();
 #ifdef AVAST_ABP
@@ -550,9 +550,15 @@ bool CPluginClass::IsStatusBarEnabled()
 	RegCloseKey(pHkey);
 	if (res != ERROR_SUCCESS)
 	{
-		RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkeySub);
-		LONG res = RegQueryValueEx(pHkeySub, L"ShowStatusBar", NULL, NULL, (BYTE*)&trueth, &truethSize);
-		RegCloseKey(pHkey);
+		res = RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkeySub);
+		if (res == ERROR_SUCCESS)
+		{
+			LONG res = RegQueryValueEx(pHkeySub, L"ShowStatusBar", NULL, NULL, (BYTE*)&trueth, &truethSize);
+			if (res == ERROR_SUCCESS)
+			{
+				RegCloseKey(pHkey);
+			}
+		}
 	}
 	return trueth == 1;
 }

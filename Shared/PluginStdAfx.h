@@ -90,5 +90,5 @@ extern CComModule _Module;
 #define countof(x) (sizeof(x)/sizeof(*x))
 #endif 
 
-//#define USE_CONSOLE
+#define USE_CONSOLE
 #include "Console.h"

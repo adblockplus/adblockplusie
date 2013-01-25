@@ -3,6 +3,7 @@
 #include <Wbemidl.h>
 #include <time.h>
 #include "PluginIniFileW.h"
+#include "PluginIniFile.h"
 #include "PluginSettings.h"
 #include "PluginDictionary.h"
 #include "PluginClient.h"
@@ -12,6 +13,7 @@
 #include "PluginFilter.h"
 #endif
 #include "PluginMutex.h"
+#include "PluginHttpRequest.h"
 
 // IE functions
 #pragma comment(lib, "iepmapi.lib")
@@ -74,7 +76,7 @@ CPluginSettings::CPluginSettings() :
 {
 
 	//Message box. Can be used as a breakpoint to attach a debugger, if needed
-	MessageBox(NULL, L"Settings", L"", MB_OK);
+//	MessageBox(NULL, L"Settings", L"", MB_OK);
 
 	CPluginSettings *lightInstance = s_instance;
 	s_instance = NULL;
@@ -338,7 +340,7 @@ void CPluginSettings::Clear()
 	s_criticalSectionFilters.Lock();
 	{
 	    m_filterUrlList.clear();
-		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
+/*		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
 
 		m_filterFileNameList.clear();
 		m_filterFileNameList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "filter1.txt";
@@ -348,13 +350,95 @@ void CPluginSettings::Clear()
 
 		m_filterDownloadTimesList.clear();
 		m_filterDownloadTimesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = time(NULL);
-
+*/
 	}
 	s_criticalSectionFilters.Unlock();
 
 #endif // SUPPORT_FILTER
 }
 
+bool CPluginSettings::MakeRequestForUpdate()
+{
+	CPluginHttpRequest httpRequest(PLUGIN_UPDATE_URL);
+
+	CPluginSystem* system = CPluginSystem::GetInstance();
+
+    httpRequest.Add("lang", this->GetString(SETTING_LANGUAGE, "err"));
+	httpRequest.Add("ie", system->GetBrowserVersion());
+	httpRequest.Add("ielang", system->GetBrowserLanguage());
+
+	httpRequest.AddOsInfo();
+
+	httpRequest.Send();
+
+	if (httpRequest.IsValidResponse())
+	{
+		const std::auto_ptr<CPluginIniFile>& iniFile = httpRequest.GetResponseFile();
+
+		CPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
+		CPluginIniFile::TSectionData::iterator it;
+
+		it = settingsData.find("pluginupdate");
+		if (it != settingsData.end())
+		{
+			CString url(it->second);
+			SetString(SETTING_PLUGIN_UPDATE_URL, url);
+			m_isDirty = true;
+			DEBUG_SETTINGS("Settings::Configuration plugin update url:" + it->second);
+		}
+
+		it = settingsData.find("pluginupdatev");
+		if (it != settingsData.end())
+		{
+			CString ver(it->second);
+			SetString(SETTING_PLUGIN_UPDATE_VERSION, ver);
+			m_isDirty = true;
+			DEBUG_SETTINGS("Settings::Configuration plugin update version:" + it->second);
+		}
+	}
+
+	return true;
+}
+bool CPluginSettings::CheckFilterAndDownload()
+{
+        TFilterUrlList currentFilterUrlList = this->GetFilterUrlList();
+        std::map<CString, CString> fileNamesList = this->GetFilterFileNamesList();
+
+        for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
+        {
+            CString downloadFilterName = it->first;
+
+			std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
+			CString filename = "";
+			if (fni != fileNamesList.end())
+			{
+				filename = fni->second;
+			}
+			else
+			{
+				filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
+			}
+            int version = it->second;
+
+            if (this->FilterlistExpired(downloadFilterName) && (this->FilterShouldLoad(downloadFilterName)))
+            {
+                CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
+				this->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
+            }
+			else
+			{
+				//Cleanup, since we don't need the filter definition
+				DeleteFile(CPluginSettings::GetDataPath(filename));
+				this->SetFilterRefreshDate(downloadFilterName, 0);
+			}
+        }
+
+        this->Write();
+
+        this->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
+
+		return true;
+}
 
 CString CPluginSettings::GetDataPathParent()
 {

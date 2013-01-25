@@ -267,6 +267,8 @@ public:
 	int GetWhiteListedDomainCount() const;
 	TDomainList GetWhiteListedDomainList(bool isToGo=false) const;
 
+	bool CheckFilterAndDownload();
+	bool MakeRequestForUpdate();
     bool RefreshWhitelist();
 	DWORD GetWindowsBuildNumber();
 

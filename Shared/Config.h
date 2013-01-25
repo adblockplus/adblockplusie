@@ -9,6 +9,7 @@
 #if (defined PRODUCT_ADBLOCKPLUS)
  #define FILTERS_PROTOCOL "https://"
  #define FILTERS_HOST "easylist-downloads.adblockplus.org"
+ #define PLUGIN_UPDATE_URL "update.adblockplus.org"
 #endif
  
 // ----------------------------------------------------------------------------
@@ -39,9 +40,9 @@
 #if (defined PRODUCT_ADBLOCKPLUS)
 #define SADOMAIN L"simple-adblock.com"
  #ifdef ADPLUGIN_TEST_MODE
-  #define USERS_HOST L"mytest.simple-adblock.com"
+  #define USERS_HOST L""
  #elif (defined ADPLUGIN_PRODUCTION_MODE)
-  #define USERS_HOST L"my.simple-adblock.com"
+  #define USERS_HOST L""
  #else
   #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
  #endif
@@ -90,6 +91,10 @@
  #define ENABLE_DEBUG_RESULT_IGNORED
  #define ENABLE_DEBUG_SPLIT_FILE
 #else
+ #undef ENABLE_DEBUG_INFO
+#endif
+
+#ifdef NDEBUG
  #undef ENABLE_DEBUG_INFO
 #endif
 
