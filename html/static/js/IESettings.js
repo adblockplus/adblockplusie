@@ -8,19 +8,35 @@ function init()
   }
   catch (err)
   {
-//    alert("err: " + err);
+    alert("err: " + err);
   }
 }
 
 function initLanguageSettings()
 {
+  // Locale substitutions
+  var localeLanguageDescription = document.getElementById("localeLanguageDescription");
+  var languageDescription = UserSettings().GetMessage("settings-language-description");
+  if (languageDescription.length)
+  {
+    localeLanguageDescription.innerText = languageDescription; 
+  }
+
+  var localeBlockingDescription = document.getElementById("localeBlockingDescription");
+  var blockingDescription = UserSettings().GetMessage("settings-blocking-description");
+  if (blockingDescription.length)
+  {
+    localeBlockingDescription.innerText = blockingDescription; 
+  }
+
   var optionsLanguage = document.getElementById("language");
   addListener(optionsLanguage, "change", function ()
   {
     UserSettings().SetLanguage(optionsLanguage[optionsLanguage.selectedIndex].value);
   }, false);
 
-  var language = window.Settings.GetLanguage();
+
+  var language = UserSettings().GetLanguage();
 
   var options = optionsLanguage.options;
   for (var i = 0; i < options.length; i++)
