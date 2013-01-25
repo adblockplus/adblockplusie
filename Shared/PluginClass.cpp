@@ -2017,26 +2017,49 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 				pClass->GetTab()->SetDocumentUrl(strURL);
 			}
 
-			// Create menu
-			HMENU hMenu = pClass->CreatePluginMenu(strURL);
-			if (!hMenu)
-			{
-				return 0;
-			}
+            #ifdef SUPPORT_SHOW_PLUGIN_MENU
+			    // Create menu
+			    HMENU hMenu = pClass->CreatePluginMenu(strURL);
+			    if (!hMenu)
+			    {
+				    return 0;
+			    }
 
-			// Display menu
-			POINT pt;
-			::GetCursorPos(&pt);
+			    // Display menu
+			    POINT pt;
+			    ::GetCursorPos(&pt);
 
-			RECT rc;
-			::GetWindowRect(hWnd, &rc);
+			    RECT rc;
+			    ::GetWindowRect(hWnd, &rc);
 
-			if (rc.left >= 0 && rc.top >= 0) 
-			{
-				pt.x = rc.left;
-				pt.y = rc.top;
-			}
-			pClass->DisplayPluginMenu(hMenu, -1, pt, TPM_LEFTALIGN|TPM_BOTTOMALIGN);
+			    if (rc.left >= 0 && rc.top >= 0) 
+			    {
+				    pt.x = rc.left;
+				    pt.y = rc.top;
+			    }
+
+			    pClass->DisplayPluginMenu(hMenu, -1, pt, TPM_LEFTALIGN|TPM_BOTTOMALIGN);
+            #else
+                CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
+                if (browser)
+                {
+                    VARIANT vFlags;
+                    vFlags.vt = VT_I4;
+                    vFlags.intVal = navOpenInNewTab;
+
+		            HRESULT hr = browser->Navigate(CComBSTR(UserSettingsFileUrl()), &vFlags, NULL, NULL, NULL);
+		            if (FAILED(hr))
+		            {
+		                vFlags.intVal = navOpenInNewWindow;
+
+                        hr = browser->Navigate(CComBSTR(UserSettingsFileUrl()), &vFlags, NULL, NULL, NULL);
+		                if (FAILED(hr))
+		                {
+				            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_SETTINGS, "Navigation::Failed")
+			            }
+		            }
+                }
+            #endif
 		}
 		break;
 
