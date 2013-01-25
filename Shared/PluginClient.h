@@ -2,7 +2,7 @@
 #define _PLUGIN_CLIENT_H_
 
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #include "../AdBlocker/SimpleAdblockClient.h"
  typedef CSimpleAdblockClient CPluginClient;
 #endif

@@ -6,9 +6,10 @@
 // ----------------------------------------------------------------------------
 
 // Define filter configuration
-#if (defined PRODUCT_SIMPLEADBLOCK)
- #define FILTERS_PROTOCOL "http://"
- #define FILTERS_HOST "simple-adblock.com/download/filterlists"
+#if (defined PRODUCT_ADBLOCKPLUS)
+ #define FILTERS_PROTOCOL "https://"
+ #define FILTERS_HOST "easylist-downloads.adblockplus.org"
+ #define PLUGIN_UPDATE_URL "update.adblockplus.org"
 #endif
  
 // ----------------------------------------------------------------------------
@@ -36,17 +37,17 @@
 // AdBlocker configuration
 
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
 #define SADOMAIN L"simple-adblock.com"
  #ifdef ADPLUGIN_TEST_MODE
-  #define USERS_HOST L"mytest.simple-adblock.com"
+  #define USERS_HOST L""
  #elif (defined ADPLUGIN_PRODUCTION_MODE)
-  #define USERS_HOST L"my.simple-adblock.com"
+  #define USERS_HOST L""
  #else
   #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
  #endif
 #else
- #error "Undefined product. Please specify PRODUCT_SIMPLEADBLOCK in configuration"
+ #error "Undefined product. Please specify PRODUCT_ADBLOCKPLUS in configuration"
 #endif
 
 // ----------------------------------------------------------------------------
@@ -90,6 +91,10 @@
  #define ENABLE_DEBUG_RESULT_IGNORED
  #define ENABLE_DEBUG_SPLIT_FILE
 #else
+ #undef ENABLE_DEBUG_INFO
+#endif
+
+#ifdef NDEBUG
  #undef ENABLE_DEBUG_INFO
 #endif
 
@@ -180,7 +185,7 @@
 // Features
 // ----------------------------------------------------------------------------
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #define SUPPORT_FILTER
  #define SUPPORT_WHITELIST
  #undef  SUPPORT_FILE_DOWNLOAD
@@ -199,9 +204,6 @@
 
 // Max elements in white list menus
 #define DOMAIN_HISTORY_MAX_COUNT 5
-
-// Max elements in download file menu
-#define DOWNLOAD_FILE_MAX_COUNT 10
 
 // Max registration attempts
 #define REGISTRATION_MAX_ATTEMPTS 5
@@ -229,35 +231,36 @@
 // or  NO_AUTOMATIC_SHUTDOWN" - "If you choose to install the new plugin, you have to restart Explorer for the update to take effect"
 #define AUTOMATIC_SHUTDOWN
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
- #define SIMPLE_ADBLOCK_NAME "Simple Adblock"
-#endif
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
- #define BHO_NAME _T("Simple Adblock BHO/1.0")
+#if (defined PRODUCT_ADBLOCKPLUS)
+//This is used as an agent string for HTTP requests to our servers from the plugin
+ #define BHO_NAME _T("Adblock Plus BHO/1.0")
 #endif
 
 // Name of ini file in Windows directory for uninstall
-#if (defined PRODUCT_SIMPLEADBLOCK)
- #define UNINSTALL_INI_FILE "SimpleAdblock.ini"
+#if (defined PRODUCT_ADBLOCKPLUS)
+ #define UNINSTALL_INI_FILE "AdBlockPlus.ini"
 #endif
 
-// Name of user dir
-#if (defined PRODUCT_SIMPLEADBLOCK)
- #define USER_DIR "Simple Adblock\\"
+// Name of user dir in %APPDATA%\..\LocalLow
+#if (defined PRODUCT_ADBLOCKPLUS)
+ #define USER_DIR "Ad Block Plus\\"
 #endif
 
 // Prefix on temp dir files
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #define TEMP_FILE_PREFIX "ab_"
 #endif
 
 // Dictionary filename
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #define DICTIONARY_INI_FILE "dictionary_w.ini"
 #else
  #define DICTIONARY_INI_FILE "dictionary.ini"
 #endif
+#define DICTIONARY_DIR_NAME "Languages\\"
+#define DEFAULT_LANGUAGE "en-US"
+
 
 // Config filename
 #ifdef SUPPORT_CONFIG
@@ -282,17 +285,17 @@
 #endif
 
 // Install MSI filename
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #define INSTALL_MSI_FILE "simpleadblock.msi"
 #endif
 
 // Status bar pane name
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #define STATUSBAR_PANE_NAME "SimpleAdblockStatusBarPane"
 #endif
 
 // Status bar pane number
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #define STATUSBAR_PANE_NUMBER 2
 #endif
 

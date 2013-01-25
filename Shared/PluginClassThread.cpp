@@ -86,10 +86,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
 	CPluginDictionary::GetInstance();
 
-	// Timer settings for retrieving server client (settings from server)
-    DWORD nNextServerClientTimerBase = GetTickCount() / TIMER_INTERVAL_SERVER_CLIENT_INIT + 1;
-    DWORD nServerClientTimerBaseStep = 1;
-
     DWORD nNextUserTimerBase = GetTickCount() / TIMER_INTERVAL_USER_REGISTRATION + 1;
     DWORD nUserTimerBaseStep = 1;
     
@@ -197,38 +193,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
         DEBUG_GENERAL(debugText)
         
 	    // --------------------------------------------------------------------
-	    // Load configuration
-	    // --------------------------------------------------------------------
-
-        if (!IsMainThreadDone(hMainThread))
-        {
-            DEBUG_THREAD("Thread::Load configuration");
-
-	        if (!isConfigutationLoaded)
-	        {
-		        // Initialize serverClient module
-		        // we try an initialization in each loop
-		        DWORD nServerClientTimerBase = GetTickCount() / TIMER_INTERVAL_SERVER_CLIENT_INIT;
-
-		        if (nServerClientTimerBase >= nNextServerClientTimerBase || mainLoopIteration == 1)
-		        {
-                    DEBUG_THREAD("Thread::Load configuration (action)");
-
-			        try 
-			        {
-			            isConfigutationLoaded = configuration->Download();
-			        }
-			        catch (...)
-			        {
-			        }
-
-			        nNextServerClientTimerBase = nServerClientTimerBase + nServerClientTimerBaseStep;
-			        nServerClientTimerBaseStep *= 2;
-		        }
-	        }
-        }
-
-	    // --------------------------------------------------------------------
 	    // Update settings
 	    // --------------------------------------------------------------------
         
@@ -265,32 +229,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 {
 				    settings->SetValue(SETTING_PLUGIN_INFO_PANEL, configuration->GetPluginInfoPanel());
 			    }
-
-                // Update dictionary
-                if (configuration->IsValidDictionary())
-                {
-                    int currentVersion = settings->GetValue(SETTING_DICTIONARY_VERSION);
-                    int newVersion = configuration->GetDictionaryVersion();
-
-                    if (newVersion > currentVersion) 
-                    {
-                        isNewDictionaryVersion = true;
-                    }
-                }
-
-#ifdef SUPPORT_CONFIG
-                // Update config file download info
-                if (configuration->IsValidConfig())
-                {
-					int currentVersion = settings->GetValue(SETTING_CONFIG_VERSION);
-                    int newVersion = configuration->GetConfigVersion();
-
-                    if (newVersion > currentVersion) 
-                    {
-                        isNewConfig = true;
-                    }
-                }
-#endif // SUPPORT_CONFIG
                 
 #ifdef SUPPORT_FILTER
                 // Update filter URL list
@@ -300,87 +238,18 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 }
 #endif // SUPPORT_FILTER
 
-#ifdef SUPPORT_WHITELIST
-                // Update white list
-                if (configuration->IsValidWhiteList())
-                {
-                    settings->ReplaceWhiteListedDomains(configuration->GetWhiteList());
-                }
-#endif // SUPPORT_WHITELIST
-
                 settings->Write();
                 
                 configuration->Invalidate();
 
-				// Update dictionary
-                if (isNewDictionaryVersion)
-                {
-					CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
-
-                    if (dictionary->Download(configuration->GetDictionaryUrl(), CPluginSettings::GetDataPath(DICTIONARY_INI_FILE)))
-                    {
-                        settings->SetValue(SETTING_DICTIONARY_VERSION, configuration->GetDictionaryVersion());
-                        settings->Write();
-
-                        settings->IncrementTabVersion(SETTING_TAB_DICTIONARY_VERSION);
-                    }
-                }
-
-#ifdef SUPPORT_CONFIG
-                // Update config file
-                if (isNewConfig)
-                {
-					CPluginConfig* config = CPluginConfig::GetInstance();
-
-                    if (config->Download(configuration->GetConfigUrl(), CPluginSettings::GetDataPath(CONFIG_INI_FILE)))
-                    {
-                        settings->SetValue(SETTING_CONFIG_VERSION, configuration->GetConfigVersion());
-                        settings->Write();
-
-                        settings->IncrementTabVersion(SETTING_TAB_CONFIG_VERSION);
-                    }
-                }
-#endif // SUPPORT_CONFIG
-
 #ifdef SUPPORT_FILTER
-                // Update filters
+                // Update filters, if needed (5 days * (random() * 0.4 + 0.8))
                 if (isNewFilterVersion)
                 {
-                    TFilterUrlList filterUrlList = configuration->GetFilterUrlList();
-                    TFilterUrlList currentFilterUrlList = settings->GetFilterUrlList();
-                    std::map<CString, CString> fileNamesList = configuration->GetFilterFileNamesList();
 
-                    // Compare downloaded URL string with persistent URLs
-                    for (TFilterUrlList::iterator it = filterUrlList.begin(); it != filterUrlList.end(); ++it) 
-                    {
-                        CString downloadFilterName = it->first;
+					settings->CheckFilterAndDownload();
 
-						std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
-						CString filename = "";
-						if (fni != fileNamesList.end())
-						{
-							filename = fni->second;
-						}
-						else
-						{
-							filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
-						}
-                        int version = it->second;
-
-                        TFilterUrlList::const_iterator fi = currentFilterUrlList.find(downloadFilterName);
-                        if (fi == currentFilterUrlList.end() || fi->second != version)
-                        {
-                            CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
-                        }
-                    }
-
-                    settings->SetFilterUrlList(filterUrlList);
-					settings->SetFilterFileNamesList(fileNamesList);
-                    settings->SetValue(SETTING_FILTER_VERSION, configuration->GetFilterVersion());
-                    settings->Write();
-
-                    settings->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
-
+					settings->MakeRequestForUpdate();
 					tab->OnUpdate();
                 }
 #endif // SUPPORT_FILTER
@@ -453,9 +322,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 		    while (!isDone && !IsMainThreadDone(hMainThread) && !s_isPluginToBeUpdated)
 		    {
 			    // Non-hanging sleep
-			    Sleep(50);
+			    Sleep(5000);
 				
-				if (sleepLoopIteration++ % (TIMER_THREAD_SLEEP_USER_REGISTRATION / 50) == 0)
+				if (sleepLoopIteration++ % (TIMER_THREAD_SLEEP_USER_REGISTRATION) == 0)
 			    {
 				    isDone = true;
 			    }

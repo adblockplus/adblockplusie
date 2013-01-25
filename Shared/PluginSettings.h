@@ -84,6 +84,8 @@ private:
 #ifdef SUPPORT_FILTER
 	CPluginSettings::TFilterUrlList m_filterUrlList;
 	std::map<CString, CString> m_filterFileNameList;
+	std::map<CString, CString> m_filterLanguagesList;
+	std::map<CString, time_t> m_filterDownloadTimesList;
 #endif
 
 	CString m_settingsVersion;
@@ -148,6 +150,10 @@ public:
 	
 	bool IsPluginSelftestEnabled();
 
+	bool FilterlistExpired(CString filterlist) const;
+	bool FilterShouldLoad(CString filterlist) const;
+	bool SetFilterRefreshDate(CString filterlist, time_t refreshtime);
+
 #ifdef SUPPORT_FILTER
 
 	void SetFilterUrlList(const TFilterUrlList& filters);
@@ -190,7 +196,8 @@ public:
 
     bool IsFirstRunAny() const;
 
-    // Settings tab
+	static CString GetSystemLanguage();
+
 private:
 
 	bool m_isDirtyTab;
@@ -260,6 +267,8 @@ public:
 	int GetWhiteListedDomainCount() const;
 	TDomainList GetWhiteListedDomainList(bool isToGo=false) const;
 
+	bool CheckFilterAndDownload();
+	bool MakeRequestForUpdate();
     bool RefreshWhitelist();
 	DWORD GetWindowsBuildNumber();
 
