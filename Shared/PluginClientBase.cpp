@@ -103,7 +103,7 @@ void CPluginClientBase::SetLocalization()
 	    {
 		    if (dic->IsLanguageSupported(browserLanguage))
 		    {
-			    settings->SetString(SETTING_LANGUAGE, browserLanguage);
+//			    settings->SetString(SETTING_LANGUAGE, browserLanguage);
 		    }
 	    }
 
@@ -115,7 +115,7 @@ void CPluginClientBase::SetLocalization()
         settings->Write();
     }
 
-	dic->SetLanguage(browserLanguage);
+	dic->SetLanguage(settings->GetString(SETTING_LANGUAGE));
 }
 
 

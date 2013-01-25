@@ -70,8 +70,8 @@ inline void WritelnToConsole(int code, int count, const char* format, va_list ar
             {
                 strcpy_s(pFileName, sizeof(title) - lenLog, pDelim); 
             }
-
-            int lenFileName = strlen(pFileName);
+			//Explicit conversion here, to disable compilation wr
+            size_t lenFileName = strlen(pFileName);
             *(pFileName + lenFileName) = '"';
             *(pFileName + lenFileName + 1) = 0;
         }
@@ -107,7 +107,7 @@ inline void WritelnToConsole(int code, int count, const char* format, va_list ar
     StringCbVPrintfA(out, sizeof(out), buf, args);
 
 	DWORD dwOutput;
-	WriteConsoleA(hError, out, strlen(out), &dwOutput, 0);
+	WriteConsoleA(hError, out, (DWORD)strlen(out), &dwOutput, 0);
 	FlushConsoleInputBuffer(hError);
 
 	SetLastError(lastError);

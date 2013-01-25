@@ -2,7 +2,7 @@
 
 #include "PluginFilter.h"
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
  #include "PluginSettings.h"
  #include "PluginClient.h"
  #include "PluginClientFactory.h"
@@ -15,7 +15,7 @@
 #include "PluginClass.h"
 #include "mlang.h"
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
 
 class CPluginFilterLock : public CPluginMutex
 {
@@ -1132,7 +1132,7 @@ void CPluginFilter::AddFilter(CString filterString, CString filterFile, int filt
 	}
 }
 
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
 
 bool CPluginFilter::DownloadFilterFile(const CString& url, const CString& filename)
 {
@@ -1197,12 +1197,12 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
 {
     bool isRead = false;
 
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
     CPluginClient* client = CPluginClient::GetInstance();
 #endif
     CString fileContent;
 
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
     CPluginFilterLock lock(filename);
     if (lock.IsLocked())
     {
@@ -1227,7 +1227,7 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
         if (hFile == INVALID_HANDLE_VALUE)
         {
             DWORD dwError = ::GetLastError();
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
             // File not found - request another download!
             if (dwError == ERROR_FILE_NOT_FOUND)
             {
@@ -1244,7 +1244,7 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
                         // Build filter string
                         CStringA line;
                         
-	                    line += "[Simple Adblock - personal filters]\r\n";
+	                    line += "[Adblock Plus - personal filters]\r\n";
 	                    line += "!\r\n";
                         line += "! In this file you can enter your own filters.\r\n";
                         line += "! Any updates to this file\r\n";
@@ -1364,7 +1364,7 @@ bool CPluginFilter::ReadFilter(const CString& filename, const CString& downloadP
             ::CloseHandle(hFile);
         }
 
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
     }
 #endif
     if (isRead)
@@ -1471,7 +1471,7 @@ void CPluginFilter::ParseFilters(const TFilterFileList& list)
     s_criticalSectionFilterMap.Unlock();
 
     // Load the files
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
     CPluginClient* client = CPluginClient::GetInstance();
 #endif
 	for (TFilterFileList::const_iterator it = list.begin(); it != list.end(); ++it) 
@@ -1981,7 +1981,7 @@ bool CPluginFilter::IsSubdomain(const CString& subdomain, const CString& domain)
     return false;
 }
 
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
 
 void CPluginFilter::CreateFilters()
 {
@@ -2046,10 +2046,10 @@ void CPluginFilter::CreateFilters()
 	}
 }
 
-#endif // PRODUCT_SIMPLEADBLOCK
+#endif // PRODUCT_ADBLOCKPLUS
 
 
-#ifdef PRODUCT_SIMPLEADBLOCK
+#ifdef PRODUCT_ADBLOCKPLUS
 
 bool CPluginFilter::IsAlive() const
 {

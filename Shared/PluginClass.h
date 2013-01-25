@@ -33,12 +33,6 @@
  #define WM_GROUP2_START                    (WM_LAUNCH_INFO + 1)
 #endif
 
-#ifdef SUPPORT_FILE_DOWNLOAD
- #define WM_DOWNLOAD_FILE                   (WM_GROUP2_START)
- #define WM_DOWNLOAD_FILE_MAX	            (WM_DOWNLOAD_FILE + DOWNLOAD_FILE_MAX_COUNT + 1)
-#endif
-
-
 class CPluginMimeFilterClient;
 
 
@@ -196,10 +190,6 @@ private:
 	static CComQIPtr<IWebBrowser2> s_asyncWebBrowser2;
 
     static CComQIPtr<IWebBrowser2> GetAsyncBrowser();
-
-#ifdef SUPPORT_FILE_DOWNLOAD
-    static TMenuDownloadFiles s_menuDownloadFiles;
-#endif
 
 };
 

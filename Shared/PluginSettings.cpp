@@ -1,16 +1,19 @@
 #include "PluginStdAfx.h"
 
 #include <Wbemidl.h>
-
+#include <time.h>
 #include "PluginIniFileW.h"
+#include "PluginIniFile.h"
 #include "PluginSettings.h"
 #include "PluginDictionary.h"
 #include "PluginClient.h"
 #include "PluginChecksum.h"
+#include "PluginSystem.h"
 #ifdef SUPPORT_FILTER
 #include "PluginFilter.h"
 #endif
 #include "PluginMutex.h"
+#include "PluginHttpRequest.h"
 
 // IE functions
 #pragma comment(lib, "iepmapi.lib")
@@ -72,6 +75,8 @@ CPluginSettings::CPluginSettings() :
     m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
 
+	//Message box. Can be used as a breakpoint to attach a debugger, if needed
+//	MessageBox(NULL, L"Settings", L"", MB_OK);
 
 	CPluginSettings *lightInstance = s_instance;
 	s_instance = NULL;
@@ -80,7 +85,7 @@ CPluginSettings::CPluginSettings() :
     m_isDirtyWhitelist = false;
 #endif
 
-    m_settingsFile = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE), true));
+    m_settingsFile = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE), false));
     m_settingsFileTab = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_TAB), true));
 #ifdef SUPPORT_WHITELIST
     m_settingsFileWhitelist = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
@@ -251,6 +256,8 @@ bool CPluginSettings::Read(bool bDebug)
 				            CPluginIniFileW::TSectionData::iterator filterIt = filters.find(L"filter" + filterCountStr);
 				            CPluginIniFileW::TSectionData::iterator versionIt = filters.find(L"filter" + filterCountStr + "v");
 				            CPluginIniFileW::TSectionData::iterator fileNameIt = filters.find(L"filter" + filterCountStr + "fileName");
+				            CPluginIniFileW::TSectionData::iterator languageIt = filters.find(L"filter" + filterCountStr + "language");
+				            CPluginIniFileW::TSectionData::iterator dltIt = filters.find(L"filter" + filterCountStr + "refreshin");
 
 				            if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
 				            {
@@ -260,6 +267,16 @@ bool CPluginSettings::Read(bool bDebug)
 				            if (filterIt != filters.end() && fileNameIt != filters.end())
 				            {
 								m_filterFileNameList[filterIt->second] = fileNameIt->second;
+				            }
+
+				            if (filterIt != filters.end() && languageIt != filters.end())
+				            {
+								m_filterLanguagesList[filterIt->second] = languageIt->second;
+				            }
+
+				            if (filterIt != filters.end() && dltIt != filters.end())
+				            {
+								m_filterDownloadTimesList[filterIt->second] = (time_t)_wtoi(dltIt->second.GetString());
 				            }
 
 			            } while (bContinue);
@@ -314,7 +331,6 @@ void CPluginSettings::Clear()
 
 		m_properties[SETTING_PLUGIN_VERSION] = IEPLUGIN_VERSION;
 		m_properties[SETTING_LANGUAGE] = "en";
-		m_properties[SETTING_DICTIONARY_VERSION] = "1";
 	}
 	s_criticalSectionLocal.Unlock();
 
@@ -324,16 +340,105 @@ void CPluginSettings::Clear()
 	s_criticalSectionFilters.Lock();
 	{
 	    m_filterUrlList.clear();
-		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
+/*		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
 
 		m_filterFileNameList.clear();
 		m_filterFileNameList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "filter1.txt";
+
+		m_filterLanguagesList.clear();
+		m_filterLanguagesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "en";
+
+		m_filterDownloadTimesList.clear();
+		m_filterDownloadTimesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = time(NULL);
+*/
 	}
 	s_criticalSectionFilters.Unlock();
 
 #endif // SUPPORT_FILTER
 }
 
+bool CPluginSettings::MakeRequestForUpdate()
+{
+	CPluginHttpRequest httpRequest(PLUGIN_UPDATE_URL);
+
+	CPluginSystem* system = CPluginSystem::GetInstance();
+
+    httpRequest.Add("lang", this->GetString(SETTING_LANGUAGE, "err"));
+	httpRequest.Add("ie", system->GetBrowserVersion());
+	httpRequest.Add("ielang", system->GetBrowserLanguage());
+
+	httpRequest.AddOsInfo();
+
+	httpRequest.Send();
+
+	if (httpRequest.IsValidResponse())
+	{
+		const std::auto_ptr<CPluginIniFile>& iniFile = httpRequest.GetResponseFile();
+
+		CPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
+		CPluginIniFile::TSectionData::iterator it;
+
+		it = settingsData.find("pluginupdate");
+		if (it != settingsData.end())
+		{
+			CString url(it->second);
+			SetString(SETTING_PLUGIN_UPDATE_URL, url);
+			m_isDirty = true;
+			DEBUG_SETTINGS("Settings::Configuration plugin update url:" + it->second);
+		}
+
+		it = settingsData.find("pluginupdatev");
+		if (it != settingsData.end())
+		{
+			CString ver(it->second);
+			SetString(SETTING_PLUGIN_UPDATE_VERSION, ver);
+			m_isDirty = true;
+			DEBUG_SETTINGS("Settings::Configuration plugin update version:" + it->second);
+		}
+	}
+
+	return true;
+}
+bool CPluginSettings::CheckFilterAndDownload()
+{
+        TFilterUrlList currentFilterUrlList = this->GetFilterUrlList();
+        std::map<CString, CString> fileNamesList = this->GetFilterFileNamesList();
+
+        for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
+        {
+            CString downloadFilterName = it->first;
+
+			std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
+			CString filename = "";
+			if (fni != fileNamesList.end())
+			{
+				filename = fni->second;
+			}
+			else
+			{
+				filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
+			}
+            int version = it->second;
+
+            if (this->FilterlistExpired(downloadFilterName) && (this->FilterShouldLoad(downloadFilterName)))
+            {
+                CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
+				this->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
+            }
+			else
+			{
+				//Cleanup, since we don't need the filter definition
+				DeleteFile(CPluginSettings::GetDataPath(filename));
+				this->SetFilterRefreshDate(downloadFilterName, 0);
+			}
+        }
+
+        this->Write();
+
+        this->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
+
+		return true;
+}
 
 CString CPluginSettings::GetDataPathParent()
 {
@@ -441,6 +546,27 @@ CString CPluginSettings::GetDataPath(const CString& filename)
     return s_dataPath + CString(USER_DIR) + filename;
 }
 
+CString CPluginSettings::GetSystemLanguage()
+{
+	CString language;
+	CString country;
+
+	DWORD bufSize = 256;
+	int ccBuf = GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SISO639LANGNAME, language.GetBufferSetLength(bufSize), bufSize);
+	ccBuf = GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SISO3166CTRYNAME, country.GetBufferSetLength(bufSize), bufSize);
+
+	if ((country.IsEmpty()) || (language.IsEmpty()))
+	{
+		return CString();
+	}
+	CString lang;
+	lang.Append(language);
+	lang.Append(L"-");
+	lang.Append(country);
+	
+	return lang;
+
+}
 
 CString CPluginSettings::GetTempPath(const CString& filename)
 {
@@ -720,6 +846,35 @@ std::map<CString, CString> CPluginSettings::GetFilterFileNamesList() const
 
 	return filterFileNamesList;
 }
+
+bool CPluginSettings::FilterlistExpired(CString filterlist) const
+{
+	std::map<CString, time_t>::const_iterator it = m_filterDownloadTimesList.find(filterlist);
+	if (it == m_filterDownloadTimesList.end())
+		return false;
+	if (time(NULL) >= it->second)
+		return true;
+	return false;
+}
+
+bool CPluginSettings::FilterShouldLoad(CString filterlist) const
+{
+	std::map<CString, CString>::const_iterator it = m_filterLanguagesList.find(filterlist);
+	if (it == m_filterLanguagesList.end())
+		return false;
+	CPluginSettings* pluginSettings = CPluginSettings::GetInstance();
+	if (it->second == pluginSettings->GetString(SETTING_LANGUAGE))
+		return true;
+	return false;
+}
+
+
+bool CPluginSettings::SetFilterRefreshDate(CString filterlist, time_t refreshtime)
+{
+	m_filterDownloadTimesList[filterlist] = refreshtime;
+	m_isDirty = true;
+	return true;
+}
 void CPluginSettings::AddFilterUrl(const CString& url, int version) 
 {
 	s_criticalSectionFilters.Lock();
@@ -809,7 +964,27 @@ bool CPluginSettings::Write(bool isDebug)
 						filters[L"filter" + filterCountStr + "fileName"] = fileName;
 					}
 				}
-		    }
+				if (m_filterLanguagesList.size() > 0)
+				{
+					std::map<CString, CString>::iterator fli = m_filterLanguagesList.find(it->first);
+					if (fli != m_filterLanguagesList.end())
+					{
+						CString language = fli->second;
+						filters[L"filter" + filterCountStr + "language"] = language;
+					}
+				}
+				if (m_filterDownloadTimesList.size() > 0)
+				{
+					std::map<CString, time_t>::iterator fdti = m_filterDownloadTimesList.find(it->first);
+					if (fdti != m_filterDownloadTimesList.end())
+					{
+						CString timeString;
+						timeString.Format(L"%d", (int)fdti->second);
+						filters[L"filter" + filterCountStr + "refreshin"] = timeString;
+					}
+				}
+
+			}
 	    }
         s_criticalSectionFilters.Unlock();
 
@@ -1884,10 +2059,10 @@ int CPluginSettings::GetWhiteListedDomainCount() const
 
 	s_criticalSectionLocal.Lock();
 	{
-		count = m_whitelist.size();
+		count = (int)m_whitelist.size();
 	}
 	s_criticalSectionLocal.Unlock();
-
+	
     return count;
 }
 
@@ -2002,7 +2177,6 @@ DWORD CPluginSettings::GetWindowsBuildNumber()
 	   OSVERSIONINFOEX osvi;
 	   SYSTEM_INFO si;
 	   BOOL bOsVersionInfoEx;
-	   DWORD dwType;
 
 	   ZeroMemory(&si, sizeof(SYSTEM_INFO));
 	   ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));

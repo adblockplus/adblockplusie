@@ -10,7 +10,7 @@ import "ocidl.idl";
 	object,
 	uuid(GUUID_IPRODUCT),
 	dual,
-	helpstring("SimpleAdblock Interface"),
+	helpstring("Adblock Interface"),
 	pointer_default(unique)
 ]
 interface IIEPlugin : IDispatch
@@ -20,7 +20,7 @@ interface IIEPlugin : IDispatch
 [
 	uuid(GUUID_TYPELIB),
 	version(1.0),
-	helpstring("SimpleAdblock 1.0 Type Library")
+	helpstring("Adblock 1.0 Type Library")
 ]
 
 library PluginLib
@@ -30,7 +30,7 @@ library PluginLib
 
 	[
 		uuid(GUUID_CLASS_PRODUCT),
-		helpstring("SimpleAdblock Class")
+		helpstring("Adblock Class")
 	]
 	coclass PluginClass
 	{

@@ -40,6 +40,9 @@ HKLM
 						'Browser Helper Objects'
 						{
 							{FFCB3198-32F3-4E8B-9539-4324694ED664}
+							{
+								val 'NoExplorer' = d '1'
+							}
 						}
 					}
 				}

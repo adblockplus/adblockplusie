@@ -35,8 +35,6 @@ public:
 	void SetLanguage(const CString& lang);
 	bool IsLanguageSupported(const CString& lang);
 
-    static bool Download(const CString& url, const CString& filename);
-
 	CString Lookup(const CString& key);
 };
 

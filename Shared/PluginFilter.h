@@ -173,7 +173,7 @@ public:
 
 	bool IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CString& domain) const;
 
-#if (defined PRODUCT_SIMPLEADBLOCK)
+#if (defined PRODUCT_ADBLOCKPLUS)
     bool static DownloadFilterFile(const CString& url, const CString& filename);
     void static CreateFilters();
     bool IsAlive() const;
