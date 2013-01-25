@@ -116,6 +116,8 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
         settings->SetString(SETTING_LANGUAGE, (BSTR)language);
         settings->Write();
+
+		settings->CheckFilterAndDownload();
     }
     else if (s_GetLanguage == method)
     {

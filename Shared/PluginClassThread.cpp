@@ -246,36 +246,10 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 // Update filters, if needed (5 days * (random() * 0.4 + 0.8))
                 if (isNewFilterVersion)
                 {
-                    TFilterUrlList currentFilterUrlList = settings->GetFilterUrlList();
-                    std::map<CString, CString> fileNamesList = settings->GetFilterFileNamesList();
 
-                    for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
-                    {
-                        CString downloadFilterName = it->first;
+					settings->CheckFilterAndDownload();
 
-						std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
-						CString filename = "";
-						if (fni != fileNamesList.end())
-						{
-							filename = fni->second;
-						}
-						else
-						{
-							filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
-						}
-                        int version = it->second;
-
-                        if (settings->FilterlistExpired(downloadFilterName) && (settings->FilterShouldLoad(downloadFilterName)))
-                        {
-                            CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
-							settings->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
-                        }
-                    }
-
-                    settings->Write();
-
-                    settings->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
-
+					settings->MakeRequestForUpdate();
 					tab->OnUpdate();
                 }
 #endif // SUPPORT_FILTER
@@ -348,9 +322,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 		    while (!isDone && !IsMainThreadDone(hMainThread) && !s_isPluginToBeUpdated)
 		    {
 			    // Non-hanging sleep
-			    Sleep(50);
+			    Sleep(5000);
 				
-				if (sleepLoopIteration++ % (TIMER_THREAD_SLEEP_USER_REGISTRATION / 50) == 0)
+				if (sleepLoopIteration++ % (TIMER_THREAD_SLEEP_USER_REGISTRATION) == 0)
 			    {
 				    isDone = true;
 			    }

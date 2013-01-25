@@ -427,7 +427,7 @@ int CPluginConfiguration::GetPluginInfoPanel() const
 
 CString CPluginConfiguration::GetPluginUpdateUrl() const
 {
-	return m_pluginUpdateUrl;
+	return PLUGIN_UPDATE_URL;
 }
 
 
