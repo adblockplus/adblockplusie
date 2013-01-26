@@ -8,7 +8,7 @@ function init()
   }
   catch (err)
   {
-    alert("err: " + err);
+//    alert("err: " + err);
   }
 }
 
