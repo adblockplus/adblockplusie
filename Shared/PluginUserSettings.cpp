@@ -63,8 +63,6 @@ STDMETHODIMP CPluginUserSettings::GetTypeInfo(UINT itinfo, LCID lcid, ITypeInfo*
 
 STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid)
 {
-    CONSOLE("rgszNames %ws", *rgszNames);
-
     if (!rgszNames)
         return E_POINTER;
 
@@ -162,8 +160,6 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         if (pVarResult)
         {
             CComBSTR key = pDispparams->rgvarg[0].bstrVal;
-            CONSOLE("key %ws", key);
-
             CStringW message = sGetMessage((BSTR)key);
 
             pVarResult->vt = VT_BSTR; 
