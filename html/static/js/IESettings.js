@@ -12,29 +12,39 @@ function init()
   }
 }
 
+function setElementText(id, key)
+{
+  var el = document.getElementById(id);
+  if (el)
+  {
+    var text = UserSettings().GetMessage(key);
+    if (text)
+    {
+      el.innerText = text; 
+    }
+  }
+}
+
 function initLanguageSettings()
 {
-  // Locale substitutions
-  var localeLanguageDescription = document.getElementById("localeLanguageDescription");
-  var languageDescription = UserSettings().GetMessage("settings-language-description");
-  if (languageDescription.length)
-  {
-    localeLanguageDescription.innerText = languageDescription; 
-  }
+  setElementText("title", "settings-heading");
 
-  var localeBlockingDescription = document.getElementById("localeBlockingDescription");
-  var blockingDescription = UserSettings().GetMessage("settings-blocking-description");
-  if (blockingDescription.length)
-  {
-    localeBlockingDescription.innerText = blockingDescription; 
-  }
+  setElementText("localeLanguageLabel", "settings-language-label");
+  setElementText("localeLanguageDescription", "settings-language-description");
 
+  setElementText("localeBlockingLabel", "settings-blocking-label");
+  setElementText("localeBlockingDescription", "settings-blocking-description");
+
+  setElementText("localeLanguageLabel", "settings-language-label");
+  setElementText("manageExceptions", "settings-exceptions-manage-label");
+  setElementText("addDomain", "settings-exceptions-add-label");
+  setElementText("removeDomains", "settings-exceptions-remove-label");
+   
   var optionsLanguage = document.getElementById("language");
   addListener(optionsLanguage, "change", function ()
   {
     UserSettings().SetLanguage(optionsLanguage[optionsLanguage.selectedIndex].value);
   }, false);
-
 
   var language = UserSettings().GetLanguage();
 
