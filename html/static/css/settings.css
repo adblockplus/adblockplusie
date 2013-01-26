@@ -55,6 +55,7 @@ header
 {
   display: block;
   border-spacing: 10px;
+  margin: 0px;
   padding: 0px;
   white-space: nowrap;
 }
