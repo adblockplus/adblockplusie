@@ -261,6 +261,7 @@
 #define DICTIONARY_DIR_NAME "Languages\\"
 #define DEFAULT_LANGUAGE "en-US"
 
+#define SETTING_PAGE_INI_FILE "settings_page_w.ini"
 
 // Config filename
 #ifdef SUPPORT_CONFIG

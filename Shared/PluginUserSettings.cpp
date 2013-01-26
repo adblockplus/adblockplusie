@@ -3,14 +3,17 @@
 #include <algorithm>
 #include "PluginSettings.h"
 #include "PluginClient.h"
+#include "PluginIniFileW.h"
+#include "PluginDictionary.h"
 
+static const CString s_GetMessage = L"GetMessage";
 static const CString s_SetLanguage = L"SetLanguage";
 static const CString s_GetLanguage = L"GetLanguage";
 static const CString s_GetWhitelistDomains = L"GetWhitelistDomains";
 static const CString s_AddWhitelistDomain = L"AddWhitelistDomain";
 static const CString s_RemoveWhitelistDomain = L"RemoveWhitelistDomain";
 
-static const CString s_Methods[] = {s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain};
+static const CString s_Methods[] = {s_GetMessage, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain};
 
 CPluginUserSettings::CPluginUserSettings()
 {
@@ -60,6 +63,8 @@ STDMETHODIMP CPluginUserSettings::GetTypeInfo(UINT itinfo, LCID lcid, ITypeInfo*
 
 STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid)
 {
+    CONSOLE("rgszNames %ws", *rgszNames);
+
     if (!rgszNames)
         return E_POINTER;
 
@@ -85,6 +90,48 @@ STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames
 }
 
 
+static CString sGetLanguage()
+{
+    CString lang;
+
+    LANGID lcid = ::GetUserDefaultLangID();
+
+    TCHAR language[128] = {0};
+	if (::GetLocaleInfo(lcid, LOCALE_SISO639LANGNAME, language, countof(language) - 1))
+    {
+        lang = language;
+    }
+
+    return lang;
+}
+
+
+static bool sReadSettingsPageFile(CPluginIniFileW& iniFile)
+{
+    return iniFile.HasSection(sGetLanguage());
+}
+
+
+static CPluginIniFileW& sReadSettingsPageFile(bool& readOK)
+{
+    static CPluginIniFileW iniFile(CPluginSettings::GetDataPath(SETTING_PAGE_INI_FILE));
+    static bool s_readOK = iniFile.Read();
+
+    readOK = s_readOK;
+
+    return iniFile;
+}
+
+
+CStringW sGetMessage(const CString& key)
+{
+    bool readOK = false;
+    CPluginIniFileW& iniFile = sReadSettingsPageFile(readOK);
+
+    return iniFile.GetValue(sGetLanguage(), key);
+}
+
+
 STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispparams, VARIANT* pVarResult,
 	EXCEPINFO* pExcepinfo, UINT* pArgErr)
 {
@@ -104,7 +151,26 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
     const CString& method = s_Methods[dispidMember];
 
-    if (s_SetLanguage == method)
+    if (s_GetMessage == method)
+    {
+        if (1 != pDispparams->cArgs)
+            return DISP_E_BADPARAMCOUNT;
+
+        if (VT_BSTR != pDispparams->rgvarg[0].vt)
+            return DISP_E_TYPEMISMATCH;
+
+        if (pVarResult)
+        {
+            CComBSTR key = pDispparams->rgvarg[0].bstrVal;
+            CONSOLE("key %ws", key);
+
+            CStringW message = sGetMessage((BSTR)key);
+
+            pVarResult->vt = VT_BSTR; 
+            pVarResult->bstrVal = SysAllocString(message);
+        }
+    }
+    else if (s_SetLanguage == method)
     {
         if (1 != pDispparams->cArgs)
             return DISP_E_BADPARAMCOUNT;
