@@ -5,11 +5,19 @@
 // Filter configuration
 // ----------------------------------------------------------------------------
 
+#ifdef NDEBUG
+#undef _DEBUG
+#endif
+
 // Define filter configuration
 #if (defined PRODUCT_ADBLOCKPLUS)
  #define FILTERS_PROTOCOL "https://"
  #define FILTERS_HOST "easylist-downloads.adblockplus.org"
+#ifdef _DEBUG
+ #define PLUGIN_UPDATE_URL "127.0.0.1/abpupdate.txt"
+#else
  #define PLUGIN_UPDATE_URL "update.adblockplus.org"
+#endif
 #endif
  
 // ----------------------------------------------------------------------------
@@ -244,7 +252,7 @@
 
 // Name of user dir in %APPDATA%\..\LocalLow
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define USER_DIR "Ad Block Plus\\"
+ #define USER_DIR "Avast Ad Blocker\\"
 #endif
 
 // Prefix on temp dir files
