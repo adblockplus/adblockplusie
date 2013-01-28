@@ -238,6 +238,8 @@ bool CPluginSettings::Read(bool bDebug)
             {
                 if (m_settingsFile->IsValidChecksum())
                 {
+					m_properties = m_settingsFile->GetSectionData("Settings");
+
 #ifdef SUPPORT_FILTER            	    
                     // Unpack filter URLs
                     CPluginIniFileW::TSectionData filters = m_settingsFile->GetSectionData("Filters");
@@ -359,6 +361,11 @@ void CPluginSettings::Clear()
 
 bool CPluginSettings::MakeRequestForUpdate()
 {
+	time_t updateTime = this->GetValue(SETTING_LAST_UPDATE_TIME);
+
+	if (time(NULL) <= updateTime)
+		return false;
+
 	CPluginHttpRequest httpRequest(PLUGIN_UPDATE_URL);
 
 	CPluginSystem* system = CPluginSystem::GetInstance();
@@ -371,6 +378,7 @@ bool CPluginSettings::MakeRequestForUpdate()
 
 	httpRequest.Send();
 
+	this->SetValue(SETTING_LAST_UPDATE_TIME, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
 	if (httpRequest.IsValidResponse())
 	{
 		const std::auto_ptr<CPluginIniFile>& iniFile = httpRequest.GetResponseFile();
@@ -401,43 +409,68 @@ bool CPluginSettings::MakeRequestForUpdate()
 }
 bool CPluginSettings::CheckFilterAndDownload()
 {
-        TFilterUrlList currentFilterUrlList = this->GetFilterUrlList();
-        std::map<CString, CString> fileNamesList = this->GetFilterFileNamesList();
+	s_criticalSectionLocal.Lock();
+    TFilterUrlList currentFilterUrlList = this->GetFilterUrlList();
+    std::map<CString, CString> fileNamesList = this->GetFilterFileNamesList();
 
-        for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
+	bool filterAvailable = false;
+    for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
+    {
+        CString downloadFilterName = it->first;
+
+		std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
+		CString filename = "";
+		if (fni != fileNamesList.end())
+		{
+			filename = fni->second;
+		}
+		else
+		{
+			filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
+		}
+        int version = it->second;
+        if ((this->FilterShouldLoad(downloadFilterName)))
         {
-            CString downloadFilterName = it->first;
-
-			std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
-			CString filename = "";
-			if (fni != fileNamesList.end())
+			filterAvailable = true;
+			if (this->FilterlistExpired(downloadFilterName))
 			{
-				filename = fni->second;
-			}
-			else
-			{
-				filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
-			}
-            int version = it->second;
-
-            if (this->FilterlistExpired(downloadFilterName) && (this->FilterShouldLoad(downloadFilterName)))
-            {
-                CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
+				CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
 				this->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
-            }
-			else
-			{
-				//Cleanup, since we don't need the filter definition
-				DeleteFile(CPluginSettings::GetDataPath(filename));
-				this->SetFilterRefreshDate(downloadFilterName, 0);
 			}
         }
+		else
+		{
+			//Cleanup, since we don't need the filter definition
+			DeleteFile(CPluginSettings::GetDataPath(filename));
+			this->SetFilterRefreshDate(downloadFilterName, 0);
+		}
+    }
 
-        this->Write();
+	if (!filterAvailable)
+	{
+		//If no filter list found, default to "en"
 
-        this->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
+	    this->SetString(SETTING_LANGUAGE, (BSTR)L"en");
 
-		return true;
+		CPluginDictionary* dict = CPluginDictionary::GetInstance();
+		dict->SetLanguage(L"en");
+
+		for (std::map<CString, CString>::iterator it = m_filterLanguagesList.begin(); it != m_filterLanguagesList.end(); ++it) 
+		{
+			if (it->second == L"en")
+			{
+				CPluginFilter::DownloadFilterFile(it->first, m_filterFileNameList.find(it->first)->second);
+				this->SetFilterRefreshDate(it->first, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
+			}
+		}
+	}
+
+    this->Write();
+
+    this->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
+
+	s_criticalSectionLocal.Unlock();
+	return true;
 }
 
 CString CPluginSettings::GetDataPathParent()
