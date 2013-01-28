@@ -188,7 +188,7 @@ bool CPluginHttpRequest::IsValidResponse() const
 	m_responseFile->SetInitialChecksumString(m_script);
 
 	bool isValidResponse = m_responseFile->ReadString(m_responseText);
-    if (isValidResponse && m_responseFile->IsValidChecksum())
+    if (isValidResponse)
     {
         CPluginIniFile::TSectionData status = m_responseFile->GetSectionData(_T("Status"));
         CPluginIniFile::TSectionData::iterator it;

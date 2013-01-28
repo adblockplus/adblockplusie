@@ -322,8 +322,6 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 // so we should handle that it is called this way several times during a session
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
-	//Message box. Can be used as a breakpoint to attach a debugger, if needed
-//	MessageBox(NULL, L"", L"", MB_OK);
 
     CPluginSettings* settings = CPluginSettings::GetInstance();
 #ifdef AVAST_ABP

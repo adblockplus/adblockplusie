@@ -13,10 +13,14 @@
 #if (defined PRODUCT_ADBLOCKPLUS)
  #define FILTERS_PROTOCOL "https://"
  #define FILTERS_HOST "easylist-downloads.adblockplus.org"
+#ifdef AVAST_ABP
 #ifdef _DEBUG
- #define PLUGIN_UPDATE_URL "127.0.0.1/abpupdate.txt"
+ #define PLUGIN_UPDATE_URL "update.txt"
 #else
- #define PLUGIN_UPDATE_URL "update.adblockplus.org"
+ #define PLUGIN_UPDATE_URL "avastupdate.txt"
+#endif
+#else
+ #define PLUGIN_UPDATE_URL "abpupdate.txt"
 #endif
 #endif
  
@@ -48,9 +52,13 @@
 #if (defined PRODUCT_ADBLOCKPLUS)
 #define SADOMAIN L"simple-adblock.com"
  #ifdef ADPLUGIN_TEST_MODE
-  #define USERS_HOST L""
+  #define USERS_HOST L"127.0.0.1"
  #elif (defined ADPLUGIN_PRODUCTION_MODE)
-  #define USERS_HOST L""
+#ifdef _DEBUG
+  #define USERS_HOST L"127.0.0.1"
+#else
+  #define USERS_HOST L"update.adblockplus.org"
+#endif
  #else
   #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
  #endif
@@ -106,6 +114,7 @@
  #undef ENABLE_DEBUG_INFO
 #endif
 
+#define ENABLE_DEBUG_INFO
 #undef ENABLE_DEBUG_SELFTEST
 
 #define DEBUG_FUNC CPluginDebug::Debug

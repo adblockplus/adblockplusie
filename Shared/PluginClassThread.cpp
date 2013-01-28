@@ -31,6 +31,7 @@ bool CPluginClass::s_isMainThreadDone = false;
 
 DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 {
+
 	CPluginTab* tab = static_cast<CPluginTab*>(pParam);
 
     // Force loading/creation of settings
@@ -214,17 +215,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 
                 settings->ForceConfigurationUpdateOnStart(false);
 
-			    if (configuration->IsValidPluginUpdate() && configuration->GetPluginUpdateVersion() != IEPLUGIN_VERSION)
-                {
-                    settings->SetString(SETTING_PLUGIN_UPDATE_URL, configuration->GetPluginUpdateUrl());
-                    settings->SetString(SETTING_PLUGIN_UPDATE_VERSION, configuration->GetPluginUpdateVersion());
-                }
-                else
-			    {
-                    settings->Remove(SETTING_PLUGIN_UPDATE_VERSION);
-                    settings->Remove(SETTING_PLUGIN_UPDATE_URL);
-			    }
-
                 if (configuration->IsValidPluginInfoPanel())
                 {
 				    settings->SetValue(SETTING_PLUGIN_INFO_PANEL, configuration->GetPluginInfoPanel());
@@ -250,28 +240,16 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 					settings->CheckFilterAndDownload();
 
 					settings->MakeRequestForUpdate();
+
+
+					settings->Write();
+
 					tab->OnUpdate();
                 }
 #endif // SUPPORT_FILTER
 		    }
         }
 
-	    // --------------------------------------------------------------------
-	    // Check filters
-	    // --------------------------------------------------------------------
-#ifdef SUPPORT_FILTER
-
-        DEBUG_THREAD(L"Thread::Check filters");
-
-        if (!IsMainThreadDone(hMainThread))
-        {
-            if (client->DownloadFirstMissingFilter())
-            {
-				tab->OnUpdate();
-			}
-        }
-
-#endif // SUPPORT_FILTER
 
 #ifndef ENTERPRISE
 	    // --------------------------------------------------------------------
@@ -304,8 +282,9 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 #endif // AUTOMATIC_SHUTDOWN
 		        }
             }
-            catch (std::runtime_error&)
+            catch (std::runtime_error& er)
             {
+				DEBUG_ERROR(er.what());
             }
         }
 #endif

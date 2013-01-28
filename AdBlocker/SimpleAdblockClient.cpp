@@ -143,10 +143,10 @@ void CSimpleAdblockClient::ReadFilters()
     CPluginSettings* settings = CPluginSettings::GetInstance();
 
     // Check existence of filter file
-    if (settings->IsMainProcess())
-    {
-        CPluginFilter::CreateFilters();
-    }
+//    if (settings->IsMainProcess())
+//    {
+//        CPluginFilter::CreateFilters();
+//    }
 
 	TFilterFileList filterFileNames;
 

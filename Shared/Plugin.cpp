@@ -141,8 +141,8 @@ void InitPlugin(bool isInstall)
 
     // Create default filters
 #ifdef SUPPORT_FILTER
-    DEBUG_GENERAL(L"*** Generating default filters")
-    CPluginFilter::CreateFilters();
+//    DEBUG_GENERAL(L"*** Generating default filters")
+//    CPluginFilter::CreateFilters();
 #endif
 
     // Force creation of default dictionary
