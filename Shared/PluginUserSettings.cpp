@@ -90,17 +90,9 @@ STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames
 
 static CString sGetLanguage()
 {
-    CString lang;
+	CPluginSettings* settings = CPluginSettings::GetInstance();
 
-    LANGID lcid = ::GetUserDefaultLangID();
-
-    TCHAR language[128] = {0};
-	if (::GetLocaleInfo(lcid, LOCALE_SISO639LANGNAME, language, countof(language) - 1))
-    {
-        lang = language;
-    }
-
-    return lang;
+	return settings->GetString(SETTING_LANGUAGE);
 }
 
 
