@@ -85,6 +85,7 @@ private:
 	CPluginSettings::TFilterUrlList m_filterUrlList;
 	std::map<CString, CString> m_filterFileNameList;
 	std::map<CString, CString> m_filterLanguagesList;
+	std::map<CString, CString> m_filterLanguageTitleList; // Key - language, Value - language title
 	std::map<CString, time_t> m_filterDownloadTimesList;
 #endif
 
@@ -160,6 +161,7 @@ public:
 	void SetFilterFileNamesList(const std::map<CString, CString>& filters);
 	TFilterUrlList GetFilterUrlList() const;
 	std::map<CString, CString> GetFilterFileNamesList() const;
+	std::map<CString, CString> GetFilterLanguageTitleList() const;
 
     void AddFilterUrl(const CString& url, int version);
     void AddFilterFileName(const CString& url, const CString& fileName);

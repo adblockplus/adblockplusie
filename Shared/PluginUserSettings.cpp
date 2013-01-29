@@ -7,13 +7,16 @@
 #include "PluginDictionary.h"
 
 static const CString s_GetMessage = L"GetMessage";
+static const CString s_GetLanguageCount = L"GetLanguageCount";
+static const CString s_GetLanguageByIndex = L"GetLanguageByIndex";
+static const CString s_GetLanguageTitleByIndex = L"GetLanguageTitleByIndex";
 static const CString s_SetLanguage = L"SetLanguage";
 static const CString s_GetLanguage = L"GetLanguage";
 static const CString s_GetWhitelistDomains = L"GetWhitelistDomains";
 static const CString s_AddWhitelistDomain = L"AddWhitelistDomain";
 static const CString s_RemoveWhitelistDomain = L"RemoveWhitelistDomain";
 
-static const CString s_Methods[] = {s_GetMessage, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain};
+static const CString s_Methods[] = {s_GetMessage, s_GetLanguageCount, s_GetLanguageByIndex, s_GetLanguageTitleByIndex, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain};
 
 CPluginUserSettings::CPluginUserSettings()
 {
@@ -156,6 +159,89 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
             pVarResult->vt = VT_BSTR; 
             pVarResult->bstrVal = SysAllocString(message);
+        }
+    }
+    else if (s_GetLanguageCount == method)
+    {
+        if (pDispparams->cArgs)
+            return DISP_E_BADPARAMCOUNT;
+
+        if (pVarResult)
+        {
+            std::map<CString, CString> languageList = settings->GetFilterLanguageTitleList();
+
+            pVarResult->vt = VT_I4; 
+            pVarResult->lVal = languageList.size();
+        }
+    }
+    else if (s_GetLanguageByIndex == method)
+    {
+        if (1 != pDispparams->cArgs)
+            return DISP_E_BADPARAMCOUNT;
+
+        if (VT_I4 != pDispparams->rgvarg[0].vt)
+            return DISP_E_TYPEMISMATCH;
+
+        if (pVarResult)
+        {
+            int indx = pDispparams->rgvarg[0].lVal;
+
+            std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
+
+            if (indx < 0  ||  indx >= (int)languageTitleList.size())
+                return DISP_E_EXCEPTION;
+
+            CString language;
+
+            int curIndx = 0;
+            for(std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+            {
+                if (curIndx == indx)
+                {
+                    language = it->first;
+                    break;
+                }
+
+                curIndx++;
+            }
+
+            pVarResult->vt = VT_BSTR; 
+            pVarResult->bstrVal = SysAllocString(language);
+        }
+    }
+    else if (s_GetLanguageTitleByIndex == method)
+    {
+        if (1 != pDispparams->cArgs)
+            return DISP_E_BADPARAMCOUNT;
+
+        if (VT_I4 != pDispparams->rgvarg[0].vt)
+            return DISP_E_TYPEMISMATCH;
+
+        if (pVarResult)
+        {
+            int indx = pDispparams->rgvarg[0].lVal;
+
+            std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
+
+            if (indx < 0  ||  indx >= (int)languageTitleList.size())
+                return DISP_E_EXCEPTION;
+
+            CString languageTitle;
+
+            int curIndx = 0;
+            for(std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+            {
+                if (curIndx == indx)
+                {
+                    languageTitle = it->second;
+                    break;
+                }
+
+                curIndx++;
+            }
+
+            pVarResult->vt = VT_BSTR; 
+            pVarResult->bstrVal = SysAllocString(languageTitle);
         }
     }
     else if (s_SetLanguage == method)
