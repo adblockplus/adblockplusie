@@ -259,6 +259,7 @@ bool CPluginSettings::Read(bool bDebug)
 				            CPluginIniFileW::TSectionData::iterator versionIt = filters.find(L"filter" + filterCountStr + "v");
 				            CPluginIniFileW::TSectionData::iterator fileNameIt = filters.find(L"filter" + filterCountStr + "fileName");
 				            CPluginIniFileW::TSectionData::iterator languageIt = filters.find(L"filter" + filterCountStr + "language");
+				            CPluginIniFileW::TSectionData::iterator languageTitleIt = filters.find(L"filter" + filterCountStr + "languageTitle");
 				            CPluginIniFileW::TSectionData::iterator dltIt = filters.find(L"filter" + filterCountStr + "refreshin");
 
 				            if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
@@ -275,6 +276,11 @@ bool CPluginSettings::Read(bool bDebug)
 				            {
 								m_filterLanguagesList[filterIt->second] = languageIt->second;
 				            }
+
+                            if (filterIt != filters.end()  &&  languageIt != filters.end()  &&  languageTitleIt != filters.end())
+                            {
+                                m_filterLanguageTitleList[languageIt->second] = languageTitleIt->second;
+                            }
 
 				            if (filterIt != filters.end() && dltIt != filters.end())
 				            {
@@ -867,6 +873,7 @@ TFilterUrlList CPluginSettings::GetFilterUrlList() const
 	return filterUrlList;
 }
 
+
 std::map<CString, CString> CPluginSettings::GetFilterFileNamesList() const
 {
 	std::map<CString, CString> filterFileNamesList;
@@ -879,6 +886,21 @@ std::map<CString, CString> CPluginSettings::GetFilterFileNamesList() const
 
 	return filterFileNamesList;
 }
+
+
+std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
+{
+	std::map<CString, CString> filterList;
+
+	s_criticalSectionFilters.Lock();
+	{
+		filterList = m_filterLanguageTitleList;
+	}
+	s_criticalSectionFilters.Unlock();
+
+	return filterList;
+}
+
 
 bool CPluginSettings::FilterlistExpired(CString filterlist) const
 {
