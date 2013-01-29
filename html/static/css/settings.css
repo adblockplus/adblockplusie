@@ -33,6 +33,8 @@ header
 #logo
 {
   display: inline-block;
+  *display: inline;
+  zoom: 1;
   background-image: url(../img/avast-logo.png);
   width: 230px;
   height: 85px;
@@ -71,6 +73,8 @@ header
 .feature-image, .feature-description
 {
   display: inline-block;
+  *display: inline;
+  zoom: 1;
   vertical-align: top;
 }
 
@@ -247,6 +251,8 @@ footer a:link, footer a:visited
 #abp-logo
 {
   display: inline-block;
+  *display: inline;
+  zoom: 1;
   padding: 5px;
 }
 
