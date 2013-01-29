@@ -35,7 +35,6 @@ function initLanguageSettings()
   setElementText("localeBlockingLabel", "settings-blocking-label");
   setElementText("localeBlockingDescription", "settings-blocking-description");
 
-  setElementText("localeLanguageLabel", "settings-language-label");
   setElementText("manageExceptions", "settings-exceptions-manage-label");
   setElementText("addDomain", "settings-exceptions-add-label");
   setElementText("removeDomains", "settings-exceptions-remove-label");
