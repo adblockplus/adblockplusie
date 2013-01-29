@@ -1,12 +1,18 @@
+html, body
+{
+  height: 100%;
+}
+
 html
 {
   height: 100%;
   font-family: Arial, Sans-serif;
   font-size: 14px;
-  color: #a4a8ac;
-  background-color: #3b434a;
+  color: #3b434a;
+  background-color: #fdecce;
   background-image: url(../img/background.png);
   background-repeat: repeat-x;
+  background-position: bottom;
   _overflow-x: hidden;
 }
 
@@ -14,9 +20,10 @@ body
 {
   position: absolute;
   right: 50%;
+  margin: 0px;
   margin-right: -360px;
+  height: 100%;
   width: 720px;
-  color: #a3a7ab;
   background: transparent;
 }
 
@@ -25,9 +32,16 @@ img
   border: none;
 }
 
+#wrapper
+{
+  min-height: 100%;
+}
+
 header
 {
   margin: 20px 0px;
+  text-align: center;
+  vertical-align: middle;
 }
 
 #logo
@@ -38,19 +52,16 @@ header
   background-image: url(../img/avast-logo.png);
   width: 230px;
   height: 85px;
-  margin: 0px 10px;
-  margin-bottom: 20px;
 }
 
 #title
 {
-  position: absolute;
   display: inline;
-  color: #fc9c00;
+  position: relative;
+  top: -32px;
   font-weight: normal;
   font-size: 280%;
   margin: 0px 10px;
-  margin-top: 15px;
 }
 
 #features
@@ -59,6 +70,7 @@ header
   border-spacing: 10px;
   margin: 0px;
   padding: 0px;
+  padding-bottom: 70px;
   white-space: nowrap;
 }
 
@@ -67,7 +79,6 @@ header
   display: block;
   list-style-type: none;
   padding-bottom: 20px;
-  text-shadow: 0px 1px 2px black;
 }
 
 .feature-image, .feature-description
@@ -86,26 +97,21 @@ header
 
 .feature-title
 {
-  color: white;
+  color: black;
   font-weight: bold;
 }
 
 .feature-text
 {
-  margin: 0px 5px;
+  margin: 5px 0px;
   white-space: normal;
-}
-
-.feature-title, .feature-text
-{
-  display: inline;
 }
 
 .feature-image
 {
-  width: 57px;
-  height: 57px;
-  background-size: 57px 57px;
+  width: 36px;
+  height: 36px;
+  background-size: 36px 36px;
   background-repeat: no-repeat;
 }
 
@@ -128,72 +134,24 @@ header
 {
   cursor: pointer;
   font-size: inherit;
-  color: #3b434a;
-  border-style: none;
+  color: white;
+  font-weight: bold;
+  border: none;
   border-radius: 3px;
-  padding: 5px;
-  background: #f8d500;
-  background: -ms-linear-gradient(top, #f8d500, #e9bb00);
-  background: linear-gradient(top, #f8d500, #e9bb00);
-  text-shadow: 2px 2px 2px #ccc;
-  box-shadow: 0 1px 0 0 #e9bb00, 0 2px 0 0 #f8d500;
+  box-shadow: 0px 0px 0px 1px #00bfde, 0px 0px 0px 2px #005773;
+  padding: 5px 10px;
+  background-color: #0090c6;
 }
 
 .feature-button:hover
 {
-  box-shadow: 0px 2px 7px #f8d500, 0 1px 0 0 #f8d500;
+  box-shadow: 0px 0px 0px 2px #00bfde;
 }
 
 .feature-button:active
 {
-  background: #e9bb00;
-  background: -ms-linear-gradient(bottom, #f8d500, #e9bb00);
-  background: linear-gradient(bottom, #f8d500, #e9bb00);
-  box-shadow: 0px 0px 7px #e9bb00;
-}
-
-select.feature-button
-{
-  color: #fff;
-  background: #aaa;
-  background: -ms-linear-gradient(top, #aaa, #888);
-  background: linear-gradient(top, #aaa, #888);
-  box-shadow: 0 1px 0 0 #888, 0 2px 0 0 #999;
-  text-shadow: 2px 2px 2px #888;
-}
-
-select.feature-button option
-{
-  color: #000;
-  background: #fff;
-}
-
-select.feature-button:hover
-{
-  box-shadow: 0px 2px 7px #888, 0 1px 0 0 #888;
-}
-
-.feature-button.disabled
-{
-  color: #fff;
-  background: #c5622b;
-  background: -ms-linear-gradient(top, #c5622b, #9d4f22);
-  background: linear-gradient(top, #c5622b, #9d4f22);
-  box-shadow: 0 1px 0 0 #c5622b, 0 2px 0 0 #9d4f22;
-  text-shadow: 2px 2px 2px #9d4f22;
-}
-
-.feature-button.disabled:hover
-{
-  box-shadow: 0px 2px 7px #9d4f22, 0 1px 0 0 #9d4f22;
-}
-
-.feature button.disabled:active
-{
-  background: #9d4f22;
-  background: -ms-linear-gradient(bottom, #c5622b, #9d4f22);
-  background: linear-gradient(bottom, #c5622b, #9d4f22);
-  box-shadow: 0px 0px 7px #9d4f22;
+  background-color: #00b0e6;
+  box-shadow: 0px 0px 0px 2px #00bfde;
 }
 
 #exceptions
@@ -219,7 +177,7 @@ select.feature-button:hover
 #exceptions select, #exceptions input
 {
   width: 100%;
-  border: none;
+  border: 1px solid #aaa;
   background-color: white;
 }
 
@@ -237,30 +195,27 @@ select.feature-button:hover
 
 footer
 {
+  position: relative;
+  display: block;
+  left: 0px;
+  right: auto;
+  bottom: 0px;
+  width: 100%;
+  height: 70px;
+  margin-top: -70px;
+  padding: 0px;
   text-align: center;
-  font-size: 120%;
-  font-weight: bold;
+  font-size: 100%;
+  clear: both;
 }
 
 footer a:link, footer a:visited
 {
-  color: white;
+  color: #3b434a;
   text-decoration: none;
 }
 
-#abp-logo
+#abp-name
 {
-  display: inline-block;
-  *display: inline;
-  zoom: 1;
-  padding: 5px;
-}
-
-#abp-logo div
-{
-  width: 32px;
-  height: 32px;
-  margin-right: 5px;
-  margin-bottom: -12px;
-  background-image: url(../img/adblockplus_32.png);
+  font-weight: bold;
 }
