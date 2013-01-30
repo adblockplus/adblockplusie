@@ -1,5 +1,6 @@
 #include "PluginStdAfx.h"
 #include "PluginUtil.h"
+#include "PluginSettings.h"
 
 static CString sDllDir()
 {
@@ -32,7 +33,7 @@ const CString& HtmlDir()
 
 const CString& UserSettingsFileUrl()
 {
-  static CString s_url = HtmlDir().GetLength()? (FileUrl(HtmlDir() + "index.html")) : L"";
+  static CString s_url = HtmlDir().GetLength()? (FileUrl(CPluginSettings::GetDataPath("html\\templates\\index.html"))) : L"";
   return s_url;
 }
 
