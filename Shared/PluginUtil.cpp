@@ -25,15 +25,9 @@ const CString& DllDir()
   return s_dllDir;
 }
 
-const CString& HtmlDir()
-{
-  static CString s_htmlDir = DllDir().GetLength()?  (DllDir() + L"html\\templates\\") : L"";
-  return s_htmlDir;
-}
-
 const CString& UserSettingsFileUrl()
 {
-  static CString s_url = HtmlDir().GetLength()? (FileUrl(CPluginSettings::GetDataPath("html\\templates\\index.html"))) : L"";
+  static CString s_url = FileUrl(CPluginSettings::GetDataPath("html\\templates\\index.html"));
   return s_url;
 }
 
