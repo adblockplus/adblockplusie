@@ -304,7 +304,8 @@
 
 // Install MSI filename
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define INSTALL_MSI_FILE "simpleadblock.msi"
+ #define INSTALL_MSI_FILE "adblock.msi"
+ #define INSTALL_EXE_FILE "Setup.exe"
 #endif
 
 // Status bar pane name

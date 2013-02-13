@@ -979,7 +979,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../Shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_SIMPLEADBLOCK;AVAST_ABP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;AVAST_ABP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

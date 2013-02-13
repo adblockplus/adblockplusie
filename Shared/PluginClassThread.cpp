@@ -233,10 +233,13 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
                 configuration->Invalidate();
 
 #ifdef SUPPORT_FILTER
+				 DEBUG_GENERAL("*** before isNewFilterVersion");
+
                 // Update filters, if needed (5 days * (random() * 0.4 + 0.8))
                 if (isNewFilterVersion)
                 {
 
+					 DEBUG_GENERAL("*** before CheckFilterAndDownload");
 					settings->CheckFilterAndDownload();
 
 					settings->MakeRequestForUpdate();
@@ -265,10 +268,19 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
             try
             {
                 CString updateUrl = settings->GetString(SETTING_PLUGIN_UPDATE_URL);
-		        CString updatePath = CPluginSettings::GetTempPath(INSTALL_MSI_FILE);
-
-				// Delete old installer
-				::DeleteFile(CPluginSettings::GetTempPath(INSTALL_MSI_FILE));
+				CString updatePath = L"";
+				if (updateUrl.Find(L".exe") == updateUrl.GetLength() - 4)
+				{
+			        updatePath = CPluginSettings::GetTempPath(INSTALL_EXE_FILE);
+					// Delete old installer
+					::DeleteFile(CPluginSettings::GetTempPath(INSTALL_EXE_FILE));
+				}
+				else
+				{
+			        updatePath = CPluginSettings::GetTempPath(INSTALL_MSI_FILE);
+					// Delete old installer
+					::DeleteFile(CPluginSettings::GetTempPath(INSTALL_MSI_FILE));
+				}
 
 		        CPluginDownloadDialog dlDlg;
 		        
