@@ -435,11 +435,16 @@ bool CPluginSettings::CheckFilterAndDownload()
 			filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
 		}
         int version = it->second;
+		
+		DEBUG_GENERAL("*** before FilterShouldLoad: " + downloadFilterName);
+
         if ((this->FilterShouldLoad(downloadFilterName)))
         {
 			filterAvailable = true;
+			DEBUG_GENERAL("*** before FilterlistExpired: " + downloadFilterName);
 			if (this->FilterlistExpired(downloadFilterName))
 			{
+				DEBUG_GENERAL("*** before DownloadFilterFile: " + downloadFilterName);
 				CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
 				this->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
 			}

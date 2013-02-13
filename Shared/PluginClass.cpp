@@ -278,8 +278,15 @@ void CPluginClass::LaunchUpdater(const CString& strPath)
 	::ZeroMemory(&si, sizeof(si));
 	si.cb = sizeof(si);
 	si.wShowWindow = FALSE;
-
-	CString cpath = _T("\"msiexec.exe\" /i \"") + strPath + _T("\" UPDATEPLUGIN=\"True\"");
+	CString cpath;
+	if (strPath.Find(L".exe") == strPath.GetLength() - 4)
+	{
+		cpath = strPath;
+	}
+	else
+	{
+		cpath = _T("\"msiexec.exe\" /i \"") + strPath + _T("\" UPDATEPLUGIN=\"True\"");
+	}
 
 	if (!::CreateProcess(NULL, cpath.GetBuffer(), NULL, NULL, FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL, &si, &pi))
 	{
@@ -322,7 +329,7 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 // so we should handle that it is called this way several times during a session
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
-
+	
     CPluginSettings* settings = CPluginSettings::GetInstance();
 #ifdef AVAST_ABP
 	HKEY hkey;
@@ -933,6 +940,12 @@ bool CPluginClass::InitObject(bool bBHO)
 
 bool CPluginClass::CreateStatusBarPane()
 {
+	CPluginClient* client = CPluginClient::GetInstance();
+
+	if (client->GetIEVersion()< 7)
+
+		return true;
+
 	TCHAR szClassName[MAX_PATH];
 
 	// Get browser window and url
@@ -2174,9 +2187,12 @@ void CPluginClass::UpdateStatusBar()
 	{
 		CreateStatusBarPane();
 	}
-    if (!::InvalidateRect(m_hPaneWnd, NULL, FALSE))
+	if (m_hPaneWnd != NULL)
 	{
-		DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_INVALIDATE_STATUSBAR, "Class::Invalidate statusbar");	
+		if (!::InvalidateRect(m_hPaneWnd, NULL, FALSE))
+		{
+			DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_INVALIDATE_STATUSBAR, "Class::Invalidate statusbar");	
+		}
 	}
 }
 
