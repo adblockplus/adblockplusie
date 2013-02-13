@@ -12,13 +12,21 @@ DisableDirPage=yes
 [Files]
 Source: "Adblocker32.dll"; DestDir: "{app}"
 Source: "Adblocker64.dll"; DestDir: "{app}"
-Source: "..\html\static\css\*"; DestDir: "{userappdata}\..\LocalLow\avast! Ad Blocker\html\static\css"
-Source: "..\html\static\img\*"; DestDir: "{userappdata}\..\LocalLow\avast! Ad Blocker\html\static\img"
-Source: "..\html\static\js\*"; DestDir: "{userappdata}\..\LocalLow\avast! Ad Blocker\html\static\js"
-Source: "..\html\templates\*"; DestDir: "{userappdata}\..\LocalLow\avast! Ad Blocker\html\templates"
-Source: "..\AdBlocker\files\settings.ini"; DestDir: "{userappdata}\..\LocalLow\avast! Ad Blocker"
-Source: "..\AdBlocker\files\dictionary_w.ini"; DestDir: "{userappdata}\..\LocalLow\avast! Ad Blocker"
-Source: "..\AdBlocker\files\settings_page_w.ini"; DestDir: "{userappdata}\..\LocalLow\avast! Ad Blocker"
+Source: "..\html\static\css\*"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker\html\static\css"
+Source: "..\html\static\img\*"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker\html\static\img"
+Source: "..\html\static\js\*"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker\html\static\js"
+Source: "..\html\templates\*"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker\html\templates"
+Source: "..\AdBlocker\files\settings.ini"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker"
+Source: "..\AdBlocker\files\dictionary_w.ini"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker"
+Source: "..\AdBlocker\files\settings_page_w.ini"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker"
+
+Source: "..\html\static\css\*"; DestDir: "{userappdata}\Avast Ad Blocker\html\static\css"
+Source: "..\html\static\img\*"; DestDir: "{userappdata}\Avast Ad Blocker\html\static\img"
+Source: "..\html\static\js\*"; DestDir: "{userappdata}\Avast Ad Blocker\html\static\js"
+Source: "..\html\templates\*"; DestDir: "{userappdata}\Avast Ad Blocker\html\templates"
+Source: "..\AdBlocker\files\settings.ini"; DestDir: "{userappdata}\Avast Ad Blocker"
+Source: "..\AdBlocker\files\dictionary_w.ini"; DestDir: "{userappdata}\Avast Ad Blocker"
+Source: "..\AdBlocker\files\settings_page_w.ini"; DestDir: "{userappdata}\Avast Ad Blocker"
 
 [Code]
 

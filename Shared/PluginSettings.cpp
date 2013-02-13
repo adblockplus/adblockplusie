@@ -1033,6 +1033,15 @@ bool CPluginSettings::Write(bool isDebug)
 						filters[L"filter" + filterCountStr + "language"] = language;
 					}
 				}
+				if (m_filterLanguageTitleList.size() > 0)
+				{
+					std::map<CString, CString>::iterator fli = m_filterLanguageTitleList.find(it->first);
+					if (fli != m_filterLanguageTitleList.end())
+					{
+						CString language = fli->second;
+						filters[L"filter" + filterCountStr + "languageTitle"] = language;
+					}
+				}
 				if (m_filterDownloadTimesList.size() > 0)
 				{
 					std::map<CString, time_t>::iterator fdti = m_filterDownloadTimesList.find(it->first);
