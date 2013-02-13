@@ -99,11 +99,12 @@ header
 {
   color: black;
   font-weight: bold;
+  font-size: 120%;
 }
 
 .feature-text
 {
-  margin: 5px 0px;
+  margin: 7px 0px;
   white-space: normal;
 }
 
