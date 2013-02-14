@@ -648,7 +648,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <Link>
       <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;Msi.lib;%(AdditionalDependencies);atlthunk.lib;</AdditionalDependencies>
-      <OutputFile>$(OutDir)Adblock.dll</OutputFile>
+      <OutputFile>$(OutDir)Adblocker32.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -1002,7 +1002,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)AvastAdblock.dll</OutputFile>
+      <OutputFile>$(OutDir)AdBlocker64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
