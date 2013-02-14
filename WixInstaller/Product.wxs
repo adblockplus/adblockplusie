@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="avast! Ad Blocker" Language="1033" Version="1.0.0.0" Manufacturer="AVAST Software" UpgradeCode="f904e515-7236-4954-a1b9-e2a037c2221c">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" InstallPrivileges="elevated"/>
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of avast! Ad Blocker is already installed." />
+		<MediaTemplate EmbedCab="yes"/>
+
+    <Feature Id="ProductFeature" Title="AvastAdBlocker" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+    
+    <Feature Id="FilesFeatureVista" Title="AvastAdBlockerFiles">
+      <Condition Level="0"><![CDATA[NOT(VersionNT >= 600)]]></Condition>
+      <ComponentGroupRef Id="HtmlDirVista"></ComponentGroupRef>
+    </Feature>
+   
+    <Feature Id="FilesFeatureXP" Title="AvastAdBlockerFiles">
+      <Condition Level="0"><![CDATA[NOT(VersionNT < 600)]]></Condition>
+      <ComponentGroupRef Id="HtmlDir"></ComponentGroupRef>
+    </Feature>
+
+
+  </Product>
+
+  <Fragment>
+    <ComponentGroup Id="HtmlDir">
+      <Component Id="cmp6300EEE9782F5835C4A8B7BC5FC77305" Directory="dirCEB22088FA6AB2CDCC2AAD632304A4CE" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BEC5}">
+        <File Id="fil5B33BDA50885283F24DE527000F12100" Source="SourceDir\static\css\settings.css" />
+        <RemoveFolder Id="dirCEB22088FA6AB2CDCC2AAD632304A4CE" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpD9C33F3C2ECB92A74A2B5FA8E1E6246C" Directory="dirC2F055E256D046699DCB40577E20922C" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BEC6}">
+        <File Id="fil591030F07C86495AC15D3D11FE0EC068" Source="SourceDir\static\img\avast-logo.png" />
+        <RemoveFolder Id="dirC2F055E256D046699DCB40577E20922C" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmp2DDE275A29FC5ED30E935333E7F30596" Directory="dirC2F055E256D046699DCB40577E20922C" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BEC7}">
+        <File Id="fil8112DB6D8EFFF61806AAFEF5C59C0A80" Source="SourceDir\static\img\background.png" />
+        <RemoveFolder Id="AVASTADBLOCKERFOLDER" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpD6BAFDF33A4B679141ECF475D390102F" Directory="dir681177572D848DE3DEDE89732C3C5D91" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BEC8}">
+        <File Id="filF89332E21EFBE33C196025150B564679" Source="SourceDir\static\img\features\acceptable.png" />
+        <RemoveFolder Id="dir681177572D848DE3DEDE89732C3C5D91" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpC0935A3F50D6B54D0DDAE3DAB73407C9" Directory="dir681177572D848DE3DEDE89732C3C5D91" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BEC9}">
+        <File Id="filC0EBFE87BB6D06406C1EB8DA81C65176" Source="SourceDir\static\img\features\language.png" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpFDE20460151743F5AE75E46334D41B69" Directory="dir681177572D848DE3DEDE89732C3C5D91" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BECA}">
+        <File Id="filBC4BE9C257CD9481B94B7958F1851AF2" Source="SourceDir\static\img\features\whitelist.png" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpD88DC70C6EAFAC2494CD4C297544E974" Directory="dirC09FEE9C73FFAA4C9E65E8926512D474" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BECB}">
+        <File Id="fil1A6CF077B44CC7DE9B911E9697891A00" Source="SourceDir\static\js\IESettings.js" />
+        <RemoveFolder Id="dirC09FEE9C73FFAA4C9E65E8926512D474" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpFF9DAA0FD7E848211660CA70BE78695B" Directory="dirC09FEE9C73FFAA4C9E65E8926512D474" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BECC}">
+        <File Id="fil9970D0A88EAE897441AE6C54FDB5FB3F" Source="SourceDir\static\js\settings.js" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpFF436DD25C42528F8158CA5F04A48928" Directory="dirCD85A3C37A9EDB14E014FDC22FAC5B5F" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BECD}">
+        <File Id="filF07BF7F68669C95BAA8DBF63A163FE20" Source="SourceDir\static\js\vendor\DD_belatedPNG.js" />
+        <RemoveFolder Id="dirCD85A3C37A9EDB14E014FDC22FAC5B5F" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmp38623B7612E4E3DE562FFF4C33FF6E1B" Directory="dirCD85A3C37A9EDB14E014FDC22FAC5B5F" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BECE}">
+        <File Id="fil86923CAD5474FBDCA8BD6D4DAAA31ACF" Source="SourceDir\static\js\vendor\html5shiv.js" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmp2964649E6761AA4EA40770E25573151B" Directory="dirB14D0866770554E510BB26BA462DC3E6" Guid="{16DD295C-4A6A-439B-A193-9F84FE89BECF}">
+        <File Id="filBE1B3019D86394705E2F3004304B7141" Source="SourceDir\templates\index.html" />
+        <RemoveFolder Id="dirB14D0866770554E510BB26BA462DC3E6" On="uninstall"/>
+        <RemoveFolder Id="RemoveAVASTADBLOCKERFOLDER" Directory="AVASTADBLOCKERFOLDER" On="uninstall"/>
+        <RemoveFolder Id="RemovedirA22524D2E196F6A081770B3C833F4263" Directory="dirA22524D2E196F6A081770B3C833F4263" On="uninstall"/>
+        <RemoveFolder Id="RemovedirdirF9FD876484F2FDFEE1A063EB3C4F0693" Directory="dirF9FD876484F2FDFEE1A063EB3C4F0693" On="uninstall"/>
+        
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+
+      <Component Id="settings" Directory="AVASTADBLOCKERFOLDER" Guid="{16DD295C-4A69-439B-B193-9F84FE89BECF}">
+        <File Id="settings019D86394705E2F3004304B7141" Source="SourceDir\..\AdBlocker\files\settings.ini" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="settings_page" Directory="AVASTADBLOCKERFOLDER" Guid="{16DD295D-4A6A-439B-B193-9F84FE89BECF}">
+        <File Id="settings_page019D86394705E2F3004304B7141" Source="SourceDir\..\AdBlocker\files\settings_page_w.ini" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="dictionary" Directory="AVASTADBLOCKERFOLDER" Guid="{16DD295D-4A6B-439B-B193-9F84FE89BECF}">
+        <File Id="dictionary019D86394705E2F3004304B7141" Source="SourceDir\..\AdBlocker\files\dictionary_w.ini" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+
+    </ComponentGroup>
+  </Fragment>
+
+  
+  <Fragment>
+    <DirectoryRef Id="AVASTADBLOCKERFOLDER">
+      <Directory Id="dirF9FD876484F2FDFEE1A063EB3C4F0693" Name="html" />
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+        <DirectoryRef Id="dirC2F055E256D046699DCB40577E20922C">
+            <Directory Id="dir681177572D848DE3DEDE89732C3C5D91" Name="features" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirF9FD876484F2FDFEE1A063EB3C4F0693">
+            <Directory Id="dirA22524D2E196F6A081770B3C833F4263" Name="static" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirF9FD876484F2FDFEE1A063EB3C4F0693">
+            <Directory Id="dirB14D0866770554E510BB26BA462DC3E6" Name="templates" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirA22524D2E196F6A081770B3C833F4263">
+            <Directory Id="dirC09FEE9C73FFAA4C9E65E8926512D474" Name="js" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirA22524D2E196F6A081770B3C833F4263">
+            <Directory Id="dirC2F055E256D046699DCB40577E20922C" Name="img" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirC09FEE9C73FFAA4C9E65E8926512D474">
+            <Directory Id="dirCD85A3C37A9EDB14E014FDC22FAC5B5F" Name="vendor" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirA22524D2E196F6A081770B3C833F4263">
+            <Directory Id="dirCEB22088FA6AB2CDCC2AAD632304A4CE" Name="css" />
+        </DirectoryRef>
+    </Fragment>
+
+
+  
+  
+  
+  <!--Vista+ version-->
+  <Fragment>
+    <ComponentGroup Id="HtmlDirVista">
+      <Component Id="cmpvista7300EEE9782F5835C4A8B7BC5FC77305" Directory="dirvistaCEB22088FA6AB2CDCC2AAD632304A4CE" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BEC5}">
+        <File Id="filvista5B33BDA50885283F24DE527000F12100" Source="SourceDir\static\css\settings.css" />
+        <RemoveFolder Id="dirvistaCEB22088FA6AB2CDCC2AAD632304A4CE" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvistaD9C33F3C2ECB92A74A2B5FA8E1E6246C" Directory="dirvistaC2F055E256D046699DCB40577E20922C" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BEC6}">
+        <File Id="filvista591030F07C86495AC15D3D11FE0EC068" Source="SourceDir\static\img\avast-logo.png" />
+        <RemoveFolder Id="dirvistaC2F055E256D046699DCB40577E20922C" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvista2DDE275A29FC5ED30E935333E7F30596" Directory="dirvistaC2F055E256D046699DCB40577E20922C" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BEC7}">
+        <File Id="filvista8112DB6D8EFFF61806AAFEF5C59C0A80" Source="SourceDir\static\img\background.png" />
+        <RemoveFolder Id="AVASTADBLOCKERFOLDERVISTA" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvistaD6BAFDF33A4B679141ECF475D390102F" Directory="dirvista681177572D848DE3DEDE89732C3C5D91" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BEC8}">
+        <File Id="filvistaF89332E21EFBE33C196025150B564679" Source="SourceDir\static\img\features\acceptable.png" />
+        <RemoveFolder Id="dirvista681177572D848DE3DEDE89732C3C5D91" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvistaC0935A3F50D6B54D0DDAE3DAB73407C9" Directory="dirvista681177572D848DE3DEDE89732C3C5D91" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BEC9}">
+        <File Id="filvistaC0EBFE87BB6D06406C1EB8DA81C65176" Source="SourceDir\static\img\features\language.png" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvistaFDE20460151743F5AE75E46334D41B69" Directory="dirvista681177572D848DE3DEDE89732C3C5D91" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BECA}">
+        <File Id="filvistaBC4BE9C257CD9481B94B7958F1851AF2" Source="SourceDir\static\img\features\whitelist.png" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvistaD88DC70C6EAFAC2494CD4C297544E974" Directory="dirvistaC09FEE9C73FFAA4C9E65E8926512D474" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BECB}">
+        <File Id="filvista1A6CF077B44CC7DE9B911E9697891A00" Source="SourceDir\static\js\IESettings.js" />
+        <RemoveFolder Id="dirvistaC09FEE9C73FFAA4C9E65E8926512D474" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvistaFF9DAA0FD7E848211660CA70BE78695B" Directory="dirvistaC09FEE9C73FFAA4C9E65E8926512D474" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BECC}">
+        <File Id="filvista9970D0A88EAE897441AE6C54FDB5FB3F" Source="SourceDir\static\js\settings.js" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvistaFF436DD25C42528F8158CA5F04A48928" Directory="dirvistaCD85A3C37A9EDB14E014FDC22FAC5B5F" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BECD}">
+        <File Id="filvistaF07BF7F68669C95BAA8DBF63A163FE20" Source="SourceDir\static\js\vendor\DD_belatedPNG.js" />
+        <RemoveFolder Id="dirvistaCD85A3C37A9EDB14E014FDC22FAC5B5F" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvista38623B7612E4E3DE562FFF4C33FF6E1B" Directory="dirvistaCD85A3C37A9EDB14E014FDC22FAC5B5F" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BECE}">
+        <File Id="filvista86923CAD5474FBDCA8BD6D4DAAA31ACF" Source="SourceDir\static\js\vendor\html5shiv.js" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="cmpvista2964649E6761AA4EA40770E25573151B" Directory="dirvistaB14D0866770554E510BB26BA462DC3E6" Guid="{26DD295C-4A6A-439B-A193-9F84FE89BECF}">
+        <File Id="vistafilBE1B3019D86394705E2F3004304B7141" Source="SourceDir\templates\index.html" />
+        <RemoveFolder Id="dirvistaB14D0866770554E510BB26BA462DC3E6" On="uninstall"/>
+        <RemoveFolder Id="RemovevistaAVASTADBLOCKERFOLDER" Directory="AVASTADBLOCKERFOLDERVISTA" On="uninstall"/>
+        <RemoveFolder Id="RemovedirvistaA22524D2E196F6A081770B3C833F4263" Directory="dirvistaA22524D2E196F6A081770B3C833F4263" On="uninstall"/>
+        <RemoveFolder Id="RemovedirdirvistaF9FD876484F2FDFEE1A063EB3C4F0693" Directory="dirvistaF9FD876484F2FDFEE1A063EB3C4F0693" On="uninstall"/>
+
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="settingsvista" Directory="AVASTADBLOCKERFOLDERVISTA" Guid="{26DD295C-4A6A-439B-B193-9F84FE89BECF}">
+        <File Id="vistasettings019D86394705E2F3004304B7141" Source="SourceDir\..\AdBlocker\files\settings.ini" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="settings_pagevista" Directory="AVASTADBLOCKERFOLDERVISTA" Guid="{26DD295D-4A6A-439B-B193-9F84FE89BECF}">
+        <File Id="vistasettings_page019D86394705E2F3004304B7141" Source="SourceDir\..\AdBlocker\files\settings_page_w.ini" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+      <Component Id="dictionaryvista" Directory="AVASTADBLOCKERFOLDERVISTA" Guid="{26DD295D-4A6A-439C-B193-9F84FE89BECF}">
+        <File Id="vistadictionary019D86394705E2F3004304B7141" Source="SourceDir\..\AdBlocker\files\dictionary_w.ini" />
+        <RegistryValue Root="HKCU" Key="Software\Avast\Avast Ad Blocker" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="AVASTADBLOCKERFOLDERVISTA">
+      <Directory Id="dirvistaF9FD876484F2FDFEE1A063EB3C4F0693" Name="html" />
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="dirvistaC2F055E256D046699DCB40577E20922C">
+      <Directory Id="dirvista681177572D848DE3DEDE89732C3C5D91" Name="features" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirvistaF9FD876484F2FDFEE1A063EB3C4F0693">
+      <Directory Id="dirvistaA22524D2E196F6A081770B3C833F4263" Name="static" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirvistaF9FD876484F2FDFEE1A063EB3C4F0693">
+      <Directory Id="dirvistaB14D0866770554E510BB26BA462DC3E6" Name="templates" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirvistaA22524D2E196F6A081770B3C833F4263">
+      <Directory Id="dirvistaC09FEE9C73FFAA4C9E65E8926512D474" Name="js" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirvistaA22524D2E196F6A081770B3C833F4263">
+      <Directory Id="dirvistaC2F055E256D046699DCB40577E20922C" Name="img" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirvistaC09FEE9C73FFAA4C9E65E8926512D474">
+      <Directory Id="dirvistaCD85A3C37A9EDB14E014FDC22FAC5B5F" Name="vendor" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirvistaA22524D2E196F6A081770B3C833F4263">
+      <Directory Id="dirvistaCEB22088FA6AB2CDCC2AAD632304A4CE" Name="css" />
+    </DirectoryRef>
+  </Fragment>
+
+
+
+
+  <Fragment>
+
+    <Property Id="LOCALLOWFOLDER">
+      <RegistrySearch Id="RUMK" Root="HKCU" Type="raw"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" Name="{A520A1A4-1780-4FF6-BD18-167343C5AF16}"></RegistrySearch>
+    </Property>
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="AvastGeneralFolder" Name="AVAST Software">
+          <Directory Id="INSTALLFOLDER" Name="avast! Ad Blocker IE"/>
+        </Directory>
+      </Directory>
+
+      <Directory Id="AppDataFolder">
+        <Directory Id="AVASTADBLOCKERFOLDER" Name="Avast Ad Blocker">
+        </Directory>
+      </Directory>
+      
+      
+
+      <Directory Id="LOCALLOWFOLDER">
+        <Directory Id="AVASTADBLOCKERFOLDERVISTA" Name="Avast Ad Blocker">
+
+        </Directory>
+      </Directory>
+
+
+    </Directory>
+
+    <SetProperty Id="LOCALLOWFOLDER" Value="[%APPDATA]" Before="CostFinalize">true</SetProperty>
+    
+  </Fragment>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+    </Directory>
+  </Fragment>
+
+ 
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+      <Component Id="Adblocker32.dll" Guid="{8557D584-8162-41F4-8B78-FE748C1782B6}">
+        <File Id="adblocker32.dll" Source="..\..\ABP\Signed\Adblocker32.dll" KeyPath="yes" Checksum="yes" SelfRegCost="1"/>
+      </Component>
+      <Component Id="Adblocker64.dll" Guid="{8557D584-8162-41F4-8B78-FE748C1782B7}">
+        <Condition>
+          <![CDATA[(VersionNT64)]]>
+         </Condition>
+        <File Id="adblocker64.dll" Source="..\..\ABP\Signed\Adblocker64.dll" KeyPath="yes" Checksum="yes" SelfRegCost="1"/>
+      </Component>
+
+      <!--			<Component Id="ProductComponent"> -->
+        
+				<!-- TODO: Insert files, registry keys, and other resources here. -->
+<!--			</Component> -->
+		</ComponentGroup>
+	</Fragment>
+</Wix>
