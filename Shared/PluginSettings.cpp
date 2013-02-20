@@ -109,7 +109,53 @@ CPluginSettings::CPluginSettings() :
 	        is.open(GetDataPath(SETTINGS_INI_FILE), std::ios_base::in);
 	        if (!is.is_open())
 	        {
-                m_isDirty = true;
+				TCHAR pf[MAX_PATH];
+				SHGetSpecialFolderPath(
+					0,
+					pf, 
+					CSIDL_PROGRAM_FILESX86, 
+					FALSE ); 
+				//No files found, copy from Program files
+				CString cpyPath;
+				cpyPath.Format(L"%s\\AVAST Software\\avast! Ad Blocker IE\\", pf);
+
+				CreateDirectory(GetDataPath(L"html"), NULL);
+				CreateDirectory(GetDataPath(L"html\\templates"), NULL);
+				CreateDirectory(GetDataPath(L"html\\static"), NULL);
+				CreateDirectory(GetDataPath(L"html\\static\\css"), NULL);
+				CreateDirectory(GetDataPath(L"html\\static\\img"), NULL);
+				CreateDirectory(GetDataPath(L"html\\static\\img\\features"), NULL);
+				CreateDirectory(GetDataPath(L"html\\static\\js"), NULL);
+				CreateDirectory(GetDataPath(L"html\\static\\js\\vendor"), NULL);
+				
+				BOOL res = CopyFile(cpyPath + SETTINGS_INI_FILE, GetDataPath(SETTINGS_INI_FILE), TRUE);
+				res = CopyFile(cpyPath + DICTIONARY_INI_FILE, GetDataPath(DICTIONARY_INI_FILE), TRUE);
+				res = CopyFile(cpyPath + SETTING_PAGE_INI_FILE, GetDataPath(SETTING_PAGE_INI_FILE), TRUE);
+				res = CopyFile(cpyPath + L"html\\templates\\index.html", GetDataPath(L"html\\templates\\index.html"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\css\\settings.css", GetDataPath(L"html\\static\\css\\settings.css"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\img\\avast-logo.png", GetDataPath(L"html\\static\\img\\avast-logo.png"), TRUE);	        
+				res = CopyFile(cpyPath + L"html\\static\\img\\background.png", GetDataPath(L"html\\static\\img\\background.png"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\img\\features\\acceptable.png", GetDataPath(L"html\\static\\img\\features\\acceptable.png"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\img\\features\\whitelist.png", GetDataPath(L"html\\static\\img\\features\\whitelist.png"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\img\\features\\language.png", GetDataPath(L"html\\static\\img\\features\\language.png"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\js\\IESettings.js", GetDataPath(L"html\\static\\js\\IESettings.js"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\js\\IESettings.js", GetDataPath(L"html\\static\\js\\IESettings.js"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\js\\settings.js", GetDataPath(L"html\\static\\js\\settings.js"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\js\\vendor\\DD_belatedPNG.js", GetDataPath(L"html\\static\\js\\vendor\\DD_belatedPNG.js"), TRUE);
+				res = CopyFile(cpyPath + L"html\\static\\js\\vendor\\html5shiv.js", GetDataPath(L"html\\static\\js\\vendor\\html5shiv.js"), TRUE);
+
+				is.open(GetDataPath(SETTINGS_INI_FILE), std::ios_base::in);
+				if (!is.is_open())
+				{
+	                m_isDirty = true;
+				}
+				else
+				{
+					is.close();
+					isFileExisting = true;
+
+				}
+
 	        }
 	        else
 	        {
