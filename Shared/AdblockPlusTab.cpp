@@ -6,7 +6,7 @@
 #include "PluginConfiguration.h"
 #include "PluginClientFactory.h"
 
-#include "SimpleAdblockTab.h"
+#include "AdblockPlusTab.h"
 
 
 CPluginTab::CPluginTab(CPluginClass* plugin) : CPluginTabBase(plugin)

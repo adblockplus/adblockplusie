@@ -9,31 +9,31 @@
 #include "PluginMutex.h"
 #include "PluginClass.h"
 
-#include "SimpleAdblockClient.h"
+#include "AdblockPlusClient.h"
 
 
-CSimpleAdblockClient* CSimpleAdblockClient::s_instance = NULL;
+CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
 
 
-CSimpleAdblockClient::CSimpleAdblockClient() : CPluginClientBase()
+CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 {
     m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
 }
-CSimpleAdblockClient::~CSimpleAdblockClient()
+CAdblockPlusClient::~CAdblockPlusClient()
 {
 	s_instance = NULL;
 }
 
 
-CSimpleAdblockClient* CSimpleAdblockClient::GetInstance()
+CAdblockPlusClient* CAdblockPlusClient::GetInstance()
 {
-	CSimpleAdblockClient* instance = NULL;
+	CAdblockPlusClient* instance = NULL;
 
     s_criticalSectionLocal.Lock();
     {
 	    if (!s_instance)
 	    {
-		    CSimpleAdblockClient* client = new CSimpleAdblockClient();
+		    CAdblockPlusClient* client = new CAdblockPlusClient();
 
 		    s_instance = client;
 	    }
@@ -46,7 +46,7 @@ CSimpleAdblockClient* CSimpleAdblockClient::GetInstance()
 }
 
 
-bool CSimpleAdblockClient::ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug)
+bool CAdblockPlusClient::ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug)
 {
     bool isBlocked = false;
 
@@ -90,7 +90,7 @@ bool CSimpleAdblockClient::ShouldBlock(CString src, int contentType, const CStri
 	return isBlocked;
 }
 
-void CSimpleAdblockClient::RequestFilterDownload(const CString& filter, const CString& filterPath)
+void CAdblockPlusClient::RequestFilterDownload(const CString& filter, const CString& filterPath)
 {
     DEBUG_GENERAL(L"*** Requesting filter download:" + filter)
 
@@ -102,7 +102,7 @@ void CSimpleAdblockClient::RequestFilterDownload(const CString& filter, const CS
 }
 
 
-bool CSimpleAdblockClient::DownloadFirstMissingFilter()
+bool CAdblockPlusClient::DownloadFirstMissingFilter()
 {
     bool isDownloaded = false;
 
@@ -138,7 +138,7 @@ bool CSimpleAdblockClient::DownloadFirstMissingFilter()
 //in this method we read the filter that are in the persistent storage
 //then we read them and use these to create a new filterclass
 
-void CSimpleAdblockClient::ReadFilters()
+void CAdblockPlusClient::ReadFilters()
 {
     CPluginSettings* settings = CPluginSettings::GetInstance();
 
@@ -183,7 +183,7 @@ void CSimpleAdblockClient::ReadFilters()
 }
 
 
-bool CSimpleAdblockClient::IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent)
+bool CAdblockPlusClient::IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent)
 {
     bool isHidden;
 	m_criticalSectionFilter.Lock();
@@ -194,7 +194,7 @@ bool CSimpleAdblockClient::IsElementHidden(const CString& tag, IHTMLElement* pEl
     return isHidden;
 }
 
-bool CSimpleAdblockClient::IsUrlWhiteListed(const CString& url)
+bool CAdblockPlusClient::IsUrlWhiteListed(const CString& url)
 {
 	bool isWhitelisted = CPluginClientBase::IsUrlWhiteListed(url);
     if (isWhitelisted == false && !url.IsEmpty())
@@ -214,7 +214,7 @@ bool CSimpleAdblockClient::IsUrlWhiteListed(const CString& url)
 	return isWhitelisted;
 }
 
-int CSimpleAdblockClient::GetIEVersion()
+int CAdblockPlusClient::GetIEVersion()
 {
 	//HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer
 	HKEY hKey;

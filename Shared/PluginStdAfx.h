@@ -56,10 +56,6 @@ extern CComModule _Module;
 #endif
 
 #if (defined PRODUCT_ADBLOCKPLUS)
- #include "..\AdBlocker\Version.h"
-#endif
-
-#if (defined PRODUCT_ADBLOCKPLUS)
 #if (defined ENTERPRISE)
 	#define CONFIG_IN_REGISTRY
 #endif
@@ -92,3 +88,5 @@ extern CComModule _Module;
 
 #define USE_CONSOLE
 #include "Console.h"
+
+#include "BuildVariant.h"

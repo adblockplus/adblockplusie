@@ -4,7 +4,7 @@
 #include "PluginFilter.h"
 #include "PluginSettings.h"
 
-#include "SimpleAdblockDomTraverser.h"
+#include "AdblockPlusDomTraverser.h"
 
 
 CPluginDomTraverser::CPluginDomTraverser(CPluginTab* tab) : CPluginDomTraverserBase(tab)

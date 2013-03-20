@@ -13,15 +13,6 @@
 #if (defined PRODUCT_ADBLOCKPLUS)
  #define FILTERS_PROTOCOL "https://"
  #define FILTERS_HOST "easylist-downloads.adblockplus.org"
-#ifdef AVAST_ABP
-#ifdef _DEBUG
- #define PLUGIN_UPDATE_URL "update.txt"
-#else
- #define PLUGIN_UPDATE_URL "avastupdate.txt"
-#endif
-#else
- #define PLUGIN_UPDATE_URL "abpupdate.txt"
-#endif
 #endif
  
 // ----------------------------------------------------------------------------
@@ -259,11 +250,6 @@
  #define UNINSTALL_INI_FILE "AdBlockPlus.ini"
 #endif
 
-// Name of user dir in %APPDATA%\..\LocalLow
-#if (defined PRODUCT_ADBLOCKPLUS)
- #define USER_DIR "Avast Ad Blocker\\"
-#endif
-
 // Prefix on temp dir files
 #if (defined PRODUCT_ADBLOCKPLUS)
  #define TEMP_FILE_PREFIX "ab_"
@@ -310,7 +296,7 @@
 
 // Status bar pane name
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define STATUSBAR_PANE_NAME "SimpleAdblockStatusBarPane"
+ #define STATUSBAR_PANE_NAME "AdblockPlusStatusBarPane"
 #endif
 
 // Status bar pane number

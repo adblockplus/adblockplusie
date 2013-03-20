@@ -1,20 +1,20 @@
 HKCR
 {
-	SimpleAdblock.SimpleAdblock.1 = s 'SimpleAdblock Class'
+	AdblockPlus.AdblockPlus.1 = s 'AdblockPlus Class'
 	{
 		CLSID = s '{FFCB3198-32F3-4E8B-9539-4324694ED664}'
 	}
-	SimpleAdblock.SimpleAdblock = s 'SimpleAdblock Class'
+	AdblockPlus.AdblockPlus = s 'AdblockPlus Class'
 	{
 		CLSID = s '{FFCB3198-32F3-4E8B-9539-4324694ED664}'
-		CurVer = s 'SimpleAdblock.SimpleAdblock.1'
+		CurVer = s 'AdblockPlus.AdblockPlus.1'
 	}
 	NoRemove CLSID
 	{
-		ForceRemove {FFCB3198-32F3-4E8B-9539-4324694ED664} = s 'SimpleAdblock Class'
+		ForceRemove {FFCB3198-32F3-4E8B-9539-4324694ED664} = s 'AdblockPlus Class'
 		{
-			ProgID = s 'SimpleAdblock.SimpleAdblock.1'
-			VersionIndependentProgID = s 'SimpleAdblock.SimpleAdblock'
+			ProgID = s 'AdblockPlus.AdblockPlus.1'
+			VersionIndependentProgID = s 'AdblockPlus.AdblockPlus'
 			ForceRemove 'Programmable'
 			InprocServer32 = s '%MODULE%'
 			{

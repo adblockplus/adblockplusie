@@ -10,7 +10,7 @@
 //
 // REGISTRY
 //
-IDR_PLUGIN_CLASS      REGISTRY                "AdBlocker.rgs"
+IDR_PLUGIN_CLASS      REGISTRY                "AdBlockerAvast.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -34,14 +34,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Adblock Plus"
-            VALUE "FileDescription", "Adblock Plus Module"
-            VALUE "FileVersion", "0, 1, 1, 5"
-            VALUE "InternalName", "Adblock Plus"
+            VALUE "CompanyName", "AVAST Software"
+            VALUE "FileDescription", "avast! Ad Blocker Module"
+            VALUE "FileVersion", "8, 0, 0, 0"
+            VALUE "InternalName", "avast! Ad Blocker"
             VALUE "LegalCopyright", "Copyright 2013"
             VALUE "OriginalFilename", "AdBlocker.dll"
-            VALUE "ProductName", "Adblock Plus"
-            VALUE "ProductVersion", "0, 1, 2, 0"
+            VALUE "ProductName", "avast! Ad Blocker"
+            VALUE "ProductVersion", "8, 0, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
@@ -70,13 +70,6 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "Popup"
     BEGIN
-        MENUITEM "Update Adblock Plus",       ID_PLUGIN_UPDATE
-        MENUITEM "About Adblock Plus",        ID_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "FAQ",                         ID_FAQ
-        MENUITEM "Feedback",                    ID_FEEDBACK
-        MENUITEM "Invite friends",              ID_INVITEFRIENDS
-        MENUITEM SEPARATOR
         MENUITEM "Settings",                    ID_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Enable plugin",               ID_PLUGIN_ENABLE
@@ -145,7 +138,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDS_PROJNAME            "Adblock Plus"
+    IDS_PROJNAME            "avast! Ad Blocker"
 END
 
 #ifndef APSTUDIO_INVOKED
@@ -153,7 +146,7 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-1 TYPELIB "Adblock.tlb"
+1 TYPELIB "AVASTAdblock.tlb"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
