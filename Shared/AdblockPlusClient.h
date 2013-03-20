@@ -9,7 +9,7 @@
 class CPluginFilter;
 
 
-class CSimpleAdblockClient : public CPluginClientBase
+class CAdblockPlusClient : public CPluginClientBase
 {
 
 private:
@@ -25,14 +25,14 @@ private:
 
 
 	// Private constructor used by the singleton pattern
-	CSimpleAdblockClient();
+	CAdblockPlusClient();
 
 public:
 
-	static CSimpleAdblockClient* s_instance;
-	~CSimpleAdblockClient();
+	static CAdblockPlusClient* s_instance;
+	~CAdblockPlusClient();
 
-	static CSimpleAdblockClient* GetInstance();
+	static CAdblockPlusClient* GetInstance();
 
 	// Read the filters from the persistent storage and make them ready for use
 	void ReadFilters();

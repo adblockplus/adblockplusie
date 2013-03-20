@@ -329,34 +329,10 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 // so we should handle that it is called this way several times during a session
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
-
   CPluginSettings* settings = CPluginSettings::GetInstance();
-#ifdef AVAST_ABP
-  HKEY hkey;
-  LONG res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects\\{FFCB3198-32F3-4E8B-9539-4324694ED664}", NULL, KEY_QUERY_VALUE, &hkey);
-  if (hkey != NULL)
-  {
-    RegCloseKey(hkey);
-    // Decide what to do when there are 2 versions installed
-    /*		SHANDLE_PTR pBrowserHWnd = NULL;
-    CComQIPtr<IWebBrowser2> tmpbrwsr;
-    if (unknownSite != NULL)
-    {
-    tmpbrwsr = unknownSite;
-    tmpbrwsr->get_HWND((SHANDLE_PTR*)&pBrowserHWnd);
-    }
-    LRESULT res = MessageBox((HWND)pBrowserHWnd, L"Looks like you have another version of Ad Blocker installed. Only one instance will run.", L"Multiple installs", MB_OK);
-    */
-    res = RegOpenKeyEx(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Ext\\Settings\\{FFCB3198-32F3-4E8B-9539-4324694ED663}", NULL, KEY_SET_VALUE, &hkey);
-    if (hkey != NULL)
-    {
-      DWORD val = 1;
-      res = RegSetValueEx(hkey, L"Flags", NULL, REG_DWORD, (BYTE*)&val, sizeof(val)); 
-    }
-    return S_OK;
-  }
-#endif
   CPluginSystem* system = CPluginSystem::GetInstance(); 
+
+  MULTIPLE_VERSIONS_CHECK();
 
   if (unknownSite) 
   {

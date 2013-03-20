@@ -5,7 +5,7 @@
 #include "PluginTabBase.h"
 
 #if (defined PRODUCT_ADBLOCKPLUS)
- #include "../AdBlocker/SimpleAdblockTab.h"
+ #include "AdblockPlusTab.h"
 #endif
 
 

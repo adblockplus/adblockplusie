@@ -12,18 +12,18 @@ CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked
         DEBUG_MUTEX("Mutex::Create name:" + name)
     }
 
-    m_hMutex = ::CreateMutex(NULL, FALSE, "Global\\SimpleAdblock" + name);
+    m_hMutex = ::CreateMutex(NULL, FALSE, "Global\\AdblockPlus" + name);
 
     if (m_hMutex == NULL)
     {
 		DWORD error = GetLastError();
-		m_hMutex = OpenMutex(MUTEX_ALL_ACCESS, FALSE, "Global\\SimpleAdblock" + name);
+		m_hMutex = OpenMutex(MUTEX_ALL_ACCESS, FALSE, "Global\\AdblockPlus" + name);
 		if (m_hMutex == NULL)
 		{
-		    m_hMutex = ::CreateMutex(NULL, FALSE, "Local\\SimpleAdblock" + name);
+		    m_hMutex = ::CreateMutex(NULL, FALSE, "Local\\AdblockPlus" + name);
 			if (m_hMutex == NULL)
 			{
-				m_hMutex = OpenMutex(NULL, FALSE, "Local\\SimpleAdblock" + name);
+				m_hMutex = OpenMutex(NULL, FALSE, "Local\\AdblockPlus" + name);
 				if (m_hMutex == NULL)
 				{
 					DWORD error = GetLastError();
