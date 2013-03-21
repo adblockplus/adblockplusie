@@ -5,9 +5,21 @@ AdBlocker/AdBlocker_i.c
 AdBlocker/AdBlocker_p.c
 AdBlocker/Debug Production
 AdBlocker/Debug Test
-AdBlocker/dlldata.c
 AdBlocker/Release Production
 AdBlocker/Release Test
+AdBlocker/x64
+AdBlocker/dlldata.c
 AdPlugin.opensdf
 AdPlugin.sdf
 AdPlugin.v11.suo
+Avast/AVASTAdblock.tlb
+Avast/AVAST AdBlocker.sdf
+Avast/AVAST AdBlocker.v11.suo
+Avast/AdBlocker.aps
+Avast/AdBlocker.h
+Avast/AdBlocker.sdf
+Avast/AdBlocker_i.c
+Avast/AdBlocker_p.c
+Avast/Debug Avast
+Avast/Release Avast
+Avast/dlldata.c
