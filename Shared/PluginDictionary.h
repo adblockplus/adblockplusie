@@ -11,31 +11,31 @@ class CPluginDictionary
 
 private:
 
-	static CPluginDictionary* s_instance;
+  static CPluginDictionary* s_instance;
 
-    static CComAutoCriticalSection s_criticalSectionDictionary;
+  static CComAutoCriticalSection s_criticalSectionDictionary;
 
-	CPluginIniFileW::TSectionData m_dictionary;
-	CString m_dictionaryLanguage;
-	std::map<CString,CString> m_dictionaryConversions;
+  CPluginIniFileW::TSectionData m_dictionary;
+  CString m_dictionaryLanguage;
+  std::map<CString,CString> m_dictionaryConversions;
 
-	// private constructor used by the singleton pattern
-	CPluginDictionary(bool forceCreate=false);
+  // private constructor used by the singleton pattern
+  CPluginDictionary(bool forceCreate=false);
 
 public:
-	
-	~CPluginDictionary();
-	
-	// Returns an instance of the Dictionary
-	static CPluginDictionary* GetInstance(bool forceCreate=false); 
 
-	void Create(bool forceCreate=false);
+  ~CPluginDictionary();
 
-	// Initializes the Dictionary. Should be called before any thing else
-	void SetLanguage(const CString& lang);
-	bool IsLanguageSupported(const CString& lang);
+  // Returns an instance of the Dictionary
+  static CPluginDictionary* GetInstance(bool forceCreate=false); 
 
-	CString Lookup(const CString& key);
+  void Create(bool forceCreate=false);
+
+  // Initializes the Dictionary. Should be called before any thing else
+  void SetLanguage(const CString& lang);
+  bool IsLanguageSupported(const CString& lang);
+
+  CString Lookup(const CString& key);
 };
 
 #endif
