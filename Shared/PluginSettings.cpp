@@ -22,17 +22,17 @@
 
 class TSettings
 {
-    DWORD processorId;
+  DWORD processorId;
 
-    char sPluginId[44];
+  char sPluginId[44];
 };
 
 
 class CPluginSettingsLock : public CPluginMutex
 {
 public:
-    CPluginSettingsLock() : CPluginMutex("SettingsFile", PLUGIN_ERROR_MUTEX_SETTINGS_FILE) {}
-    ~CPluginSettingsLock() {}
+  CPluginSettingsLock() : CPluginMutex("SettingsFile", PLUGIN_ERROR_MUTEX_SETTINGS_FILE) {}
+  ~CPluginSettingsLock() {}
 
 };
 
@@ -40,8 +40,8 @@ public:
 class CPluginSettingsTabLock : public CPluginMutex
 {
 public:
-    CPluginSettingsTabLock() : CPluginMutex("SettingsFileTab", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_TAB) {}
-    ~CPluginSettingsTabLock() {}
+  CPluginSettingsTabLock() : CPluginMutex("SettingsFileTab", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_TAB) {}
+  ~CPluginSettingsTabLock() {}
 };
 
 #ifdef SUPPORT_WHITELIST
@@ -49,8 +49,8 @@ public:
 class CPluginSettingsWhitelistLock : public CPluginMutex
 {
 public:
-    CPluginSettingsWhitelistLock() : CPluginMutex("SettingsFileWhitelist", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_WHITELIST) {}
-    ~CPluginSettingsWhitelistLock() {}
+  CPluginSettingsWhitelistLock() : CPluginMutex("SettingsFileWhitelist", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_WHITELIST) {}
+  ~CPluginSettingsWhitelistLock() {}
 };
 
 #endif
@@ -71,811 +71,811 @@ CComAutoCriticalSection CPluginSettings::s_criticalSectionDomainHistory;
 
 
 CPluginSettings::CPluginSettings() : 
-    m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
-    m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
+  m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
+  m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
 
-	//Message box. Can be used as a breakpoint to attach a debugger, if needed
-//	MessageBox(NULL, L"Settings", L"", MB_OK);
+  //Message box. Can be used as a breakpoint to attach a debugger, if needed
+  //	MessageBox(NULL, L"Settings", L"", MB_OK);
 
-	CPluginSettings *lightInstance = s_instance;
-	s_instance = NULL;
+  CPluginSettings *lightInstance = s_instance;
+  s_instance = NULL;
 
 #ifdef SUPPORT_WHITELIST
-    m_isDirtyWhitelist = false;
+  m_isDirtyWhitelist = false;
 #endif
 
-    m_settingsFile = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE), false));
-    m_settingsFileTab = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_TAB), true));
+  m_settingsFile = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE), false));
+  m_settingsFileTab = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_TAB), true));
 #ifdef SUPPORT_WHITELIST
-    m_settingsFileWhitelist = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
+  m_settingsFileWhitelist = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
 #endif
 
-	m_WindowsBuildNumber = 0;
+  m_WindowsBuildNumber = 0;
 
-    Clear();
-    ClearTab();
+  Clear();
+  ClearTab();
 #ifdef SUPPORT_WHITELIST
-    ClearWhitelist();
+  ClearWhitelist();
 #endif
 
-    // Check existence of settings file
-    bool isFileExisting = false;
+  // Check existence of settings file
+  bool isFileExisting = false;
+  {
+    CPluginSettingsLock lock;
+    if (lock.IsLocked())
     {
-        CPluginSettingsLock lock;
-        if (lock.IsLocked())
+      std::ifstream is;
+      is.open(GetDataPath(SETTINGS_INI_FILE), std::ios_base::in);
+      if (!is.is_open())
+      {
+        TCHAR pf[MAX_PATH];
+        SHGetSpecialFolderPath(
+          0,
+          pf, 
+          CSIDL_PROGRAM_FILESX86, 
+          FALSE ); 
+        //No files found, copy from Program files
+        CString cpyPath;
+        cpyPath.Format(L"%s\\AVAST Software\\avast! Ad Blocker IE\\", pf);
+
+        CreateDirectory(GetDataPath(L"html"), NULL);
+        CreateDirectory(GetDataPath(L"html\\templates"), NULL);
+        CreateDirectory(GetDataPath(L"html\\static"), NULL);
+        CreateDirectory(GetDataPath(L"html\\static\\css"), NULL);
+        CreateDirectory(GetDataPath(L"html\\static\\img"), NULL);
+        CreateDirectory(GetDataPath(L"html\\static\\img\\features"), NULL);
+        CreateDirectory(GetDataPath(L"html\\static\\js"), NULL);
+        CreateDirectory(GetDataPath(L"html\\static\\js\\vendor"), NULL);
+
+        BOOL res = CopyFile(cpyPath + SETTINGS_INI_FILE, GetDataPath(SETTINGS_INI_FILE), TRUE);
+        res = CopyFile(cpyPath + DICTIONARY_INI_FILE, GetDataPath(DICTIONARY_INI_FILE), TRUE);
+        res = CopyFile(cpyPath + SETTING_PAGE_INI_FILE, GetDataPath(SETTING_PAGE_INI_FILE), TRUE);
+        res = CopyFile(cpyPath + L"html\\templates\\index.html", GetDataPath(L"html\\templates\\index.html"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\css\\settings.css", GetDataPath(L"html\\static\\css\\settings.css"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\img\\avast-logo.png", GetDataPath(L"html\\static\\img\\avast-logo.png"), TRUE);	        
+        res = CopyFile(cpyPath + L"html\\static\\img\\background.png", GetDataPath(L"html\\static\\img\\background.png"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\img\\features\\acceptable.png", GetDataPath(L"html\\static\\img\\features\\acceptable.png"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\img\\features\\whitelist.png", GetDataPath(L"html\\static\\img\\features\\whitelist.png"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\img\\features\\language.png", GetDataPath(L"html\\static\\img\\features\\language.png"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\js\\IESettings.js", GetDataPath(L"html\\static\\js\\IESettings.js"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\js\\IESettings.js", GetDataPath(L"html\\static\\js\\IESettings.js"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\js\\settings.js", GetDataPath(L"html\\static\\js\\settings.js"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\js\\vendor\\DD_belatedPNG.js", GetDataPath(L"html\\static\\js\\vendor\\DD_belatedPNG.js"), TRUE);
+        res = CopyFile(cpyPath + L"html\\static\\js\\vendor\\html5shiv.js", GetDataPath(L"html\\static\\js\\vendor\\html5shiv.js"), TRUE);
+
+        is.open(GetDataPath(SETTINGS_INI_FILE), std::ios_base::in);
+        if (!is.is_open())
         {
-            std::ifstream is;
-	        is.open(GetDataPath(SETTINGS_INI_FILE), std::ios_base::in);
-	        if (!is.is_open())
-	        {
-				TCHAR pf[MAX_PATH];
-				SHGetSpecialFolderPath(
-					0,
-					pf, 
-					CSIDL_PROGRAM_FILESX86, 
-					FALSE ); 
-				//No files found, copy from Program files
-				CString cpyPath;
-				cpyPath.Format(L"%s\\AVAST Software\\avast! Ad Blocker IE\\", pf);
-
-				CreateDirectory(GetDataPath(L"html"), NULL);
-				CreateDirectory(GetDataPath(L"html\\templates"), NULL);
-				CreateDirectory(GetDataPath(L"html\\static"), NULL);
-				CreateDirectory(GetDataPath(L"html\\static\\css"), NULL);
-				CreateDirectory(GetDataPath(L"html\\static\\img"), NULL);
-				CreateDirectory(GetDataPath(L"html\\static\\img\\features"), NULL);
-				CreateDirectory(GetDataPath(L"html\\static\\js"), NULL);
-				CreateDirectory(GetDataPath(L"html\\static\\js\\vendor"), NULL);
-				
-				BOOL res = CopyFile(cpyPath + SETTINGS_INI_FILE, GetDataPath(SETTINGS_INI_FILE), TRUE);
-				res = CopyFile(cpyPath + DICTIONARY_INI_FILE, GetDataPath(DICTIONARY_INI_FILE), TRUE);
-				res = CopyFile(cpyPath + SETTING_PAGE_INI_FILE, GetDataPath(SETTING_PAGE_INI_FILE), TRUE);
-				res = CopyFile(cpyPath + L"html\\templates\\index.html", GetDataPath(L"html\\templates\\index.html"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\css\\settings.css", GetDataPath(L"html\\static\\css\\settings.css"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\img\\avast-logo.png", GetDataPath(L"html\\static\\img\\avast-logo.png"), TRUE);	        
-				res = CopyFile(cpyPath + L"html\\static\\img\\background.png", GetDataPath(L"html\\static\\img\\background.png"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\img\\features\\acceptable.png", GetDataPath(L"html\\static\\img\\features\\acceptable.png"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\img\\features\\whitelist.png", GetDataPath(L"html\\static\\img\\features\\whitelist.png"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\img\\features\\language.png", GetDataPath(L"html\\static\\img\\features\\language.png"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\js\\IESettings.js", GetDataPath(L"html\\static\\js\\IESettings.js"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\js\\IESettings.js", GetDataPath(L"html\\static\\js\\IESettings.js"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\js\\settings.js", GetDataPath(L"html\\static\\js\\settings.js"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\js\\vendor\\DD_belatedPNG.js", GetDataPath(L"html\\static\\js\\vendor\\DD_belatedPNG.js"), TRUE);
-				res = CopyFile(cpyPath + L"html\\static\\js\\vendor\\html5shiv.js", GetDataPath(L"html\\static\\js\\vendor\\html5shiv.js"), TRUE);
-
-				is.open(GetDataPath(SETTINGS_INI_FILE), std::ios_base::in);
-				if (!is.is_open())
-				{
-	                m_isDirty = true;
-				}
-				else
-				{
-					is.close();
-					isFileExisting = true;
-
-				}
-
-	        }
-	        else
-	        {
-		        is.close();
-
-	            isFileExisting = true;
-	        }
+          m_isDirty = true;
         }
-    }
+        else
+        {
+          is.close();
+          isFileExisting = true;
 
-    // Read or convert file
-    if (isFileExisting)
-    {
-        Read(false);
-    }
-    else
-    {
-        m_isDirty = true;
-    }
+        }
 
-	if (s_isLightOnly)
-	{
-		this->SetMainProcessId(lightInstance->m_dwMainProcessId);
-		this->SetMainThreadId(lightInstance->m_dwMainThreadId);
-		this->SetMainUiThreadId(lightInstance->m_dwMainUiThreadId);
-		this->SetWorkingThreadId(lightInstance->m_dwWorkingThreadId);
-	}
-    Write();
+      }
+      else
+      {
+        is.close();
+
+        isFileExisting = true;
+      }
+    }
+  }
+
+  // Read or convert file
+  if (isFileExisting)
+  {
+    Read(false);
+  }
+  else
+  {
+    m_isDirty = true;
+  }
+
+  if (s_isLightOnly)
+  {
+    this->SetMainProcessId(lightInstance->m_dwMainProcessId);
+    this->SetMainThreadId(lightInstance->m_dwMainThreadId);
+    this->SetMainUiThreadId(lightInstance->m_dwMainUiThreadId);
+    this->SetWorkingThreadId(lightInstance->m_dwWorkingThreadId);
+  }
+  Write();
 }
 
 CPluginSettings::CPluginSettings(bool isLight) : 
-m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
-m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
+  m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
+  m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
 
-	s_instance = NULL;
+  s_instance = NULL;
 #ifdef SUPPORT_WHITELIST
-	m_isDirtyWhitelist = false;
+  m_isDirtyWhitelist = false;
 #endif
 
-	Clear();
-	ClearTab();
+  Clear();
+  ClearTab();
 }
 
 
 CPluginSettings::~CPluginSettings()
 {
 
-	if (s_dataPathParent != NULL)
-	{
-		delete s_dataPathParent;
-	}
-	s_instance = NULL;
+  if (s_dataPathParent != NULL)
+  {
+    delete s_dataPathParent;
+  }
+  s_instance = NULL;
 }
 
 
 CPluginSettings* CPluginSettings::GetInstance() 
 {
-	CPluginSettings* instance = NULL;
+  CPluginSettings* instance = NULL;
 
-	s_criticalSectionLocal.Lock();
-	{
-		if ((!s_instance) || (s_isLightOnly))
-		{
-			s_instance = new CPluginSettings();
-			s_isLightOnly = false;
-		}
+  s_criticalSectionLocal.Lock();
+  {
+    if ((!s_instance) || (s_isLightOnly))
+    {
+      s_instance = new CPluginSettings();
+      s_isLightOnly = false;
+    }
 
-		instance = s_instance;
-	}
-	s_criticalSectionLocal.Unlock();
+    instance = s_instance;
+  }
+  s_criticalSectionLocal.Unlock();
 
-	return instance;
+  return instance;
 }
 
 CPluginSettings* CPluginSettings::GetInstanceLight() 
 {
-	CPluginSettings* instance = NULL;
+  CPluginSettings* instance = NULL;
 
-	s_criticalSectionLocal.Lock();
-	{
-		if (!s_instance)
-		{
-			s_instance = new CPluginSettings(true);
-			s_isLightOnly = true;
-		}
+  s_criticalSectionLocal.Lock();
+  {
+    if (!s_instance)
+    {
+      s_instance = new CPluginSettings(true);
+      s_isLightOnly = true;
+    }
 
-		instance = s_instance;
-	}
-	s_criticalSectionLocal.Unlock();
+    instance = s_instance;
+  }
+  s_criticalSectionLocal.Unlock();
 
-	return instance;
+  return instance;
 }
 
 
 bool CPluginSettings::HasInstance() 
 {
-	bool hasInstance = true;
+  bool hasInstance = true;
 
-	s_criticalSectionLocal.Lock();
-	{
-        hasInstance = s_instance != NULL;
-	}
-	s_criticalSectionLocal.Unlock();
+  s_criticalSectionLocal.Lock();
+  {
+    hasInstance = s_instance != NULL;
+  }
+  s_criticalSectionLocal.Unlock();
 
-	return hasInstance;
+  return hasInstance;
 }
 
 
 bool CPluginSettings::Read(bool bDebug)
 {
-    bool isRead = true;
+  bool isRead = true;
 
-    DEBUG_SETTINGS(L"Settings::Read")
+  DEBUG_SETTINGS(L"Settings::Read")
+  {
+    if (bDebug)
     {
-        if (bDebug)
-        {
-            DEBUG_GENERAL(L"*** Loading settings:" + m_settingsFile->GetFilePath());
-        }
+      DEBUG_GENERAL(L"*** Loading settings:" + m_settingsFile->GetFilePath());
+    }
 
-        CPluginSettingsLock lock;
-        if (lock.IsLocked())
+    CPluginSettingsLock lock;
+    if (lock.IsLocked())
+    {
+      isRead = m_settingsFile->Read();        
+      if (isRead)
+      {
+        if (m_settingsFile->IsValidChecksum())
         {
-            isRead = m_settingsFile->Read();        
-            if (isRead)
-            {
-                if (m_settingsFile->IsValidChecksum())
-                {
-					m_properties = m_settingsFile->GetSectionData("Settings");
+          m_properties = m_settingsFile->GetSectionData("Settings");
 
 #ifdef SUPPORT_FILTER            	    
-                    // Unpack filter URLs
-                    CPluginIniFileW::TSectionData filters = m_settingsFile->GetSectionData("Filters");
-                    int filterCount = 0;
-                    bool bContinue = true;
+          // Unpack filter URLs
+          CPluginIniFileW::TSectionData filters = m_settingsFile->GetSectionData("Filters");
+          int filterCount = 0;
+          bool bContinue = true;
 
-    	            s_criticalSectionFilters.Lock();
-		            {
-			            m_filterUrlList.clear();
+          s_criticalSectionFilters.Lock();
+          {
+            m_filterUrlList.clear();
 
-			            do
-			            {
-				            CString filterCountStr;
-				            filterCountStr.Format(L"%d", ++filterCount);
-            	            
-				            CPluginIniFileW::TSectionData::iterator filterIt = filters.find(L"filter" + filterCountStr);
-				            CPluginIniFileW::TSectionData::iterator versionIt = filters.find(L"filter" + filterCountStr + "v");
-				            CPluginIniFileW::TSectionData::iterator fileNameIt = filters.find(L"filter" + filterCountStr + "fileName");
-				            CPluginIniFileW::TSectionData::iterator languageIt = filters.find(L"filter" + filterCountStr + "language");
-				            CPluginIniFileW::TSectionData::iterator languageTitleIt = filters.find(L"filter" + filterCountStr + "languageTitle");
-				            CPluginIniFileW::TSectionData::iterator dltIt = filters.find(L"filter" + filterCountStr + "refreshin");
+            do
+            {
+              CString filterCountStr;
+              filterCountStr.Format(L"%d", ++filterCount);
 
-				            if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
-				            {
-					            m_filterUrlList[filterIt->second] = _wtoi(versionIt->second);
-				            }
+              CPluginIniFileW::TSectionData::iterator filterIt = filters.find(L"filter" + filterCountStr);
+              CPluginIniFileW::TSectionData::iterator versionIt = filters.find(L"filter" + filterCountStr + "v");
+              CPluginIniFileW::TSectionData::iterator fileNameIt = filters.find(L"filter" + filterCountStr + "fileName");
+              CPluginIniFileW::TSectionData::iterator languageIt = filters.find(L"filter" + filterCountStr + "language");
+              CPluginIniFileW::TSectionData::iterator languageTitleIt = filters.find(L"filter" + filterCountStr + "languageTitle");
+              CPluginIniFileW::TSectionData::iterator dltIt = filters.find(L"filter" + filterCountStr + "refreshin");
 
-				            if (filterIt != filters.end() && fileNameIt != filters.end())
-				            {
-								m_filterFileNameList[filterIt->second] = fileNameIt->second;
-				            }
+              if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
+              {
+                m_filterUrlList[filterIt->second] = _wtoi(versionIt->second);
+              }
 
-				            if (filterIt != filters.end() && languageIt != filters.end())
-				            {
-								m_filterLanguagesList[filterIt->second] = languageIt->second;
-				            }
+              if (filterIt != filters.end() && fileNameIt != filters.end())
+              {
+                m_filterFileNameList[filterIt->second] = fileNameIt->second;
+              }
 
-                            if (filterIt != filters.end()  &&  languageIt != filters.end()  &&  languageTitleIt != filters.end())
-                            {
-                                m_filterLanguageTitleList[languageIt->second] = languageTitleIt->second;
-                            }
+              if (filterIt != filters.end() && languageIt != filters.end())
+              {
+                m_filterLanguagesList[filterIt->second] = languageIt->second;
+              }
 
-				            if (filterIt != filters.end() && dltIt != filters.end())
-				            {
-								m_filterDownloadTimesList[filterIt->second] = (time_t)_wtoi(dltIt->second.GetString());
-				            }
+              if (filterIt != filters.end()  &&  languageIt != filters.end()  &&  languageTitleIt != filters.end())
+              {
+                m_filterLanguageTitleList[languageIt->second] = languageTitleIt->second;
+              }
 
-			            } while (bContinue);
-		            }
-                    s_criticalSectionFilters.Unlock();
+              if (filterIt != filters.end() && dltIt != filters.end())
+              {
+                m_filterDownloadTimesList[filterIt->second] = (time_t)_wtoi(dltIt->second.GetString());
+              }
+
+            } while (bContinue);
+          }
+          s_criticalSectionFilters.Unlock();
 
 #endif // SUPPORT_FILTER
-	            }
-	            else
-	            {
-                    DEBUG_SETTINGS("Settings:Invalid checksum - Deleting file")
-
-                    Clear();
-
-                    DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_READ_CHECKSUM, "Settings::Read - Checksum")
-                    isRead = false;
-                    m_isDirty = true;
-	            }
-            }
-            else if (m_settingsFile->GetLastError() == ERROR_FILE_NOT_FOUND)
-            {
-                DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_READ, "Settings::Read")
-                m_isDirty = true;
-            }
-            else
-            {
-                DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_READ, "Settings::Read")
-            }
         }
         else
         {
+          DEBUG_SETTINGS("Settings:Invalid checksum - Deleting file")
+
+            Clear();
+
+          DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_READ_CHECKSUM, "Settings::Read - Checksum")
             isRead = false;
+          m_isDirty = true;
         }
+      }
+      else if (m_settingsFile->GetLastError() == ERROR_FILE_NOT_FOUND)
+      {
+        DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_READ, "Settings::Read")
+          m_isDirty = true;
+      }
+      else
+      {
+        DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_READ, "Settings::Read")
+      }
     }
-
-	// Write file in case it is dirty
-    if (isRead)
+    else
     {
-        isRead = Write();
+      isRead = false;
     }
+  }
 
-    return isRead;
+  // Write file in case it is dirty
+  if (isRead)
+  {
+    isRead = Write();
+  }
+
+  return isRead;
 }
 
 
 void CPluginSettings::Clear()
 {
-	// Default settings
-	s_criticalSectionLocal.Lock();
-	{
-		m_properties.clear();
+  // Default settings
+  s_criticalSectionLocal.Lock();
+  {
+    m_properties.clear();
 
-		m_properties[SETTING_PLUGIN_VERSION] = IEPLUGIN_VERSION;
-		m_properties[SETTING_LANGUAGE] = "en";
-	}
-	s_criticalSectionLocal.Unlock();
+    m_properties[SETTING_PLUGIN_VERSION] = IEPLUGIN_VERSION;
+    m_properties[SETTING_LANGUAGE] = "en";
+  }
+  s_criticalSectionLocal.Unlock();
 
-	// Default filters
+  // Default filters
 #ifdef SUPPORT_FILTER
 
-	s_criticalSectionFilters.Lock();
-	{
-	    m_filterUrlList.clear();
-/*		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
+  s_criticalSectionFilters.Lock();
+  {
+    m_filterUrlList.clear();
+    /*		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
 
-		m_filterFileNameList.clear();
-		m_filterFileNameList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "filter1.txt";
+    m_filterFileNameList.clear();
+    m_filterFileNameList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "filter1.txt";
 
-		m_filterLanguagesList.clear();
-		m_filterLanguagesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "en";
+    m_filterLanguagesList.clear();
+    m_filterLanguagesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "en";
 
-		m_filterDownloadTimesList.clear();
-		m_filterDownloadTimesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = time(NULL);
-*/
-	}
-	s_criticalSectionFilters.Unlock();
+    m_filterDownloadTimesList.clear();
+    m_filterDownloadTimesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = time(NULL);
+    */
+  }
+  s_criticalSectionFilters.Unlock();
 
 #endif // SUPPORT_FILTER
 }
 
 bool CPluginSettings::MakeRequestForUpdate()
 {
-	time_t updateTime = this->GetValue(SETTING_LAST_UPDATE_TIME);
+  time_t updateTime = this->GetValue(SETTING_LAST_UPDATE_TIME);
 
-	if (time(NULL) <= updateTime)
-		return false;
+  if (time(NULL) <= updateTime)
+    return false;
 
-	CPluginHttpRequest httpRequest(PLUGIN_UPDATE_URL);
+  CPluginHttpRequest httpRequest(PLUGIN_UPDATE_URL);
 
-	CPluginSystem* system = CPluginSystem::GetInstance();
+  CPluginSystem* system = CPluginSystem::GetInstance();
 
-    httpRequest.Add("lang", this->GetString(SETTING_LANGUAGE, "err"));
-	httpRequest.Add("ie", system->GetBrowserVersion());
-	httpRequest.Add("ielang", system->GetBrowserLanguage());
+  httpRequest.Add("lang", this->GetString(SETTING_LANGUAGE, "err"));
+  httpRequest.Add("ie", system->GetBrowserVersion());
+  httpRequest.Add("ielang", system->GetBrowserLanguage());
 
-	httpRequest.AddOsInfo();
+  httpRequest.AddOsInfo();
 
-	httpRequest.Send();
+  httpRequest.Send();
 
-	this->SetValue(SETTING_LAST_UPDATE_TIME, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
-	if (httpRequest.IsValidResponse())
-	{
-		const std::auto_ptr<CPluginIniFile>& iniFile = httpRequest.GetResponseFile();
+  this->SetValue(SETTING_LAST_UPDATE_TIME, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
+  if (httpRequest.IsValidResponse())
+  {
+    const std::auto_ptr<CPluginIniFile>& iniFile = httpRequest.GetResponseFile();
 
-		CPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
-		CPluginIniFile::TSectionData::iterator it;
+    CPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
+    CPluginIniFile::TSectionData::iterator it;
 
-		it = settingsData.find("pluginupdate");
-		if (it != settingsData.end())
-		{
-			CString url(it->second);
-			SetString(SETTING_PLUGIN_UPDATE_URL, url);
-			m_isDirty = true;
-			DEBUG_SETTINGS("Settings::Configuration plugin update url:" + it->second);
-		}
+    it = settingsData.find("pluginupdate");
+    if (it != settingsData.end())
+    {
+      CString url(it->second);
+      SetString(SETTING_PLUGIN_UPDATE_URL, url);
+      m_isDirty = true;
+      DEBUG_SETTINGS("Settings::Configuration plugin update url:" + it->second);
+    }
 
-		it = settingsData.find("pluginupdatev");
-		if (it != settingsData.end())
-		{
-			CString ver(it->second);
-			SetString(SETTING_PLUGIN_UPDATE_VERSION, ver);
-			m_isDirty = true;
-			DEBUG_SETTINGS("Settings::Configuration plugin update version:" + it->second);
-		}
-	}
+    it = settingsData.find("pluginupdatev");
+    if (it != settingsData.end())
+    {
+      CString ver(it->second);
+      SetString(SETTING_PLUGIN_UPDATE_VERSION, ver);
+      m_isDirty = true;
+      DEBUG_SETTINGS("Settings::Configuration plugin update version:" + it->second);
+    }
+  }
 
-	return true;
+  return true;
 }
 bool CPluginSettings::CheckFilterAndDownload()
 {
-	s_criticalSectionLocal.Lock();
-    TFilterUrlList currentFilterUrlList = this->GetFilterUrlList();
-    std::map<CString, CString> fileNamesList = this->GetFilterFileNamesList();
+  s_criticalSectionLocal.Lock();
+  TFilterUrlList currentFilterUrlList = this->GetFilterUrlList();
+  std::map<CString, CString> fileNamesList = this->GetFilterFileNamesList();
 
-	bool filterAvailable = false;
-    for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
+  bool filterAvailable = false;
+  for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
+  {
+    CString downloadFilterName = it->first;
+
+    std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
+    CString filename = "";
+    if (fni != fileNamesList.end())
     {
-        CString downloadFilterName = it->first;
-
-		std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
-		CString filename = "";
-		if (fni != fileNamesList.end())
-		{
-			filename = fni->second;
-		}
-		else
-		{
-			filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
-		}
-        int version = it->second;
-		
-		DEBUG_GENERAL("*** before FilterShouldLoad: " + downloadFilterName);
-
-        if ((this->FilterShouldLoad(downloadFilterName)))
-        {
-			filterAvailable = true;
-			DEBUG_GENERAL("*** before FilterlistExpired: " + downloadFilterName);
-			if (this->FilterlistExpired(downloadFilterName))
-			{
-				DEBUG_GENERAL("*** before DownloadFilterFile: " + downloadFilterName);
-				CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
-				this->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
-			}
-        }
-		else
-		{
-			//Cleanup, since we don't need the filter definition
-			DeleteFile(CPluginSettings::GetDataPath(filename));
-			this->SetFilterRefreshDate(downloadFilterName, 0);
-		}
+      filename = fni->second;
     }
+    else
+    {
+      filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
+    }
+    int version = it->second;
 
-	if (!filterAvailable)
-	{
-		//If no filter list found, default to "en"
+    DEBUG_GENERAL("*** before FilterShouldLoad: " + downloadFilterName);
 
-	    this->SetString(SETTING_LANGUAGE, (BSTR)L"en");
+    if ((this->FilterShouldLoad(downloadFilterName)))
+    {
+      filterAvailable = true;
+      DEBUG_GENERAL("*** before FilterlistExpired: " + downloadFilterName);
+      if (this->FilterlistExpired(downloadFilterName))
+      {
+        DEBUG_GENERAL("*** before DownloadFilterFile: " + downloadFilterName);
+        CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
+        this->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
+      }
+    }
+    else
+    {
+      //Cleanup, since we don't need the filter definition
+      DeleteFile(CPluginSettings::GetDataPath(filename));
+      this->SetFilterRefreshDate(downloadFilterName, 0);
+    }
+  }
 
-		CPluginDictionary* dict = CPluginDictionary::GetInstance();
-		dict->SetLanguage(L"en");
+  if (!filterAvailable)
+  {
+    //If no filter list found, default to "en"
 
-		for (std::map<CString, CString>::iterator it = m_filterLanguagesList.begin(); it != m_filterLanguagesList.end(); ++it) 
-		{
-			if (it->second == L"en")
-			{
-				CPluginFilter::DownloadFilterFile(it->first, m_filterFileNameList.find(it->first)->second);
-				this->SetFilterRefreshDate(it->first, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
-			}
-		}
-	}
+    this->SetString(SETTING_LANGUAGE, (BSTR)L"en");
 
-    this->Write();
+    CPluginDictionary* dict = CPluginDictionary::GetInstance();
+    dict->SetLanguage(L"en");
 
-    this->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
+    for (std::map<CString, CString>::iterator it = m_filterLanguagesList.begin(); it != m_filterLanguagesList.end(); ++it) 
+    {
+      if (it->second == L"en")
+      {
+        CPluginFilter::DownloadFilterFile(it->first, m_filterFileNameList.find(it->first)->second);
+        this->SetFilterRefreshDate(it->first, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
+      }
+    }
+  }
 
-	s_criticalSectionLocal.Unlock();
-	return true;
+  this->Write();
+
+  this->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
+
+  s_criticalSectionLocal.Unlock();
+  return true;
 }
 
 CString CPluginSettings::GetDataPathParent()
 {
-	if (s_dataPathParent == NULL) 
-	{
-		WCHAR* lpData = new WCHAR[MAX_PATH];
+  if (s_dataPathParent == NULL) 
+  {
+    WCHAR* lpData = new WCHAR[MAX_PATH];
 
-		OSVERSIONINFO osVersionInfo;
-		::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
+    OSVERSIONINFO osVersionInfo;
+    ::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
 
-		osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 
-		::GetVersionEx(&osVersionInfo);
+    ::GetVersionEx(&osVersionInfo);
 
-		//Windows Vista				- 6.0 
-		//Windows Server 2003 R2	- 5.2 
-		//Windows Server 2003		- 5.2 
-		//Windows XP				- 5.1 
-		if (osVersionInfo.dwMajorVersion >= 6)
-		{
-			if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
-			{
-				wcscat(lpData, L"Low");
-			}
-			else
-			{
-				DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_LOCAL, "Settings::GetDataPath failed");
-			}
-		}
-		else
-		{
-			if (!SHGetSpecialFolderPath(NULL, lpData, CSIDL_APPDATA, TRUE))
-			{
-				DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER, "Settings::GetDataPath failed");
-			}
-		}
+    //Windows Vista				- 6.0 
+    //Windows Server 2003 R2	- 5.2 
+    //Windows Server 2003		- 5.2 
+    //Windows XP				- 5.1 
+    if (osVersionInfo.dwMajorVersion >= 6)
+    {
+      if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
+      {
+        wcscat(lpData, L"Low");
+      }
+      else
+      {
+        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_LOCAL, "Settings::GetDataPath failed");
+      }
+    }
+    else
+    {
+      if (!SHGetSpecialFolderPath(NULL, lpData, CSIDL_APPDATA, TRUE))
+      {
+        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER, "Settings::GetDataPath failed");
+      }
+    }
 
-	    ::PathAddBackslash(lpData);
+    ::PathAddBackslash(lpData);
 
-	    s_dataPathParent = lpData;
+    s_dataPathParent = lpData;
 
-    	if (!::CreateDirectory(s_dataPathParent, NULL))
-		{
-			DWORD errorCode = ::GetLastError();
-			if (errorCode != ERROR_ALREADY_EXISTS)
-			{
-				DEBUG_ERROR_LOG(errorCode, PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_CREATE_FOLDER, "Settings::CreateDirectory failed");
-			}
-		}
-	}
+    if (!::CreateDirectory(s_dataPathParent, NULL))
+    {
+      DWORD errorCode = ::GetLastError();
+      if (errorCode != ERROR_ALREADY_EXISTS)
+      {
+        DEBUG_ERROR_LOG(errorCode, PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_CREATE_FOLDER, "Settings::CreateDirectory failed");
+      }
+    }
+  }
 
-    return s_dataPathParent;
+  return s_dataPathParent;
 }
 
 CString CPluginSettings::GetDataPath(const CString& filename)
 {
-	if (s_dataPath == NULL) 
-	{
-		WCHAR* lpData = new WCHAR[MAX_PATH];
+  if (s_dataPath == NULL) 
+  {
+    WCHAR* lpData = new WCHAR[MAX_PATH];
 
-		OSVERSIONINFO osVersionInfo;
-		::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
+    OSVERSIONINFO osVersionInfo;
+    ::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
 
-		osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 
-		::GetVersionEx(&osVersionInfo);
+    ::GetVersionEx(&osVersionInfo);
 
-		//Windows Vista				- 6.0 
-		//Windows Server 2003 R2	- 5.2 
-		//Windows Server 2003		- 5.2 
-		//Windows XP				- 5.1 
-		if (osVersionInfo.dwMajorVersion >= 6)
-		{
-			if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
-			{
-				wcscat(lpData, L"Low");
-			}
-			else
-			{
-				DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_LOCAL, "Settings::GetDataPath failed");
-			}
-		}
-		else
-		{
-			if (!SHGetSpecialFolderPath(NULL, lpData, CSIDL_APPDATA, TRUE))
-			{
-				DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER, "Settings::GetDataPath failed");
-			}
-		}
+    //Windows Vista				- 6.0 
+    //Windows Server 2003 R2	- 5.2 
+    //Windows Server 2003		- 5.2 
+    //Windows XP				- 5.1 
+    if (osVersionInfo.dwMajorVersion >= 6)
+    {
+      if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
+      {
+        wcscat(lpData, L"Low");
+      }
+      else
+      {
+        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_LOCAL, "Settings::GetDataPath failed");
+      }
+    }
+    else
+    {
+      if (!SHGetSpecialFolderPath(NULL, lpData, CSIDL_APPDATA, TRUE))
+      {
+        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER, "Settings::GetDataPath failed");
+      }
+    }
 
-	    ::PathAddBackslash(lpData);
+    ::PathAddBackslash(lpData);
 
-	    s_dataPath = lpData;
+    s_dataPath = lpData;
 
-    	if (!::CreateDirectory(s_dataPath + CString(USER_DIR), NULL))
-		{
-			DWORD errorCode = ::GetLastError();
-			if (errorCode != ERROR_ALREADY_EXISTS)
-			{
-				DEBUG_ERROR_LOG(errorCode, PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_CREATE_FOLDER, "Settings::CreateDirectory failed");
-			}
-		}
-	}
+    if (!::CreateDirectory(s_dataPath + CString(USER_DIR), NULL))
+    {
+      DWORD errorCode = ::GetLastError();
+      if (errorCode != ERROR_ALREADY_EXISTS)
+      {
+        DEBUG_ERROR_LOG(errorCode, PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_CREATE_FOLDER, "Settings::CreateDirectory failed");
+      }
+    }
+  }
 
-    return s_dataPath + CString(USER_DIR) + filename;
+  return s_dataPath + CString(USER_DIR) + filename;
 }
 
 CString CPluginSettings::GetSystemLanguage()
 {
-	CString language;
-	CString country;
+  CString language;
+  CString country;
 
-	DWORD bufSize = 256;
-	int ccBuf = GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SISO639LANGNAME, language.GetBufferSetLength(bufSize), bufSize);
-	ccBuf = GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SISO3166CTRYNAME, country.GetBufferSetLength(bufSize), bufSize);
+  DWORD bufSize = 256;
+  int ccBuf = GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SISO639LANGNAME, language.GetBufferSetLength(bufSize), bufSize);
+  ccBuf = GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SISO3166CTRYNAME, country.GetBufferSetLength(bufSize), bufSize);
 
-	if ((country.IsEmpty()) || (language.IsEmpty()))
-	{
-		return CString();
-	}
-	CString lang;
-	lang.Append(language);
-	lang.Append(L"-");
-	lang.Append(country);
-	
-	return lang;
+  if ((country.IsEmpty()) || (language.IsEmpty()))
+  {
+    return CString();
+  }
+  CString lang;
+  lang.Append(language);
+  lang.Append(L"-");
+  lang.Append(country);
+
+  return lang;
 
 }
 
 CString CPluginSettings::GetTempPath(const CString& filename)
 {
-	CString tempPath;
+  CString tempPath;
 
-	LPWSTR pwszCacheDir = NULL;
- 
-	HRESULT hr = ::IEGetWriteableFolderPath(FOLDERID_InternetCache, &pwszCacheDir); 
-	if (SUCCEEDED(hr))
+  LPWSTR pwszCacheDir = NULL;
+
+  HRESULT hr = ::IEGetWriteableFolderPath(FOLDERID_InternetCache, &pwszCacheDir); 
+  if (SUCCEEDED(hr))
+  {
+    tempPath = pwszCacheDir;
+  }
+  // Not implemented in IE6
+  else if (hr == E_NOTIMPL)
+  {
+    TCHAR path[MAX_PATH] = _T("");
+
+    if (::SHGetSpecialFolderPath(NULL, path, CSIDL_INTERNET_CACHE, TRUE))
     {
-		tempPath = pwszCacheDir;
+      tempPath = path;
     }
-	// Not implemented in IE6
-	else if (hr == E_NOTIMPL)
-	{
-        TCHAR path[MAX_PATH] = _T("");
+    else
+    {
+      DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_TEMP, "Settings::GetTempPath failed");
+    }
+  }
+  // Other error
+  else
+  {
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_PATH, "Settings::GetTempPath failed");
+  }
 
-		if (::SHGetSpecialFolderPath(NULL, path, CSIDL_INTERNET_CACHE, TRUE))
-        {
-			tempPath = path;
-        }
-		else
-		{
-			DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_TEMP, "Settings::GetTempPath failed");
-		}
-	}
-	// Other error
-	else
-	{
-		DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_PATH, "Settings::GetTempPath failed");
-	}
+  ::CoTaskMemFree(pwszCacheDir);
 
-	::CoTaskMemFree(pwszCacheDir);
-
-	return tempPath + "\\" + filename;
+  return tempPath + "\\" + filename;
 }
 
 CString CPluginSettings::GetTempFile(const CString& prefix, const CString& extension)
 {
-    TCHAR nameBuffer[MAX_PATH] = _T("");
+  TCHAR nameBuffer[MAX_PATH] = _T("");
 
-	CString tempPath;
- 
-	DWORD dwRetVal = ::GetTempFileName(GetTempPath(), prefix, 0, nameBuffer);
-    if (dwRetVal == 0)
+  CString tempPath;
+
+  DWORD dwRetVal = ::GetTempFileName(GetTempPath(), prefix, 0, nameBuffer);
+  if (dwRetVal == 0)
+  {
+    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_FILE, "Settings::GetTempFileName failed");
+
+    tempPath = GetDataPath();
+  }
+  else
+  {
+    tempPath = nameBuffer;
+    if (!extension.IsEmpty())
     {
-	    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_TEMP_FILE, "Settings::GetTempFileName failed");
-
-        tempPath = GetDataPath();
+      int pos = tempPath.ReverseFind(_T('.'));
+      if (pos >= 0)
+      {
+        tempPath = tempPath.Left(pos+1) + extension;
+      }
     }
-    else
-    {
-        tempPath = nameBuffer;
-		if (!extension.IsEmpty())
-		{
-			int pos = tempPath.ReverseFind(_T('.'));
-			if (pos >= 0)
-			{
-				tempPath = tempPath.Left(pos+1) + extension;
-			}
-		}
-    }
+  }
 
-    return tempPath;
+  return tempPath;
 }
 
 
 bool CPluginSettings::Has(const CString& key) const
 {
-	bool hasKey;
+  bool hasKey;
 
-    s_criticalSectionLocal.Lock();
-	{
-		hasKey = m_properties.find(key) != m_properties.end();
-	}
-    s_criticalSectionLocal.Unlock();
-    
-    return hasKey;
+  s_criticalSectionLocal.Lock();
+  {
+    hasKey = m_properties.find(key) != m_properties.end();
+  }
+  s_criticalSectionLocal.Unlock();
+
+  return hasKey;
 }
 
 
 void CPluginSettings::Remove(const CString& key)
 {
-    s_criticalSectionLocal.Lock();
-	{    
-		TProperties::iterator it = m_properties.find(key);
-		if (it != m_properties.end())
-		{
-			m_properties.erase(it);
-			m_isDirty = true;
-		}
-	}
-    s_criticalSectionLocal.Unlock();
+  s_criticalSectionLocal.Lock();
+  {    
+    TProperties::iterator it = m_properties.find(key);
+    if (it != m_properties.end())
+    {
+      m_properties.erase(it);
+      m_isDirty = true;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 }
 
 
 CString CPluginSettings::GetString(const CString& key, const CString& defaultValue) const
 {
-	CString val = defaultValue;
+  CString val = defaultValue;
 
-    s_criticalSectionLocal.Lock();
-	{
-		TProperties::const_iterator it = m_properties.find(key);
-		if (it != m_properties.end())
-		{
-			val = it->second;
-		}
-	}
-    s_criticalSectionLocal.Unlock();
+  s_criticalSectionLocal.Lock();
+  {
+    TProperties::const_iterator it = m_properties.find(key);
+    if (it != m_properties.end())
+    {
+      val = it->second;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 
-    DEBUG_SETTINGS("Settings::GetString key:" + key + " value:" + val)
+  DEBUG_SETTINGS("Settings::GetString key:" + key + " value:" + val)
 
-	return val;
+    return val;
 }
 
 
 void CPluginSettings::SetString(const CString& key, const CString& value)
 {
-    if (value.IsEmpty()) return;
+  if (value.IsEmpty()) return;
 
-    DEBUG_SETTINGS("Settings::SetString key:" + key + " value:" + value)
+  DEBUG_SETTINGS("Settings::SetString key:" + key + " value:" + value)
 
     s_criticalSectionLocal.Lock();
-	{
-		TProperties::iterator it = m_properties.find(key);
-		if (it != m_properties.end() && it->second != value)
-		{
-			it->second = value;
-			m_isDirty = true;
-		}
-		else if (it == m_properties.end())
-		{
-			m_properties[key] = value; 
-			m_isDirty = true;
-		}
-	}
-    s_criticalSectionLocal.Unlock();
+  {
+    TProperties::iterator it = m_properties.find(key);
+    if (it != m_properties.end() && it->second != value)
+    {
+      it->second = value;
+      m_isDirty = true;
+    }
+    else if (it == m_properties.end())
+    {
+      m_properties[key] = value; 
+      m_isDirty = true;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 }
 
 
 int CPluginSettings::GetValue(const CString& key, int defaultValue) const
 {
-	int val = defaultValue;
+  int val = defaultValue;
 
-    CString sValue;
-    sValue.Format(L"%d", defaultValue);
+  CString sValue;
+  sValue.Format(L"%d", defaultValue);
 
-    s_criticalSectionLocal.Lock();
-	{
-		TProperties::const_iterator it = m_properties.find(key);
-		if (it != m_properties.end())
-		{
-		    sValue = it->second;
-			val = _wtoi(it->second);
-		}
-	}
-    s_criticalSectionLocal.Unlock();
+  s_criticalSectionLocal.Lock();
+  {
+    TProperties::const_iterator it = m_properties.find(key);
+    if (it != m_properties.end())
+    {
+      sValue = it->second;
+      val = _wtoi(it->second);
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 
-    DEBUG_SETTINGS("Settings::GetValue key:" + key + " value:" + sValue)
+  DEBUG_SETTINGS("Settings::GetValue key:" + key + " value:" + sValue)
 
-	return val;
+    return val;
 }
 
 
 void CPluginSettings::SetValue(const CString& key, int value)
 {
-    CString sValue;
-    sValue.Format(L"%d", value);
+  CString sValue;
+  sValue.Format(L"%d", value);
 
-    DEBUG_SETTINGS("Settings::SetValue key:" + key + " value:" + sValue)
+  DEBUG_SETTINGS("Settings::SetValue key:" + key + " value:" + sValue)
 
     s_criticalSectionLocal.Lock();
-	{
-		TProperties::iterator it = m_properties.find(key);
-		if (it != m_properties.end() && it->second != sValue)
-		{
-			it->second = sValue;
-			m_isDirty = true;
-		}
-		else if (it == m_properties.end())
-		{
-			m_properties[key] = sValue; 
-			m_isDirty = true;
-		}
-	}
-    s_criticalSectionLocal.Unlock();
+  {
+    TProperties::iterator it = m_properties.find(key);
+    if (it != m_properties.end() && it->second != sValue)
+    {
+      it->second = sValue;
+      m_isDirty = true;
+    }
+    else if (it == m_properties.end())
+    {
+      m_properties[key] = sValue; 
+      m_isDirty = true;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 }
 
 
 bool CPluginSettings::GetBool(const CString& key, bool defaultValue) const
 {
-	bool value = defaultValue;
+  bool value = defaultValue;
 
-    s_criticalSectionLocal.Lock();
+  s_criticalSectionLocal.Lock();
+  {
+    TProperties::const_iterator it = m_properties.find(key);
+    if (it != m_properties.end())
     {
-		TProperties::const_iterator it = m_properties.find(key);
-		if (it != m_properties.end())
-		{
-			if (it->second == "true") value = true;
-			if (it->second == "false") value = false;
-		}
-	}
-    s_criticalSectionLocal.Unlock();
+      if (it->second == "true") value = true;
+      if (it->second == "false") value = false;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 
-	DEBUG_SETTINGS("Settings::GetBool key:" + key + " value:" + (value ? "true":"false"))
+  DEBUG_SETTINGS("Settings::GetBool key:" + key + " value:" + (value ? "true":"false"))
 
- 	return value;
+    return value;
 }
 
 
 void CPluginSettings::SetBool(const CString& key, bool value)
 {
-    SetString(key, value ? "true":"false");
+  SetString(key, value ? "true":"false");
 }
 
 
 bool CPluginSettings::IsPluginEnabled() const
 {
-	return m_isPluginEnabledTab;
+  return m_isPluginEnabledTab;
 }
 
 
@@ -883,312 +883,312 @@ bool CPluginSettings::IsPluginEnabled() const
 
 void CPluginSettings::SetFilterUrlList(const TFilterUrlList& filters) 
 {
-    DEBUG_SETTINGS(L"Settings::SetFilterUrlList")
+  DEBUG_SETTINGS(L"Settings::SetFilterUrlList")
 
-	s_criticalSectionFilters.Lock();
-	{
-		if (m_filterUrlList != filters)
-		{
-    		m_filterUrlList = filters;
-    		m_isDirty = true;
-		}
-	}
-	s_criticalSectionFilters.Unlock();
+    s_criticalSectionFilters.Lock();
+  {
+    if (m_filterUrlList != filters)
+    {
+      m_filterUrlList = filters;
+      m_isDirty = true;
+    }
+  }
+  s_criticalSectionFilters.Unlock();
 }
 
 void CPluginSettings::SetFilterFileNamesList(const std::map<CString, CString>& filters) 
 {
-    DEBUG_SETTINGS(L"Settings::SetFilterUrlList")
+  DEBUG_SETTINGS(L"Settings::SetFilterUrlList")
 
-	s_criticalSectionFilters.Lock();
-	{
-		if (m_filterFileNameList != filters)
-		{
-    		m_filterFileNameList = filters;
-    		m_isDirty = true;
-		}
-	}
-	s_criticalSectionFilters.Unlock();
+    s_criticalSectionFilters.Lock();
+  {
+    if (m_filterFileNameList != filters)
+    {
+      m_filterFileNameList = filters;
+      m_isDirty = true;
+    }
+  }
+  s_criticalSectionFilters.Unlock();
 }
 
 TFilterUrlList CPluginSettings::GetFilterUrlList() const
 {
-	TFilterUrlList filterUrlList;
+  TFilterUrlList filterUrlList;
 
-	s_criticalSectionFilters.Lock();
-	{
-		filterUrlList = m_filterUrlList;
-	}
-	s_criticalSectionFilters.Unlock();
+  s_criticalSectionFilters.Lock();
+  {
+    filterUrlList = m_filterUrlList;
+  }
+  s_criticalSectionFilters.Unlock();
 
-	return filterUrlList;
+  return filterUrlList;
 }
 
 
 std::map<CString, CString> CPluginSettings::GetFilterFileNamesList() const
 {
-	std::map<CString, CString> filterFileNamesList;
+  std::map<CString, CString> filterFileNamesList;
 
-	s_criticalSectionFilters.Lock();
-	{
-		filterFileNamesList = m_filterFileNameList;
-	}
-	s_criticalSectionFilters.Unlock();
+  s_criticalSectionFilters.Lock();
+  {
+    filterFileNamesList = m_filterFileNameList;
+  }
+  s_criticalSectionFilters.Unlock();
 
-	return filterFileNamesList;
+  return filterFileNamesList;
 }
 
 
 std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
 {
-	std::map<CString, CString> filterList;
+  std::map<CString, CString> filterList;
 
-	s_criticalSectionFilters.Lock();
-	{
-		filterList = m_filterLanguageTitleList;
-	}
-	s_criticalSectionFilters.Unlock();
+  s_criticalSectionFilters.Lock();
+  {
+    filterList = m_filterLanguageTitleList;
+  }
+  s_criticalSectionFilters.Unlock();
 
-	return filterList;
+  return filterList;
 }
 
 
 bool CPluginSettings::FilterlistExpired(CString filterlist) const
 {
-	std::map<CString, time_t>::const_iterator it = m_filterDownloadTimesList.find(filterlist);
-	if (it == m_filterDownloadTimesList.end())
-		return false;
-	if (time(NULL) >= it->second)
-		return true;
-	return false;
+  std::map<CString, time_t>::const_iterator it = m_filterDownloadTimesList.find(filterlist);
+  if (it == m_filterDownloadTimesList.end())
+    return false;
+  if (time(NULL) >= it->second)
+    return true;
+  return false;
 }
 
 bool CPluginSettings::FilterShouldLoad(CString filterlist) const
 {
-	std::map<CString, CString>::const_iterator it = m_filterLanguagesList.find(filterlist);
-	if (it == m_filterLanguagesList.end())
-		return false;
-	CPluginSettings* pluginSettings = CPluginSettings::GetInstance();
-	if (it->second == pluginSettings->GetString(SETTING_LANGUAGE))
-		return true;
-	return false;
+  std::map<CString, CString>::const_iterator it = m_filterLanguagesList.find(filterlist);
+  if (it == m_filterLanguagesList.end())
+    return false;
+  CPluginSettings* pluginSettings = CPluginSettings::GetInstance();
+  if (it->second == pluginSettings->GetString(SETTING_LANGUAGE))
+    return true;
+  return false;
 }
 
 
 bool CPluginSettings::SetFilterRefreshDate(CString filterlist, time_t refreshtime)
 {
-	m_filterDownloadTimesList[filterlist] = refreshtime;
-	m_isDirty = true;
-	return true;
+  m_filterDownloadTimesList[filterlist] = refreshtime;
+  m_isDirty = true;
+  return true;
 }
 void CPluginSettings::AddFilterUrl(const CString& url, int version) 
 {
-	s_criticalSectionFilters.Lock();
-	{
-		TFilterUrlList::iterator it = m_filterUrlList.find(url);
-		if (it == m_filterUrlList.end() || it->second != version)
-		{
-            m_filterUrlList[url] = version;
-		    m_isDirty = true;
-	    }
+  s_criticalSectionFilters.Lock();
+  {
+    TFilterUrlList::iterator it = m_filterUrlList.find(url);
+    if (it == m_filterUrlList.end() || it->second != version)
+    {
+      m_filterUrlList[url] = version;
+      m_isDirty = true;
     }
-	s_criticalSectionFilters.Unlock();
+  }
+  s_criticalSectionFilters.Unlock();
 }
 
 void CPluginSettings::AddFilterFileName(const CString& url, const CString& fileName) 
 {
-	s_criticalSectionFilters.Lock();
-	{
-		std::map<CString, CString>::iterator it = m_filterFileNameList.find(url);
-		if (it == m_filterFileNameList.end() || it->second != fileName)
-		{
-            m_filterFileNameList[url] = fileName;
-		    m_isDirty = true;
-	    }
+  s_criticalSectionFilters.Lock();
+  {
+    std::map<CString, CString>::iterator it = m_filterFileNameList.find(url);
+    if (it == m_filterFileNameList.end() || it->second != fileName)
+    {
+      m_filterFileNameList[url] = fileName;
+      m_isDirty = true;
     }
-	s_criticalSectionFilters.Unlock();
+  }
+  s_criticalSectionFilters.Unlock();
 }
 #endif // SUPPORT_FILTER
 
 bool CPluginSettings::Write(bool isDebug)
 {
-	bool isWritten = true;
+  bool isWritten = true;
 
-    if (!m_isDirty)
+  if (!m_isDirty)
+  {
+    return isWritten;
+  }
+
+  if (isDebug)
+  {
+    DEBUG_GENERAL(L"*** Writing changed settings")
+  }
+
+  CPluginSettingsLock lock;
+  if (lock.IsLocked())
+  {
+    m_settingsFile->Clear();
+
+    // Properties
+    CPluginIniFileW::TSectionData settings;        
+
+    s_criticalSectionLocal.Lock();
     {
-        return isWritten;
+      for (TProperties::iterator it = m_properties.begin(); it != m_properties.end(); ++it)
+      {
+        settings[it->first] = it->second;
+      }
     }
+    s_criticalSectionLocal.Unlock();
 
-    if (isDebug)
-    {
-		DEBUG_GENERAL(L"*** Writing changed settings")
-	}
+    m_settingsFile->UpdateSection("Settings", settings);
 
-    CPluginSettingsLock lock;
-    if (lock.IsLocked())
-    {
-        m_settingsFile->Clear();
-
-        // Properties
-        CPluginIniFileW::TSectionData settings;        
-
-        s_criticalSectionLocal.Lock();
-        {
-		    for (TProperties::iterator it = m_properties.begin(); it != m_properties.end(); ++it)
-		    {
-			    settings[it->first] = it->second;
-		    }
-	    }
-        s_criticalSectionLocal.Unlock();
-
-        m_settingsFile->UpdateSection("Settings", settings);
-
-        // Filter URL's
+    // Filter URL's
 #ifdef SUPPORT_FILTER
 
-        int filterCount = 0;
-        CPluginIniFileW::TSectionData filters;        
+    int filterCount = 0;
+    CPluginIniFileW::TSectionData filters;        
 
-        s_criticalSectionFilters.Lock();
-	    {
-		    for (TFilterUrlList::iterator it = m_filterUrlList.begin(); it != m_filterUrlList.end(); ++it)
-		    {
-			    CString filterCountStr;
-			    filterCountStr.Format(L"%d", ++filterCount);
+    s_criticalSectionFilters.Lock();
+    {
+      for (TFilterUrlList::iterator it = m_filterUrlList.begin(); it != m_filterUrlList.end(); ++it)
+      {
+        CString filterCountStr;
+        filterCountStr.Format(L"%d", ++filterCount);
 
-			    CString filterVersion;
-			    filterVersion.Format(L"%d", it->second);
+        CString filterVersion;
+        filterVersion.Format(L"%d", it->second);
 
-			    filters[L"filter" + filterCountStr] = it->first;
-			    filters[L"filter" + filterCountStr + L"v"] = filterVersion;
-				if (m_filterFileNameList.size() > 0)
-				{
-					std::map<CString, CString>::iterator fni = m_filterFileNameList.find(it->first);
-					if (fni != m_filterFileNameList.end())
-					{
-						CString fileName = fni->second;
-						filters[L"filter" + filterCountStr + "fileName"] = fileName;
-					}
-				}
-				if (m_filterLanguagesList.size() > 0)
-				{
-					std::map<CString, CString>::iterator fli = m_filterLanguagesList.find(it->first);
-					if (fli != m_filterLanguagesList.end())
-					{
-						CString language = fli->second;
-						filters[L"filter" + filterCountStr + "language"] = language;
+        filters[L"filter" + filterCountStr] = it->first;
+        filters[L"filter" + filterCountStr + L"v"] = filterVersion;
+        if (m_filterFileNameList.size() > 0)
+        {
+          std::map<CString, CString>::iterator fni = m_filterFileNameList.find(it->first);
+          if (fni != m_filterFileNameList.end())
+          {
+            CString fileName = fni->second;
+            filters[L"filter" + filterCountStr + "fileName"] = fileName;
+          }
+        }
+        if (m_filterLanguagesList.size() > 0)
+        {
+          std::map<CString, CString>::iterator fli = m_filterLanguagesList.find(it->first);
+          if (fli != m_filterLanguagesList.end())
+          {
+            CString language = fli->second;
+            filters[L"filter" + filterCountStr + "language"] = language;
 
-						if (m_filterLanguageTitleList.size() > 0)
-						{
-							std::map<CString, CString>::iterator fli = m_filterLanguageTitleList.find(language);
-							if (fli != m_filterLanguageTitleList.end())
-							{
-								CString language = fli->second;
-								filters[L"filter" + filterCountStr + "languageTitle"] = language;
-							}
-						}
+            if (m_filterLanguageTitleList.size() > 0)
+            {
+              std::map<CString, CString>::iterator fli = m_filterLanguageTitleList.find(language);
+              if (fli != m_filterLanguageTitleList.end())
+              {
+                CString language = fli->second;
+                filters[L"filter" + filterCountStr + "languageTitle"] = language;
+              }
+            }
 
-					}
-				}
-				if (m_filterDownloadTimesList.size() > 0)
-				{
-					std::map<CString, time_t>::iterator fdti = m_filterDownloadTimesList.find(it->first);
-					if (fdti != m_filterDownloadTimesList.end())
-					{
-						CString timeString;
-						timeString.Format(L"%d", (int)fdti->second);
-						filters[L"filter" + filterCountStr + "refreshin"] = timeString;
-					}
-				}
+          }
+        }
+        if (m_filterDownloadTimesList.size() > 0)
+        {
+          std::map<CString, time_t>::iterator fdti = m_filterDownloadTimesList.find(it->first);
+          if (fdti != m_filterDownloadTimesList.end())
+          {
+            CString timeString;
+            timeString.Format(L"%d", (int)fdti->second);
+            filters[L"filter" + filterCountStr + "refreshin"] = timeString;
+          }
+        }
 
-			}
-	    }
-        s_criticalSectionFilters.Unlock();
+      }
+    }
+    s_criticalSectionFilters.Unlock();
 
-        m_settingsFile->UpdateSection("Filters", filters);
+    m_settingsFile->UpdateSection("Filters", filters);
 
 #endif // SUPPORT_FILTER
 
-        // Write file
-        isWritten = m_settingsFile->Write();
-        if (!isWritten)
-        {
-            DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_WRITE, "Settings::Write")
-        }
-        
-        m_isDirty = false;
-
-        IncrementTabVersion(SETTING_TAB_SETTINGS_VERSION);
-    }
-    else
+    // Write file
+    isWritten = m_settingsFile->Write();
+    if (!isWritten)
     {
-        isWritten = false;
+      DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_WRITE, "Settings::Write")
     }
 
-    return isWritten;
+    m_isDirty = false;
+
+    IncrementTabVersion(SETTING_TAB_SETTINGS_VERSION);
+  }
+  else
+  {
+    isWritten = false;
+  }
+
+  return isWritten;
 }
 
 #ifdef SUPPORT_WHITELIST
 
 void CPluginSettings::AddDomainToHistory(const CString& domain)
 {
-	if (!CPluginClient::IsValidDomain(domain))
+  if (!CPluginClient::IsValidDomain(domain))
+  {
+    return;
+  }
+
+  // Delete domain
+  s_criticalSectionDomainHistory.Lock();
+  {
+    for (TDomainHistory::iterator it = m_domainHistory.begin(); it != m_domainHistory.end(); ++it)
     {
-	    return;
+      if (it->first == domain)
+      {
+        m_domainHistory.erase(it);
+        break;
+      }
     }
 
-    // Delete domain
-	s_criticalSectionDomainHistory.Lock();
-	{
-		for (TDomainHistory::iterator it = m_domainHistory.begin(); it != m_domainHistory.end(); ++it)
-		{
-			if (it->first == domain)
-			{
-				m_domainHistory.erase(it);
-				break;
-			}
-		}
+    // Get whitelist reason
+    int reason = 0;
 
-		// Get whitelist reason
-		int reason = 0;
+    s_criticalSectionLocal.Lock();
+    {
+      TDomainList::iterator it = m_whitelist.find(domain);
+      if (it != m_whitelist.end())
+      {
+        reason = it->second;
+      }
+      else
+      {
+        reason = 3;
+      }
+    }
+    s_criticalSectionLocal.Unlock();
 
-		s_criticalSectionLocal.Lock();
-		{
-			TDomainList::iterator it = m_whitelist.find(domain);
-			if (it != m_whitelist.end())
-			{
-				reason = it->second;
-			}
-			else
-			{
-				reason = 3;
-			}
-		}
-		s_criticalSectionLocal.Unlock();
+    // Delete domain, if history is too long
+    if (m_domainHistory.size() >= DOMAIN_HISTORY_MAX_COUNT)
+    {
+      m_domainHistory.erase(m_domainHistory.begin());
+    }
 
-		// Delete domain, if history is too long
-		if (m_domainHistory.size() >= DOMAIN_HISTORY_MAX_COUNT)
-		{
-			m_domainHistory.erase(m_domainHistory.begin());
-		}
-
-		m_domainHistory.push_back(std::make_pair(domain, reason));
-	}
-	s_criticalSectionDomainHistory.Unlock();
+    m_domainHistory.push_back(std::make_pair(domain, reason));
+  }
+  s_criticalSectionDomainHistory.Unlock();
 }
 
 
 TDomainHistory CPluginSettings::GetDomainHistory() const
 {
-	TDomainHistory domainHistory;
+  TDomainHistory domainHistory;
 
-	s_criticalSectionDomainHistory.Lock();
-	{
-		domainHistory = m_domainHistory;
-	}
-	s_criticalSectionDomainHistory.Unlock();
+  s_criticalSectionDomainHistory.Lock();
+  {
+    domainHistory = m_domainHistory;
+  }
+  s_criticalSectionDomainHistory.Unlock();
 
-    return domainHistory;
+  return domainHistory;
 }
 
 #endif // SUPPORT_WHITELIST
@@ -1196,131 +1196,131 @@ TDomainHistory CPluginSettings::GetDomainHistory() const
 
 bool CPluginSettings::IsPluginUpdateAvailable() const
 {
-	bool isAvailable = Has(SETTING_PLUGIN_UPDATE_VERSION);
-	if (isAvailable)
-	{
-		CString newVersion = GetString(SETTING_PLUGIN_UPDATE_VERSION);
-	    CString curVersion = IEPLUGIN_VERSION;
+  bool isAvailable = Has(SETTING_PLUGIN_UPDATE_VERSION);
+  if (isAvailable)
+  {
+    CString newVersion = GetString(SETTING_PLUGIN_UPDATE_VERSION);
+    CString curVersion = IEPLUGIN_VERSION;
 
-		isAvailable = newVersion != curVersion;
-		if (isAvailable)
-		{
-			int curPos = 0;
-			int curMajor = _wtoi(curVersion.Tokenize(L".", curPos));
-			int curMinor = _wtoi(curVersion.Tokenize(L".", curPos));
-			int curDev   = _wtoi(curVersion.Tokenize(L".", curPos));
+    isAvailable = newVersion != curVersion;
+    if (isAvailable)
+    {
+      int curPos = 0;
+      int curMajor = _wtoi(curVersion.Tokenize(L".", curPos));
+      int curMinor = _wtoi(curVersion.Tokenize(L".", curPos));
+      int curDev   = _wtoi(curVersion.Tokenize(L".", curPos));
 
-			int newPos = 0;
-			int newMajor = _wtoi(newVersion.Tokenize(L".", newPos));
-			int newMinor = newPos > 0 ? _wtoi(newVersion.Tokenize(L".", newPos)) : 0;
-			int newDev   = newPos > 0 ? _wtoi(newVersion.Tokenize(L".", newPos)) : 0;
+      int newPos = 0;
+      int newMajor = _wtoi(newVersion.Tokenize(L".", newPos));
+      int newMinor = newPos > 0 ? _wtoi(newVersion.Tokenize(L".", newPos)) : 0;
+      int newDev   = newPos > 0 ? _wtoi(newVersion.Tokenize(L".", newPos)) : 0;
 
-			isAvailable = newMajor > curMajor || newMajor == curMajor && newMinor > curMinor || newMajor == curMajor && newMinor == curMinor && newDev > curDev;
-		}
-	}
+      isAvailable = newMajor > curMajor || newMajor == curMajor && newMinor > curMinor || newMajor == curMajor && newMinor == curMinor && newDev > curDev;
+    }
+  }
 
-	return isAvailable;
+  return isAvailable;
 }
 
 bool CPluginSettings::IsMainProcess(DWORD dwProcessId) const
 {
-    if (dwProcessId == 0)
-    {
-        dwProcessId = ::GetCurrentProcessId();
-    }
-    return m_dwMainProcessId == dwProcessId;
+  if (dwProcessId == 0)
+  {
+    dwProcessId = ::GetCurrentProcessId();
+  }
+  return m_dwMainProcessId == dwProcessId;
 }
 
 void CPluginSettings::SetMainProcessId()
 {
-    m_dwMainProcessId = ::GetCurrentProcessId();
+  m_dwMainProcessId = ::GetCurrentProcessId();
 }
 
 void CPluginSettings::SetMainProcessId(DWORD id)
 {
-	m_dwMainProcessId = id;
+  m_dwMainProcessId = id;
 }
 
 
 bool CPluginSettings::IsMainUiThread(DWORD dwThreadId) const
 {
-    if (dwThreadId == 0)
-    {
-        dwThreadId = ::GetCurrentThreadId();
-    }
-    return m_dwMainUiThreadId == dwThreadId;
+  if (dwThreadId == 0)
+  {
+    dwThreadId = ::GetCurrentThreadId();
+  }
+  return m_dwMainUiThreadId == dwThreadId;
 }
 
 void CPluginSettings::SetMainUiThreadId()
 {
-    m_dwMainUiThreadId = ::GetCurrentThreadId();
+  m_dwMainUiThreadId = ::GetCurrentThreadId();
 }
 
 void CPluginSettings::SetMainUiThreadId(DWORD id)
 {
-	m_dwMainUiThreadId = id;
+  m_dwMainUiThreadId = id;
 }
 bool CPluginSettings::IsMainThread(DWORD dwThreadId) const
 {
-    if (dwThreadId == 0)
-    {
-        dwThreadId = ::GetCurrentThreadId();
-    }
-    return m_dwMainThreadId == dwThreadId;
+  if (dwThreadId == 0)
+  {
+    dwThreadId = ::GetCurrentThreadId();
+  }
+  return m_dwMainThreadId == dwThreadId;
 }
 
 void CPluginSettings::SetMainThreadId()
 {
-    m_dwMainThreadId = ::GetCurrentThreadId();
+  m_dwMainThreadId = ::GetCurrentThreadId();
 }
 
 void CPluginSettings::SetMainThreadId(DWORD id)
 {
-	m_dwMainThreadId = id;
+  m_dwMainThreadId = id;
 }
 
 bool CPluginSettings::IsWorkingThread(DWORD dwThreadId) const
 {
-    if (dwThreadId == 0)
-    {
-        dwThreadId = ::GetCurrentThreadId();
-    }
-    return m_dwWorkingThreadId == dwThreadId;
+  if (dwThreadId == 0)
+  {
+    dwThreadId = ::GetCurrentThreadId();
+  }
+  return m_dwWorkingThreadId == dwThreadId;
 }
 
 void CPluginSettings::SetWorkingThreadId()
 {
-    m_dwWorkingThreadId = ::GetCurrentThreadId();
+  m_dwWorkingThreadId = ::GetCurrentThreadId();
 }
 
 void CPluginSettings::SetWorkingThreadId(DWORD id)
 {
-	m_dwWorkingThreadId = id;
+  m_dwWorkingThreadId = id;
 }
 
 void CPluginSettings::SetFirstRun()
 {
-    m_isFirstRun = true;
+  m_isFirstRun = true;
 }
 
 bool CPluginSettings::IsFirstRun() const
 {
-    return m_isFirstRun;
+  return m_isFirstRun;
 }
 
 void CPluginSettings::SetFirstRunUpdate()
 {
-    m_isFirstRunUpdate = true;
+  m_isFirstRunUpdate = true;
 }
 
 bool CPluginSettings::IsFirstRunUpdate() const
 {
-    return m_isFirstRunUpdate;
+  return m_isFirstRunUpdate;
 }
 
 bool CPluginSettings::IsFirstRunAny() const
 {
-    return m_isFirstRun || m_isFirstRunUpdate;
+  return m_isFirstRun || m_isFirstRunUpdate;
 }
 
 // ============================================================================
@@ -1329,72 +1329,72 @@ bool CPluginSettings::IsFirstRunAny() const
 
 void CPluginSettings::ClearTab()
 {
-    s_criticalSectionLocal.Lock();
-	{
-	    m_isPluginEnabledTab = true;
+  s_criticalSectionLocal.Lock();
+  {
+    m_isPluginEnabledTab = true;
 
-	    m_errorsTab.clear();
+    m_errorsTab.clear();
 
-	    m_propertiesTab.clear();
+    m_propertiesTab.clear();
 
-	    m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = "true";
-    }
-    s_criticalSectionLocal.Unlock();
+    m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = "true";
+  }
+  s_criticalSectionLocal.Unlock();
 }
 
 
 bool CPluginSettings::ReadTab(bool bDebug)
 {
-    bool isRead = true;
+  bool isRead = true;
 
-    DEBUG_SETTINGS(L"SettingsTab::Read tab")
+  DEBUG_SETTINGS(L"SettingsTab::Read tab")
 
     if (bDebug)
     {
-        DEBUG_GENERAL(L"*** Loading tab settings:" + m_settingsFileTab->GetFilePath());
+      DEBUG_GENERAL(L"*** Loading tab settings:" + m_settingsFileTab->GetFilePath());
     }
 
     isRead = m_settingsFileTab->Read();        
     if (isRead)
     {
-        ClearTab();
+      ClearTab();
 
-        if (m_settingsFileTab->IsValidChecksum())
+      if (m_settingsFileTab->IsValidChecksum())
+      {
+        s_criticalSectionLocal.Lock();
         {
-            s_criticalSectionLocal.Lock();
-            {
-                m_propertiesTab = m_settingsFileTab->GetSectionData("Settings");
+          m_propertiesTab = m_settingsFileTab->GetSectionData("Settings");
 
-                m_errorsTab = m_settingsFileTab->GetSectionData("Errors");
+          m_errorsTab = m_settingsFileTab->GetSectionData("Errors");
 
-                TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_PLUGIN_ENABLED);
-                if (it != m_propertiesTab.end())
-                {
-                    m_isPluginEnabledTab = it->second != "false";
-                }
-            }
-            s_criticalSectionLocal.Unlock();
+          TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_PLUGIN_ENABLED);
+          if (it != m_propertiesTab.end())
+          {
+            m_isPluginEnabledTab = it->second != "false";
+          }
         }
-        else
-        {
-            DEBUG_SETTINGS("SettingsTab:Invalid checksum - Deleting file")
+        s_criticalSectionLocal.Unlock();
+      }
+      else
+      {
+        DEBUG_SETTINGS("SettingsTab:Invalid checksum - Deleting file")
 
-            DEBUG_ERROR_LOG(m_settingsFileTab->GetLastError(), PLUGIN_ERROR_SETTINGS_TAB, PLUGIN_ERROR_SETTINGS_FILE_READ_CHECKSUM, "SettingsTab::Read - Checksum")
-            isRead = false;
-            m_isDirtyTab = true;
-        }
+          DEBUG_ERROR_LOG(m_settingsFileTab->GetLastError(), PLUGIN_ERROR_SETTINGS_TAB, PLUGIN_ERROR_SETTINGS_FILE_READ_CHECKSUM, "SettingsTab::Read - Checksum")
+          isRead = false;
+        m_isDirtyTab = true;
+      }
     }
     else if (m_settingsFileTab->GetLastError() == ERROR_FILE_NOT_FOUND)
     {
-        m_isDirtyTab = true;
+      m_isDirtyTab = true;
     }
     else
     {
-        DEBUG_ERROR_LOG(m_settingsFileTab->GetLastError(), PLUGIN_ERROR_SETTINGS_TAB, PLUGIN_ERROR_SETTINGS_FILE_READ, "SettingsTab::Read")
+      DEBUG_ERROR_LOG(m_settingsFileTab->GetLastError(), PLUGIN_ERROR_SETTINGS_TAB, PLUGIN_ERROR_SETTINGS_FILE_READ, "SettingsTab::Read")
     }
 
 
-	// Write file in case it is dirty or does not exist
+    // Write file in case it is dirty or does not exist
     WriteTab();
 
     return isRead;
@@ -1402,471 +1402,471 @@ bool CPluginSettings::ReadTab(bool bDebug)
 
 bool CPluginSettings::WriteTab(bool isDebug)
 {
-	bool isWritten = true;
+  bool isWritten = true;
 
-    if (!m_isDirtyTab)
-    {
-        return isWritten;
-    }
-
-    if (isDebug)
-    {
-		DEBUG_GENERAL(L"*** Writing changed tab settings")
-	}
-
-    m_settingsFileTab->Clear();
-
-    // Properties & errors
-    CPluginIniFileW::TSectionData settings;        
-    CPluginIniFileW::TSectionData errors;        
-
-    s_criticalSectionLocal.Lock();
-    {
-        for (TProperties::iterator it = m_propertiesTab.begin(); it != m_propertiesTab.end(); ++it)
-        {
-	        settings[it->first] = it->second;
-        }
-
-        for (TProperties::iterator it = m_errorsTab.begin(); it != m_errorsTab.end(); ++it)
-        {
-	        errors[it->first] = it->second;
-        }
-    }
-    s_criticalSectionLocal.Unlock();
-
-    m_settingsFileTab->UpdateSection("Settings", settings);
-    m_settingsFileTab->UpdateSection("Errors", errors);
-
-    // Write file
-    isWritten = m_settingsFileTab->Write();
-    if (!isWritten)
-    {
-        DEBUG_ERROR_LOG(m_settingsFileTab->GetLastError(), PLUGIN_ERROR_SETTINGS_TAB, PLUGIN_ERROR_SETTINGS_FILE_WRITE, "SettingsTab::Write")
-    }
-    
-    m_isDirtyTab = !isWritten;
-
+  if (!m_isDirtyTab)
+  {
     return isWritten;
+  }
+
+  if (isDebug)
+  {
+    DEBUG_GENERAL(L"*** Writing changed tab settings")
+  }
+
+  m_settingsFileTab->Clear();
+
+  // Properties & errors
+  CPluginIniFileW::TSectionData settings;        
+  CPluginIniFileW::TSectionData errors;        
+
+  s_criticalSectionLocal.Lock();
+  {
+    for (TProperties::iterator it = m_propertiesTab.begin(); it != m_propertiesTab.end(); ++it)
+    {
+      settings[it->first] = it->second;
+    }
+
+    for (TProperties::iterator it = m_errorsTab.begin(); it != m_errorsTab.end(); ++it)
+    {
+      errors[it->first] = it->second;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
+
+  m_settingsFileTab->UpdateSection("Settings", settings);
+  m_settingsFileTab->UpdateSection("Errors", errors);
+
+  // Write file
+  isWritten = m_settingsFileTab->Write();
+  if (!isWritten)
+  {
+    DEBUG_ERROR_LOG(m_settingsFileTab->GetLastError(), PLUGIN_ERROR_SETTINGS_TAB, PLUGIN_ERROR_SETTINGS_FILE_WRITE, "SettingsTab::Write")
+  }
+
+  m_isDirtyTab = !isWritten;
+
+  return isWritten;
 }
 
 
 void CPluginSettings::EraseTab()
 {
-    ClearTab();
-    
-    m_isDirtyTab = true;
+  ClearTab();
 
-    WriteTab();
+  m_isDirtyTab = true;
+
+  WriteTab();
 }
 
 
 bool CPluginSettings::IncrementTabCount()
 {
-    int tabCount = 1;
+  int tabCount = 1;
 
 
-	if (s_isLightOnly)
-	{
-		return false;
-	}
+  if (s_isLightOnly)
+  {
+    return false;
+  }
 
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    SYSTEMTIME systemTime;
+    ::GetSystemTime(&systemTime);
+
+    CString today;
+    today.Format(L"%d-%d-%d", systemTime.wYear, systemTime.wMonth, systemTime.wDay);
+
+    ReadTab(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        SYSTEMTIME systemTime;
-        ::GetSystemTime(&systemTime);
+      TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_COUNT);
+      if (it != m_propertiesTab.end())
+      {        
+        tabCount = _wtoi(it->second) + 1;
+      }
 
-        CString today;
-        today.Format(L"%d-%d-%d", systemTime.wYear, systemTime.wMonth, systemTime.wDay);
+      it = m_propertiesTab.find(SETTING_TAB_START_TIME);
 
-        ReadTab(false);
-        
-        s_criticalSectionLocal.Lock();
-        {
-            TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_COUNT);
-            if (it != m_propertiesTab.end())
-            {        
-                tabCount = _wtoi(it->second) + 1;
-            }
+      //Is this a first IE instance?
+      HWND ieWnd = FindWindow(L"IEFrame", NULL);
+      if (ieWnd != NULL)
+      {
+        ieWnd = FindWindowEx(NULL, ieWnd, L"IEFrame", NULL);
 
-            it = m_propertiesTab.find(SETTING_TAB_START_TIME);
+      }
+      if ((it != m_propertiesTab.end() && it->second != today))
+      {
+        tabCount = 1;        
+      }
+      m_tabNumber.Format(L"%d", tabCount);
 
-			//Is this a first IE instance?
-			HWND ieWnd = FindWindow(L"IEFrame", NULL);
-			if (ieWnd != NULL)
-			{
-				ieWnd = FindWindowEx(NULL, ieWnd, L"IEFrame", NULL);
+      m_propertiesTab[SETTING_TAB_COUNT] = m_tabNumber;
+      m_propertiesTab[SETTING_TAB_START_TIME] = today;
 
-			}
-            if ((it != m_propertiesTab.end() && it->second != today))
-            {
-                tabCount = 1;        
-            }
-            m_tabNumber.Format(L"%d", tabCount);
-        
-            m_propertiesTab[SETTING_TAB_COUNT] = m_tabNumber;
-            m_propertiesTab[SETTING_TAB_START_TIME] = today;
-            
-            // Main tab?
-            if (tabCount == 1)
-            {
-                m_propertiesTab[SETTING_TAB_DICTIONARY_VERSION] = "1";
-                m_propertiesTab[SETTING_TAB_SETTINGS_VERSION] = "1";
+      // Main tab?
+      if (tabCount == 1)
+      {
+        m_propertiesTab[SETTING_TAB_DICTIONARY_VERSION] = "1";
+        m_propertiesTab[SETTING_TAB_SETTINGS_VERSION] = "1";
 #ifdef SUPPORT_WHITELIST
-                m_propertiesTab[SETTING_TAB_WHITELIST_VERSION] = "1";
+        m_propertiesTab[SETTING_TAB_WHITELIST_VERSION] = "1";
 #endif
 #ifdef SUPPORT_FILTER
-                m_propertiesTab[SETTING_TAB_FILTER_VERSION] = "1";
+        m_propertiesTab[SETTING_TAB_FILTER_VERSION] = "1";
 #endif
 #ifdef SUPPORT_CONFIG
-                m_propertiesTab[SETTING_TAB_CONFIG_VERSION] = "1";
+        m_propertiesTab[SETTING_TAB_CONFIG_VERSION] = "1";
 #endif
-            }
-        }
-        s_criticalSectionLocal.Unlock();
-
-        m_isDirtyTab = true;
-
-        WriteTab(false);        
+      }
     }
+    s_criticalSectionLocal.Unlock();
 
-    return tabCount == 1;
+    m_isDirtyTab = true;
+
+    WriteTab(false);        
+  }
+
+  return tabCount == 1;
 }
 
 
 CString CPluginSettings::GetTabNumber() const
 {
-    CString tabNumber;
-    
-    s_criticalSectionLocal.Lock();
-    {
-        tabNumber = m_tabNumber;
-    }
-    s_criticalSectionLocal.Unlock();
-    
-    return tabNumber;
+  CString tabNumber;
+
+  s_criticalSectionLocal.Lock();
+  {
+    tabNumber = m_tabNumber;
+  }
+  s_criticalSectionLocal.Unlock();
+
+  return tabNumber;
 }
 
 
 bool CPluginSettings::DecrementTabCount()
 {
-    int tabCount = 0;
+  int tabCount = 0;
 
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadTab(false);
-        
-        s_criticalSectionLocal.Lock();
+      TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_COUNT);
+      if (it != m_propertiesTab.end())
+      {
+        tabCount = max(_wtoi(it->second) - 1, 0);
+
+        if (tabCount > 0)
         {
-            TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_COUNT);
-            if (it != m_propertiesTab.end())
-            {
-                tabCount = max(_wtoi(it->second) - 1, 0);
+          m_tabNumber.Format(L"%d", tabCount);
 
-                if (tabCount > 0)
-                {
-                    m_tabNumber.Format(L"%d", tabCount);
-                
-                    m_propertiesTab[SETTING_TAB_COUNT] = m_tabNumber;
-                }
-                else
-                {
-                    it = m_propertiesTab.find(SETTING_TAB_START_TIME);
-                    if (it != m_propertiesTab.end())
-                    {
-                        m_propertiesTab.erase(it);
-                    }
-
-                    it = m_propertiesTab.find(SETTING_TAB_COUNT);
-                    if (it != m_propertiesTab.end())
-                    {
-                        m_propertiesTab.erase(it);
-                    }
-                }
-
-                m_isDirtyTab = true;               
-            }
+          m_propertiesTab[SETTING_TAB_COUNT] = m_tabNumber;
         }
-        s_criticalSectionLocal.Unlock();
+        else
+        {
+          it = m_propertiesTab.find(SETTING_TAB_START_TIME);
+          if (it != m_propertiesTab.end())
+          {
+            m_propertiesTab.erase(it);
+          }
 
-        WriteTab(false);
+          it = m_propertiesTab.find(SETTING_TAB_COUNT);
+          if (it != m_propertiesTab.end())
+          {
+            m_propertiesTab.erase(it);
+          }
+        }
+
+        m_isDirtyTab = true;               
+      }
     }
+    s_criticalSectionLocal.Unlock();
 
-    return tabCount == 0;
+    WriteTab(false);
+  }
+
+  return tabCount == 0;
 }
 
 
 void CPluginSettings::TogglePluginEnabled()
 {
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
-    {
-        ReadTab(false);
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
 
-        s_criticalSectionLocal.Lock();
-        {
-            m_isPluginEnabledTab = m_isPluginEnabledTab ? false : true;
-            m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = m_isPluginEnabledTab ? "true" : "false";
-            m_isDirtyTab = true;
-        }
-        s_criticalSectionLocal.Unlock();
-        
-        WriteTab(false);
+    s_criticalSectionLocal.Lock();
+    {
+      m_isPluginEnabledTab = m_isPluginEnabledTab ? false : true;
+      m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = m_isPluginEnabledTab ? "true" : "false";
+      m_isDirtyTab = true;
     }
+    s_criticalSectionLocal.Unlock();
+
+    WriteTab(false);
+  }
 }
 void CPluginSettings::SetPluginDisabled()
 {
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
-    {
-        ReadTab(false);
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
 
-        s_criticalSectionLocal.Lock();
-        {
-            m_isPluginEnabledTab = false;
-            m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = "false";
-            m_isDirtyTab = true;
-        }
-        s_criticalSectionLocal.Unlock();
-        
-        WriteTab(false);
+    s_criticalSectionLocal.Lock();
+    {
+      m_isPluginEnabledTab = false;
+      m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = "false";
+      m_isDirtyTab = true;
     }
+    s_criticalSectionLocal.Unlock();
+
+    WriteTab(false);
+  }
 }
 void CPluginSettings::SetPluginEnabled()
 {
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
-    {
-        ReadTab(false);
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
 
-        s_criticalSectionLocal.Lock();
-        {
-            m_isPluginEnabledTab = true;
-            m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = "true";
-            m_isDirtyTab = true;
-        }
-        s_criticalSectionLocal.Unlock();
-        
-        WriteTab(false);
+    s_criticalSectionLocal.Lock();
+    {
+      m_isPluginEnabledTab = true;
+      m_propertiesTab[SETTING_TAB_PLUGIN_ENABLED] = "true";
+      m_isDirtyTab = true;
     }
+    s_criticalSectionLocal.Unlock();
+
+    WriteTab(false);
+  }
 }
 bool CPluginSettings::GetPluginEnabled() const
 {
-	return m_isPluginEnabledTab;
+  return m_isPluginEnabledTab;
 }
 
 
 void CPluginSettings::AddError(const CString& error, const CString& errorCode)
 {
-    DEBUG_SETTINGS(L"SettingsTab::AddError error:" + error + " code:" + errorCode)
+  DEBUG_SETTINGS(L"SettingsTab::AddError error:" + error + " code:" + errorCode)
 
     CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadTab(false);
+      if (m_errorsTab.find(error) == m_errorsTab.end())
+      {
+        m_errorsTab[error] = errorCode; 
+        m_isDirtyTab = true;
+      }
+    }
+    s_criticalSectionLocal.Unlock();
 
-        s_criticalSectionLocal.Lock();
-        {
-		    if (m_errorsTab.find(error) == m_errorsTab.end())
-		    {
-			    m_errorsTab[error] = errorCode; 
-			    m_isDirtyTab = true;
-		    }
-		}
-        s_criticalSectionLocal.Unlock();
-
-		WriteTab(false);
-	}
+    WriteTab(false);
+  }
 }
 
 
 CString CPluginSettings::GetErrorList() const
 {
-    CString errors;
+  CString errors;
 
-    s_criticalSectionLocal.Lock();
+  s_criticalSectionLocal.Lock();
+  {
+    for (TProperties::const_iterator it = m_errorsTab.begin(); it != m_errorsTab.end(); ++it)
     {
-        for (TProperties::const_iterator it = m_errorsTab.begin(); it != m_errorsTab.end(); ++it)
-        {
-            if (!errors.IsEmpty())
-            {
-                errors += ',';
-            }
+      if (!errors.IsEmpty())
+      {
+        errors += ',';
+      }
 
-            errors += it->first + '.' + it->second;
-        }
-	}
-    s_criticalSectionLocal.Unlock();
+      errors += it->first + '.' + it->second;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 
-    return errors;
+  return errors;
 }
 
 
 void CPluginSettings::RemoveErrors()
 {
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadTab(false);
+      if (m_errorsTab.size() > 0)
+      {
+        m_isDirtyTab = true;
+      }
+      m_errorsTab.clear();
+    }
+    s_criticalSectionLocal.Unlock();
 
-        s_criticalSectionLocal.Lock();
-        {
-	        if (m_errorsTab.size() > 0)
-	        {
-	            m_isDirtyTab = true;
-	        }
-            m_errorsTab.clear();
-        }
-        s_criticalSectionLocal.Unlock();
-
-        WriteTab(false);
-	}
+    WriteTab(false);
+  }
 }
 
 
 bool CPluginSettings::GetForceConfigurationUpdateOnStart() const
 {
-    bool isUpdating = false;
+  bool isUpdating = false;
 
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    s_criticalSectionLocal.Lock();
     {
-        s_criticalSectionLocal.Lock();
-        {
-            isUpdating = m_propertiesTab.find(SETTING_TAB_UPDATE_ON_START) != m_propertiesTab.end();
-        }
-        s_criticalSectionLocal.Unlock();
+      isUpdating = m_propertiesTab.find(SETTING_TAB_UPDATE_ON_START) != m_propertiesTab.end();
     }
+    s_criticalSectionLocal.Unlock();
+  }
 
-    return isUpdating;
+  return isUpdating;
 }
 
 
 void CPluginSettings::ForceConfigurationUpdateOnStart(bool isUpdating)
 {
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadTab(false);
+      TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_UPDATE_ON_START);
 
-        s_criticalSectionLocal.Lock();
+      if (isUpdating && it == m_propertiesTab.end())
+      {
+        m_propertiesTab[SETTING_TAB_UPDATE_ON_START] = "true";
+        m_propertiesTab[SETTING_TAB_UPDATE_ON_START_REMOVE] = "false";
+
+        m_isDirtyTab = true;
+      }
+      else if (!isUpdating)
+      {
+        // OK to remove?
+        TProperties::iterator itRemove = m_propertiesTab.find(SETTING_TAB_UPDATE_ON_START_REMOVE);
+
+        if (itRemove == m_propertiesTab.end() || itRemove->second == "true")
         {
-            TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_UPDATE_ON_START);
-            
-            if (isUpdating && it == m_propertiesTab.end())
-            {
-                m_propertiesTab[SETTING_TAB_UPDATE_ON_START] = "true";
-                m_propertiesTab[SETTING_TAB_UPDATE_ON_START_REMOVE] = "false";
-                
-                m_isDirtyTab = true;
-            }
-            else if (!isUpdating)
-            {
-                // OK to remove?
-                TProperties::iterator itRemove = m_propertiesTab.find(SETTING_TAB_UPDATE_ON_START_REMOVE);
+          if (it != m_propertiesTab.end())
+          {
+            m_propertiesTab.erase(it);
+          }
 
-                if (itRemove == m_propertiesTab.end() || itRemove->second == "true")
-                {
-                    if (it != m_propertiesTab.end())
-                    {
-                        m_propertiesTab.erase(it);
-                    }
+          if (itRemove != m_propertiesTab.end())
+          {
+            m_propertiesTab.erase(itRemove);
+          }
 
-                    if (itRemove != m_propertiesTab.end())
-                    {
-                        m_propertiesTab.erase(itRemove);
-                    }
-
-                    m_isDirtyTab = true;
-                }
-            }
+          m_isDirtyTab = true;
         }
-        s_criticalSectionLocal.Unlock();
-
-        WriteTab(false);
+      }
     }
+    s_criticalSectionLocal.Unlock();
+
+    WriteTab(false);
+  }
 }
 
 void CPluginSettings::RemoveForceConfigurationUpdateOnStart()
 {
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadTab(false);
+      // OK to remove?
+      TProperties::iterator itRemove = m_propertiesTab.find(SETTING_TAB_UPDATE_ON_START_REMOVE);
 
-        s_criticalSectionLocal.Lock();
-        {
-            // OK to remove?
-            TProperties::iterator itRemove = m_propertiesTab.find(SETTING_TAB_UPDATE_ON_START_REMOVE);
-
-            if (itRemove != m_propertiesTab.end())
-            {
-                m_propertiesTab.erase(itRemove);
-                m_isDirtyTab = true;
-            }
-        }
-        s_criticalSectionLocal.Unlock();
-
-        WriteTab(false);
+      if (itRemove != m_propertiesTab.end())
+      {
+        m_propertiesTab.erase(itRemove);
+        m_isDirtyTab = true;
+      }
     }
+    s_criticalSectionLocal.Unlock();
+
+    WriteTab(false);
+  }
 }
 
 void CPluginSettings::RefreshTab()
 {
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
-    {
-        ReadTab();
-    }
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab();
+  }
 }
 
 
 int CPluginSettings::GetTabVersion(const CString& key) const
 {
-    int version = 0;
+  int version = 0;
 
-    s_criticalSectionLocal.Lock();
+  s_criticalSectionLocal.Lock();
+  {
+    TProperties::const_iterator it = m_propertiesTab.find(key);
+    if (it != m_propertiesTab.end())
     {
-        TProperties::const_iterator it = m_propertiesTab.find(key);
-        if (it != m_propertiesTab.end())
-        {
-            version = _wtoi(it->second);
-        }
+      version = _wtoi(it->second);
     }
-    s_criticalSectionLocal.Unlock();
+  }
+  s_criticalSectionLocal.Unlock();
 
-    return version;
+  return version;
 }
 
 void CPluginSettings::IncrementTabVersion(const CString& key)
 {
-    CPluginSettingsTabLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsTabLock lock;
+  if (lock.IsLocked())
+  {
+    ReadTab(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadTab(false);
+      int version = 1;
 
-        s_criticalSectionLocal.Lock();
-        {
-            int version = 1;
+      TProperties::iterator it = m_propertiesTab.find(key);
+      if (it != m_propertiesTab.end())
+      {
+        version = _wtoi(it->second) + 1;
+      }
 
-            TProperties::iterator it = m_propertiesTab.find(key);
-            if (it != m_propertiesTab.end())
-            {
-                version = _wtoi(it->second) + 1;
-            }
+      CString versionString;
+      versionString.Format(L"%d", version);
 
-            CString versionString;
-            versionString.Format(L"%d", version);
-        
-            m_propertiesTab[key] = versionString;
-        }
-        s_criticalSectionLocal.Unlock();
-
-        m_isDirtyTab = true;
-
-        WriteTab(false);        
+      m_propertiesTab[key] = versionString;
     }
+    s_criticalSectionLocal.Unlock();
+
+    m_isDirtyTab = true;
+
+    WriteTab(false);        
+  }
 }
 
 
@@ -1878,104 +1878,104 @@ void CPluginSettings::IncrementTabVersion(const CString& key)
 
 void CPluginSettings::ClearWhitelist()
 {
-    s_criticalSectionLocal.Lock();
-	{
-	    m_whitelist.clear();
-	    m_whitelistToGo.clear();
-    }
-    s_criticalSectionLocal.Unlock();
+  s_criticalSectionLocal.Lock();
+  {
+    m_whitelist.clear();
+    m_whitelistToGo.clear();
+  }
+  s_criticalSectionLocal.Unlock();
 }
 
 
 bool CPluginSettings::ReadWhitelist(bool isDebug)
 {
-    bool isRead = true;
+  bool isRead = true;
 
-    DEBUG_SETTINGS("SettingsWhitelist::Read")
+  DEBUG_SETTINGS("SettingsWhitelist::Read")
 
     if (isDebug)
     {
-        DEBUG_GENERAL("*** Loading whitelist settings:" + m_settingsFileWhitelist->GetFilePath());
+      DEBUG_GENERAL("*** Loading whitelist settings:" + m_settingsFileWhitelist->GetFilePath());
     }
 
     CPluginSettingsWhitelistLock lock;
     if (lock.IsLocked())
     {
-        isRead = m_settingsFileWhitelist->Read();        
-        if (isRead)
+      isRead = m_settingsFileWhitelist->Read();        
+      if (isRead)
+      {
+        if (m_settingsFileWhitelist->IsValidChecksum())
         {
-            if (m_settingsFileWhitelist->IsValidChecksum())
+          ClearWhitelist();
+
+          s_criticalSectionLocal.Lock();
+          {
+            // Unpack white list
+            CPluginIniFileW::TSectionData whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist");
+            int domainCount = 0;
+            bool bContinue = true;
+
+            do
             {
-                ClearWhitelist();
+              CString domainCountStr;
+              domainCountStr.Format(L"%d", ++domainCount);
 
-                s_criticalSectionLocal.Lock();
-	            {
-                    // Unpack white list
-                    CPluginIniFileW::TSectionData whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist");
-                    int domainCount = 0;
-                    bool bContinue = true;
+              CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find(L"domain" + domainCountStr);
+              CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find(L"domain" + domainCountStr + L"r");
 
-		            do
-		            {
-			            CString domainCountStr;
-			            domainCountStr.Format(L"%d", ++domainCount);
-        	            
-			            CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find(L"domain" + domainCountStr);
-			            CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find(L"domain" + domainCountStr + L"r");
+              if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
+              {
+                m_whitelist[domainIt->second] = _wtoi(reasonIt->second);
+              }
 
-			            if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
-			            {
-				            m_whitelist[domainIt->second] = _wtoi(reasonIt->second);
-			            }
+            } while (bContinue);
 
-		            } while (bContinue);
+            // Unpack white list
+            whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist togo");
+            domainCount = 0;
+            bContinue = true;
 
-                    // Unpack white list
-                    whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist togo");
-                    domainCount = 0;
-                    bContinue = true;
-
-		            do
-		            {
-			            CString domainCountStr;
-			            domainCountStr.Format(L"%d", ++domainCount);
-        	            
-			            CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find(L"domain" + domainCountStr);
-			            CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find(L"domain" + domainCountStr + L"r");
-
-			            if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
-			            {
-				            m_whitelistToGo[domainIt->second] = _wtoi(reasonIt->second);
-			            }
-
-		            } while (bContinue);
-	            }
-	            s_criticalSectionLocal.Unlock();
-            }
-            else
+            do
             {
-                DEBUG_SETTINGS("SettingsWhitelist:Invalid checksum - Deleting file")
+              CString domainCountStr;
+              domainCountStr.Format(L"%d", ++domainCount);
 
-                DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_READ_CHECKSUM, "SettingsWhitelist::Read - Checksum")
-                isRead = false;
-                m_isDirtyWhitelist = true;
-            }
-        }
-        else if (m_settingsFileWhitelist->GetLastError() == ERROR_FILE_NOT_FOUND)
-        {
-            m_isDirtyWhitelist = true;
+              CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find(L"domain" + domainCountStr);
+              CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find(L"domain" + domainCountStr + L"r");
+
+              if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
+              {
+                m_whitelistToGo[domainIt->second] = _wtoi(reasonIt->second);
+              }
+
+            } while (bContinue);
+          }
+          s_criticalSectionLocal.Unlock();
         }
         else
         {
-            DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_READ, "SettingsWhitelist::Read")
+          DEBUG_SETTINGS("SettingsWhitelist:Invalid checksum - Deleting file")
+
+            DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_READ_CHECKSUM, "SettingsWhitelist::Read - Checksum")
+            isRead = false;
+          m_isDirtyWhitelist = true;
         }
+      }
+      else if (m_settingsFileWhitelist->GetLastError() == ERROR_FILE_NOT_FOUND)
+      {
+        m_isDirtyWhitelist = true;
+      }
+      else
+      {
+        DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_READ, "SettingsWhitelist::Read")
+      }
     }
     else
     {
-        isRead = false;
+      isRead = false;
     }
 
-	// Write file in case it is dirty
+    // Write file in case it is dirty
     WriteWhitelist(isDebug);
 
     return isRead;
@@ -1984,327 +1984,327 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
 
 bool CPluginSettings::WriteWhitelist(bool isDebug)
 {
-	bool isWritten = true;
+  bool isWritten = true;
 
-    if (!m_isDirtyWhitelist)
-    {
-        return isWritten;
-    }
-
-    if (isDebug)
-    {
-		DEBUG_GENERAL("*** Writing changed whitelist settings")
-	}
-
-    CPluginSettingsWhitelistLock lock;
-    if (lock.IsLocked())
-    {
-        m_settingsFileWhitelist->Clear();
-
-        s_criticalSectionLocal.Lock();
-	    {
-            // White list
-            int whitelistCount = 0;
-            CPluginIniFileW::TSectionData whitelist;
-
-		    for (TDomainList::iterator it = m_whitelist.begin(); it != m_whitelist.end(); ++it)
-		    {
-			    CString whitelistCountStr;
-			    whitelistCountStr.Format(L"%d", ++whitelistCount);
-
-			    CString reason;
-			    reason.Format(L"%d", it->second);
-
-			    whitelist[L"domain" + whitelistCountStr] = it->first;
-			    whitelist[L"domain" + whitelistCountStr + L"r"] = reason;
-		    }
-
-            m_settingsFileWhitelist->UpdateSection("Whitelist", whitelist);
-
-            // White list (not yet committed)
-            whitelistCount = 0;
-            whitelist.clear();
-
-            for (TDomainList::iterator it = m_whitelistToGo.begin(); it != m_whitelistToGo.end(); ++it)
-            {
-	            CString whitelistCountStr;
-	            whitelistCountStr.Format(L"%d", ++whitelistCount);
-
-	            CString reason;
-	            reason.Format(L"%d", it->second);
-
-	            whitelist[L"domain" + whitelistCountStr] = it->first;
-	            whitelist[L"domain" + whitelistCountStr + L"r"] = reason;
-            }
-
-            m_settingsFileWhitelist->UpdateSection("Whitelist togo", whitelist);
-	    }
-        s_criticalSectionLocal.Unlock();
-
-        // Write file
-        isWritten = m_settingsFileWhitelist->Write();
-        if (!isWritten)
-        {
-            DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_WRITE, "SettingsWhitelist::Write")
-        }
-        
-        m_isDirty = false;
-    }
-    else
-    {
-        isWritten = false;
-    }
-
-    if (isWritten)
-    {
-        DEBUG_WHITELIST("Whitelist::Icrement version")
-
-        IncrementTabVersion(SETTING_TAB_WHITELIST_VERSION);
-    }
-
+  if (!m_isDirtyWhitelist)
+  {
     return isWritten;
+  }
+
+  if (isDebug)
+  {
+    DEBUG_GENERAL("*** Writing changed whitelist settings")
+  }
+
+  CPluginSettingsWhitelistLock lock;
+  if (lock.IsLocked())
+  {
+    m_settingsFileWhitelist->Clear();
+
+    s_criticalSectionLocal.Lock();
+    {
+      // White list
+      int whitelistCount = 0;
+      CPluginIniFileW::TSectionData whitelist;
+
+      for (TDomainList::iterator it = m_whitelist.begin(); it != m_whitelist.end(); ++it)
+      {
+        CString whitelistCountStr;
+        whitelistCountStr.Format(L"%d", ++whitelistCount);
+
+        CString reason;
+        reason.Format(L"%d", it->second);
+
+        whitelist[L"domain" + whitelistCountStr] = it->first;
+        whitelist[L"domain" + whitelistCountStr + L"r"] = reason;
+      }
+
+      m_settingsFileWhitelist->UpdateSection("Whitelist", whitelist);
+
+      // White list (not yet committed)
+      whitelistCount = 0;
+      whitelist.clear();
+
+      for (TDomainList::iterator it = m_whitelistToGo.begin(); it != m_whitelistToGo.end(); ++it)
+      {
+        CString whitelistCountStr;
+        whitelistCountStr.Format(L"%d", ++whitelistCount);
+
+        CString reason;
+        reason.Format(L"%d", it->second);
+
+        whitelist[L"domain" + whitelistCountStr] = it->first;
+        whitelist[L"domain" + whitelistCountStr + L"r"] = reason;
+      }
+
+      m_settingsFileWhitelist->UpdateSection("Whitelist togo", whitelist);
+    }
+    s_criticalSectionLocal.Unlock();
+
+    // Write file
+    isWritten = m_settingsFileWhitelist->Write();
+    if (!isWritten)
+    {
+      DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_WRITE, "SettingsWhitelist::Write")
+    }
+
+    m_isDirty = false;
+  }
+  else
+  {
+    isWritten = false;
+  }
+
+  if (isWritten)
+  {
+    DEBUG_WHITELIST("Whitelist::Icrement version")
+
+      IncrementTabVersion(SETTING_TAB_WHITELIST_VERSION);
+  }
+
+  return isWritten;
 }
 
 
 void CPluginSettings::AddWhiteListedDomain(const CString& domain, int reason, bool isToGo)
 {
-    DEBUG_SETTINGS("SettingsWhitelist::AddWhiteListedDomain domain:" + domain)
+  DEBUG_SETTINGS("SettingsWhitelist::AddWhiteListedDomain domain:" + domain)
 
     bool isNewVersion = false;
-    bool isForcingUpdateOnStart = false;
+  bool isForcingUpdateOnStart = false;
 
-    CPluginSettingsWhitelistLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsWhitelistLock lock;
+  if (lock.IsLocked())
+  {
+    ReadWhitelist(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadWhitelist(false);
+      bool isToGoMatcingReason = false;
+      bool isToGoMatcingDomain = false;
 
-        s_criticalSectionLocal.Lock();
+      TDomainList::iterator itToGo = m_whitelistToGo.find(domain);
+      TDomainList::iterator it = m_whitelist.find(domain);
+      if (isToGo)
+      {
+        if (itToGo != m_whitelistToGo.end())  
         {
-            bool isToGoMatcingReason = false;
-            bool isToGoMatcingDomain = false;
+          isToGoMatcingDomain = true;
+          isToGoMatcingReason = itToGo->second == reason;
 
-	        TDomainList::iterator itToGo = m_whitelistToGo.find(domain);
-	        TDomainList::iterator it = m_whitelist.find(domain);
-	        if (isToGo)
-	        {
-		        if (itToGo != m_whitelistToGo.end())  
-		        {
-    		        isToGoMatcingDomain = true;
-    		        isToGoMatcingReason = itToGo->second == reason;
-
-                    if (reason == 3)
-                    {
-                        m_whitelistToGo.erase(itToGo);
-				        m_isDirtyWhitelist = true;                        
-                    }
-                    else if (!isToGoMatcingReason)
-			        {
-				        itToGo->second = reason;
-				        m_isDirtyWhitelist = true;
-			        }
-		        }
-		        else 
-		        {
-			        m_whitelistToGo[domain] = reason;
-			        m_isDirtyWhitelist = true;
-
-                    // Delete new togo item from saved white list
-                    if (it != m_whitelist.end())
-                    {
-                        m_whitelist.erase(it);
-                    }
-		        }
-	        }
-	        else
-	        {
-	            if (isToGoMatcingDomain)
-	            {
-                    m_whitelistToGo.erase(itToGo);
-			        m_isDirtyWhitelist = true;
-	            }
-
-		        if (it != m_whitelist.end())  
-		        {
-			        if (it->second != reason)
-			        {
-				        it->second = reason;
-				        m_isDirtyWhitelist = true;
-			        }
-		        }
-		        else 
-		        {
-			        m_whitelist[domain] = reason; 
-			        m_isDirtyWhitelist = true;
-		        }
-	        }
-
-            isForcingUpdateOnStart = m_whitelistToGo.size() > 0;
+          if (reason == 3)
+          {
+            m_whitelistToGo.erase(itToGo);
+            m_isDirtyWhitelist = true;                        
+          }
+          else if (!isToGoMatcingReason)
+          {
+            itToGo->second = reason;
+            m_isDirtyWhitelist = true;
+          }
         }
-	    s_criticalSectionLocal.Unlock();
+        else 
+        {
+          m_whitelistToGo[domain] = reason;
+          m_isDirtyWhitelist = true;
 
-	    WriteWhitelist(false);
-	}
+          // Delete new togo item from saved white list
+          if (it != m_whitelist.end())
+          {
+            m_whitelist.erase(it);
+          }
+        }
+      }
+      else
+      {
+        if (isToGoMatcingDomain)
+        {
+          m_whitelistToGo.erase(itToGo);
+          m_isDirtyWhitelist = true;
+        }
 
-    if (isForcingUpdateOnStart)
-    {
-        ForceConfigurationUpdateOnStart();
+        if (it != m_whitelist.end())  
+        {
+          if (it->second != reason)
+          {
+            it->second = reason;
+            m_isDirtyWhitelist = true;
+          }
+        }
+        else 
+        {
+          m_whitelist[domain] = reason; 
+          m_isDirtyWhitelist = true;
+        }
+      }
+
+      isForcingUpdateOnStart = m_whitelistToGo.size() > 0;
     }
+    s_criticalSectionLocal.Unlock();
+
+    WriteWhitelist(false);
+  }
+
+  if (isForcingUpdateOnStart)
+  {
+    ForceConfigurationUpdateOnStart();
+  }
 }
 
 
 bool CPluginSettings::IsWhiteListedDomain(const CString& domain) const
 {
-	bool bIsWhiteListed;
+  bool bIsWhiteListed;
 
-	s_criticalSectionLocal.Lock();
-	{
-		bIsWhiteListed = m_whitelist.find(domain) != m_whitelist.end();
-		if (!bIsWhiteListed)
-		{
-		    TDomainList::const_iterator it = m_whitelistToGo.find(domain);
-		    bIsWhiteListed = it != m_whitelistToGo.end() && it->second != 3;
-		}
-	}
-	s_criticalSectionLocal.Unlock();
+  s_criticalSectionLocal.Lock();
+  {
+    bIsWhiteListed = m_whitelist.find(domain) != m_whitelist.end();
+    if (!bIsWhiteListed)
+    {
+      TDomainList::const_iterator it = m_whitelistToGo.find(domain);
+      bIsWhiteListed = it != m_whitelistToGo.end() && it->second != 3;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 
-    return bIsWhiteListed;
+  return bIsWhiteListed;
 }
 
 int CPluginSettings::GetWhiteListedDomainCount() const
 {
-	int count = 0;
+  int count = 0;
 
-	s_criticalSectionLocal.Lock();
-	{
-		count = (int)m_whitelist.size();
-	}
-	s_criticalSectionLocal.Unlock();
-	
-    return count;
+  s_criticalSectionLocal.Lock();
+  {
+    count = (int)m_whitelist.size();
+  }
+  s_criticalSectionLocal.Unlock();
+
+  return count;
 }
 
 
 TDomainList CPluginSettings::GetWhiteListedDomainList(bool isToGo) const
 {
-	TDomainList domainList;
+  TDomainList domainList;
 
-	s_criticalSectionLocal.Lock();
-	{
-	    if (isToGo)
-	    {
-	        domainList = m_whitelistToGo;
-	    }
-	    else
-	    {
-	        domainList = m_whitelist;
-	    }
-	}
-	s_criticalSectionLocal.Unlock();
+  s_criticalSectionLocal.Lock();
+  {
+    if (isToGo)
+    {
+      domainList = m_whitelistToGo;
+    }
+    else
+    {
+      domainList = m_whitelist;
+    }
+  }
+  s_criticalSectionLocal.Unlock();
 
-    return domainList;
+  return domainList;
 }
 
 
 void CPluginSettings::ReplaceWhiteListedDomains(const TDomainList& domains)
 {
-    CPluginSettingsWhitelistLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsWhitelistLock lock;
+  if (lock.IsLocked())
+  {
+    ReadWhitelist(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadWhitelist(false);
+      if (m_whitelist != domains)
+      {
+        m_whitelist = domains;
+        m_isDirtyWhitelist = true;
+      }
 
-        s_criticalSectionLocal.Lock();
+      // Delete entries in togo list
+      bool isDeleted = true;
+
+      while (isDeleted)
+      {
+        isDeleted = false;
+
+        for (TDomainList::iterator it = m_whitelistToGo.begin(); it != m_whitelistToGo.end(); ++it)
         {
-            if (m_whitelist != domains)
-            {
-                m_whitelist = domains;
-                m_isDirtyWhitelist = true;
-            }
+          if (m_whitelist.find(it->first) != m_whitelist.end() || it->second == 3)
+          {
+            m_whitelistToGo.erase(it);
 
-            // Delete entries in togo list
-            bool isDeleted = true;
-
-            while (isDeleted)
-            {
-                isDeleted = false;
-
-                for (TDomainList::iterator it = m_whitelistToGo.begin(); it != m_whitelistToGo.end(); ++it)
-                {
-	                if (m_whitelist.find(it->first) != m_whitelist.end() || it->second == 3)
-	                {
-    	                m_whitelistToGo.erase(it);
-
-                        // Force another round...
-    	                isDeleted = true;
-    	                break;
-	                }
-                }
-            }
+            // Force another round...
+            isDeleted = true;
+            break;
+          }
         }
-        s_criticalSectionLocal.Unlock();
-
-        WriteWhitelist(false);
+      }
     }
+    s_criticalSectionLocal.Unlock();
+
+    WriteWhitelist(false);
+  }
 }
 
 
 void CPluginSettings::RemoveWhiteListedDomainsToGo(const TDomainList& domains)
 {
-    CPluginSettingsWhitelistLock lock;
-    if (lock.IsLocked())
+  CPluginSettingsWhitelistLock lock;
+  if (lock.IsLocked())
+  {
+    ReadWhitelist(false);
+
+    s_criticalSectionLocal.Lock();
     {
-        ReadWhitelist(false);
-
-        s_criticalSectionLocal.Lock();
+      for (TDomainList::const_iterator it = domains.begin(); it != domains.end(); ++it)
+      {
+        for (TDomainList::iterator itToGo = m_whitelistToGo.begin(); itToGo != m_whitelistToGo.end(); ++ itToGo)
         {
-            for (TDomainList::const_iterator it = domains.begin(); it != domains.end(); ++it)
-            {
-                for (TDomainList::iterator itToGo = m_whitelistToGo.begin(); itToGo != m_whitelistToGo.end(); ++ itToGo)
-                {
-                    if (it->first == itToGo->first)
-                    {
-                        m_whitelistToGo.erase(itToGo);
-                        m_isDirtyWhitelist = true;
-                        break;
-                    }
-                }
-            }
+          if (it->first == itToGo->first)
+          {
+            m_whitelistToGo.erase(itToGo);
+            m_isDirtyWhitelist = true;
+            break;
+          }
         }
-        s_criticalSectionLocal.Unlock();
-
-        WriteWhitelist(false);
+      }
     }
+    s_criticalSectionLocal.Unlock();
+
+    WriteWhitelist(false);
+  }
 }
 
 
 bool CPluginSettings::RefreshWhitelist()
 {
-    CPluginSettingsWhitelistLock lock;
-    if (lock.IsLocked())
-    {
-        ReadWhitelist(true);
-    }
+  CPluginSettingsWhitelistLock lock;
+  if (lock.IsLocked())
+  {
+    ReadWhitelist(true);
+  }
 
-    return true;
+  return true;
 }
 
 DWORD CPluginSettings::GetWindowsBuildNumber()
 {
-	if (m_WindowsBuildNumber == 0)
-	{
-	   OSVERSIONINFOEX osvi;
-	   SYSTEM_INFO si;
-	   BOOL bOsVersionInfoEx;
+  if (m_WindowsBuildNumber == 0)
+  {
+    OSVERSIONINFOEX osvi;
+    SYSTEM_INFO si;
+    BOOL bOsVersionInfoEx;
 
-	   ZeroMemory(&si, sizeof(SYSTEM_INFO));
-	   ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+    ZeroMemory(&si, sizeof(SYSTEM_INFO));
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
 
-	   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-	   bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+    bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
 
-	   m_WindowsBuildNumber = osvi.dwBuildNumber;
-	}
+    m_WindowsBuildNumber = osvi.dwBuildNumber;
+  }
 
-   return m_WindowsBuildNumber;
+  return m_WindowsBuildNumber;
 }
 
 #endif // SUPPORT_WHITELIST

@@ -1,8 +1,8 @@
 /**
- * This class contains all client functionality of the IE plugin
- *
- * Exception errors are tested by calls to ExceptionsTest from: Main ...
- */
+* This class contains all client functionality of the IE plugin
+*
+* Exception errors are tested by calls to ExceptionsTest from: Main ...
+*/
 
 #ifndef _PLUGIN_SETTINGS_H_
 #define _PLUGIN_SETTINGS_H_
@@ -58,221 +58,221 @@ class CPluginSettings
 
 public:
 
-    typedef std::map<CString, CString> TProperties;
+  typedef std::map<CString, CString> TProperties;
 
 private:
 
-    bool m_isFirstRun;
-    bool m_isFirstRunUpdate;
+  bool m_isFirstRun;
+  bool m_isFirstRunUpdate;
 
-    DWORD m_dwMainProcessId;
-    DWORD m_dwMainThreadId;
-    DWORD m_dwMainUiThreadId;
-    DWORD m_dwWorkingThreadId;
-    
-    CString m_tabNumber;
-	
+  DWORD m_dwMainProcessId;
+  DWORD m_dwMainThreadId;
+  DWORD m_dwMainUiThreadId;
+  DWORD m_dwWorkingThreadId;
+
+  CString m_tabNumber;
+
 #ifdef SUPPORT_WHITELIST
-	TDomainList m_domainList;
-	TDomainHistory m_domainHistory;
+  TDomainList m_domainList;
+  TDomainHistory m_domainHistory;
 #endif
-	
-	CPluginSettings::TProperties m_properties;
 
-	bool m_isDirty;
+  CPluginSettings::TProperties m_properties;
+
+  bool m_isDirty;
 
 #ifdef SUPPORT_FILTER
-	CPluginSettings::TFilterUrlList m_filterUrlList;
-	std::map<CString, CString> m_filterFileNameList;
-	std::map<CString, CString> m_filterLanguagesList;
-	std::map<CString, CString> m_filterLanguageTitleList; // Key - language, Value - language title
-	std::map<CString, time_t> m_filterDownloadTimesList;
+  CPluginSettings::TFilterUrlList m_filterUrlList;
+  std::map<CString, CString> m_filterFileNameList;
+  std::map<CString, CString> m_filterLanguagesList;
+  std::map<CString, CString> m_filterLanguageTitleList; // Key - language, Value - language title
+  std::map<CString, time_t> m_filterDownloadTimesList;
 #endif
 
-	CString m_settingsVersion;
-    std::auto_ptr<CPluginIniFileW> m_settingsFile;
+  CString m_settingsVersion;
+  std::auto_ptr<CPluginIniFileW> m_settingsFile;
 
-	static WCHAR* s_dataPath;
-	static WCHAR* s_dataPathParent;
+  static WCHAR* s_dataPath;
+  static WCHAR* s_dataPathParent;
 
 
-	static CComAutoCriticalSection s_criticalSectionLocal;
+  static CComAutoCriticalSection s_criticalSectionLocal;
 #ifdef SUPPORT_FILTER
-	static CComAutoCriticalSection s_criticalSectionFilters;
+  static CComAutoCriticalSection s_criticalSectionFilters;
 #endif
 #ifdef SUPPORT_WHITELIST
-	static CComAutoCriticalSection s_criticalSectionDomainHistory;
+  static CComAutoCriticalSection s_criticalSectionDomainHistory;
 #endif
 
-	bool m_isPluginSelftestEnabled;
+  bool m_isPluginSelftestEnabled;
 
-    void Clear();
+  void Clear();
 
-	// Private constructor used by the singleton pattern
-	CPluginSettings();	
-	CPluginSettings(bool isLight);	
+  // Private constructor used by the singleton pattern
+  CPluginSettings();	
+  CPluginSettings(bool isLight);	
 
 public:
 
-	~CPluginSettings();
+  ~CPluginSettings();
 
-	static CPluginSettings* s_instance;
+  static CPluginSettings* s_instance;
 
-	static bool s_isLightOnly;
-    static bool HasInstance();
-    static CPluginSettings* GetInstance();
-	static CPluginSettings* GetInstanceLight();
- 
-    bool Read(bool bDebug=true);
-	bool Write(bool bDebug=true);
+  static bool s_isLightOnly;
+  static bool HasInstance();
+  static CPluginSettings* GetInstance();
+  static CPluginSettings* GetInstanceLight();
 
-	static CString GetDataPathParent();
-	static CString GetDataPath(const CString& filename=L"");
+  bool Read(bool bDebug=true);
+  bool Write(bool bDebug=true);
 
-	static CString GetTempPath(const CString& filename=L"");
-    static CString GetTempFile(const CString& prefix, const CString& extension=L"");
+  static CString GetDataPathParent();
+  static CString GetDataPath(const CString& filename=L"");
 
-    bool Has(const CString& key) const;
-    void Remove(const CString& key);
+  static CString GetTempPath(const CString& filename=L"");
+  static CString GetTempFile(const CString& prefix, const CString& extension=L"");
 
-    CString GetPluginId();
+  bool Has(const CString& key) const;
+  void Remove(const CString& key);
 
-	CString GetString(const CString& key, const CString& defaultValue=L"") const;
-	void SetString(const CString& key, const CString& value);
+  CString GetPluginId();
 
-	int GetValue(const CString& key, int defaultValue=0) const;
-	void SetValue(const CString& key, int value);
+  CString GetString(const CString& key, const CString& defaultValue=L"") const;
+  void SetString(const CString& key, const CString& value);
 
-	bool GetBool(const CString& key, bool defaultValue) const;
-	void SetBool(const CString& key, bool value);
+  int GetValue(const CString& key, int defaultValue=0) const;
+  void SetValue(const CString& key, int value);
 
-    bool IsPluginEnabled() const;
-	bool IsPluginUpdateAvailable() const;
-	
-	bool IsPluginSelftestEnabled();
+  bool GetBool(const CString& key, bool defaultValue) const;
+  void SetBool(const CString& key, bool value);
 
-	bool FilterlistExpired(CString filterlist) const;
-	bool FilterShouldLoad(CString filterlist) const;
-	bool SetFilterRefreshDate(CString filterlist, time_t refreshtime);
+  bool IsPluginEnabled() const;
+  bool IsPluginUpdateAvailable() const;
+
+  bool IsPluginSelftestEnabled();
+
+  bool FilterlistExpired(CString filterlist) const;
+  bool FilterShouldLoad(CString filterlist) const;
+  bool SetFilterRefreshDate(CString filterlist, time_t refreshtime);
 
 #ifdef SUPPORT_FILTER
 
-	void SetFilterUrlList(const TFilterUrlList& filters);
-	void SetFilterFileNamesList(const std::map<CString, CString>& filters);
-	TFilterUrlList GetFilterUrlList() const;
-	std::map<CString, CString> GetFilterFileNamesList() const;
-	std::map<CString, CString> GetFilterLanguageTitleList() const;
+  void SetFilterUrlList(const TFilterUrlList& filters);
+  void SetFilterFileNamesList(const std::map<CString, CString>& filters);
+  TFilterUrlList GetFilterUrlList() const;
+  std::map<CString, CString> GetFilterFileNamesList() const;
+  std::map<CString, CString> GetFilterLanguageTitleList() const;
 
-    void AddFilterUrl(const CString& url, int version);
-    void AddFilterFileName(const CString& url, const CString& fileName);
+  void AddFilterUrl(const CString& url, int version);
+  void AddFilterFileName(const CString& url, const CString& fileName);
 #endif // SUPPORT_FILTER
 
 #ifdef SUPPORT_WHITELIST
-	
-    void AddDomainToHistory(const CString& domain);
-    TDomainHistory GetDomainHistory() const;
+
+  void AddDomainToHistory(const CString& domain);
+  TDomainHistory GetDomainHistory() const;
 
 #endif // SUPPORT_WHITELIST
 
-    void SetMainProcessId();
-	void SetMainProcessId(DWORD id);
-    bool IsMainProcess(DWORD dwProcessId=0) const;
+  void SetMainProcessId();
+  void SetMainProcessId(DWORD id);
+  bool IsMainProcess(DWORD dwProcessId=0) const;
 
-    void SetMainUiThreadId();
-	void SetMainUiThreadId(DWORD id);
-    bool IsMainUiThread(DWORD dwThread=0) const;
+  void SetMainUiThreadId();
+  void SetMainUiThreadId(DWORD id);
+  bool IsMainUiThread(DWORD dwThread=0) const;
 
-    void SetMainThreadId();
-    void SetMainThreadId(DWORD id);
-    bool IsMainThread(DWORD dwThread=0) const;
+  void SetMainThreadId();
+  void SetMainThreadId(DWORD id);
+  bool IsMainThread(DWORD dwThread=0) const;
 
-    void SetWorkingThreadId();
-	void SetWorkingThreadId(DWORD id);
-    bool IsWorkingThread(DWORD dwThread=0) const;
+  void SetWorkingThreadId();
+  void SetWorkingThreadId(DWORD id);
+  bool IsWorkingThread(DWORD dwThread=0) const;
 
-    void SetFirstRun();
-    bool IsFirstRun() const;
-    
-    void SetFirstRunUpdate();
-    bool IsFirstRunUpdate() const;
+  void SetFirstRun();
+  bool IsFirstRun() const;
 
-    bool IsFirstRunAny() const;
+  void SetFirstRunUpdate();
+  bool IsFirstRunUpdate() const;
 
-	static CString GetSystemLanguage();
+  bool IsFirstRunAny() const;
+
+  static CString GetSystemLanguage();
 
 private:
 
-	bool m_isDirtyTab;
-	bool m_isPluginEnabledTab;
+  bool m_isDirtyTab;
+  bool m_isPluginEnabledTab;
 
-	CPluginSettings::TProperties m_propertiesTab;
-	CPluginSettings::TProperties m_errorsTab;
+  CPluginSettings::TProperties m_propertiesTab;
+  CPluginSettings::TProperties m_errorsTab;
 
-    std::auto_ptr<CPluginIniFileW> m_settingsFileTab;
+  std::auto_ptr<CPluginIniFileW> m_settingsFileTab;
 
-    void ClearTab();
+  void ClearTab();
 
-    bool ReadTab(bool bDebug=true);
-    bool WriteTab(bool bDebug=true);
+  bool ReadTab(bool bDebug=true);
+  bool WriteTab(bool bDebug=true);
 
 public:
 
-    void EraseTab();
+  void EraseTab();
 
-	CString GetTabNumber() const;
+  CString GetTabNumber() const;
 
-    bool IncrementTabCount();
-    bool DecrementTabCount();
+  bool IncrementTabCount();
+  bool DecrementTabCount();
 
-    void TogglePluginEnabled();
-	void SetPluginDisabled();
-	void SetPluginEnabled();
-    bool GetPluginEnabled() const;
+  void TogglePluginEnabled();
+  void SetPluginDisabled();
+  void SetPluginEnabled();
+  bool GetPluginEnabled() const;
 
-    void AddError(const CString& error, const CString& errorCode);
-    CString GetErrorList() const;
-    void RemoveErrors();
+  void AddError(const CString& error, const CString& errorCode);
+  CString GetErrorList() const;
+  void RemoveErrors();
 
-    bool GetForceConfigurationUpdateOnStart() const;
-    void ForceConfigurationUpdateOnStart(bool isUpdating=true);
-    void RemoveForceConfigurationUpdateOnStart();
+  bool GetForceConfigurationUpdateOnStart() const;
+  void ForceConfigurationUpdateOnStart(bool isUpdating=true);
+  void RemoveForceConfigurationUpdateOnStart();
 
-    void RefreshTab();
+  void RefreshTab();
 
-    int GetTabVersion(const CString& key) const;
-    void IncrementTabVersion(const CString& key);
+  int GetTabVersion(const CString& key) const;
+  void IncrementTabVersion(const CString& key);
 
-    // Settings whitelist
+  // Settings whitelist
 #ifdef SUPPORT_WHITELIST
 
 private:
 
-	bool m_isDirtyWhitelist;
-	DWORD m_WindowsBuildNumber;
+  bool m_isDirtyWhitelist;
+  DWORD m_WindowsBuildNumber;
 
-	TDomainList m_whitelist;
-	TDomainList m_whitelistToGo;
+  TDomainList m_whitelist;
+  TDomainList m_whitelistToGo;
 
-    std::auto_ptr<CPluginIniFileW> m_settingsFileWhitelist;
-    
-    void ClearWhitelist();
+  std::auto_ptr<CPluginIniFileW> m_settingsFileWhitelist;
 
-    bool ReadWhitelist(bool bDebug=true);
-    bool WriteWhitelist(bool bDebug=true);
+  void ClearWhitelist();
+
+  bool ReadWhitelist(bool bDebug=true);
+  bool WriteWhitelist(bool bDebug=true);
 
 public:
 
-	void AddWhiteListedDomain(const CString& domain, int reason=1, bool isToGo=false);
-    void RemoveWhiteListedDomainsToGo(const TDomainList& domains);
-    void ReplaceWhiteListedDomains(const TDomainList& domains);
-	bool IsWhiteListedDomain(const CString& domain) const;
-	int GetWhiteListedDomainCount() const;
-	TDomainList GetWhiteListedDomainList(bool isToGo=false) const;
+  void AddWhiteListedDomain(const CString& domain, int reason=1, bool isToGo=false);
+  void RemoveWhiteListedDomainsToGo(const TDomainList& domains);
+  void ReplaceWhiteListedDomains(const TDomainList& domains);
+  bool IsWhiteListedDomain(const CString& domain) const;
+  int GetWhiteListedDomainCount() const;
+  TDomainList GetWhiteListedDomainList(bool isToGo=false) const;
 
-	bool CheckFilterAndDownload();
-	bool MakeRequestForUpdate();
-    bool RefreshWhitelist();
-	DWORD GetWindowsBuildNumber();
+  bool CheckFilterAndDownload();
+  bool MakeRequestForUpdate();
+  bool RefreshWhitelist();
+  DWORD GetWindowsBuildNumber();
 
 #endif //SUPPORT_WHITELIST
 
