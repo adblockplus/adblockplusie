@@ -255,10 +255,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     CComBSTR language = pDispparams->rgvarg[0].bstrVal;
 
     settings->SetString(SETTING_LANGUAGE, (BSTR)language);
-    CPluginDictionary* dict = CPluginDictionary::GetInstance();
-    dict->SetLanguage((BSTR)language);
     settings->Write();
-
     settings->CheckFilterAndDownload();
   }
   else if (s_GetLanguage == method)

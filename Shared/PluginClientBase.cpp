@@ -89,33 +89,19 @@ CString& CPluginClientBase::UnescapeUrl(CString& url)
 
 void CPluginClientBase::SetLocalization()
 {
-  CPluginDictionary* dic = CPluginDictionary::GetInstance();
-
   CPluginSystem* system = CPluginSystem::GetInstance();
-
   CString browserLanguage = system->GetBrowserLanguage();
 
+  CPluginDictionary* dic = CPluginDictionary::GetInstance();
+  dic->SetLanguage(browserLanguage);
+
   CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  if (settings->IsMainProcess() && settings->IsMainThread())
+  if (settings->IsMainProcess() && settings->IsMainThread() && !settings->Has(SETTING_LANGUAGE))
   {
-    if (browserLanguage != settings->GetString(SETTING_LANGUAGE))
-    {
-      if (dic->IsLanguageSupported(browserLanguage))
-      {
-        //			    settings->SetString(SETTING_LANGUAGE, browserLanguage);
-      }
-    }
-
-    if (!settings->Has(SETTING_LANGUAGE))
-    {
-      settings->SetString(SETTING_LANGUAGE, "en");
-    }
-
+    // TODO: We might want to set this to "en" if browserLanguage is not in filterLanguagesList
+    settings->SetString(SETTING_LANGUAGE, browserLanguage);
     settings->Write();
   }
-
-  dic->SetLanguage(settings->GetString(SETTING_LANGUAGE));
 }
 
 
