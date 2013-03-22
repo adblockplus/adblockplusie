@@ -25,13 +25,13 @@ CPluginUserSettings::CPluginUserSettings()
 
 STDMETHODIMP CPluginUserSettings::QueryInterface(REFIID riid, void **ppvObj)
 {
-    if (IID_IUnknown == riid  ||  IID_IDispatch == riid) 
-    {
-        *ppvObj = (LPVOID)this;
-        return NOERROR;
-    }
+  if (IID_IUnknown == riid  ||  IID_IDispatch == riid) 
+  {
+    *ppvObj = (LPVOID)this;
+    return NOERROR;
+  }
 
-    return E_NOINTERFACE;
+  return E_NOINTERFACE;
 }
 
 
@@ -42,296 +42,295 @@ because CPluginUserSettings won't be deleted when reference counter == 0
 
 ULONG __stdcall CPluginUserSettings::AddRef()
 {
-    return 1;
+  return 1;
 }
 
 
 ULONG __stdcall CPluginUserSettings::Release()
 {
-    return 1;
+  return 1;
 }
 
 
 STDMETHODIMP CPluginUserSettings::GetTypeInfoCount(UINT* pctinfo)
 {
-	return E_NOTIMPL;
+  return E_NOTIMPL;
 }
 
 
 STDMETHODIMP CPluginUserSettings::GetTypeInfo(UINT itinfo, LCID lcid, ITypeInfo** pptinfo)
 {
-	return E_NOTIMPL;
+  return E_NOTIMPL;
 }
 
 
 STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid)
 {
-    if (!rgszNames)
-        return E_POINTER;
+  if (!rgszNames)
+    return E_POINTER;
 
-    if (!rgdispid)
-        return E_POINTER;
+  if (!rgdispid)
+    return E_POINTER;
 
-    if (1 != cNames)
-        return E_FAIL;
+  if (1 != cNames)
+    return E_FAIL;
 
-    size_t indxMethod = 0;
-    for (; indxMethod < countof(s_Methods); indxMethod++)
-    {
-        if (*rgszNames == s_Methods[indxMethod])
-            break;
-    }
+  size_t indxMethod = 0;
+  for (; indxMethod < countof(s_Methods); indxMethod++)
+  {
+    if (*rgszNames == s_Methods[indxMethod])
+      break;
+  }
 
-    if (indxMethod == countof(s_Methods))
-        return DISP_E_MEMBERNOTFOUND;
+  if (indxMethod == countof(s_Methods))
+    return DISP_E_MEMBERNOTFOUND;
 
-    *rgdispid = indxMethod;
+  *rgdispid = indxMethod;
 
-    return S_OK;
+  return S_OK;
 }
 
 
 static CString sGetLanguage()
 {
-	CPluginSettings* settings = CPluginSettings::GetInstance();
+  CPluginSettings* settings = CPluginSettings::GetInstance();
 
-	return settings->GetString(SETTING_LANGUAGE);
+  return settings->GetString(SETTING_LANGUAGE);
 }
 
 
 static bool sReadSettingsPageFile(CPluginIniFileW& iniFile)
 {
-    return iniFile.HasSection(sGetLanguage());
+  return iniFile.HasSection(sGetLanguage());
 }
 
 
 static CPluginIniFileW& sReadSettingsPageFile(bool& readOK)
 {
-    static CPluginIniFileW iniFile(CPluginSettings::GetDataPath(SETTING_PAGE_INI_FILE));
-    static bool s_readOK = iniFile.Read();
+  static CPluginIniFileW iniFile(CPluginSettings::GetDataPath(SETTING_PAGE_INI_FILE));
+  static bool s_readOK = iniFile.Read();
 
-    readOK = s_readOK;
+  readOK = s_readOK;
 
-    return iniFile;
+  return iniFile;
 }
 
 
 CStringW sGetMessage(const CString& key)
 {
-    bool readOK = false;
-    CPluginIniFileW& iniFile = sReadSettingsPageFile(readOK);
+  bool readOK = false;
+  CPluginIniFileW& iniFile = sReadSettingsPageFile(readOK);
 
-    return iniFile.GetValue(sGetLanguage(), key);
+  return iniFile.GetValue(sGetLanguage(), key);
 }
 
 
 STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispparams, VARIANT* pVarResult,
-	EXCEPINFO* pExcepinfo, UINT* pArgErr)
+                                         EXCEPINFO* pExcepinfo, UINT* pArgErr)
 {
-    if (!pDispparams)
-        return E_POINTER;
+  if (!pDispparams)
+    return E_POINTER;
 
-    if (!pExcepinfo)
-        return E_POINTER; 
+  if (!pExcepinfo)
+    return E_POINTER; 
 
-    if (pDispparams->cNamedArgs)
-        return DISP_E_NONAMEDARGS;
+  if (pDispparams->cNamedArgs)
+    return DISP_E_NONAMEDARGS;
 
-    CPluginSettings* settings = CPluginSettings::GetInstance();
+  CPluginSettings* settings = CPluginSettings::GetInstance();
 
-    if (dispidMember  < 0  ||  dispidMember >= countof(s_Methods))
-        return DISP_E_BADINDEX;
+  if (dispidMember  < 0  ||  dispidMember >= countof(s_Methods))
+    return DISP_E_BADINDEX;
 
-    const CString& method = s_Methods[dispidMember];
+  const CString& method = s_Methods[dispidMember];
 
-    if (s_GetMessage == method)
+  if (s_GetMessage == method)
+  {
+    if (1 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    if (VT_BSTR != pDispparams->rgvarg[0].vt)
+      return DISP_E_TYPEMISMATCH;
+
+    if (pVarResult)
     {
-        if (1 != pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
+      CComBSTR key = pDispparams->rgvarg[0].bstrVal;
+      CStringW message = sGetMessage((BSTR)key);
 
-        if (VT_BSTR != pDispparams->rgvarg[0].vt)
-            return DISP_E_TYPEMISMATCH;
+      pVarResult->vt = VT_BSTR; 
+      pVarResult->bstrVal = SysAllocString(message);
+    }
+  }
+  else if (s_GetLanguageCount == method)
+  {
+    if (pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
 
-        if (pVarResult)
+    if (pVarResult)
+    {
+      std::map<CString, CString> languageList = settings->GetFilterLanguageTitleList();
+
+      pVarResult->vt = VT_I4; 
+      pVarResult->lVal = languageList.size();
+    }
+  }
+  else if (s_GetLanguageByIndex == method)
+  {
+    if (1 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    if (VT_I4 != pDispparams->rgvarg[0].vt)
+      return DISP_E_TYPEMISMATCH;
+
+    if (pVarResult)
+    {
+      int indx = pDispparams->rgvarg[0].lVal;
+
+      std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
+
+      if (indx < 0  ||  indx >= (int)languageTitleList.size())
+        return DISP_E_EXCEPTION;
+
+      CString language;
+
+      int curIndx = 0;
+      for(std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+      {
+        if (curIndx == indx)
         {
-            CComBSTR key = pDispparams->rgvarg[0].bstrVal;
-            CStringW message = sGetMessage((BSTR)key);
-
-            pVarResult->vt = VT_BSTR; 
-            pVarResult->bstrVal = SysAllocString(message);
+          language = it->first;
+          break;
         }
-    }
-    else if (s_GetLanguageCount == method)
-    {
-        if (pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
 
-        if (pVarResult)
+        curIndx++;
+      }
+
+      pVarResult->vt = VT_BSTR; 
+      pVarResult->bstrVal = SysAllocString(language);
+    }
+  }
+  else if (s_GetLanguageTitleByIndex == method)
+  {
+    if (1 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    if (VT_I4 != pDispparams->rgvarg[0].vt)
+      return DISP_E_TYPEMISMATCH;
+
+    if (pVarResult)
+    {
+      int indx = pDispparams->rgvarg[0].lVal;
+
+      std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
+
+      if (indx < 0  ||  indx >= (int)languageTitleList.size())
+        return DISP_E_EXCEPTION;
+
+      CString languageTitle;
+
+      int curIndx = 0;
+      for(std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+      {
+        if (curIndx == indx)
         {
-            std::map<CString, CString> languageList = settings->GetFilterLanguageTitleList();
-
-            pVarResult->vt = VT_I4; 
-            pVarResult->lVal = languageList.size();
+          languageTitle = it->second;
+          break;
         }
+
+        curIndx++;
+      }
+
+      pVarResult->vt = VT_BSTR; 
+      pVarResult->bstrVal = SysAllocString(languageTitle);
     }
-    else if (s_GetLanguageByIndex == method)
+  }
+  else if (s_SetLanguage == method)
+  {
+    if (1 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    if (VT_BSTR != pDispparams->rgvarg[0].vt)
+      return DISP_E_TYPEMISMATCH;
+
+    CComBSTR language = pDispparams->rgvarg[0].bstrVal;
+
+    settings->SetString(SETTING_LANGUAGE, (BSTR)language);
+    CPluginDictionary* dict = CPluginDictionary::GetInstance();
+    dict->SetLanguage((BSTR)language);
+    settings->Write();
+
+    settings->CheckFilterAndDownload();
+  }
+  else if (s_GetLanguage == method)
+  {
+    if (pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    if (pVarResult)
     {
-        if (1 != pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
+      CString language = settings->GetString(SETTING_LANGUAGE);
 
-        if (VT_I4 != pDispparams->rgvarg[0].vt)
-            return DISP_E_TYPEMISMATCH;
+      pVarResult->vt = VT_BSTR; 
+      pVarResult->bstrVal = SysAllocString(language);
+    }
+  }
+  else if (s_GetWhitelistDomains == method)
+  {
+    if (pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
 
-        if (pVarResult)
+    if (pVarResult)
+    {
+      TDomainList whiteList = settings->GetWhiteListedDomainList(true);
+      CString sWhiteList;
+      for (TDomainList::const_iterator it = whiteList.begin(); it != whiteList.end(); ++it)
+      {            
+        if (!sWhiteList.IsEmpty())
         {
-            int indx = pDispparams->rgvarg[0].lVal;
-
-            std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
-
-            if (indx < 0  ||  indx >= (int)languageTitleList.size())
-                return DISP_E_EXCEPTION;
-
-            CString language;
-
-            int curIndx = 0;
-            for(std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
-            {
-                if (curIndx == indx)
-                {
-                    language = it->first;
-                    break;
-                }
-
-                curIndx++;
-            }
-
-            pVarResult->vt = VT_BSTR; 
-            pVarResult->bstrVal = SysAllocString(language);
+          sWhiteList += ',';
         }
+        sWhiteList += it->first;
+      }
+
+      pVarResult->vt = VT_BSTR; 
+      pVarResult->bstrVal = SysAllocString(sWhiteList);
     }
-    else if (s_GetLanguageTitleByIndex == method)
+  }
+  else if (s_AddWhitelistDomain == method)
+  {
+    if (1 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    if (VT_BSTR != pDispparams->rgvarg[0].vt)
+      return DISP_E_TYPEMISMATCH;
+
+    CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
+    if (domain.Length())
     {
-        if (1 != pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
-
-        if (VT_I4 != pDispparams->rgvarg[0].vt)
-            return DISP_E_TYPEMISMATCH;
-
-        if (pVarResult)
-        {
-            int indx = pDispparams->rgvarg[0].lVal;
-
-            std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
-
-            if (indx < 0  ||  indx >= (int)languageTitleList.size())
-                return DISP_E_EXCEPTION;
-
-            CString languageTitle;
-
-            int curIndx = 0;
-            for(std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
-            {
-                if (curIndx == indx)
-                {
-                    languageTitle = it->second;
-                    break;
-                }
-
-                curIndx++;
-            }
-
-            pVarResult->vt = VT_BSTR; 
-            pVarResult->bstrVal = SysAllocString(languageTitle);
-        }
+      if (!settings->IsWhiteListedDomain((BSTR)domain)) 
+      {
+        settings->AddWhiteListedDomain((BSTR)domain, 1, true);
+      }
     }
-    else if (s_SetLanguage == method)
+  }
+  else if (s_RemoveWhitelistDomain == method)
+  {
+    if (1 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    if (VT_BSTR != pDispparams->rgvarg[0].vt)
+      return DISP_E_TYPEMISMATCH;
+
+    CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
+    if (settings->IsWhiteListedDomain((BSTR)domain)) 
     {
-        if (1 != pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
-
-        if (VT_BSTR != pDispparams->rgvarg[0].vt)
-            return DISP_E_TYPEMISMATCH;
-
-        CComBSTR language = pDispparams->rgvarg[0].bstrVal;
-
-        settings->SetString(SETTING_LANGUAGE, (BSTR)language);
-		CPluginDictionary* dict = CPluginDictionary::GetInstance();
-		dict->SetLanguage((BSTR)language);
-        settings->Write();
-
-		settings->CheckFilterAndDownload();
+      settings->AddWhiteListedDomain((BSTR)domain, 3, true);
+      CPluginClient::GetInstance()->ClearWhiteListCache();
     }
-    else if (s_GetLanguage == method)
-    {
-        if (pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
+  }
+  else 
+    return DISP_E_MEMBERNOTFOUND;
 
-        if (pVarResult)
-        {
-            CString language = settings->GetString(SETTING_LANGUAGE);
-
-            pVarResult->vt = VT_BSTR; 
-            pVarResult->bstrVal = SysAllocString(language);
-        }
-    }
-    else if (s_GetWhitelistDomains == method)
-    {
-        if (pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
-
-        if (pVarResult)
-        {
-            TDomainList whiteList = settings->GetWhiteListedDomainList(true);
-            CString sWhiteList;
-            for (TDomainList::const_iterator it = whiteList.begin(); it != whiteList.end(); ++it)
-            {            
-                if (!sWhiteList.IsEmpty())
-                {
-                    sWhiteList += ',';
-                }
-                sWhiteList += it->first;
-            }
-
-            pVarResult->vt = VT_BSTR; 
-            pVarResult->bstrVal = SysAllocString(sWhiteList);
-        }
-    }
-    else if (s_AddWhitelistDomain == method)
-    {
-        if (1 != pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
-
-        if (VT_BSTR != pDispparams->rgvarg[0].vt)
-            return DISP_E_TYPEMISMATCH;
-
-        CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
-        if (domain.Length())
-        {
-            if (!settings->IsWhiteListedDomain((BSTR)domain)) 
-			{
-                settings->AddWhiteListedDomain((BSTR)domain, 1, true);
-            }
-        }
-    }
-    else if (s_RemoveWhitelistDomain == method)
-    {
-        if (1 != pDispparams->cArgs)
-            return DISP_E_BADPARAMCOUNT;
-
-        if (VT_BSTR != pDispparams->rgvarg[0].vt)
-            return DISP_E_TYPEMISMATCH;
-
-        CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
-        if (settings->IsWhiteListedDomain((BSTR)domain)) 
-		{
-            settings->AddWhiteListedDomain((BSTR)domain, 3, true);
-            CPluginClient::GetInstance()->ClearWhiteListCache();
-        }
-    }
-    else 
-        return DISP_E_MEMBERNOTFOUND;
-
-    return S_OK;
+  return S_OK;
 }
 
- 
