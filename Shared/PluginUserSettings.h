@@ -19,9 +19,9 @@ public:
   ULONG __stdcall Release();
 
   // IDispatch
-	STDMETHOD(GetTypeInfoCount)(UINT* pctinfo);
-	STDMETHOD(GetTypeInfo)(UINT itinfo, LCID lcid, ITypeInfo** pptinfo);
-	STDMETHOD(GetIDsOfNames)(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid);
-	STDMETHOD(Invoke)(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispparams, VARIANT* pVarResult,
-		EXCEPINFO* pExcepinfo, UINT* pArgErr);
+  STDMETHOD(GetTypeInfoCount)(UINT* pctinfo);
+  STDMETHOD(GetTypeInfo)(UINT itinfo, LCID lcid, ITypeInfo** pptinfo);
+  STDMETHOD(GetIDsOfNames)(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid);
+  STDMETHOD(Invoke)(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispparams, VARIANT* pVarResult,
+    EXCEPINFO* pExcepinfo, UINT* pArgErr);
 };
