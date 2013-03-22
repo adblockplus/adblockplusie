@@ -3,6 +3,7 @@ AdBlocker/Adblock.tlb
 AdBlocker/AdBlocker.h
 AdBlocker/AdBlocker_i.c
 AdBlocker/AdBlocker_p.c
+AdBlocker/AdBlocker.vcxproj.user
 AdBlocker/Debug Production
 AdBlocker/Debug Test
 AdBlocker/Release Production
@@ -23,3 +24,4 @@ Avast/AdBlocker_p.c
 Avast/Debug Avast
 Avast/Release Avast
 Avast/dlldata.c
+ipch
