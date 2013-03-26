@@ -142,7 +142,7 @@
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(WINDDKDIR)\lib\ATL\i386</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
@@ -150,7 +150,7 @@
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(WINDDKDIR)\lib\ATL\i386</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
@@ -158,7 +158,7 @@
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(WINDDKDIR)\lib\ATL\i386</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
@@ -166,7 +166,7 @@
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(WINDDKDIR)\lib\ATL\i386</LibraryPath>
   </PropertyGroup>
@@ -190,7 +190,7 @@
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(WINDDKDIR)\lib\ATL\amd64</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
@@ -198,7 +198,7 @@
     <OutDir>$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(WINDDKDIR)\lib\ATL\amd64</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
@@ -263,7 +263,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "install\output\$(TargetName).dll"</Command>
+      <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
+copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
+copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
+xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'">
@@ -323,7 +326,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "install\output\$(TargetName).dll"</Command>
+      <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
+copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
+copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
+xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Test|Win32'">
@@ -377,7 +383,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "install\output\$(TargetName).dll"</Command>
+      <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
+copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
+copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
+xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">
@@ -440,7 +449,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "install\output\$(TargetName).dll"</Command>
+      <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
+copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
+copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
+xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|x64'">
@@ -497,7 +509,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "install\output\$(TargetName)x64.dll"</Command>
+      <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
+copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
+copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
+xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'">
@@ -554,7 +569,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "install\output\$(TargetName).dll"</Command>
+      <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
+copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
+copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
+xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Test|x64'">
@@ -607,7 +625,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "install\output\$(TargetName).dll"</Command>
+      <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
+copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
+copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
+xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|x64'">
@@ -664,7 +685,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(IntDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <PostBuildEvent>
-      <Command>copy "$(TargetPath)" "install\output\$(TargetName).dll"</Command>
+      <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
+copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
+copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
+xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -761,6 +785,15 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <None Include="AdBlocker.rgs" />
     <None Include="AdBlockerAvast.rgs" />
     <None Include="Adblock.def" />
+    <None Include="files\dictionary_w.ini">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">true</DeploymentContent>
+    </None>
+    <None Include="files\settings.ini">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">true</DeploymentContent>
+    </None>
+    <None Include="files\settings_page_w.ini">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">false</DeploymentContent>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AdBlocker.rc" />
