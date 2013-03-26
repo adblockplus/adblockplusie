@@ -260,6 +260,12 @@ void CPluginDictionary::Create(bool forceCreate)
       m_dictionary["DOWNLOAD_UPDATE_ERROR_TEXT"] = "Error downloading installer";
       m_dictionary["DOWNLOAD_UPDATE_SUCCESS_TEXT"] = "If you choose to update Adblock Plus, your Internet Explorer will close before installation";
 
+      // Various dialogs
+      m_dictionary["ERROR_STATUS_BAR_DISABLED"] = "The plugin menu is located in the statusbar, would you like to enable Internet Explorer's statusbar?";
+      m_dictionary["ERROR_STATUS_BAR_DISABLED_TITLE"] = "Enable status bar?";
+      m_dictionary["ERROR_CAN_NOT_ENABLE_STATUS_BAR"] = "The plugin menu is located in the statusbar. Please enable it under View->Toolbars->Status bar";
+      m_dictionary["ERROR_CAN_NOT_ENABLE_STATUS_BAR_TITLE"] = "Please enable status bar";
+
 #endif
       // General texts
       m_dictionary["GENERAL_YES"] = "Yes";
