@@ -12,11 +12,11 @@ class CPluginDomTraverserCache : public CPluginDomTraverserCacheBase
 {
 public:
 
-    bool m_isHidden;
+  bool m_isHidden;
 
-	CPluginDomTraverserCache() : CPluginDomTraverserCacheBase(), m_isHidden(false) {}
+  CPluginDomTraverserCache() : CPluginDomTraverserCacheBase(), m_isHidden(false) {}
 
-	void Init() { CPluginDomTraverserCacheBase::Init(); m_isHidden = false; }
+  void Init() { CPluginDomTraverserCacheBase::Init(); m_isHidden = false; }
 };
 
 
@@ -25,16 +25,16 @@ class CPluginDomTraverser : public CPluginDomTraverserBase<CPluginDomTraverserCa
 
 public:
 
-	CPluginDomTraverser(CPluginTab* tab);
+  CPluginDomTraverser(CPluginTab* tab);
 
 protected:
 
-	bool OnIFrame(IHTMLElement* pEl, const CString& url, CString& indent);
-    bool OnElement(IHTMLElement* pEl, const CString& tag, CPluginDomTraverserCache* cache, bool isDebug, CString& indent);
+  bool OnIFrame(IHTMLElement* pEl, const CString& url, CString& indent);
+  bool OnElement(IHTMLElement* pEl, const CString& tag, CPluginDomTraverserCache* cache, bool isDebug, CString& indent);
 
-	bool IsEnabled();
+  bool IsEnabled();
 
-	void HideElement(IHTMLElement* pEl, const CString& type, const CString& url, bool isDebug, CString& indent);
+  void HideElement(IHTMLElement* pEl, const CString& type, const CString& url, bool isDebug, CString& indent);
 
 };
 

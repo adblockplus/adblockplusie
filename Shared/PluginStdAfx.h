@@ -52,34 +52,33 @@ extern CComModule _Module;
 #include "PluginErrorCodes.h"
 
 #if (defined PRODUCT_ADBLOCKPLUS)
- #include "Config.h"
+#include "Config.h"
 #endif
 
 #if (defined PRODUCT_ADBLOCKPLUS)
 #if (defined ENTERPRISE)
-	#define CONFIG_IN_REGISTRY
+#define CONFIG_IN_REGISTRY
 #endif
- #include "..\AdBlocker\Resource.h"
+#include "..\AdBlocker\Resource.h"
 #endif
 
 #if (defined PRODUCT_ADBLOCKPLUS)
- #include "PluginDebug.h"
+#include "PluginDebug.h"
 #endif
 
 
 #define _CRTDBG_MAP_ALLOC
+#define ABP
 #include <stdlib.h>
 #include <crtdbg.h>
 
 
 #ifdef _MSC_VER
- #pragma warning(push)
- // warning C4996: function call with parameters that might be unsafe
- #pragma warning(disable : 4996)
+#pragma warning(push)
+// warning C4996: function call with parameters that might be unsafe
+#pragma warning(disable : 4996)
 #endif
 
-
-#define _CRTDBG_MAPALLOC 
 #endif // not _STDAFX_H
 
 #ifndef countof

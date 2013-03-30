@@ -1,13 +1,13 @@
 /*
- * DownloadDialog.h 2009-01-11 14:18:18 Jakob Holck
- */
+* DownloadDialog.h 2009-01-11 14:18:18 Jakob Holck
+*/
 
 #pragma once
 
 enum
 {
-	UF_BINDSTATUS_FIRST = BINDSTATUS_FINDINGRESOURCE,
-	UF_BINDSTATUS_LAST = BINDSTATUS_ACCEPTRANGES
+  UF_BINDSTATUS_FIRST = BINDSTATUS_FINDINGRESOURCE,
+  UF_BINDSTATUS_LAST = BINDSTATUS_ACCEPTRANGES
 };
 
 #include <atlhost.h>
@@ -20,75 +20,75 @@ class CPluginDownloadDialog : public CAxDialogImpl<CPluginDownloadDialog>
 
 public:
 
-	CPluginDownloadDialog(){};
-	~CPluginDownloadDialog(){};
+  CPluginDownloadDialog(){};
+  ~CPluginDownloadDialog(){};
 
-	static DWORD WINAPI StartThread (LPVOID param);	//controlling function header
-	
-	struct DOWNLOADSTATUS
-	{
-		ULONG ulProgress;
-		ULONG ulProgressMax;
-		ULONG ulStatusCode;
-		LPCWSTR szStatusText;
-	};
+  static DWORD WINAPI StartThread (LPVOID param);	//controlling function header
 
-	typedef struct THREADSTRUCT				//structure for passing to the controlling function
-	{
-		CPluginDownloadDialog* _this;
-		HANDLE hEventStop;
-		CWindow pBar;
-		CString url;
-		CString path;
-		CString errortext;
-		CString postdownloadtext;
-	} THREADSTRUCT;
-	
-	void SetUrlAndPath(CString url_, CString path_);
+  struct DOWNLOADSTATUS
+  {
+    ULONG ulProgress;
+    ULONG ulProgressMax;
+    ULONG ulStatusCode;
+    LPCWSTR szStatusText;
+  };
 
-	enum { IDD = IDD_DOWNLOADDIALOG };
+  typedef struct THREADSTRUCT				//structure for passing to the controlling function
+  {
+    CPluginDownloadDialog* _this;
+    HANDLE hEventStop;
+    CWindow pBar;
+    CString url;
+    CString path;
+    CString errortext;
+    CString postdownloadtext;
+  } THREADSTRUCT;
 
-BEGIN_MSG_MAP(CPluginDownloadDialog)
-	MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-	COMMAND_HANDLER(IDCANCEL, BN_CLICKED, OnClickedCancel)
-	COMMAND_HANDLER(IDC_INSTALLBTN, BN_CLICKED, OnClickedInstall)
-	COMMAND_HANDLER(IDC_INSTALLBTN, BN_CLICKED, OnBnClickedInstallbtn)
-	CHAIN_MSG_MAP(CAxDialogImpl<CPluginDownloadDialog>)
-END_MSG_MAP()
+  void SetUrlAndPath(CString url_, CString path_);
 
-	LRESULT OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT OnClickedInstall(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
-	{
-		EndDialog(wID);
-		return 1;
-	}
+  enum { IDD = IDD_DOWNLOADDIALOG };
 
-	LRESULT OnClickedCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
-	{
-		EndDialog(wID);
-		return 0;
-	}
+  BEGIN_MSG_MAP(CPluginDownloadDialog)
+    MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+    COMMAND_HANDLER(IDCANCEL, BN_CLICKED, OnClickedCancel)
+    COMMAND_HANDLER(IDC_INSTALLBTN, BN_CLICKED, OnClickedInstall)
+    COMMAND_HANDLER(IDC_INSTALLBTN, BN_CLICKED, OnBnClickedInstallbtn)
+    CHAIN_MSG_MAP(CAxDialogImpl<CPluginDownloadDialog>)
+  END_MSG_MAP()
 
-	struct DOWNLOADPARAM
-	{
-		HWND hWnd;
-		HANDLE hEventStop;
-		CString strURL;
-		CString strFileName;
-	};
+  LRESULT OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+  LRESULT OnClickedInstall(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+  {
+    EndDialog(wID);
+    return 1;
+  }
+
+  LRESULT OnClickedCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+  {
+    EndDialog(wID);
+    return 0;
+  }
+
+  struct DOWNLOADPARAM
+  {
+    HWND hWnd;
+    HANDLE hEventStop;
+    CString strURL;
+    CString strFileName;
+  };
 
 private:
-	HANDLE m_eventStop;
+  HANDLE m_eventStop;
 
 protected:
-	
-	CString m_url;
-	CString m_path;
-	CString m_errorText;
-	CString m_postText;
+
+  CString m_url;
+  CString m_path;
+  CString m_errorText;
+  CString m_postText;
 
 public:
-	LRESULT OnBnClickedInstallbtn(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+  LRESULT OnBnClickedInstallbtn(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 };
 
@@ -99,30 +99,30 @@ class CBSCallbackImpl : public IBindStatusCallback
 
 public:
 
-	CBSCallbackImpl(HWND hWnd, HANDLE eventStop, CWindow pBar);
+  CBSCallbackImpl(HWND hWnd, HANDLE eventStop, CWindow pBar);
 
-	// IUnknown methods
-	STDMETHOD(QueryInterface)(REFIID riid, void **ppvObject);
-	STDMETHOD_(ULONG, AddRef)();
-	STDMETHOD_(ULONG, Release)();
+  // IUnknown methods
+  STDMETHOD(QueryInterface)(REFIID riid, void **ppvObject);
+  STDMETHOD_(ULONG, AddRef)();
+  STDMETHOD_(ULONG, Release)();
 
-	// IBindStatusCallback methods
-	STDMETHOD(OnStartBinding)(DWORD, IBinding *);
-	STDMETHOD(GetPriority)(LONG *);
-	STDMETHOD(OnLowResource)(DWORD);
-	STDMETHOD(OnProgress)(ULONG ulProgress, ULONG ulProgressMax, ULONG ulStatusCode, LPCWSTR szStatusText);
-	STDMETHOD(OnStopBinding)(HRESULT, LPCWSTR);
-	STDMETHOD(GetBindInfo)(DWORD *, BINDINFO *);
-	STDMETHOD(OnDataAvailable)(DWORD, DWORD, FORMATETC *, STGMEDIUM *);
-	STDMETHOD(OnObjectAvailable)(REFIID, IUnknown *);
+  // IBindStatusCallback methods
+  STDMETHOD(OnStartBinding)(DWORD, IBinding *);
+  STDMETHOD(GetPriority)(LONG *);
+  STDMETHOD(OnLowResource)(DWORD);
+  STDMETHOD(OnProgress)(ULONG ulProgress, ULONG ulProgressMax, ULONG ulStatusCode, LPCWSTR szStatusText);
+  STDMETHOD(OnStopBinding)(HRESULT, LPCWSTR);
+  STDMETHOD(GetBindInfo)(DWORD *, BINDINFO *);
+  STDMETHOD(OnDataAvailable)(DWORD, DWORD, FORMATETC *, STGMEDIUM *);
+  STDMETHOD(OnObjectAvailable)(REFIID, IUnknown *);
 
 protected:
 
-	ULONG m_ulObjRefCount;
+  ULONG m_ulObjRefCount;
 
 private:
-	
-	HWND m_hWnd;
-	CWindow m_pBar;
-	HANDLE m_hEventStop;
+
+  HWND m_hWnd;
+  CWindow m_pBar;
+  HANDLE m_hEventStop;
 };

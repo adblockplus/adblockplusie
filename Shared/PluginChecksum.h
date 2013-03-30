@@ -7,26 +7,26 @@ class CPluginChecksum
 
 public:
 
-    CPluginChecksum();
-    ~CPluginChecksum();
+  CPluginChecksum();
+  ~CPluginChecksum();
 
-    void Clear();
+  void Clear();
 
-    DWORD Get() const;
-	CString GetAsString() const;
+  DWORD Get() const;
+  CString GetAsString() const;
 
-    void Add(const CStringA& s);
-    void Add(const CStringW& s);
-    void Add(const CStringA& s1, const CStringA& s2);
-    void Add(const CStringW& s1, const CStringW& s2);
-    void Add(BYTE b);
+  void Add(const CStringA& s);
+  void Add(const CStringW& s);
+  void Add(const CStringA& s1, const CStringA& s2);
+  void Add(const CStringW& s1, const CStringW& s2);
+  void Add(BYTE b);
 
 protected:
 
-    WORD m_r;
-    WORD m_c1;
-    WORD m_c2;
-    DWORD m_sum;
+  WORD m_r;
+  WORD m_c1;
+  WORD m_c2;
+  DWORD m_sum;
 };
 
 

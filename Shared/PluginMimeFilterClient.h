@@ -7,13 +7,13 @@ class CPluginMimeFilterClient
 
 public:
 
-	CPluginMimeFilterClient();
-	~CPluginMimeFilterClient();
+  CPluginMimeFilterClient();
+  ~CPluginMimeFilterClient();
 
-	void Unregister();
+  void Unregister();
 
-	CComPtr<IClassFactory> m_classFactory;
-	CComPtr<IClassFactory> m_spCFHTTP;
+  CComPtr<IClassFactory> m_classFactory;
+  CComPtr<IClassFactory> m_spCFHTTP;
 };
 
 
