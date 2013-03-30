@@ -566,23 +566,23 @@ void CPluginClass::ShowStatusBar()
           CPluginDictionary* dictionary = CPluginDictionary::GetInstance(false);
           settings->SetBool("statusbarasked", true);
           settings->Write();
- 
+
           HKEY pHkey;
           HKEY pHkeySub;
           LSTATUS regRes = 0;
           regRes = RegOpenCurrentUser(KEY_WRITE, &pHkey);
-          
+
           // Do we have enough rights to enable a status bar?
           if (regRes != 0)
           { 
             // We use the tab window here and in the next few calls, since the browser window may still not be available
             LRESULT res = MessageBox((HWND)m_hTabWnd, dictionary->Lookup("ERROR_CAN_NOT_ENABLE_STATUS_BAR"), 
-                                      dictionary->Lookup("ERROR_CAN_NOT_ENABLE_STATUS_BAR_TITLE"), MB_OK);
+              dictionary->Lookup("ERROR_CAN_NOT_ENABLE_STATUS_BAR_TITLE"), MB_OK);
             return;
           }
           // Ask if a user wants to enable a status bar automatically
           LRESULT res = MessageBox((HWND)m_hTabWnd, dictionary->Lookup("ERROR_STATUS_BAR_DISABLED"), 
-                                    dictionary->Lookup("ERROR_STATUS_BAR_DISABLED_TITLE"), MB_YESNO);
+            dictionary->Lookup("ERROR_STATUS_BAR_DISABLED_TITLE"), MB_YESNO);
           if (res == IDYES)
           {
             DWORD trueth = 1;
@@ -929,6 +929,7 @@ bool CPluginClass::InitObject(bool bBHO)
       return false;
     }
   }
+
 
   // Create status pane
   if (bBHO)
@@ -2117,7 +2118,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
             if (!isVisible)
             {
               CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
-              
+
               LRESULT res = MessageBox(NULL, dictionary->Lookup("ERROR_STATUS_BAR_DISABLED"), dictionary->Lookup("ERROR_STATUS_BAR_DISABLED_TITLE"), MB_YESNO);
               if (res == IDYES)
               {

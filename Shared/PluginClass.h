@@ -22,174 +22,174 @@
 #define WM_LAUNCH_INFO					(WM_APP + 10)
 
 #ifdef SUPPORT_WHITELIST
- #define WM_WHITELIST_DOMAIN		        (WM_LAUNCH_INFO + 1)
- #define WM_WHITELIST_DOMAIN_MAX	        (WM_WHITELIST_DOMAIN + DOMAIN_HISTORY_MAX_COUNT + 1)
- #define WM_WHITELIST_DOMAIN_SUPPORT		(WM_WHITELIST_DOMAIN_MAX + 1)
- #define WM_WHITELIST_DOMAIN_SUPPORT_MAX	(WM_WHITELIST_DOMAIN_SUPPORT + DOMAIN_HISTORY_MAX_COUNT + 1)
- #define WM_WHITELIST_DOMAIN_ERROR		    (WM_WHITELIST_DOMAIN_SUPPORT_MAX + 1)
- #define WM_WHITELIST_DOMAIN_ERROR_MAX	    (WM_WHITELIST_DOMAIN_ERROR + DOMAIN_HISTORY_MAX_COUNT + 1)
- #define WM_GROUP2_START                    (WM_WHITELIST_DOMAIN_ERROR_MAX + 1)
+#define WM_WHITELIST_DOMAIN		        (WM_LAUNCH_INFO + 1)
+#define WM_WHITELIST_DOMAIN_MAX	        (WM_WHITELIST_DOMAIN + DOMAIN_HISTORY_MAX_COUNT + 1)
+#define WM_WHITELIST_DOMAIN_SUPPORT		(WM_WHITELIST_DOMAIN_MAX + 1)
+#define WM_WHITELIST_DOMAIN_SUPPORT_MAX	(WM_WHITELIST_DOMAIN_SUPPORT + DOMAIN_HISTORY_MAX_COUNT + 1)
+#define WM_WHITELIST_DOMAIN_ERROR		    (WM_WHITELIST_DOMAIN_SUPPORT_MAX + 1)
+#define WM_WHITELIST_DOMAIN_ERROR_MAX	    (WM_WHITELIST_DOMAIN_ERROR + DOMAIN_HISTORY_MAX_COUNT + 1)
+#define WM_GROUP2_START                    (WM_WHITELIST_DOMAIN_ERROR_MAX + 1)
 #else
- #define WM_GROUP2_START                    (WM_LAUNCH_INFO + 1)
+#define WM_GROUP2_START                    (WM_LAUNCH_INFO + 1)
 #endif
 
 class CPluginMimeFilterClient;
 
 
 class ATL_NO_VTABLE CPluginClass : 
-	public CComObjectRootEx<CComMultiThreadModel>,
-	public CComCoClass<CPluginClass, &CLSID_PluginClass>,
-	public IObjectWithSiteImpl<CPluginClass>,
-	public IDispatchImpl<IIEPlugin, &IID_IIEPlugin, &LIBID_PluginLib>,
-	public IOleCommandTarget
+  public CComObjectRootEx<CComMultiThreadModel>,
+  public CComCoClass<CPluginClass, &CLSID_PluginClass>,
+  public IObjectWithSiteImpl<CPluginClass>,
+  public IDispatchImpl<IIEPlugin, &IID_IIEPlugin, &LIBID_PluginLib>,
+  public IOleCommandTarget
 {
 
-	friend class CPluginTab;
+  friend class CPluginTab;
 
 private:
 
-	CPluginTab* m_tab;
+  CPluginTab* m_tab;
 
-	static CPluginTab* s_activeTab;
+  static CPluginTab* s_activeTab;
 
 public:
 
-	DECLARE_REGISTRY_RESOURCEID(IDR_PLUGIN_CLASS)
+  DECLARE_REGISTRY_RESOURCEID(IDR_PLUGIN_CLASS)
 
-	DECLARE_PROTECT_FINAL_CONSTRUCT()
+  DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	BEGIN_COM_MAP(CPluginClass)
-		COM_INTERFACE_ENTRY(IIEPlugin)
-		COM_INTERFACE_ENTRY(IDispatch)
-		COM_INTERFACE_ENTRY_IMPL(IObjectWithSite)
-		COM_INTERFACE_ENTRY(IOleCommandTarget)
-	END_COM_MAP()
+  BEGIN_COM_MAP(CPluginClass)
+    COM_INTERFACE_ENTRY(IIEPlugin)
+    COM_INTERFACE_ENTRY(IDispatch)
+    COM_INTERFACE_ENTRY_IMPL(IObjectWithSite)
+    COM_INTERFACE_ENTRY(IOleCommandTarget)
+  END_COM_MAP()
 
-	CPluginClass();
-	~CPluginClass();
-	
-	HRESULT FinalConstruct();
-	void FinalRelease();
+  CPluginClass();
+  ~CPluginClass();
 
-// IObjectWithSite
+  HRESULT FinalConstruct();
+  void FinalRelease();
 
-	STDMETHOD(SetSite)(IUnknown *pUnkSite);
+  // IObjectWithSite
 
-// IOleCommandTarget	
+  STDMETHOD(SetSite)(IUnknown *pUnkSite);
 
-	STDMETHOD(QueryStatus)(const GUID* pguidCmdGroup, ULONG cCmds, OLECMD prgCmds[], OLECMDTEXT* pCmdText);
-	STDMETHOD(Exec)(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG* pvaOut);
+  // IOleCommandTarget	
 
-// IDispatch
+  STDMETHOD(QueryStatus)(const GUID* pguidCmdGroup, ULONG cCmds, OLECMD prgCmds[], OLECMDTEXT* pCmdText);
+  STDMETHOD(Exec)(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG* pvaOut);
 
-	STDMETHOD(Invoke)(DISPID dispidMember,REFIID riid, LCID lcid, WORD wFlags,
-        DISPPARAMS * pdispparams, VARIANT * pvarResult,EXCEPINFO * pexcepinfo, UINT * puArgErr);
+  // IDispatch
 
-	static CPluginTab* GetTab(DWORD dwThreadId);
-	CPluginTab* GetTab();
+  STDMETHOD(Invoke)(DISPID dispidMember,REFIID riid, LCID lcid, WORD wFlags,
+    DISPPARAMS * pdispparams, VARIANT * pvarResult,EXCEPINFO * pexcepinfo, UINT * puArgErr);
 
-    void UpdateStatusBar();
-	static DWORD WINAPI MainThreadProc(LPVOID pParam);
+  static CPluginTab* GetTab(DWORD dwThreadId);
+  CPluginTab* GetTab();
+
+  void UpdateStatusBar();
+  static DWORD WINAPI MainThreadProc(LPVOID pParam);
 
 private:
 
-	bool SetMenuBar(HMENU hMenu, const CString& url);	
-	HMENU CreatePluginMenu(const CString& url);
+  bool SetMenuBar(HMENU hMenu, const CString& url);	
+  HMENU CreatePluginMenu(const CString& url);
 
-	void DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags);
-	bool CreateStatusBarPane();
+  void DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags);
+  bool CreateStatusBarPane();
 
-	CComPtr<IConnectionPoint> GetConnectionPoint();
-	CComPtr<IConnectionPoint> GetConnectionPointPropSink();
+  CComPtr<IConnectionPoint> GetConnectionPoint();
+  CComPtr<IConnectionPoint> GetConnectionPointPropSink();
 
 public:
-	HWND GetBrowserHWND() const;
-	HWND GetTabHWND() const;
-    CComQIPtr<IWebBrowser2> GetBrowser() const;
+  HWND GetBrowserHWND() const;
+  HWND GetTabHWND() const;
+  CComQIPtr<IWebBrowser2> GetBrowser() const;
 
-	STDMETHODIMP OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags);
+  STDMETHODIMP OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags);
 
-	static CPluginMimeFilterClient* s_mimeFilter;
+  static CPluginMimeFilterClient* s_mimeFilter;
 
 private:
 
-	CString GetBrowserUrl() const;
+  CString GetBrowserUrl() const;
 
 
-	static DWORD WINAPI StartInitObject(LPVOID thisPtr);
-	bool InitObject(bool bBHO);
-	void CloseTheme();
-	void UpdateTheme();
+  static DWORD WINAPI StartInitObject(LPVOID thisPtr);
+  bool InitObject(bool bBHO);
+  void CloseTheme();
+  void UpdateTheme();
 
-	static HICON GetStatusBarIcon(const CString& url);	
-	static void LaunchUpdater(const CString& path);
-	static CPluginClass* FindInstance(HWND hStatusBarWnd);
-	static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+  static HICON GetStatusBarIcon(const CString& url);	
+  static void LaunchUpdater(const CString& path);
+  static CPluginClass* FindInstance(HWND hStatusBarWnd);
+  static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+  static LRESULT CALLBACK PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-    void BeforeNavigate2(DISPPARAMS* pDispParams);
+  void BeforeNavigate2(DISPPARAMS* pDispParams);
 
-    void Unadvice();
+  void Unadvice();
 
-	void ShowStatusBar();
-	bool IsStatusBarEnabled();
+  void ShowStatusBar();
+  bool IsStatusBarEnabled();
 
 public:
-	CComQIPtr<IWebBrowser2> m_webBrowser2;
+  CComQIPtr<IWebBrowser2> m_webBrowser2;
 private:
-	DWORD m_nConnectionID;
-	HWND m_hBrowserWnd;
-	HWND m_hTabWnd;
-	HWND m_hStatusBarWnd;
-	HWND m_hPaneWnd;
-	WNDPROC m_pWndProcStatus;
-	int m_nPaneWidth;
-	HANDLE m_hTheme;
+  DWORD m_nConnectionID;
+  HWND m_hBrowserWnd;
+  HWND m_hTabWnd;
+  HWND m_hStatusBarWnd;
+  HWND m_hPaneWnd;
+  WNDPROC m_pWndProcStatus;
+  int m_nPaneWidth;
+  HANDLE m_hTheme;
 
-	bool m_isAdviced;
-	bool m_isInitializedOk;
-	
-    // Atom pane class  
-	static ATOM s_atomPaneClass;
+  bool m_isAdviced;
+  bool m_isInitializedOk;
 
-	static ATOM GetAtomPaneClass();
+  // Atom pane class  
+  static ATOM s_atomPaneClass;
 
-    // Icons
-	static HICON s_hIcons[ICON_MAX];
-	static DWORD s_hIconTypes[ICON_MAX];
+  static ATOM GetAtomPaneClass();
 
-    static HICON GetIcon(int type);
+  // Icons
+  static HICON s_hIcons[ICON_MAX];
+  static DWORD s_hIconTypes[ICON_MAX];
 
-    // Main thread
-	static HANDLE s_hMainThread;
-	static bool s_isMainThreadDone;
+  static HICON GetIcon(int type);
 
-    static HANDLE GetMainThreadHandle();
-    static bool IsMainThreadDone(HANDLE mainThread);
+  // Main thread
+  static HANDLE s_hMainThread;
+  static bool s_isMainThreadDone;
+
+  static HANDLE GetMainThreadHandle();
+  static bool IsMainThreadDone(HANDLE mainThread);
 
 
-	static HINSTANCE s_hUxtheme;
-	static CSimpleArray<CPluginClass*> s_instances;
-	static std::map<DWORD,CPluginClass*> s_threadInstances;
+  static HINSTANCE s_hUxtheme;
+  static CSimpleArray<CPluginClass*> s_instances;
+  static std::map<DWORD,CPluginClass*> s_threadInstances;
 
-    // Is plugin to be updated?
-    static bool s_isPluginToBeUpdated;
+  // Is plugin to be updated?
+  static bool s_isPluginToBeUpdated;
 
 #ifdef SUPPORT_WHITELIST
-	static std::map<UINT, CString> s_menuDomains;
+  static std::map<UINT, CString> s_menuDomains;
 #endif
 
-	static CComAutoCriticalSection s_criticalSectionLocal;
-	static CComAutoCriticalSection s_criticalSectionBrowser;
-	static CComAutoCriticalSection s_criticalSectionWindow;
+  static CComAutoCriticalSection s_criticalSectionLocal;
+  static CComAutoCriticalSection s_criticalSectionBrowser;
+  static CComAutoCriticalSection s_criticalSectionWindow;
 #ifdef SUPPORT_WHITELIST
-	static CComAutoCriticalSection s_criticalSectionWhiteList;
+  static CComAutoCriticalSection s_criticalSectionWhiteList;
 #endif
 
-    // Async browser
-	static CComQIPtr<IWebBrowser2> s_asyncWebBrowser2;
+  // Async browser
+  static CComQIPtr<IWebBrowser2> s_asyncWebBrowser2;
 
-    static CComQIPtr<IWebBrowser2> GetAsyncBrowser();
+  static CComQIPtr<IWebBrowser2> GetAsyncBrowser();
 
 };
 

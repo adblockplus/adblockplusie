@@ -6,22 +6,22 @@ class CPluginSystem
 {
 private:
 
-	static CComAutoCriticalSection s_criticalSection;
+  static CComAutoCriticalSection s_criticalSection;
 
-	CString m_pluginId;
+  CString m_pluginId;
 
-	// Private constructor used by the singleton pattern
-	CPluginSystem();
+  // Private constructor used by the singleton pattern
+  CPluginSystem();
 
 public:
-	static CPluginSystem* s_instance;
+  static CPluginSystem* s_instance;
 
-	static CPluginSystem* CPluginSystem::GetInstance();
+  static CPluginSystem* CPluginSystem::GetInstance();
 
-	~CPluginSystem();
+  ~CPluginSystem();
 
-	CString GetBrowserLanguage() const;
-	CString GetBrowserVersion() const;
+  CString GetBrowserLanguage() const;
+  CString GetBrowserVersion() const;
 };
 
 #endif // _PLUGIN_SYSTEM_H_

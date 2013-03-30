@@ -3,7 +3,7 @@
 
 
 #if (defined PRODUCT_ADBLOCKPLUS)
- #include "../AdBlocker/AdBlocker.h"
+#include "../AdBlocker/AdBlocker.h"
 #endif
 
 

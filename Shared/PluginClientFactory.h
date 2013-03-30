@@ -10,14 +10,14 @@ class CPluginClientFactory
 
 public:
 
-	static CPluginMimeFilterClient* GetMimeFilterClientInstance();
-	static void ReleaseMimeFilterClientInstance();
+  static CPluginMimeFilterClient* GetMimeFilterClientInstance();
+  static void ReleaseMimeFilterClientInstance();
 
 private:
 
-	static CPluginMimeFilterClient* s_mimeFilterInstance;
-	
-	static CComAutoCriticalSection s_criticalSection;
+  static CPluginMimeFilterClient* s_mimeFilterInstance;
+
+  static CComAutoCriticalSection s_criticalSection;
 };
 
 

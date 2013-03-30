@@ -3,7 +3,7 @@
 
 
 #ifdef SUPPORT_DOM_TRAVERSER
- class CPluginDomTraverser;
+class CPluginDomTraverser;
 #endif
 
 #include "PluginUserSettings.h"
@@ -15,71 +15,71 @@ class CPluginClass;
 class CPluginTabBase
 {
 
-	friend class CPluginClass;
+  friend class CPluginClass;
 
 protected:
 
-	CComAutoCriticalSection m_criticalSection;
+  CComAutoCriticalSection m_criticalSection;
 
-	CString m_documentDomain;
-	CString m_documentUrl;
-    CPluginUserSettings m_pluginUserSettings;
+  CString m_documentDomain;
+  CString m_documentUrl;
+  CPluginUserSettings m_pluginUserSettings;
 public:
-	CPluginClass* m_plugin;
+  CPluginClass* m_plugin;
 protected:
-	bool m_isActivated;
+  bool m_isActivated;
 
-	HANDLE m_hThread;
-	bool m_isThreadDone;
+  HANDLE m_hThread;
+  bool m_isThreadDone;
 
 #ifdef SUPPORT_DOM_TRAVERSER
-	CPluginDomTraverser* m_traverser;
+  CPluginDomTraverser* m_traverser;
 #endif
 
-    static int s_dictionaryVersion;
-    static int s_settingsVersion;
+  static int s_dictionaryVersion;
+  static int s_settingsVersion;
 #ifdef SUPPORT_FILTER
-    static int s_filterVersion;
+  static int s_filterVersion;
 #endif
 #ifdef SUPPORT_WHITELIST
-    static int s_whitelistVersion;
+  static int s_whitelistVersion;
 #endif
 #ifdef SUPPORT_CONFIG
-    static int s_configVersion;
+  static int s_configVersion;
 #endif
 
-	static DWORD WINAPI ThreadProc(LPVOID pParam);
+  static DWORD WINAPI ThreadProc(LPVOID pParam);
 
 #ifdef SUPPORT_FRAME_CACHING
-	CComAutoCriticalSection m_criticalSectionCache;
-    std::set<CString> m_cacheFrames;
-	CString m_cacheDomain;
+  CComAutoCriticalSection m_criticalSectionCache;
+  std::set<CString> m_cacheFrames;
+  CString m_cacheDomain;
 #endif
 
-	void SetDocumentUrl(const CString& url);
+  void SetDocumentUrl(const CString& url);
 
 public:
 
-	CPluginTabBase(CPluginClass* plugin);
-	~CPluginTabBase();
+  CPluginTabBase(CPluginClass* plugin);
+  ~CPluginTabBase();
 
-	CString GetDocumentDomain();
-	CString GetDocumentUrl();
+  CString GetDocumentDomain();
+  CString GetDocumentUrl();
 
-	virtual void OnActivate();
-	virtual void OnUpdate();
-	virtual bool OnUpdateSettings(bool forceUpdate);
-	virtual bool OnUpdateConfig();
-	virtual void OnNavigate(const CString& url);
-	virtual void OnDownloadComplete(IWebBrowser2* browser);
-	virtual void OnDocumentComplete(IWebBrowser2* browser, const CString& url, bool isDocumentBrowser);
+  virtual void OnActivate();
+  virtual void OnUpdate();
+  virtual bool OnUpdateSettings(bool forceUpdate);
+  virtual bool OnUpdateConfig();
+  virtual void OnNavigate(const CString& url);
+  virtual void OnDownloadComplete(IWebBrowser2* browser);
+  virtual void OnDocumentComplete(IWebBrowser2* browser, const CString& url, bool isDocumentBrowser);
 
-	static DWORD WINAPI TabThreadProc(LPVOID pParam);
+  static DWORD WINAPI TabThreadProc(LPVOID pParam);
 
 #ifdef SUPPORT_FRAME_CACHING
-    void CacheFrame(const CString& url);
-    bool IsFrameCached(const CString& url);
-    void ClearFrameCache(const CString& domain="");
+  void CacheFrame(const CString& url);
+  bool IsFrameCached(const CString& url);
+  void ClearFrameCache(const CString& domain="");
 #endif
 
 };

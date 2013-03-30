@@ -7,17 +7,17 @@ class CPluginMutex
 
 private:
 
-    HANDLE m_hMutex;
-    bool m_isLocked;
-    int m_errorSubidBase;
-	CString m_name;
+  HANDLE m_hMutex;
+  bool m_isLocked;
+  int m_errorSubidBase;
+  CString m_name;
 
 public:
 
-	CPluginMutex(const CString& name, int errorSubidBase);
-	~CPluginMutex();
+  CPluginMutex(const CString& name, int errorSubidBase);
+  ~CPluginMutex();
 
-    bool IsLocked() const;
+  bool IsLocked() const;
 };
 
 

@@ -23,7 +23,7 @@ CPluginDictionary::CPluginDictionary(bool forceCreate) : m_dictionaryLanguage("e
 {
   DEBUG_GENERAL("*** Initializing dictionary")
 
-    m_dictionaryConversions[L"UPDATE"]			= L"MENU_UPDATE";
+  m_dictionaryConversions[L"UPDATE"]			= L"MENU_UPDATE";
   m_dictionaryConversions[L"ABOUT"]			= L"MENU_ABOUT";
   m_dictionaryConversions[L"FAQ"]				= L"MENU_FAQ";
   m_dictionaryConversions[L"FEEDBACK"]		= L"MENU_FEEDBACK";
@@ -119,7 +119,7 @@ void CPluginDictionary::SetLanguage(const CString& lang)
 {
   DEBUG_GENERAL(L"*** Loading dictionary:" + CPluginSettings::GetDataPath(DICTIONARY_INI_FILE))
 
-  CPluginDictionaryLock lock;
+    CPluginDictionaryLock lock;
   if (lock.IsLocked())
   {
     CPluginIniFileW iniFile(CPluginSettings::GetDataPath(DICTIONARY_INI_FILE));

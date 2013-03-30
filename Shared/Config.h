@@ -11,10 +11,10 @@
 
 // Define filter configuration
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define FILTERS_PROTOCOL "https://"
- #define FILTERS_HOST "easylist-downloads.adblockplus.org"
+#define FILTERS_PROTOCOL "https://"
+#define FILTERS_HOST "easylist-downloads.adblockplus.org"
 #endif
- 
+
 // ----------------------------------------------------------------------------
 // Define default protocols, hosts, scripts and pages
 // ----------------------------------------------------------------------------
@@ -42,19 +42,19 @@
 
 #if (defined PRODUCT_ADBLOCKPLUS)
 #define SADOMAIN L"simple-adblock.com"
- #ifdef ADPLUGIN_TEST_MODE
-  #define USERS_HOST L"127.0.0.1"
- #elif (defined ADPLUGIN_PRODUCTION_MODE)
+#ifdef ADPLUGIN_TEST_MODE
+#define USERS_HOST L"127.0.0.1"
+#elif (defined ADPLUGIN_PRODUCTION_MODE)
 #ifdef _DEBUG
-  #define USERS_HOST L"127.0.0.1"
+#define USERS_HOST L"127.0.0.1"
 #else
-  #define USERS_HOST L"update.adblockplus.org"
+#define USERS_HOST L"update.adblockplus.org"
 #endif
- #else
-  #error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
- #endif
 #else
- #error "Undefined product. Please specify PRODUCT_ADBLOCKPLUS in configuration"
+#error "Undefined mode. Please use configuation Release Production/Test or Debug Production/Test"
+#endif
+#else
+#error "Undefined product. Please specify PRODUCT_ADBLOCKPLUS in configuration"
 #endif
 
 // ----------------------------------------------------------------------------
@@ -66,9 +66,9 @@
 
 // How long time should we wait between each try of initializing the server client (ms)
 #ifdef _DEBUG
- #define TIMER_INTERVAL_SERVER_CLIENT_INIT 10000
+#define TIMER_INTERVAL_SERVER_CLIENT_INIT 10000
 #else
- #define TIMER_INTERVAL_SERVER_CLIENT_INIT 120000
+#define TIMER_INTERVAL_SERVER_CLIENT_INIT 120000
 #endif
 
 // How long time sleep in background thread (ms)
@@ -79,30 +79,30 @@
 
 // Should we to on debug information
 #ifdef _DEBUG
- #define ENABLE_DEBUG_INFO
- #define ENABLE_DEBUG_GENERAL
- #define ENABLE_DEBUG_ERROR
- #undef  ENABLE_DEBUG_BLOCKER
- #undef  ENABLE_DEBUG_FILTER
- #undef  ENABLE_DEBUG_SETTINGS
- #undef  ENABLE_DEBUG_THREAD
- #undef  ENABLE_DEBUG_NAVI
- #undef  ENABLE_DEBUG_DICTIONARY
- #undef  ENABLE_DEBUG_CHECKSUM
- #undef  ENABLE_DEBUG_INI
- #undef  ENABLE_DEBUG_MUTEX
- #undef  ENABLE_DEBUG_HIDE_EL
- #undef  ENABLE_DEBUG_WHITELIST
+#define ENABLE_DEBUG_INFO
+#define ENABLE_DEBUG_GENERAL
+#define ENABLE_DEBUG_ERROR
+#undef  ENABLE_DEBUG_BLOCKER
+#undef  ENABLE_DEBUG_FILTER
+#undef  ENABLE_DEBUG_SETTINGS
+#undef  ENABLE_DEBUG_THREAD
+#undef  ENABLE_DEBUG_NAVI
+#undef  ENABLE_DEBUG_DICTIONARY
+#undef  ENABLE_DEBUG_CHECKSUM
+#undef  ENABLE_DEBUG_INI
+#undef  ENABLE_DEBUG_MUTEX
+#undef  ENABLE_DEBUG_HIDE_EL
+#undef  ENABLE_DEBUG_WHITELIST
 
- #define ENABLE_DEBUG_RESULT
- #define ENABLE_DEBUG_RESULT_IGNORED
- #define ENABLE_DEBUG_SPLIT_FILE
+#define ENABLE_DEBUG_RESULT
+#define ENABLE_DEBUG_RESULT_IGNORED
+#define ENABLE_DEBUG_SPLIT_FILE
 #else
- #undef ENABLE_DEBUG_INFO
+#undef ENABLE_DEBUG_INFO
 #endif
 
 #ifdef NDEBUG
- #undef ENABLE_DEBUG_INFO
+#undef ENABLE_DEBUG_INFO
 #endif
 
 #define ENABLE_DEBUG_INFO
@@ -113,77 +113,77 @@
 #define DEBUG_ERROR_CODE_FUNC CPluginDebug::DebugErrorCode
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_GENERAL)
- #undef  DEBUG_GENERAL
- #define DEBUG_GENERAL(x) DEBUG_FUNC(x);
+#undef  DEBUG_GENERAL
+#define DEBUG_GENERAL(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO)
- #undef  DEBUG
- #define DEBUG(x) DEBUG_FUNC(x);
+#undef  DEBUG
+#define DEBUG(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_BLOCKER)
- #undef  DEBUG_BLOCKER
- #define DEBUG_BLOCKER(x) DEBUG_FUNC(x);
+#undef  DEBUG_BLOCKER
+#define DEBUG_BLOCKER(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_FILTER)
- #undef  DEBUG_FILTER
- #define DEBUG_FILTER(x) DEBUG_FUNC(x);
+#undef  DEBUG_FILTER
+#define DEBUG_FILTER(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_SETTINGS)
- #undef  DEBUG_SETTINGS
- #define DEBUG_SETTINGS(x) DEBUG_FUNC(x);
+#undef  DEBUG_SETTINGS
+#define DEBUG_SETTINGS(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_THREAD)
- #undef  DEBUG_THREAD
- #define DEBUG_THREAD(x) DEBUG_FUNC(x);
+#undef  DEBUG_THREAD
+#define DEBUG_THREAD(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_NAVI)
- #undef  DEBUG_NAVI
- #define DEBUG_NAVI(x) DEBUG_FUNC(x);
+#undef  DEBUG_NAVI
+#define DEBUG_NAVI(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_CHECKSUM)
- #undef  DEBUG_CHECKSUM
- #define DEBUG_CHECKSUM(x) DEBUG_FUNC(x);
+#undef  DEBUG_CHECKSUM
+#define DEBUG_CHECKSUM(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_DICTIONARY)
- #undef  DEBUG_DICTIONARY
- #define DEBUG_DICTIONARY(x) DEBUG_FUNC(x);
+#undef  DEBUG_DICTIONARY
+#define DEBUG_DICTIONARY(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_INI)
- #undef  DEBUG_INI
- #define DEBUG_INI(x) DEBUG_FUNC(x);
+#undef  DEBUG_INI
+#define DEBUG_INI(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_MUTEX)
- #undef  DEBUG_MUTEX
- #define DEBUG_MUTEX(x) DEBUG_FUNC(x);
+#undef  DEBUG_MUTEX
+#define DEBUG_MUTEX(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_HIDE_EL)
- #undef  DEBUG_HIDE_EL
- #define DEBUG_HIDE_EL(x) DEBUG_FUNC(x);
+#undef  DEBUG_HIDE_EL
+#define DEBUG_HIDE_EL(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_WHITELIST)
- #undef  DEBUG_WHITELIST
- #define DEBUG_WHITELIST(x) DEBUG_FUNC(x);
+#undef  DEBUG_WHITELIST
+#define DEBUG_WHITELIST(x) DEBUG_FUNC(x);
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_ERROR)
- #undef  DEBUG_ERROR
- #define DEBUG_ERROR(x) DEBUG_ERROR_FUNC("!!! Error:" + CString(x));
- #undef  DEBUG_ERROR_CODE
- #define DEBUG_ERROR_CODE(err, x) DEBUG_ERROR_CODE_FUNC(err, "!!! Error:" + CString(x));
- #undef  DEBUG_ERROR_CODE_EX
- #define DEBUG_ERROR_CODE_EX(err, x, process, thread) DEBUG_ERROR_CODE_FUNC(err, "!!! Error:" + CString(x), process, thread);
+#undef  DEBUG_ERROR
+#define DEBUG_ERROR(x) DEBUG_ERROR_FUNC("!!! Error:" + CString(x));
+#undef  DEBUG_ERROR_CODE
+#define DEBUG_ERROR_CODE(err, x) DEBUG_ERROR_CODE_FUNC(err, "!!! Error:" + CString(x));
+#undef  DEBUG_ERROR_CODE_EX
+#define DEBUG_ERROR_CODE_EX(err, x, process, thread) DEBUG_ERROR_CODE_FUNC(err, "!!! Error:" + CString(x), process, thread);
 #endif
 
 #undef  DEBUG_ERROR_LOG
@@ -194,12 +194,12 @@
 // ----------------------------------------------------------------------------
 
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define SUPPORT_FILTER
- #define SUPPORT_WHITELIST
- #undef  SUPPORT_FILE_DOWNLOAD
- #undef  SUPPORT_CONFIG
- #define SUPPORT_DOM_TRAVERSER
- #define SUPPORT_FRAME_CACHING
+#define SUPPORT_FILTER
+#define SUPPORT_WHITELIST
+#undef  SUPPORT_FILE_DOWNLOAD
+#undef  SUPPORT_CONFIG
+#define SUPPORT_DOM_TRAVERSER
+#define SUPPORT_FRAME_CACHING
 #endif
 
 // ----------------------------------------------------------------------------
@@ -225,11 +225,11 @@
 
 // Should we report errors to the local filesystem and/or to the ad plugin server
 #ifdef ADPLUGIN_PRODUCTION_MODE
- #undef REPORT_ERROR_FILE
- #undef REPORT_ERROR_SERVER
+#undef REPORT_ERROR_FILE
+#undef REPORT_ERROR_SERVER
 #else
- #define REPORT_ERROR_FILE
- #define REPORT_ERROR_SERVER
+#define REPORT_ERROR_FILE
+#define REPORT_ERROR_SERVER
 #endif
 
 // Should we shut down plugin automatically before starting the 
@@ -242,24 +242,24 @@
 
 #if (defined PRODUCT_ADBLOCKPLUS)
 //This is used as an agent string for HTTP requests to our servers from the plugin
- #define BHO_NAME _T("Adblock Plus BHO/1.0")
+#define BHO_NAME _T("Adblock Plus BHO/1.0")
 #endif
 
 // Name of ini file in Windows directory for uninstall
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define UNINSTALL_INI_FILE "AdBlockPlus.ini"
+#define UNINSTALL_INI_FILE "AdBlockPlus.ini"
 #endif
 
 // Prefix on temp dir files
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define TEMP_FILE_PREFIX "ab_"
+#define TEMP_FILE_PREFIX "ab_"
 #endif
 
 // Dictionary filename
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define DICTIONARY_INI_FILE "dictionary_w.ini"
+#define DICTIONARY_INI_FILE "dictionary_w.ini"
 #else
- #define DICTIONARY_INI_FILE "dictionary.ini"
+#define DICTIONARY_INI_FILE "dictionary.ini"
 #endif
 #define DICTIONARY_DIR_NAME "Languages\\"
 #define DEFAULT_LANGUAGE "en-US"
@@ -268,7 +268,7 @@
 
 // Config filename
 #ifdef SUPPORT_CONFIG
- #define CONFIG_INI_FILE "config.ini"
+#define CONFIG_INI_FILE "config.ini"
 #endif
 
 // Settings filename
@@ -279,29 +279,29 @@
 
 // Setting whitelist filename
 #ifdef SUPPORT_WHITELIST
- #define SETTINGS_INI_FILE_WHITELIST "settings_whitelist.ini"
+#define SETTINGS_INI_FILE_WHITELIST "settings_whitelist.ini"
 #endif
 
 // Personal filter filename
 #ifdef SUPPORT_FILTER
- #define PERSONAL_FILTER_FILE "filter_personal.txt"
- #define PERSONAL_FILTER_FILE_OLD "easylist_personal.txt"
+#define PERSONAL_FILTER_FILE "filter_personal.txt"
+#define PERSONAL_FILTER_FILE_OLD "easylist_personal.txt"
 #endif
 
 // Install MSI filename
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define INSTALL_MSI_FILE "adblock.msi"
- #define INSTALL_EXE_FILE "Setup.exe"
+#define INSTALL_MSI_FILE "adblock.msi"
+#define INSTALL_EXE_FILE "Setup.exe"
 #endif
 
 // Status bar pane name
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define STATUSBAR_PANE_NAME "AdblockPlusStatusBarPane"
+#define STATUSBAR_PANE_NAME "AdblockPlusStatusBarPane"
 #endif
 
 // Status bar pane number
 #if (defined PRODUCT_ADBLOCKPLUS)
- #define STATUSBAR_PANE_NUMBER 2
+#define STATUSBAR_PANE_NUMBER 2
 #endif
 
 

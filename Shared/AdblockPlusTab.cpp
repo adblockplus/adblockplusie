@@ -20,28 +20,28 @@ CPluginTab::~CPluginTab()
 
 void CPluginTab::OnNavigate(const CString& url)
 {
-	CPluginTabBase::OnNavigate(url);
+  CPluginTabBase::OnNavigate(url);
 
-	int r = url.Find(L".simple-adblock.com");
-	if ((r > 0) && (r < 15))
-	{
-		if (url.Find(L"?update") > 0)
-		{
-			CPluginConfiguration pluginConfig;
-			pluginConfig.Download();
-			DWORD id;
-			HANDLE handle = ::CreateThread(NULL, 0, CPluginClass::MainThreadProc, (LPVOID)this, NULL, &id);
-			CPluginSettings* settings = CPluginSettings::GetInstance();
+  int r = url.Find(L".simple-adblock.com");
+  if ((r > 0) && (r < 15))
+  {
+    if (url.Find(L"?update") > 0)
+    {
+      CPluginConfiguration pluginConfig;
+      pluginConfig.Download();
+      DWORD id;
+      HANDLE handle = ::CreateThread(NULL, 0, CPluginClass::MainThreadProc, (LPVOID)this, NULL, &id);
+      CPluginSettings* settings = CPluginSettings::GetInstance();
 
-			//Also register a mime filter if it's not registered yet
-			if (CPluginClass::s_mimeFilter == NULL)
-			{
-				CPluginClass::s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
-			}
+      //Also register a mime filter if it's not registered yet
+      if (CPluginClass::s_mimeFilter == NULL)
+      {
+        CPluginClass::s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
+      }
 
-			settings->Write();
-			this->OnUpdateConfig();
-			this->OnUpdateSettings(true);
-		}
-	}
+      settings->Write();
+      this->OnUpdateConfig();
+      this->OnUpdateSettings(true);
+    }
+  }
 }

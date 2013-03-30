@@ -399,17 +399,6 @@ void CPluginSettings::Clear()
   s_criticalSectionFilters.Lock();
   {
     m_filterUrlList.clear();
-    /*		m_filterUrlList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = 1;
-
-    m_filterFileNameList.clear();
-    m_filterFileNameList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "filter1.txt";
-
-    m_filterLanguagesList.clear();
-    m_filterLanguagesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = "en";
-
-    m_filterDownloadTimesList.clear();
-    m_filterDownloadTimesList[CString(FILTERS_PROTOCOL) + CString(FILTERS_HOST) + "/easylist.txt"] = time(NULL);
-    */
   }
   s_criticalSectionFilters.Unlock();
 
@@ -496,7 +485,7 @@ bool CPluginSettings::CheckFilterAndDownload()
       if (this->FilterlistExpired(downloadFilterName))
       {
         DEBUG_GENERAL("*** before DownloadFilterFile: " + downloadFilterName);
-        CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
+//        CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
         this->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
       }
     }
@@ -521,7 +510,7 @@ bool CPluginSettings::CheckFilterAndDownload()
     {
       if (it->second == L"en")
       {
-        CPluginFilter::DownloadFilterFile(it->first, m_filterFileNameList.find(it->first)->second);
+//        CPluginFilter::DownloadFilterFile(it->first, m_filterFileNameList.find(it->first)->second);
         this->SetFilterRefreshDate(it->first, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
       }
     }

@@ -3,8 +3,8 @@
 
 
 #if (defined PRODUCT_ADBLOCKPLUS)
- #include "AdblockPlusClient.h"
- typedef CAdblockPlusClient CPluginClient;
+#include "AdblockPlusClient.h"
+typedef CAdblockPlusClient CPluginClient;
 #endif
 
 
