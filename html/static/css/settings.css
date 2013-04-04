@@ -5,13 +5,10 @@ html, body
 
 html
 {
-  height: 100%;
   font-family: Arial, Sans-serif;
   font-size: 14px;
-  color: #3b434a;
-  background-color: #fdecce;
+  background-color: white;
   background-image: url(../img/background.png);
-  background-repeat: repeat-x;
   background-position: bottom;
   _overflow-x: hidden;
 }
@@ -22,8 +19,8 @@ body
   right: 50%;
   margin: 0px;
   margin-right: -360px;
-  height: 100%;
   width: 720px;
+  line-height: 1.4;
   background: transparent;
 }
 
@@ -39,7 +36,7 @@ img
 
 header
 {
-  margin: 20px 0px;
+  padding: 20px 0px;
   text-align: center;
   vertical-align: middle;
 }
@@ -49,19 +46,20 @@ header
   display: inline-block;
   *display: inline;
   zoom: 1;
-  background-image: url(../img/avast-logo.png);
-  width: 230px;
-  height: 85px;
+  background-image: url(../img/abp-128.png);
+  width: 128px;
+  height: 128px;
 }
 
 #title
 {
   display: inline;
   position: relative;
-  top: -32px;
+  top: -40px;
   font-weight: normal;
-  font-size: 280%;
+  font-size: 40px;
   margin: 0px 10px;
+  vertical-align: bottom;
 }
 
 #features
@@ -70,7 +68,7 @@ header
   border-spacing: 10px;
   margin: 0px;
   padding: 0px;
-  padding-bottom: 70px;
+  padding-bottom: 100px;
   white-space: nowrap;
 }
 
@@ -84,8 +82,8 @@ header
 .feature-image, .feature-description
 {
   display: inline-block;
-  *display: inline;
-  zoom: 1;
+  *display: inline; /* IE6 inline-block fix */
+  *zoom: 1;
   vertical-align: top;
 }
 
@@ -110,10 +108,8 @@ header
 
 .feature-image
 {
-  width: 36px;
-  height: 36px;
-  background-size: 36px 36px;
-  background-repeat: no-repeat;
+  width: 57px;
+  height: 57px;
 }
 
 #feature-language
@@ -123,7 +119,7 @@ header
 
 #feature-exceptions
 {
-  background-image: url(../img/features/whitelist.png);
+  background-image: url(../img/features/adblocking.png);
 }
 
 #feature-acceptable
@@ -131,28 +127,79 @@ header
   background-image: url(../img/features/acceptable.png);
 }
 
-.feature-button
+.feature button
 {
   cursor: pointer;
+  position: relative;
+  top: 0px;
+  padding: 5px 10px;
+  *padding: 2px 3px;
+  font-weight: none;
   font-size: inherit;
   color: white;
-  font-weight: bold;
+  text-shadow: 2px 2px 2px #327d14;
   border: none;
   border-radius: 3px;
-  box-shadow: 0px 0px 0px 1px #00bfde, 0px 0px 0px 2px #005773;
-  padding: 5px 10px;
-  background-color: #0090c6;
+  box-shadow: 0 1px 0 0 #486c15, 0 2px 0 0 #517422;
+  background-color: #62c52b;
+  background-image: url(../img/button-background/enable.png);
+  background: -ms-linear-gradient(top, #62c52b, #4f9d22);
+  background: linear-gradient(top, #62c52b, #4f9d22);
+  -ms-transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease;
 }
 
-.feature-button:hover
+.feature button:hover
 {
-  box-shadow: 0px 0px 0px 2px #00bfde;
+  box-shadow: 0px 2px 7px #486c15, 0 1px 0 0 #486c15;
 }
 
-.feature-button:active
+.feature button:active,
+.feature button.Active
 {
-  background-color: #00b0e6;
-  box-shadow: 0px 0px 0px 2px #00bfde;
+  top: 3px;
+  box-shadow: 0px 0px 7px #486c15;
+  background-color: #4f9d22;
+  background-image: url(../img/button-background/enable_active.png);
+  background: -ms-linear-gradient(bottom, #62c52b, #4f9d22);
+  background: linear-gradient(bottom, #62c52b, #4f9d22);
+  -ms-transition: none;
+  transition: none;
+  *zoom: 1;
+}
+
+.feature button.disable
+{
+  text-shadow: 2px 2px 2px #9d4f22;
+  box-shadow: 0 1px 0 0 #9d4f22, 0 2px 0 0 #999;
+  background-color: #c5622b;
+  background-image: url(../img/button-background/disable.png);
+  background: -ms-linear-gradient(top, #c5622b, #9d4f22);
+  background: linear-gradient(top, #c5622b, #9d4f22);
+}
+
+.feature button.disable:hover
+{
+  box-shadow: 0px 2px 7px #9d4f22, 0 1px 0 0 #9d4f22;
+}
+
+.feature button.disable:active,
+.feature button.disableActive
+{
+  top: 3px;
+  box-shadow: 0px 0px 7px #9d4f22;
+  background-color: #9d4f22;
+  background-image: url(../img/button-background/disable_active.png);
+  background: -ms-linear-gradient(bottom, #c5622b, #9d4f22);
+  background: linear-gradient(bottom, #c5622b, #9d4f22);
+  -ms-transition: none;
+  transition: none;
+  *zoom: 1;
+}
+
+#removeDomains
+{
+  width: 220px;
 }
 
 #exceptions
@@ -189,11 +236,6 @@ header
   margin: 2px;
 }
 
-.extra-wide
-{
-  width: 220px;
-}
-
 footer
 {
   position: relative;
@@ -202,21 +244,67 @@ footer
   right: auto;
   bottom: 0px;
   width: 100%;
-  height: 70px;
-  margin-top: -70px;
+  height: 100px;
+  margin-top: -100px;
   padding: 0px;
   text-align: center;
   font-size: 100%;
+  overflow: hidden;
+  _overflow: visible;
   clear: both;
 }
 
-footer a:link, footer a:visited
+#social h1
 {
-  color: #3b434a;
-  text-decoration: none;
+  margin: 0px 0px 20px 0px;
+  font-size: 18px;
+  color: #666;
+  -ms-transition: opacity .3s ease;
+  transition: opacity .3s ease;
+  opacity: 1;
+  filter: alpha(opacity=100);
+  *zoom: 1;
 }
 
-#abp-name
+#social:hover h1,
+#social.Hover h1
 {
-  font-weight: bold;
+  opacity: 0;
+  filter: alpha(opacity=0);
+}
+
+#social ul
+{
+  list-style: none;
+  display: inline-block;
+  *display: inline; /* IE6 inline-block fix */
+  *zoom: 1;
+  padding: 0px;
+  margin: 0px;
+}
+
+#social ul:hover li,
+#social ul.Hover li
+{
+  opacity: 0.3;
+  filter: alpha(opacity=30);
+}
+
+#social ul li
+{
+  display: inline-block;
+  position: relative;
+  *display: inline; /* IE6 inline-block fix */
+  *zoom: 1;
+  margin: 0px 5px;
+  -ms-transition: opacity .5s ease, bottom .3s ease;
+  transition: opacity .5s ease, bottom .3s ease;
+}
+
+#social ul li:hover,
+#social ul li.Hover
+{
+  top: -30px;
+  opacity: 1;
+  filter: alpha(opacity=100);
 }
