@@ -222,7 +222,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../Shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\v8\include;$(SolutionDir)..\V8\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;%(PreprocessorDefinitions);ABP</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -285,7 +285,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\v8\include;$(SolutionDir)..\V8\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;%(PreprocessorDefinitions);ABP</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -305,7 +305,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppw.lib;comDlg32.lib;%(AdditionalDependencies)atlthunk.lib;</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppw.lib;comDlg32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;</AdditionalDependencies>
       <OutputFile>$(OutDir)Adblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -364,7 +364,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;Msi.lib;%(AdditionalDependencies);atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;Msi.lib;%(AdditionalDependencies);atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib;winmm.lib;ws2_32.lib;</AdditionalDependencies>
       <OutputFile>$(OutDir)Adblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
