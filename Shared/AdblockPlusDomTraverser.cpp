@@ -37,7 +37,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
   // Check if element is hidden
   CPluginClient* client = CPluginClient::GetInstance();
 
-  cache->m_isHidden = client->IsElementHidden(tag, pEl, m_domain, indent);
+  cache->m_isHidden = client->IsElementHidden(tag, pEl, m_domain, indent, m_tab->m_filter.get());
   if (cache->m_isHidden)
   {
     HideElement(pEl, tag, "", false, indent);

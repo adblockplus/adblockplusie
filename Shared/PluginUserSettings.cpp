@@ -252,11 +252,9 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     if (VT_BSTR != pDispparams->rgvarg[0].vt)
       return DISP_E_TYPEMISMATCH;
 
-    CComBSTR language = pDispparams->rgvarg[0].bstrVal;
+    CComBSTR url = pDispparams->rgvarg[0].bstrVal;
 
-    settings->SetString(SETTING_LANGUAGE, (BSTR)language);
-    settings->Write();
-    settings->CheckFilterAndDownload();
+    settings->SetSubscription((BSTR)url);
   }
   else if (s_GetLanguage == method)
   {
@@ -265,10 +263,10 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
     if (pVarResult)
     {
-      CString language = settings->GetString(SETTING_LANGUAGE);
+      CString url = settings->GetSubscription();
 
       pVarResult->vt = VT_BSTR; 
-      pVarResult->bstrVal = SysAllocString(language);
+      pVarResult->bstrVal = SysAllocString(url);
     }
   }
   else if (s_GetWhitelistDomains == method)
@@ -278,6 +276,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
     if (pVarResult)
     {
+      //TODO: How and where is this stored?
       TDomainList whiteList = settings->GetWhiteListedDomainList(true);
       CString sWhiteList;
       for (TDomainList::const_iterator it = whiteList.begin(); it != whiteList.end(); ++it)

@@ -165,9 +165,6 @@ public:
 
   bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent) const;
 
-  const CFilter* MatchFilter(int filterType, const CString& src, int contentType, const CString& domain) const;
-  bool IsMatchFilter(const CFilter& filter, CString src, const CString& srcDomain, const CString& domain) const;
-
   bool IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CString& domain) const;
 
   bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false) const;

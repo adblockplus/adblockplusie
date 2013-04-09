@@ -7,7 +7,7 @@ class CPluginDomTraverser;
 #endif
 
 #include "PluginUserSettings.h"
-
+#include "PluginFilter.h"
 
 class CPluginClass;
 
@@ -40,6 +40,9 @@ protected:
   static int s_settingsVersion;
 #ifdef SUPPORT_FILTER
   static int s_filterVersion;
+public:
+  std::auto_ptr<CPluginFilter> m_filter;
+private:
 #endif
 #ifdef SUPPORT_WHITELIST
   static int s_whitelistVersion;

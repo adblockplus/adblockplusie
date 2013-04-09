@@ -35,12 +35,22 @@ function initLanguageSettings()
   setElementText("localeBlockingLabel", "settings-blocking-label");
   setElementText("localeBlockingDescription", "settings-blocking-description");
 
-  setElementText("localeLanguageLabel", "settings-language-label");
   setElementText("manageExceptions", "settings-exceptions-manage-label");
   setElementText("addDomain", "settings-exceptions-add-label");
   setElementText("removeDomains", "settings-exceptions-remove-label");
    
   var optionsLanguage = document.getElementById("language");
+
+  var languageCount = UserSettings().GetLanguageCount();
+  for(var i = 0; i < languageCount; i++)
+  {
+    var el = document.createElement("option");
+    el.text = UserSettings().GetLanguageTitleByIndex(i);
+    el.value = UserSettings().GetLanguageByIndex(i);
+    
+    optionsLanguage.add(el, 0);
+  }
+  
   addListener(optionsLanguage, "change", function ()
   {
     UserSettings().SetLanguage(optionsLanguage[optionsLanguage.selectedIndex].value);

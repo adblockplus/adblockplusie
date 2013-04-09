@@ -29,6 +29,8 @@ int CPluginTabBase::s_configVersion = 0;
 
 CPluginTabBase::CPluginTabBase(CPluginClass* plugin) : m_plugin(plugin), m_isActivated(false)
 {
+  m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
+
   CPluginClient* client = CPluginClient::GetInstance();
   if (client->GetIEVersion() < 10)
   {
@@ -131,6 +133,9 @@ void CPluginTabBase::OnNavigate(const CString& url)
 #ifdef SUPPORT_FRAME_CACHING
   ClearFrameCache(GetDocumentDomain());
 #endif
+
+  std::string domainString = CT2A(GetDocumentDomain());
+  m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetFilterEngine()->GetElementHidingSelectors(domainString));
 
 #ifdef SUPPORT_DOM_TRAVERSER
   m_traverser->ClearCache();
@@ -412,7 +417,6 @@ DWORD WINAPI CPluginTabBase::ThreadProc(LPVOID pParam)
         if (s_filterVersion != newFilterVersion)
         {
           s_filterVersion = newFilterVersion;
-          client->LoadFilters();
           isChanged = true;
         }
 #endif

@@ -106,9 +106,6 @@ bool CPluginConfiguration::Download()
 
   httpRequest.Add("dicv", settings->GetValue(SETTING_DICTIONARY_VERSION, 0));
 
-#ifdef SUPPORT_FILTER
-  httpRequest.Add("filterv", settings->GetValue(SETTING_FILTER_VERSION, 0));
-#endif
 #ifdef SUPPORT_CONFIG
   httpRequest.Add("configv", settings->GetValue(SETTING_CONFIG_VERSION, 0));
 #endif
@@ -224,48 +221,6 @@ bool CPluginConfiguration::Download()
   }
 
 #endif // SUPPORT_CONFIG
-
-#ifdef SUPPORT_FILTER
-
-  // Unpack filter URL's
-  m_isValidFilter = iniFile->HasSection("Filters");
-  if (m_isValidFilter)
-  {
-    it = settingsData.find(SETTING_FILTER_VERSION);
-    if (it != settingsData.end())
-    {
-      m_filterVersion = atoi(it->second);
-    }
-
-    CPluginIniFile::TSectionData filters = iniFile->GetSectionData("Filters");
-
-    int filterCount = 0;
-    bool bContinue = true;
-
-    m_filterUrlList.clear();
-
-    do
-    {
-      CStringA filterCountStr;
-      filterCountStr.Format("%d", ++filterCount);
-
-      CPluginIniFile::TSectionData::iterator filterIt = filters.find("filter" + filterCountStr);
-      CPluginIniFile::TSectionData::iterator versionIt = filters.find("filter" + filterCountStr + "v");
-      CPluginIniFile::TSectionData::iterator fileNameIt = filters.find("filter" + filterCountStr + "filename");
-
-      if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
-      {
-        m_filterUrlList[CString(filterIt->second)] = atoi(versionIt->second);
-        if (fileNameIt != filters.end())
-        {
-          m_filterFileNameList[CString(filterIt->second)] = fileNameIt->second;
-        }
-      }
-
-    } while (bContinue);
-  }
-
-#endif // SUPPORT_FILTER
 
 #ifdef SUPPORT_WHITELIST
 

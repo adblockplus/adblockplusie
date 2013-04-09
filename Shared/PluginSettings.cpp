@@ -27,6 +27,8 @@ class TSettings
   char sPluginId[44];
 };
 
+static void SubsCallback(std::vector<AdblockPlus::SubscriptionPtr>& subscriptions);
+
 
 class CPluginSettingsLock : public CPluginMutex
 {
@@ -62,9 +64,6 @@ CPluginSettings* CPluginSettings::s_instance = NULL;
 bool CPluginSettings::s_isLightOnly = false;
 
 CComAutoCriticalSection CPluginSettings::s_criticalSectionLocal;
-#ifdef SUPPORT_FILTER
-CComAutoCriticalSection CPluginSettings::s_criticalSectionFilters;
-#endif
 #ifdef SUPPORT_WHITELIST
 CComAutoCriticalSection CPluginSettings::s_criticalSectionDomainHistory;
 #endif
@@ -226,6 +225,7 @@ CPluginSettings* CPluginSettings::GetInstance()
     if ((!s_instance) || (s_isLightOnly))
     {
       s_instance = new CPluginSettings();
+      CPluginClient::GetInstance()->GetFilterEngine()->FetchAvailableSubscriptions((AdblockPlus::SubscriptionsCallback)&SubsCallback);
       s_isLightOnly = false;
     }
 
@@ -290,68 +290,15 @@ bool CPluginSettings::Read(bool bDebug)
         if (m_settingsFile->IsValidChecksum())
         {
           m_properties = m_settingsFile->GetSectionData("Settings");
-
-#ifdef SUPPORT_FILTER            	    
-          // Unpack filter URLs
-          CPluginIniFileW::TSectionData filters = m_settingsFile->GetSectionData("Filters");
-          int filterCount = 0;
-          bool bContinue = true;
-
-          s_criticalSectionFilters.Lock();
-          {
-            m_filterUrlList.clear();
-
-            do
-            {
-              CString filterCountStr;
-              filterCountStr.Format(L"%d", ++filterCount);
-
-              CPluginIniFileW::TSectionData::iterator filterIt = filters.find(L"filter" + filterCountStr);
-              CPluginIniFileW::TSectionData::iterator versionIt = filters.find(L"filter" + filterCountStr + "v");
-              CPluginIniFileW::TSectionData::iterator fileNameIt = filters.find(L"filter" + filterCountStr + "fileName");
-              CPluginIniFileW::TSectionData::iterator languageIt = filters.find(L"filter" + filterCountStr + "language");
-              CPluginIniFileW::TSectionData::iterator languageTitleIt = filters.find(L"filter" + filterCountStr + "languageTitle");
-              CPluginIniFileW::TSectionData::iterator dltIt = filters.find(L"filter" + filterCountStr + "refreshin");
-
-              if (bContinue = (filterIt != filters.end() && versionIt != filters.end()))
-              {
-                m_filterUrlList[filterIt->second] = _wtoi(versionIt->second);
-              }
-
-              if (filterIt != filters.end() && fileNameIt != filters.end())
-              {
-                m_filterFileNameList[filterIt->second] = fileNameIt->second;
-              }
-
-              if (filterIt != filters.end() && languageIt != filters.end())
-              {
-                m_filterLanguagesList[filterIt->second] = languageIt->second;
-              }
-
-              if (filterIt != filters.end()  &&  languageIt != filters.end()  &&  languageTitleIt != filters.end())
-              {
-                m_filterLanguageTitleList[languageIt->second] = languageTitleIt->second;
-              }
-
-              if (filterIt != filters.end() && dltIt != filters.end())
-              {
-                m_filterDownloadTimesList[filterIt->second] = (time_t)_wtoi(dltIt->second.GetString());
-              }
-
-            } while (bContinue);
-          }
-          s_criticalSectionFilters.Unlock();
-
-#endif // SUPPORT_FILTER
         }
         else
         {
           DEBUG_SETTINGS("Settings:Invalid checksum - Deleting file")
 
-            Clear();
+          Clear();
 
           DEBUG_ERROR_LOG(m_settingsFile->GetLastError(), PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_FILE_READ_CHECKSUM, "Settings::Read - Checksum")
-            isRead = false;
+          isRead = false;
           m_isDirty = true;
         }
       }
@@ -392,17 +339,6 @@ void CPluginSettings::Clear()
     m_properties[SETTING_LANGUAGE] = "en";
   }
   s_criticalSectionLocal.Unlock();
-
-  // Default filters
-#ifdef SUPPORT_FILTER
-
-  s_criticalSectionFilters.Lock();
-  {
-    m_filterUrlList.clear();
-  }
-  s_criticalSectionFilters.Unlock();
-
-#endif // SUPPORT_FILTER
 }
 
 bool CPluginSettings::MakeRequestForUpdate()
@@ -451,76 +387,6 @@ bool CPluginSettings::MakeRequestForUpdate()
     }
   }
 
-  return true;
-}
-bool CPluginSettings::CheckFilterAndDownload()
-{
-  s_criticalSectionLocal.Lock();
-  TFilterUrlList currentFilterUrlList = this->GetFilterUrlList();
-  std::map<CString, CString> fileNamesList = this->GetFilterFileNamesList();
-
-  bool filterAvailable = false;
-  for (TFilterUrlList::iterator it = currentFilterUrlList.begin(); it != currentFilterUrlList.end(); ++it) 
-  {
-    CString downloadFilterName = it->first;
-
-    std::map<CString, CString>::const_iterator fni = fileNamesList.find(downloadFilterName);		
-    CString filename = "";
-    if (fni != fileNamesList.end())
-    {
-      filename = fni->second;
-    }
-    else
-    {
-      filename = downloadFilterName.Trim().Right(downloadFilterName.GetLength() - downloadFilterName.ReverseFind('/') - 1).Trim();
-    }
-    int version = it->second;
-
-    DEBUG_GENERAL("*** before FilterShouldLoad: " + downloadFilterName);
-
-    if ((this->FilterShouldLoad(downloadFilterName)))
-    {
-      filterAvailable = true;
-      DEBUG_GENERAL("*** before FilterlistExpired: " + downloadFilterName);
-      if (this->FilterlistExpired(downloadFilterName))
-      {
-        DEBUG_GENERAL("*** before DownloadFilterFile: " + downloadFilterName);
-//        CPluginFilter::DownloadFilterFile(downloadFilterName, filename);
-        this->SetFilterRefreshDate(downloadFilterName, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
-      }
-    }
-    else
-    {
-      //Cleanup, since we don't need the filter definition
-      DeleteFile(CPluginSettings::GetDataPath(filename));
-      this->SetFilterRefreshDate(downloadFilterName, 0);
-    }
-  }
-
-  if (!filterAvailable)
-  {
-    //If no filter list found, default to "en"
-
-    this->SetString(SETTING_LANGUAGE, (BSTR)L"en");
-
-    CPluginDictionary* dict = CPluginDictionary::GetInstance();
-    dict->SetLanguage(L"en");
-
-    for (std::map<CString, CString>::iterator it = m_filterLanguagesList.begin(); it != m_filterLanguagesList.end(); ++it) 
-    {
-      if (it->second == L"en")
-      {
-//        CPluginFilter::DownloadFilterFile(it->first, m_filterFileNameList.find(it->first)->second);
-        this->SetFilterRefreshDate(it->first, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
-      }
-    }
-  }
-
-  this->Write();
-
-  this->IncrementTabVersion(SETTING_TAB_FILTER_VERSION);
-
-  s_criticalSectionLocal.Unlock();
   return true;
 }
 
@@ -872,137 +738,31 @@ bool CPluginSettings::IsPluginEnabled() const
   return m_isPluginEnabledTab;
 }
 
-
-#ifdef SUPPORT_FILTER
-
-void CPluginSettings::SetFilterUrlList(const TFilterUrlList& filters) 
+static void SubsCallback(std::vector<AdblockPlus::SubscriptionPtr>& subscriptions)
 {
-  DEBUG_SETTINGS(L"Settings::SetFilterUrlList")
-
-    s_criticalSectionFilters.Lock();
-  {
-    if (m_filterUrlList != filters)
-    {
-      m_filterUrlList = filters;
-      m_isDirty = true;
-    }
-  }
-  s_criticalSectionFilters.Unlock();
-}
-
-void CPluginSettings::SetFilterFileNamesList(const std::map<CString, CString>& filters) 
-{
-  DEBUG_SETTINGS(L"Settings::SetFilterUrlList")
-
-    s_criticalSectionFilters.Lock();
-  {
-    if (m_filterFileNameList != filters)
-    {
-      m_filterFileNameList = filters;
-      m_isDirty = true;
-    }
-  }
-  s_criticalSectionFilters.Unlock();
-}
-
-TFilterUrlList CPluginSettings::GetFilterUrlList() const
-{
-  TFilterUrlList filterUrlList;
-
-  s_criticalSectionFilters.Lock();
-  {
-    filterUrlList = m_filterUrlList;
-  }
-  s_criticalSectionFilters.Unlock();
-
-  return filterUrlList;
-}
-
-
-std::map<CString, CString> CPluginSettings::GetFilterFileNamesList() const
-{
-  std::map<CString, CString> filterFileNamesList;
-
-  s_criticalSectionFilters.Lock();
-  {
-    filterFileNamesList = m_filterFileNameList;
-  }
-  s_criticalSectionFilters.Unlock();
-
-  return filterFileNamesList;
+  CPluginSettings::GetInstance()->m_subscriptions = subscriptions;
+  return;
 }
 
 
 std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
 {
   std::map<CString, CString> filterList;
+  for (int i = 0; i < m_subscriptions.size(); i ++)
+  {  
+    AdblockPlus::SubscriptionPtr it = m_subscriptions[i];
+    std::string title = "";
+    std::string url = "";
 
-  s_criticalSectionFilters.Lock();
-  {
-    filterList = m_filterLanguageTitleList;
+    //TODO: Property for language name?
+    title = it.get()->GetProperty("title", title);
+    url = it.get()->GetProperty("url", url);
+
+    filterList.insert(std::make_pair(CString(CA2T(url.c_str(), CP_UTF8)), CString(CA2T(title.c_str(), CP_UTF8))));
   }
-  s_criticalSectionFilters.Unlock();
-
   return filterList;
 }
 
-
-bool CPluginSettings::FilterlistExpired(CString filterlist) const
-{
-  std::map<CString, time_t>::const_iterator it = m_filterDownloadTimesList.find(filterlist);
-  if (it == m_filterDownloadTimesList.end())
-    return false;
-  if (time(NULL) >= it->second)
-    return true;
-  return false;
-}
-
-bool CPluginSettings::FilterShouldLoad(CString filterlist) const
-{
-  std::map<CString, CString>::const_iterator it = m_filterLanguagesList.find(filterlist);
-  if (it == m_filterLanguagesList.end())
-    return false;
-  CPluginSettings* pluginSettings = CPluginSettings::GetInstance();
-  if (it->second == pluginSettings->GetString(SETTING_LANGUAGE))
-    return true;
-  return false;
-}
-
-
-bool CPluginSettings::SetFilterRefreshDate(CString filterlist, time_t refreshtime)
-{
-  m_filterDownloadTimesList[filterlist] = refreshtime;
-  m_isDirty = true;
-  return true;
-}
-void CPluginSettings::AddFilterUrl(const CString& url, int version) 
-{
-  s_criticalSectionFilters.Lock();
-  {
-    TFilterUrlList::iterator it = m_filterUrlList.find(url);
-    if (it == m_filterUrlList.end() || it->second != version)
-    {
-      m_filterUrlList[url] = version;
-      m_isDirty = true;
-    }
-  }
-  s_criticalSectionFilters.Unlock();
-}
-
-void CPluginSettings::AddFilterFileName(const CString& url, const CString& fileName) 
-{
-  s_criticalSectionFilters.Lock();
-  {
-    std::map<CString, CString>::iterator it = m_filterFileNameList.find(url);
-    if (it == m_filterFileNameList.end() || it->second != fileName)
-    {
-      m_filterFileNameList[url] = fileName;
-      m_isDirty = true;
-    }
-  }
-  s_criticalSectionFilters.Unlock();
-}
-#endif // SUPPORT_FILTER
 
 bool CPluginSettings::Write(bool isDebug)
 {
@@ -1036,72 +796,6 @@ bool CPluginSettings::Write(bool isDebug)
     s_criticalSectionLocal.Unlock();
 
     m_settingsFile->UpdateSection("Settings", settings);
-
-    // Filter URL's
-#ifdef SUPPORT_FILTER
-
-    int filterCount = 0;
-    CPluginIniFileW::TSectionData filters;        
-
-    s_criticalSectionFilters.Lock();
-    {
-      for (TFilterUrlList::iterator it = m_filterUrlList.begin(); it != m_filterUrlList.end(); ++it)
-      {
-        CString filterCountStr;
-        filterCountStr.Format(L"%d", ++filterCount);
-
-        CString filterVersion;
-        filterVersion.Format(L"%d", it->second);
-
-        filters[L"filter" + filterCountStr] = it->first;
-        filters[L"filter" + filterCountStr + L"v"] = filterVersion;
-        if (m_filterFileNameList.size() > 0)
-        {
-          std::map<CString, CString>::iterator fni = m_filterFileNameList.find(it->first);
-          if (fni != m_filterFileNameList.end())
-          {
-            CString fileName = fni->second;
-            filters[L"filter" + filterCountStr + "fileName"] = fileName;
-          }
-        }
-        if (m_filterLanguagesList.size() > 0)
-        {
-          std::map<CString, CString>::iterator fli = m_filterLanguagesList.find(it->first);
-          if (fli != m_filterLanguagesList.end())
-          {
-            CString language = fli->second;
-            filters[L"filter" + filterCountStr + "language"] = language;
-
-            if (m_filterLanguageTitleList.size() > 0)
-            {
-              std::map<CString, CString>::iterator fli = m_filterLanguageTitleList.find(language);
-              if (fli != m_filterLanguageTitleList.end())
-              {
-                CString language = fli->second;
-                filters[L"filter" + filterCountStr + "languageTitle"] = language;
-              }
-            }
-
-          }
-        }
-        if (m_filterDownloadTimesList.size() > 0)
-        {
-          std::map<CString, time_t>::iterator fdti = m_filterDownloadTimesList.find(it->first);
-          if (fdti != m_filterDownloadTimesList.end())
-          {
-            CString timeString;
-            timeString.Format(L"%d", (int)fdti->second);
-            filters[L"filter" + filterCountStr + "refreshin"] = timeString;
-          }
-        }
-
-      }
-    }
-    s_criticalSectionFilters.Unlock();
-
-    m_settingsFile->UpdateSection("Filters", filters);
-
-#endif // SUPPORT_FILTER
 
     // Write file
     isWritten = m_settingsFile->Write();
@@ -2299,6 +1993,47 @@ DWORD CPluginSettings::GetWindowsBuildNumber()
   }
 
   return m_WindowsBuildNumber;
+}
+
+void CPluginSettings::SetSubscription(BSTR url)
+{
+  std::string urlConverted = CT2A(url);
+  SetSubscription(urlConverted);
+}
+
+void CPluginSettings::SetSubscription(std::string url)
+{
+  FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
+  AdblockPlus::Subscription subscription = filterEngine->GetSubscription(url);
+  subscription.AddToList();
+}
+
+CString CPluginSettings::GetSubscription()
+{
+  FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
+  std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+  for (int i = 0; i < subscriptions.size(); i ++)
+  {
+    if (subscriptions[i]->IsListed())
+    {
+      return CString(CA2T(subscriptions[i]->GetProperty("url", std::string()).c_str()));
+    }
+  }
+  return CString(L"");
+}
+
+
+void CPluginSettings::RefreshFilterlist()
+{
+  FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
+  std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+  for (int i = 0; i < subscriptions.size(); i ++)
+  {
+    if (subscriptions[i]->IsListed())
+    {
+      subscriptions[i]->UpdateFilters();
+    }
+  }
 }
 
 #endif // SUPPORT_WHITELIST

@@ -49,11 +49,6 @@ CAdblockPlusClient* CAdblockPlusClient::GetInstance()
   return instance;
 }
 
-bool CAdblockPlusClient::LoadFilters()
-{
-  return m_filter->LoadHideFilters(filterEngine->GetElementHidingRules());
-}
-
 AdblockPlus::FilterEngine* CAdblockPlusClient::GetFilterEngine()
 {
   return filterEngine.get();
@@ -103,12 +98,12 @@ bool CAdblockPlusClient::ShouldBlock(CString src, int contentType, const CString
   return isBlocked;
 }
 
-bool CAdblockPlusClient::IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent)
+bool CAdblockPlusClient::IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent, CPluginFilter* filter)
 {
   bool isHidden;
   m_criticalSectionFilter.Lock();
   {
-    isHidden = m_filter.get() && m_filter->IsElementHidden(tag, pEl, domain, indent);
+    isHidden = filter && filter->IsElementHidden(tag, pEl, domain, indent);
   }
   m_criticalSectionFilter.Unlock();
   return isHidden;
