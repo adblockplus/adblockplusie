@@ -9,7 +9,7 @@
 
 
 #include "PluginTypedef.h"
-
+#include "AdblockPlus.h"
 
 // Main settings
 
@@ -21,9 +21,6 @@
 #define SETTING_PLUGIN_SELFTEST         L"pluginselftest"
 #define SETTING_LANGUAGE                L"language"
 
-#ifdef SUPPORT_FILTER
-#define SETTING_FILTER_VERSION          L"filterversion"
-#endif
 #ifdef SUPPORT_CONFIG
 #define SETTING_CONFIG_VERSION          L"configversion"
 #endif
@@ -42,6 +39,7 @@
 #ifdef SUPPORT_FILTER
 #define SETTING_TAB_FILTER_VERSION          L"filterversion"
 #endif
+
 #ifdef SUPPORT_WHITELIST
 #define SETTING_TAB_WHITELIST_VERSION       L"whitelistversion"
 #endif
@@ -81,14 +79,6 @@ private:
 
   bool m_isDirty;
 
-#ifdef SUPPORT_FILTER
-  CPluginSettings::TFilterUrlList m_filterUrlList;
-  std::map<CString, CString> m_filterFileNameList;
-  std::map<CString, CString> m_filterLanguagesList;
-  std::map<CString, CString> m_filterLanguageTitleList; // Key - language, Value - language title
-  std::map<CString, time_t> m_filterDownloadTimesList;
-#endif
-
   CString m_settingsVersion;
   std::auto_ptr<CPluginIniFileW> m_settingsFile;
 
@@ -97,9 +87,6 @@ private:
 
 
   static CComAutoCriticalSection s_criticalSectionLocal;
-#ifdef SUPPORT_FILTER
-  static CComAutoCriticalSection s_criticalSectionFilters;
-#endif
 #ifdef SUPPORT_WHITELIST
   static CComAutoCriticalSection s_criticalSectionDomainHistory;
 #endif
@@ -155,17 +142,7 @@ public:
   bool FilterShouldLoad(CString filterlist) const;
   bool SetFilterRefreshDate(CString filterlist, time_t refreshtime);
 
-#ifdef SUPPORT_FILTER
-
-  void SetFilterUrlList(const TFilterUrlList& filters);
-  void SetFilterFileNamesList(const std::map<CString, CString>& filters);
-  TFilterUrlList GetFilterUrlList() const;
-  std::map<CString, CString> GetFilterFileNamesList() const;
   std::map<CString, CString> GetFilterLanguageTitleList() const;
-
-  void AddFilterUrl(const CString& url, int version);
-  void AddFilterFileName(const CString& url, const CString& fileName);
-#endif // SUPPORT_FILTER
 
 #ifdef SUPPORT_WHITELIST
 
@@ -269,13 +246,17 @@ public:
   int GetWhiteListedDomainCount() const;
   TDomainList GetWhiteListedDomainList(bool isToGo=false) const;
 
-  bool CheckFilterAndDownload();
   bool MakeRequestForUpdate();
   bool RefreshWhitelist();
   DWORD GetWindowsBuildNumber();
 
+  void SetSubscription(BSTR language);
+  void SetSubscription(std::string language);
+  CString GetSubscription();
+  void RefreshFilterlist();
 #endif //SUPPORT_WHITELIST
 
+  std::vector<AdblockPlus::SubscriptionPtr> m_subscriptions;
 };
 
 

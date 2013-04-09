@@ -240,7 +240,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
           {
 
             DEBUG_GENERAL("*** before CheckFilterAndDownload");
-            settings->CheckFilterAndDownload();
+            settings->RefreshFilterlist();
 
             settings->MakeRequestForUpdate();
 

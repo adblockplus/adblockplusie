@@ -63,15 +63,13 @@ public:
 
   static CAdblockPlusClient* GetInstance();
 
-  bool LoadFilters();
-
   AdblockPlus::FilterEngine* GetFilterEngine();
 
   // Removes the url from the list of whitelisted urls if present
   // Only called from ui thread
   bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false);
 
-  bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent);
+  bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent, CPluginFilter* filter);
   bool IsUrlWhiteListed(const CString& url);
 
   int GetIEVersion();
