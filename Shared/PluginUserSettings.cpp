@@ -276,16 +276,15 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
     if (pVarResult)
     {
-      //TODO: How and where is this stored?
-      TDomainList whiteList = settings->GetWhiteListedDomainList(true);
+      std::vector<std::string> whiteList = settings->GetWhiteListedDomainList();
       CString sWhiteList;
-      for (TDomainList::const_iterator it = whiteList.begin(); it != whiteList.end(); ++it)
+      for (int i = 0; i < whiteList.size(); i++)
       {            
         if (!sWhiteList.IsEmpty())
         {
           sWhiteList += ',';
         }
-        sWhiteList += it->first;
+        sWhiteList += CString(CA2W(whiteList[i].c_str(), CP_UTF8));
       }
 
       pVarResult->vt = VT_BSTR; 
@@ -303,10 +302,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
     if (domain.Length())
     {
-      if (!settings->IsWhiteListedDomain((BSTR)domain)) 
-      {
-        settings->AddWhiteListedDomain((BSTR)domain, 1, true);
-      }
+      settings->AddWhiteListedDomain((BSTR)domain);
     }
   }
   else if (s_RemoveWhitelistDomain == method)
@@ -320,7 +316,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
     if (settings->IsWhiteListedDomain((BSTR)domain)) 
     {
-      settings->AddWhiteListedDomain((BSTR)domain, 3, true);
+      settings->AddWhiteListedDomain((BSTR)domain);
       CPluginClient::GetInstance()->ClearWhiteListCache();
     }
   }

@@ -14,6 +14,8 @@
 #endif
 #include "PluginMutex.h"
 #include "PluginHttpRequest.h"
+#include <memory>
+
 
 // IE functions
 #pragma comment(lib, "iepmapi.lib")
@@ -74,21 +76,11 @@ CPluginSettings::CPluginSettings() :
   m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
 
-  //Message box. Can be used as a breakpoint to attach a debugger, if needed
-  //	MessageBox(NULL, L"Settings", L"", MB_OK);
-
   CPluginSettings *lightInstance = s_instance;
   s_instance = NULL;
 
-#ifdef SUPPORT_WHITELIST
-  m_isDirtyWhitelist = false;
-#endif
-
   m_settingsFile = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE), false));
   m_settingsFileTab = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_TAB), true));
-#ifdef SUPPORT_WHITELIST
-  m_settingsFileWhitelist = std::auto_ptr<CPluginIniFileW>(new CPluginIniFileW(GetDataPath(SETTINGS_INI_FILE_WHITELIST), true));
-#endif
 
   m_WindowsBuildNumber = 0;
 
@@ -190,20 +182,6 @@ CPluginSettings::CPluginSettings() :
   Write();
 }
 
-CPluginSettings::CPluginSettings(bool isLight) : 
-  m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
-  m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
-{
-
-  s_instance = NULL;
-#ifdef SUPPORT_WHITELIST
-  m_isDirtyWhitelist = false;
-#endif
-
-  Clear();
-  ClearTab();
-}
-
 
 CPluginSettings::~CPluginSettings()
 {
@@ -227,25 +205,6 @@ CPluginSettings* CPluginSettings::GetInstance()
       s_instance = new CPluginSettings();
       CPluginClient::GetInstance()->GetFilterEngine()->FetchAvailableSubscriptions((AdblockPlus::SubscriptionsCallback)&SubsCallback);
       s_isLightOnly = false;
-    }
-
-    instance = s_instance;
-  }
-  s_criticalSectionLocal.Unlock();
-
-  return instance;
-}
-
-CPluginSettings* CPluginSettings::GetInstanceLight() 
-{
-  CPluginSettings* instance = NULL;
-
-  s_criticalSectionLocal.Lock();
-  {
-    if (!s_instance)
-    {
-      s_instance = new CPluginSettings(true);
-      s_isLightOnly = true;
     }
 
     instance = s_instance;
@@ -815,71 +774,6 @@ bool CPluginSettings::Write(bool isDebug)
 
   return isWritten;
 }
-
-#ifdef SUPPORT_WHITELIST
-
-void CPluginSettings::AddDomainToHistory(const CString& domain)
-{
-  if (!CPluginClient::IsValidDomain(domain))
-  {
-    return;
-  }
-
-  // Delete domain
-  s_criticalSectionDomainHistory.Lock();
-  {
-    for (TDomainHistory::iterator it = m_domainHistory.begin(); it != m_domainHistory.end(); ++it)
-    {
-      if (it->first == domain)
-      {
-        m_domainHistory.erase(it);
-        break;
-      }
-    }
-
-    // Get whitelist reason
-    int reason = 0;
-
-    s_criticalSectionLocal.Lock();
-    {
-      TDomainList::iterator it = m_whitelist.find(domain);
-      if (it != m_whitelist.end())
-      {
-        reason = it->second;
-      }
-      else
-      {
-        reason = 3;
-      }
-    }
-    s_criticalSectionLocal.Unlock();
-
-    // Delete domain, if history is too long
-    if (m_domainHistory.size() >= DOMAIN_HISTORY_MAX_COUNT)
-    {
-      m_domainHistory.erase(m_domainHistory.begin());
-    }
-
-    m_domainHistory.push_back(std::make_pair(domain, reason));
-  }
-  s_criticalSectionDomainHistory.Unlock();
-}
-
-
-TDomainHistory CPluginSettings::GetDomainHistory() const
-{
-  TDomainHistory domainHistory;
-
-  s_criticalSectionDomainHistory.Lock();
-  {
-    domainHistory = m_domainHistory;
-  }
-  s_criticalSectionDomainHistory.Unlock();
-
-  return domainHistory;
-}
-
-#endif // SUPPORT_WHITELIST
 
 
 bool CPluginSettings::IsPluginUpdateAvailable() const
@@ -1568,8 +1462,7 @@ void CPluginSettings::ClearWhitelist()
 {
   s_criticalSectionLocal.Lock();
   {
-    m_whitelist.clear();
-    m_whitelistToGo.clear();
+    m_whitelistedDomains.clear();
   }
   s_criticalSectionLocal.Unlock();
 }
@@ -1583,182 +1476,49 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
 
     if (isDebug)
     {
-      DEBUG_GENERAL("*** Loading whitelist settings:" + m_settingsFileWhitelist->GetFilePath());
+      DEBUG_GENERAL("*** Loading whitelist settings");
     }
 
     CPluginSettingsWhitelistLock lock;
     if (lock.IsLocked())
     {
-      isRead = m_settingsFileWhitelist->Read();        
-      if (isRead)
-      {
-        if (m_settingsFileWhitelist->IsValidChecksum())
-        {
-          ClearWhitelist();
+      ClearWhitelist();
 
-          s_criticalSectionLocal.Lock();
+      s_criticalSectionLocal.Lock();
+      std::vector<AdblockPlus::FilterPtr> filters = CPluginClient::GetInstance()->GetFilterEngine()->GetListedFilters();
+      for (int i = 0; i < filters.size(); i ++)
+      {
+        if (filters[i]->GetProperty("type", AdblockPlus::Filter::Type::TYPE_INVALID) == AdblockPlus::Filter::Type::TYPE_EXCEPTION)
+        {
+          std::string text = filters[i]->GetProperty("text", "");
+          //@@||example.com^$document
+          size_t endPos = text.rfind("^$document");
+          if (endPos != std::string::npos)
           {
-            // Unpack white list
-            CPluginIniFileW::TSectionData whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist");
-            int domainCount = 0;
-            bool bContinue = true;
-
-            do
+            size_t startPos = text.find("@@||") + 4;
+            if (startPos != std::string::npos)
             {
-              CString domainCountStr;
-              domainCountStr.Format(L"%d", ++domainCount);
-
-              CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find(L"domain" + domainCountStr);
-              CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find(L"domain" + domainCountStr + L"r");
-
-              if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
-              {
-                m_whitelist[domainIt->second] = _wtoi(reasonIt->second);
-              }
-
-            } while (bContinue);
-
-            // Unpack white list
-            whitelist = m_settingsFileWhitelist->GetSectionData("Whitelist togo");
-            domainCount = 0;
-            bContinue = true;
-
-            do
-            {
-              CString domainCountStr;
-              domainCountStr.Format(L"%d", ++domainCount);
-
-              CPluginIniFileW::TSectionData::iterator domainIt = whitelist.find(L"domain" + domainCountStr);
-              CPluginIniFileW::TSectionData::iterator reasonIt = whitelist.find(L"domain" + domainCountStr + L"r");
-
-              if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
-              {
-                m_whitelistToGo[domainIt->second] = _wtoi(reasonIt->second);
-              }
-
-            } while (bContinue);
+              m_whitelistedDomains.push_back(text.substr(startPos, endPos - startPos));
+            }
           }
-          s_criticalSectionLocal.Unlock();
-        }
-        else
-        {
-          DEBUG_SETTINGS("SettingsWhitelist:Invalid checksum - Deleting file")
-
-            DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_READ_CHECKSUM, "SettingsWhitelist::Read - Checksum")
-            isRead = false;
-          m_isDirtyWhitelist = true;
         }
       }
-      else if (m_settingsFileWhitelist->GetLastError() == ERROR_FILE_NOT_FOUND)
-      {
-        m_isDirtyWhitelist = true;
-      }
-      else
-      {
-        DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_READ, "SettingsWhitelist::Read")
-      }
+      s_criticalSectionLocal.Unlock();
     }
     else
     {
       isRead = false;
     }
 
-    // Write file in case it is dirty
-    WriteWhitelist(isDebug);
-
     return isRead;
 }
 
 
-bool CPluginSettings::WriteWhitelist(bool isDebug)
-{
-  bool isWritten = true;
-
-  if (!m_isDirtyWhitelist)
-  {
-    return isWritten;
-  }
-
-  if (isDebug)
-  {
-    DEBUG_GENERAL("*** Writing changed whitelist settings")
-  }
-
-  CPluginSettingsWhitelistLock lock;
-  if (lock.IsLocked())
-  {
-    m_settingsFileWhitelist->Clear();
-
-    s_criticalSectionLocal.Lock();
-    {
-      // White list
-      int whitelistCount = 0;
-      CPluginIniFileW::TSectionData whitelist;
-
-      for (TDomainList::iterator it = m_whitelist.begin(); it != m_whitelist.end(); ++it)
-      {
-        CString whitelistCountStr;
-        whitelistCountStr.Format(L"%d", ++whitelistCount);
-
-        CString reason;
-        reason.Format(L"%d", it->second);
-
-        whitelist[L"domain" + whitelistCountStr] = it->first;
-        whitelist[L"domain" + whitelistCountStr + L"r"] = reason;
-      }
-
-      m_settingsFileWhitelist->UpdateSection("Whitelist", whitelist);
-
-      // White list (not yet committed)
-      whitelistCount = 0;
-      whitelist.clear();
-
-      for (TDomainList::iterator it = m_whitelistToGo.begin(); it != m_whitelistToGo.end(); ++it)
-      {
-        CString whitelistCountStr;
-        whitelistCountStr.Format(L"%d", ++whitelistCount);
-
-        CString reason;
-        reason.Format(L"%d", it->second);
-
-        whitelist[L"domain" + whitelistCountStr] = it->first;
-        whitelist[L"domain" + whitelistCountStr + L"r"] = reason;
-      }
-
-      m_settingsFileWhitelist->UpdateSection("Whitelist togo", whitelist);
-    }
-    s_criticalSectionLocal.Unlock();
-
-    // Write file
-    isWritten = m_settingsFileWhitelist->Write();
-    if (!isWritten)
-    {
-      DEBUG_ERROR_LOG(m_settingsFileWhitelist->GetLastError(), PLUGIN_ERROR_SETTINGS_WHITELIST, PLUGIN_ERROR_SETTINGS_FILE_WRITE, "SettingsWhitelist::Write")
-    }
-
-    m_isDirty = false;
-  }
-  else
-  {
-    isWritten = false;
-  }
-
-  if (isWritten)
-  {
-    DEBUG_WHITELIST("Whitelist::Icrement version")
-
-      IncrementTabVersion(SETTING_TAB_WHITELIST_VERSION);
-  }
-
-  return isWritten;
-}
-
-
-void CPluginSettings::AddWhiteListedDomain(const CString& domain, int reason, bool isToGo)
+void CPluginSettings::AddWhiteListedDomain(const CString& domain)
 {
   DEBUG_SETTINGS("SettingsWhitelist::AddWhiteListedDomain domain:" + domain)
 
-    bool isNewVersion = false;
+  bool isNewVersion = false;
   bool isForcingUpdateOnStart = false;
 
   CPluginSettingsWhitelistLock lock;
@@ -1766,71 +1526,20 @@ void CPluginSettings::AddWhiteListedDomain(const CString& domain, int reason, bo
   {
     ReadWhitelist(false);
 
+    std::string newDomain = CW2A(domain, CP_UTF8);
+
+    //Domain already present?
+    if (std::find(m_whitelistedDomains.begin(), m_whitelistedDomains.end(), newDomain) != m_whitelistedDomains.end())
+    {
+      return;
+    }
     s_criticalSectionLocal.Lock();
     {
-      bool isToGoMatcingReason = false;
-      bool isToGoMatcingDomain = false;
-
-      TDomainList::iterator itToGo = m_whitelistToGo.find(domain);
-      TDomainList::iterator it = m_whitelist.find(domain);
-      if (isToGo)
-      {
-        if (itToGo != m_whitelistToGo.end())  
-        {
-          isToGoMatcingDomain = true;
-          isToGoMatcingReason = itToGo->second == reason;
-
-          if (reason == 3)
-          {
-            m_whitelistToGo.erase(itToGo);
-            m_isDirtyWhitelist = true;                        
-          }
-          else if (!isToGoMatcingReason)
-          {
-            itToGo->second = reason;
-            m_isDirtyWhitelist = true;
-          }
-        }
-        else 
-        {
-          m_whitelistToGo[domain] = reason;
-          m_isDirtyWhitelist = true;
-
-          // Delete new togo item from saved white list
-          if (it != m_whitelist.end())
-          {
-            m_whitelist.erase(it);
-          }
-        }
-      }
-      else
-      {
-        if (isToGoMatcingDomain)
-        {
-          m_whitelistToGo.erase(itToGo);
-          m_isDirtyWhitelist = true;
-        }
-
-        if (it != m_whitelist.end())  
-        {
-          if (it->second != reason)
-          {
-            it->second = reason;
-            m_isDirtyWhitelist = true;
-          }
-        }
-        else 
-        {
-          m_whitelist[domain] = reason; 
-          m_isDirtyWhitelist = true;
-        }
-      }
-
-      isForcingUpdateOnStart = m_whitelistToGo.size() > 0;
+      AdblockPlus::FilterPtr whitelistFilter = CPluginClient::GetInstance()->GetFilterEngine()->GetFilter(std::string("@@||").append(CW2A(domain)).append("^$document"));
+      whitelistFilter->AddToList();
     }
     s_criticalSectionLocal.Unlock();
 
-    WriteWhitelist(false);
   }
 
   if (isForcingUpdateOnStart)
@@ -1846,12 +1555,7 @@ bool CPluginSettings::IsWhiteListedDomain(const CString& domain) const
 
   s_criticalSectionLocal.Lock();
   {
-    bIsWhiteListed = m_whitelist.find(domain) != m_whitelist.end();
-    if (!bIsWhiteListed)
-    {
-      TDomainList::const_iterator it = m_whitelistToGo.find(domain);
-      bIsWhiteListed = it != m_whitelistToGo.end() && it->second != 3;
-    }
+    bIsWhiteListed = std::find(m_whitelistedDomains.begin(), m_whitelistedDomains.end(), std::string(CW2A(domain, CP_UTF8))) != m_whitelistedDomains.end();
   }
   s_criticalSectionLocal.Unlock();
 
@@ -1864,7 +1568,7 @@ int CPluginSettings::GetWhiteListedDomainCount() const
 
   s_criticalSectionLocal.Lock();
   {
-    count = (int)m_whitelist.size();
+    count = (int)m_whitelistedDomains.size();
   }
   s_criticalSectionLocal.Unlock();
 
@@ -1872,95 +1576,10 @@ int CPluginSettings::GetWhiteListedDomainCount() const
 }
 
 
-TDomainList CPluginSettings::GetWhiteListedDomainList(bool isToGo) const
+std::vector<std::string> CPluginSettings::GetWhiteListedDomainList()
 {
-  TDomainList domainList;
-
-  s_criticalSectionLocal.Lock();
-  {
-    if (isToGo)
-    {
-      domainList = m_whitelistToGo;
-    }
-    else
-    {
-      domainList = m_whitelist;
-    }
-  }
-  s_criticalSectionLocal.Unlock();
-
-  return domainList;
-}
-
-
-void CPluginSettings::ReplaceWhiteListedDomains(const TDomainList& domains)
-{
-  CPluginSettingsWhitelistLock lock;
-  if (lock.IsLocked())
-  {
-    ReadWhitelist(false);
-
-    s_criticalSectionLocal.Lock();
-    {
-      if (m_whitelist != domains)
-      {
-        m_whitelist = domains;
-        m_isDirtyWhitelist = true;
-      }
-
-      // Delete entries in togo list
-      bool isDeleted = true;
-
-      while (isDeleted)
-      {
-        isDeleted = false;
-
-        for (TDomainList::iterator it = m_whitelistToGo.begin(); it != m_whitelistToGo.end(); ++it)
-        {
-          if (m_whitelist.find(it->first) != m_whitelist.end() || it->second == 3)
-          {
-            m_whitelistToGo.erase(it);
-
-            // Force another round...
-            isDeleted = true;
-            break;
-          }
-        }
-      }
-    }
-    s_criticalSectionLocal.Unlock();
-
-    WriteWhitelist(false);
-  }
-}
-
-
-void CPluginSettings::RemoveWhiteListedDomainsToGo(const TDomainList& domains)
-{
-  CPluginSettingsWhitelistLock lock;
-  if (lock.IsLocked())
-  {
-    ReadWhitelist(false);
-
-    s_criticalSectionLocal.Lock();
-    {
-      for (TDomainList::const_iterator it = domains.begin(); it != domains.end(); ++it)
-      {
-        for (TDomainList::iterator itToGo = m_whitelistToGo.begin(); itToGo != m_whitelistToGo.end(); ++ itToGo)
-        {
-          if (it->first == itToGo->first)
-          {
-            m_whitelistToGo.erase(itToGo);
-            m_isDirtyWhitelist = true;
-            break;
-          }
-        }
-      }
-    }
-    s_criticalSectionLocal.Unlock();
-
-    WriteWhitelist(false);
-  }
+  bool r = ReadWhitelist(false);
+  return m_whitelistedDomains;
 }
 
 
@@ -2004,8 +1623,8 @@ void CPluginSettings::SetSubscription(BSTR url)
 void CPluginSettings::SetSubscription(std::string url)
 {
   FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
-  AdblockPlus::Subscription subscription = filterEngine->GetSubscription(url);
-  subscription.AddToList();
+  AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription(url);
+  subscription->AddToList();
 }
 
 CString CPluginSettings::GetSubscription()

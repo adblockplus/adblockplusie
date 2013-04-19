@@ -11,18 +11,6 @@ using namespace AdblockPlus;
 
 class CPluginFilter;
 
-
-class LibFileReader : public AdblockPlus::FileReader
-{
-public:
-  std::auto_ptr<std::istream> Read(const std::string& path) const
-  {
-    std::ifstream* file = new std::ifstream;
-    file->open(("lib/" + path).c_str());
-    return std::auto_ptr<std::istream>(file);
-  }
-};
-
 class CerrErrorCallback : public AdblockPlus::ErrorCallback
 {
 public:
@@ -39,12 +27,11 @@ class CAdblockPlusClient : public CPluginClientBase
 private:
 
   std::auto_ptr<CPluginFilter> m_filter;
-  std::auto_ptr<LibFileReader> fileReader;
+  std::auto_ptr<AdblockPlus::DefaultFileSystem> fileSystem;
+  std::auto_ptr<AdblockPlus::DefaultWebRequest> webRequest;
   std::auto_ptr<CerrErrorCallback> errorCallback;
   std::auto_ptr<AdblockPlus::JsEngine> jsEngine;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
-
-  TFilterFileList m_filterDownloads;
 
   CComAutoCriticalSection m_criticalSectionFilter;
   CComAutoCriticalSection m_criticalSectionCache;

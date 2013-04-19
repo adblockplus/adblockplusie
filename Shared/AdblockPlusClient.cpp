@@ -18,9 +18,10 @@ CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
 CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 {
   m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
-  fileReader = std::auto_ptr<LibFileReader>(new LibFileReader());
+  fileSystem = std::auto_ptr<AdblockPlus::DefaultFileSystem>(new AdblockPlus::DefaultFileSystem());
+  webRequest = std::auto_ptr<AdblockPlus::DefaultWebRequest>(new AdblockPlus::DefaultWebRequest());
   errorCallback = std::auto_ptr<CerrErrorCallback>(new CerrErrorCallback());
-  jsEngine = std::auto_ptr<AdblockPlus::JsEngine>(new AdblockPlus::JsEngine(fileReader.get(), errorCallback.get()));
+  jsEngine = std::auto_ptr<AdblockPlus::JsEngine>(new AdblockPlus::JsEngine(fileSystem.get(), webRequest.get(), errorCallback.get()));
   filterEngine = std::auto_ptr<AdblockPlus::FilterEngine>(new AdblockPlus::FilterEngine(*jsEngine));
 }
 CAdblockPlusClient::~CAdblockPlusClient()

@@ -406,7 +406,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\v8\include;$(SolutionDir)..\V8\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -430,7 +430,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;winmm.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)Adblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -808,21 +808,16 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     <Image Include="res\not-blocking.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\V8\MSVS\libadblockplus.vcxproj">
+    <ProjectReference Include="..\..\libadblockplus\MSVS\libadblockplus.vcxproj">
       <Project>{e60284dc-2131-d9a9-d19c-b792b7f5f727}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="..\..\V8\MSVS\third_party\v8\tools\gyp\v8.vcxproj">
+    <ProjectReference Include="..\..\libadblockplus\MSVS\third_party\v8\tools\gyp\v8.vcxproj">
       <Project>{fbb6cb62-ddee-671e-d69f-37e0f0a1b214}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\V8\MSVS\third_party\v8\tools\gyp\v8_base.vcxproj">
+    <ProjectReference Include="..\..\libadblockplus\MSVS\third_party\v8\tools\gyp\v8_base.vcxproj">
       <Project>{c782df61-6ef9-0352-cb91-68298a8e12db}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\V8\MSVS\third_party\v8\tools\gyp\v8_snapshot.vcxproj">
+    <ProjectReference Include="..\..\libadblockplus\MSVS\third_party\v8\tools\gyp\v8_snapshot.vcxproj">
       <Project>{675d727d-f234-e4dd-20c1-85aaa5df715b}</Project>
     </ProjectReference>
   </ItemGroup>
