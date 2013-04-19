@@ -68,42 +68,6 @@ bool CPluginConfiguration::Download()
 
   httpRequest.Add("errors", settings->GetErrorList());
 
-#ifdef SUPPORT_WHITELIST
-
-  // White list info
-  CString whiteListCount;   
-  whiteListCount.Format(L"%d", settings->GetWhiteListedDomainCount());
-
-  httpRequest.Add("wcount", whiteListCount);
-
-  TDomainList whiteListToGo = settings->GetWhiteListedDomainList(true);
-  TDomainList whiteListToGoSent;
-
-  if (!whiteListToGo.empty())
-  {
-    CString whiteList;
-    int count = 0;
-
-    for (TDomainList::const_iterator it = whiteListToGo.begin(); it != whiteListToGo.end() && count < 5; count++, ++it)
-    {            
-      CString whiteListReason;
-      whiteListReason.Format(L",%d", it->second);
-
-      if (!whiteList.IsEmpty())
-      {
-        whiteList += ',';
-      }
-      whiteList += it->first;
-      whiteList += whiteListReason;
-
-      whiteListToGoSent.insert(std::make_pair(it->first, it->second));
-    }
-
-    httpRequest.Add("wlist", whiteList);   
-  }
-
-#endif // SUPPORT_WHITELIST
-
   httpRequest.Add("dicv", settings->GetValue(SETTING_DICTIONARY_VERSION, 0));
 
 #ifdef SUPPORT_CONFIG
@@ -129,16 +93,6 @@ bool CPluginConfiguration::Download()
   }
 
   const std::auto_ptr<CPluginIniFile>& iniFile = httpRequest.GetResponseFile();
-
-#ifdef SUPPORT_WHITELIST
-
-  // Update whitelists to go
-  if (!whiteListToGoSent.empty())
-  {
-    settings->RemoveWhiteListedDomainsToGo(whiteListToGoSent);
-  }
-
-#endif // SUPPORT_WHITELIST
 
   // Unpack settings
   CPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
@@ -222,36 +176,6 @@ bool CPluginConfiguration::Download()
 
 #endif // SUPPORT_CONFIG
 
-#ifdef SUPPORT_WHITELIST
-
-  // Unpack whitelist domains
-  m_isValidWhiteList = iniFile->HasSection("Whitelist");
-  if (m_isValidWhiteList)
-  {
-    CPluginIniFile::TSectionData whitelist = iniFile->GetSectionData("Whitelist");        
-
-    int domainCount = 0;
-    bool bContinue = true;
-
-    m_whiteList.clear();
-
-    do
-    {
-      CStringA domainCountStr;
-      domainCountStr.Format("%d", ++domainCount);
-
-      CPluginIniFile::TSectionData::iterator domainIt = whitelist.find("domain" + domainCountStr);
-      CPluginIniFile::TSectionData::iterator reasonIt = whitelist.find("domain" + domainCountStr + "r");
-
-      if (bContinue = (domainIt != whitelist.end() && reasonIt != whitelist.end()))
-      {
-        m_whiteList[CString(domainIt->second)] = atoi(reasonIt->second);
-      }
-
-    } while (bContinue);
-  }
-
-#endif // #ifdef SUPPORT_WHITELIST
   it = settingsData.find("registration");
   if (it != settingsData.end())
   {
@@ -404,31 +328,8 @@ CString CPluginConfiguration::GetDictionaryUrl() const
 }
 
 
-#ifdef SUPPORT_FILTER
-
-int CPluginConfiguration::GetFilterVersion() const
-{
-  return m_filterVersion;
-}
-
-
-TFilterUrlList CPluginConfiguration::GetFilterUrlList() const
-{
-  return m_filterUrlList;
-}
-
-std::map<CString, CString> CPluginConfiguration::GetFilterFileNamesList() const
-{
-  return m_filterFileNameList;
-}
-#endif // SUPPORT_FILTER
-
 #ifdef SUPPORT_WHITELIST
 
-TDomainList CPluginConfiguration::GetWhiteList() const
-{
-  return m_whiteList;
-}
 
 #endif // SUPPORT_WHITELIST
 

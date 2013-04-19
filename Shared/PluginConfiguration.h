@@ -53,16 +53,6 @@ public:
   int GetDictionaryVersion() const;	
   CString GetDictionaryUrl() const;	
 
-#ifdef SUPPORT_FILTER
-  int GetFilterVersion() const;	
-  TFilterUrlList GetFilterUrlList() const;
-  std::map<CString, CString> GetFilterFileNamesList() const;
-#endif // SUPPORT_FILTER
-
-#ifdef SUPPORT_WHITELIST
-  TDomainList GetWhiteList() const;
-#endif // SUPPORT_WHITELIST
-
 #ifdef SUPPORT_CONFIG
   CString GetConfigUrl() const;
   int GetConfigVersion() const;
@@ -110,13 +100,8 @@ private:
 
 #ifdef SUPPORT_FILTER
   int m_filterVersion;
-  TFilterUrlList m_filterUrlList;
   std::map<CString, CString> m_filterFileNameList;
 #endif
-
-#ifdef SUPPORT_WHITELIST
-  TDomainList m_whiteList;
-#endif // SUPPORT_WHITELIST
 
 #ifdef SUPPORT_CONFIG
   CString m_configUrl;

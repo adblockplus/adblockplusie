@@ -70,11 +70,6 @@ private:
 
   CString m_tabNumber;
 
-#ifdef SUPPORT_WHITELIST
-  TDomainList m_domainList;
-  TDomainHistory m_domainHistory;
-#endif
-
   CPluginSettings::TProperties m_properties;
 
   bool m_isDirty;
@@ -97,8 +92,6 @@ private:
 
   // Private constructor used by the singleton pattern
   CPluginSettings();	
-  CPluginSettings(bool isLight);	
-
 public:
 
   ~CPluginSettings();
@@ -108,7 +101,6 @@ public:
   static bool s_isLightOnly;
   static bool HasInstance();
   static CPluginSettings* GetInstance();
-  static CPluginSettings* GetInstanceLight();
 
   bool Read(bool bDebug=true);
   bool Write(bool bDebug=true);
@@ -139,17 +131,9 @@ public:
   bool IsPluginSelftestEnabled();
 
   bool FilterlistExpired(CString filterlist) const;
-  bool FilterShouldLoad(CString filterlist) const;
   bool SetFilterRefreshDate(CString filterlist, time_t refreshtime);
 
   std::map<CString, CString> GetFilterLanguageTitleList() const;
-
-#ifdef SUPPORT_WHITELIST
-
-  void AddDomainToHistory(const CString& domain);
-  TDomainHistory GetDomainHistory() const;
-
-#endif // SUPPORT_WHITELIST
 
   void SetMainProcessId();
   void SetMainProcessId(DWORD id);
@@ -176,6 +160,7 @@ public:
   bool IsFirstRunAny() const;
 
   static CString GetSystemLanguage();
+  DWORD m_WindowsBuildNumber;
 
 private:
 
@@ -223,28 +208,17 @@ public:
 #ifdef SUPPORT_WHITELIST
 
 private:
-
-  bool m_isDirtyWhitelist;
-  DWORD m_WindowsBuildNumber;
-
-  TDomainList m_whitelist;
-  TDomainList m_whitelistToGo;
-
-  std::auto_ptr<CPluginIniFileW> m_settingsFileWhitelist;
+  std::vector<std::string> m_whitelistedDomains;
 
   void ClearWhitelist();
-
   bool ReadWhitelist(bool bDebug=true);
-  bool WriteWhitelist(bool bDebug=true);
 
 public:
-
-  void AddWhiteListedDomain(const CString& domain, int reason=1, bool isToGo=false);
-  void RemoveWhiteListedDomainsToGo(const TDomainList& domains);
-  void ReplaceWhiteListedDomains(const TDomainList& domains);
+  void AddWhiteListedDomain(const CString& domain);
   bool IsWhiteListedDomain(const CString& domain) const;
   int GetWhiteListedDomainCount() const;
-  TDomainList GetWhiteListedDomainList(bool isToGo=false) const;
+  std::vector<std::string> GetWhiteListedDomainList();
+#endif //SUPPORT_WHITELIST
 
   bool MakeRequestForUpdate();
   bool RefreshWhitelist();
@@ -254,7 +228,6 @@ public:
   void SetSubscription(std::string language);
   CString GetSubscription();
   void RefreshFilterlist();
-#endif //SUPPORT_WHITELIST
 
   std::vector<AdblockPlus::SubscriptionPtr> m_subscriptions;
 };

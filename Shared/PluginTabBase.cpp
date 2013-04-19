@@ -267,10 +267,6 @@ void CPluginTabBase::SetDocumentUrl(const CString& url)
     domain = m_documentDomain;
   }
   m_criticalSection.Unlock();
-
-#ifdef SUPPORT_WHITELIST
-  CPluginSettings::GetInstance()->AddDomainToHistory(domain);
-#endif
 }
 
 CString CPluginTabBase::GetDocumentUrl()
