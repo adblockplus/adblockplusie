@@ -11,26 +11,12 @@ using namespace AdblockPlus;
 
 class CPluginFilter;
 
-class CerrErrorCallback : public AdblockPlus::ErrorCallback
-{
-public:
-  void operator()(const std::string& message)
-  {
-//    std::cerr << "Error: " << message << std::endl;
-  }
-};
-
-
 class CAdblockPlusClient : public CPluginClientBase
 {
 
 private:
 
   std::auto_ptr<CPluginFilter> m_filter;
-  std::auto_ptr<AdblockPlus::DefaultFileSystem> fileSystem;
-  std::auto_ptr<AdblockPlus::DefaultWebRequest> webRequest;
-  std::auto_ptr<CerrErrorCallback> errorCallback;
-  std::auto_ptr<AdblockPlus::JsEngine> jsEngine;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
 
   CComAutoCriticalSection m_criticalSectionFilter;
