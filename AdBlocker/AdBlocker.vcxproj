@@ -734,7 +734,6 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     <ClCompile Include="..\Shared\PluginUserSettings.cpp" />
     <ClCompile Include="..\Shared\PluginUtil.cpp" />
     <ClCompile Include="..\Shared\PluginWbPassThrough.cpp" />
-    <ClCompile Include="CABPFilter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Shared\abp.h" />
@@ -779,7 +778,6 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     <ClInclude Include="..\Shared\ProtocolCF.h" />
     <ClInclude Include="..\Shared\ProtocolImpl.h" />
     <ClInclude Include="BuildVariant.h" />
-    <ClInclude Include="CABPFilter.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Version.h" />
   </ItemGroup>
