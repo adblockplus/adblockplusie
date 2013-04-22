@@ -32,6 +32,10 @@ CComAutoCriticalSection CPluginDebugLock::s_criticalSectionDebugLock;
 
 void CPluginDebug::Debug(const CString& text, DWORD dwProcessId, DWORD dwThreadId)
 {
+#ifdef USE_CONSOLE
+  CONSOLE(CT2A(text.GetString(), CP_UTF8));
+#endif
+
   if (CPluginSettings::HasInstance())
   {
 #ifdef ENABLE_DEBUG_SPLIT_FILE

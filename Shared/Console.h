@@ -83,7 +83,7 @@ inline void WritelnToConsole(int code, int count, const char* format, va_list ar
 	SYSTEMTIME systemTime;
 	GetLocalTime(&systemTime);
 
-	char buf[256];
+	char buf[1024];
     sprintf_s(buf, countof(buf), "%d [%.2d:%.2d:%.2d] {%d} %s\n", count, systemTime.wMinute, systemTime.wSecond, systemTime.wMilliseconds, GetCurrentThreadId(), format);
 
 	HANDLE hError = GetStdHandle(STD_ERROR_HANDLE);

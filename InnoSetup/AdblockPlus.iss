@@ -1,32 +1,26 @@
 ; AdblockPlus installer for 32 & 64
 
 [Setup]
-AppVerName=avast! Ad Blocker IE
-AppName=avast! Adblocker IE
-DefaultDirName={pf}\AVAST Software\avast! Adblocker IE
+AppVerName=Adblock Plus IE
+AppName=Adblock Plus IE
+DefaultDirName={pf}\Adblock Plus IE
 DisableProgramGroupPage=yes
-UninstallDisplayIcon={app}\avast! Adblocker IE
+UninstallDisplayIcon={app}\Adblock Plus IE
 DisableDirPage=yes
 
 
 [Files]
-Source: "Adblocker32.dll"; DestDir: "{app}"
-Source: "Adblocker64.dll"; DestDir: "{app}"
-Source: "..\html\static\css\*"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker\html\static\css"
-Source: "..\html\static\img\*"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker\html\static\img"
-Source: "..\html\static\js\*"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker\html\static\js"
-Source: "..\html\templates\*"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker\html\templates"
-Source: "..\AdBlocker\files\settings.ini"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker"
-Source: "..\AdBlocker\files\dictionary_w.ini"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker"
-Source: "..\AdBlocker\files\settings_page_w.ini"; DestDir: "{userappdata}\..\LocalLow\Avast Ad Blocker"
-
-Source: "..\html\static\css\*"; DestDir: "{userappdata}\Avast Ad Blocker\html\static\css"
-Source: "..\html\static\img\*"; DestDir: "{userappdata}\Avast Ad Blocker\html\static\img"
-Source: "..\html\static\js\*"; DestDir: "{userappdata}\Avast Ad Blocker\html\static\js"
-Source: "..\html\templates\*"; DestDir: "{userappdata}\Avast Ad Blocker\html\templates"
-Source: "..\AdBlocker\files\settings.ini"; DestDir: "{userappdata}\Avast Ad Blocker"
-Source: "..\AdBlocker\files\dictionary_w.ini"; DestDir: "{userappdata}\Avast Ad Blocker"
-Source: "..\AdBlocker\files\settings_page_w.ini"; DestDir: "{userappdata}\Avast Ad Blocker"
+Source: "..\AdBlocker\Release Test\Adblock.dll"; DestDir: "{app}"
+Source: "..\AdBlocker\x64\Release Test\Adblocker.dll"; DestDir: "{app}"
+Source: "..\html\static\css\*"; DestDir: "{app}\html\static\css"
+Source: "..\html\static\img\*"; DestDir: "{app}\html\static\img"
+Source: "..\html\static\img\social\*"; DestDir: "{app}\html\static\img\social"
+Source: "..\html\static\img\button-background\*"; DestDir: "{app}\html\static\img\button-background"
+Source: "..\html\static\js\*"; DestDir: "{app}\html\static\js"
+Source: "..\html\templates\*"; DestDir: "{app}\html\templates"
+Source: "..\AdBlocker\files\settings.ini"; DestDir: "{app}"
+Source: "..\AdBlocker\files\dictionary_w.ini"; DestDir: "{app}"
+Source: "..\AdBlocker\files\settings_page_w.ini"; DestDir: "{app}"
 
 [Code]
 
@@ -36,9 +30,9 @@ var
 begin
   if CurStep = ssPostInstall then
   begin
-    Exec(ExpandConstant('{sys}') + '\regsvr32', '/s ' + '"' + ExpandConstant('{app}') + '\Adblocker32.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{sys}') + '\regsvr32', '/s ' + '"' + ExpandConstant('{app}') + '\Adblock.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
     if IsWin64 then
-      Exec(ExpandConstant('{sys}') + '\regsvr32', '/s ' + '"' + ExpandConstant('{app}') + '\Adblocker64.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
+      Exec(ExpandConstant('{sys}') + '\regsvr32', '/s ' + '"' + ExpandConstant('{app}') + '\Adblocker.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
   end
 end;
 
@@ -48,8 +42,8 @@ var
 begin
   if CurUninstallStep = usUninstall then
   begin
-    Exec(ExpandConstant('{sys}') + '\regsvr32', '/u /s ' + '"' + ExpandConstant('{app}') + '\Adblocker32.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{sys}') + '\regsvr32', '/u /s ' + '"' + ExpandConstant('{app}') + '\Adblock.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
     if IsWin64 then
-      Exec(ExpandConstant('{sys}') + '\regsvr32', '/u /s ' + '"' + ExpandConstant('{app}') + '\Adblocker64.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
+      Exec(ExpandConstant('{sys}') + '\regsvr32', '/u /s ' + '"' + ExpandConstant('{app}') + '\Adblocker.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
   end
 end;

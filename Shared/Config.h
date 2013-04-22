@@ -41,7 +41,7 @@
 
 
 #if (defined PRODUCT_ADBLOCKPLUS)
-#define SADOMAIN L"simple-adblock.com"
+#define ABPDOMAIN L"adblockplus.org"
 #ifdef ADPLUGIN_TEST_MODE
 #define USERS_HOST L"127.0.0.1"
 #elif (defined ADPLUGIN_PRODUCTION_MODE)

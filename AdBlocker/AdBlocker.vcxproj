@@ -285,8 +285,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\v8\include;$(SolutionDir)..\V8\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;%(PreprocessorDefinitions);ABP</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -305,7 +305,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppw.lib;comDlg32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;</AdditionalDependencies>
+      <AdditionalDependencies>winhttp.lib;comsuppw.lib;comDlg32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)Adblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -320,6 +320,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -365,7 +366,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     <Link>
       <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;Msi.lib;%(AdditionalDependencies);atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib;winmm.lib;ws2_32.lib;</AdditionalDependencies>
-      <OutputFile>$(OutDir)Adblock.dll</OutputFile>
+      <OutputFile>$(OutDir)Adblocker.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -377,6 +378,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>"..\..\libadblockplus\build\Release\lib";%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -407,7 +409,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;USE_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -430,7 +432,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;winmm.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;winmm.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies);libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)Adblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -444,7 +446,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\V8\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -534,8 +536,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;PRODUCT_SIMPLEADBLOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;%(PreprocessorDefinitions);ABP</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -553,8 +555,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppw.lib;comDlg32.lib;nafxcw.lib;LIBCMT.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)SimpleAdblock.dll</OutputFile>
+      <AdditionalDependencies>winhttp.lib;comsuppw.lib;comDlg32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)Adblocker.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
@@ -565,6 +567,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalLibraryDirectories>"..\..\libadblockplus\build\x64\Release\lib";%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -804,20 +807,6 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     <Image Include="res\blocking.ico" />
     <Image Include="res\deactivated.ico" />
     <Image Include="res\not-blocking.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\libadblockplus\MSVS\libadblockplus.vcxproj">
-      <Project>{e60284dc-2131-d9a9-d19c-b792b7f5f727}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libadblockplus\MSVS\third_party\v8\tools\gyp\v8.vcxproj">
-      <Project>{fbb6cb62-ddee-671e-d69f-37e0f0a1b214}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libadblockplus\MSVS\third_party\v8\tools\gyp\v8_base.vcxproj">
-      <Project>{c782df61-6ef9-0352-cb91-68298a8e12db}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\libadblockplus\MSVS\third_party\v8\tools\gyp\v8_snapshot.vcxproj">
-      <Project>{675d727d-f234-e4dd-20c1-85aaa5df715b}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

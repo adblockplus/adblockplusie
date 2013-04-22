@@ -203,7 +203,18 @@ CPluginSettings* CPluginSettings::GetInstance()
     if ((!s_instance) || (s_isLightOnly))
     {
       s_instance = new CPluginSettings();
-      CPluginClient::GetInstance()->GetFilterEngine()->FetchAvailableSubscriptions((AdblockPlus::SubscriptionsCallback)&SubsCallback);
+#ifdef USE_CONSOLE
+      CONSOLE("Fetching Available Subscription\n");
+#endif
+      try
+      {
+        CPluginSettings::GetInstance()->m_subscriptions = CPluginClient::GetInstance()->GetFilterEngine()->FetchAvailableSubscriptions();
+      }
+      catch(std::exception ex)
+      {
+        DEBUG_GENERAL(ex.what());
+        throw ex;
+      }
       s_isLightOnly = false;
     }
 
@@ -1485,6 +1496,8 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
       ClearWhitelist();
 
       s_criticalSectionLocal.Lock();
+      try
+      {
       std::vector<AdblockPlus::FilterPtr> filters = CPluginClient::GetInstance()->GetFilterEngine()->GetListedFilters();
       for (int i = 0; i < filters.size(); i ++)
       {
@@ -1502,6 +1515,15 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
             }
           }
         }
+      }
+      }
+      catch(std::runtime_error ex)
+      {
+        DEBUG_GENERAL(ex.what());
+      }
+      catch(std::exception ex)
+      {
+        DEBUG_GENERAL(ex.what());
       }
       s_criticalSectionLocal.Unlock();
     }
@@ -1616,27 +1638,63 @@ DWORD CPluginSettings::GetWindowsBuildNumber()
 
 void CPluginSettings::SetSubscription(BSTR url)
 {
-  std::string urlConverted = CT2A(url);
+  std::string urlConverted = CT2A(url, CP_UTF8);
   SetSubscription(urlConverted);
 }
 
 void CPluginSettings::SetSubscription(std::string url)
 {
-  FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
-  AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription(url);
-  subscription->AddToList();
+  try
+  {
+    FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
+    std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+    if (subscriptions.size() > 0)
+    {
+      for (int i = 0; i < subscriptions.size(); i ++)
+      {
+        subscriptions[i]->RemoveFromList();
+      }
+    }
+    AdblockPlus::SubscriptionPtr subscription = filterEngine->GetSubscription(url);
+    subscription->AddToList();
+    RefreshFilterlist();
+    RefreshWhitelist();
+  }
+  catch(std::exception ex)
+  {
+    DEBUG_GENERAL(ex.what());
+  }
+  catch(std::runtime_error ex)
+  {
+    DEBUG_GENERAL(ex.what());
+  }
 }
 
 CString CPluginSettings::GetSubscription()
 {
-  FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
-  std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
-  for (int i = 0; i < subscriptions.size(); i ++)
+  try
   {
-    if (subscriptions[i]->IsListed())
+    FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
+    std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+
+    if (subscriptions.size() == 0)
     {
-      return CString(CA2T(subscriptions[i]->GetProperty("url", std::string()).c_str()));
+      // TODO: Decide how to set the default filterlist
+      SetSubscription("https://easylist-downloads.adblockplus.org/easylist.txt");
+      subscriptions = filterEngine->GetListedSubscriptions();
     }
+    for (int i = 0; i < subscriptions.size(); i ++)
+    {
+      return CString(CA2T(subscriptions[i]->GetProperty("url", std::string()).c_str(), CP_UTF8));
+    }
+  }
+  catch(std::exception ex)
+  {
+    DEBUG_GENERAL(ex.what());
+  }
+  catch(std::runtime_error ex)
+  {
+    DEBUG_GENERAL(ex.what());
   }
   return CString(L"");
 }
@@ -1644,14 +1702,22 @@ CString CPluginSettings::GetSubscription()
 
 void CPluginSettings::RefreshFilterlist()
 {
-  FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
-  std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
-  for (int i = 0; i < subscriptions.size(); i ++)
+  try
   {
-    if (subscriptions[i]->IsListed())
+    FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
+    std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+    for (int i = 0; i < subscriptions.size(); i ++)
     {
       subscriptions[i]->UpdateFilters();
     }
+  }
+  catch(std::exception ex)
+  {
+    DEBUG_GENERAL(ex.what());
+  }
+  catch(std::runtime_error ex)
+  {
+    DEBUG_GENERAL(ex.what());
   }
 }
 

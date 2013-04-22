@@ -152,14 +152,14 @@ CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
   m_contentMap["stylesheet"] = CFilter::contentTypeStyleSheet;
   m_contentMap["background"] = CFilter::contentTypeBackground;
 
-  m_contentMapText[CFilter::contentTypeDocument] = "doc";
-  m_contentMapText[CFilter::contentTypeObject] = "object";
-  m_contentMapText[CFilter::contentTypeImage] = "img";
-  m_contentMapText[CFilter::contentTypeScript] = "script";
-  m_contentMapText[CFilter::contentTypeOther] = "other";
-  m_contentMapText[CFilter::contentTypeUnknown] = "?";
-  m_contentMapText[CFilter::contentTypeSubdocument] = "iframe";
-  m_contentMapText[CFilter::contentTypeStyleSheet] = "css";
+  m_contentMapText[CFilter::contentTypeDocument] = "DOCUMENT";
+  m_contentMapText[CFilter::contentTypeObject] = "OBJECT";
+  m_contentMapText[CFilter::contentTypeImage] = "IMAGE";
+  m_contentMapText[CFilter::contentTypeScript] = "SCRIPT";
+  m_contentMapText[CFilter::contentTypeOther] = "OTHER";
+  m_contentMapText[CFilter::contentTypeUnknown] = "OTHER";
+  m_contentMapText[CFilter::contentTypeSubdocument] = "SUBDOCUMENT";
+  m_contentMapText[CFilter::contentTypeStyleSheet] = "STYLESHEET";
 
   ClearFilters(); 
 }

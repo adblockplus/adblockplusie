@@ -18,8 +18,8 @@ IDR_PLUGIN_CLASS      REGISTRY                "AdBlocker.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 8,0,0,0
- PRODUCTVERSION 8,0,0,0
+ FILEVERSION 0,0,1,0
+ PRODUCTVERSION 0,0,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -36,12 +36,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Adblock Plus"
             VALUE "FileDescription", "Adblock Plus Module"
-            VALUE "FileVersion", "0, 1, 1, 5"
+            VALUE "FileVersion", "0, 0, 1, 0"
             VALUE "InternalName", "Adblock Plus"
             VALUE "LegalCopyright", "Copyright 2013"
             VALUE "OriginalFilename", "AdBlocker.dll"
             VALUE "ProductName", "Adblock Plus"
-            VALUE "ProductVersion", "0, 1, 2, 0"
+            VALUE "ProductVersion", "0, 0, 1, 0"
         END
     END
     BLOCK "VarFileInfo"
