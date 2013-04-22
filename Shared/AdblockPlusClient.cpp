@@ -26,7 +26,6 @@ CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
   appInfo.platform = "Internet Explorer";
   JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
   filterEngine = std::auto_ptr<AdblockPlus::FilterEngine>(new AdblockPlus::FilterEngine(jsEngine));
-    filterEngine = std::auto_ptr<AdblockPlus::FilterEngine>(new AdblockPlus::FilterEngine(jsEngine));
   }
   catch(std::exception ex)
   {
