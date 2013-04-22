@@ -59,6 +59,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
   CString ver;
   ver.Format(L"%d.%d", LOBYTE(LOWORD(osVersion)), HIBYTE(LOWORD(osVersion)));
 
+
   debugText += L"\nWindows version:   " + ver;
 
   CString proxyName;

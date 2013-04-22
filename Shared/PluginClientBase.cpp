@@ -44,7 +44,7 @@ CPluginClientBase::~CPluginClientBase()
 
 bool CPluginClientBase::IsValidDomain(const CString& domain)
 {
-  return domain != SADOMAIN &&
+  return domain != ABPDOMAIN &&
     domain != USERS_HOST &&
     domain != L"about:blank" &&
     domain != L"about:tabs" &&

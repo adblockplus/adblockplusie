@@ -30,7 +30,6 @@ END_OBJECT_MAP()
 //Dll Entry Point
 BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD fdwReason, LPVOID reserved)
 {
-
   switch( fdwReason ) 
   { 
   case DLL_PROCESS_ATTACH:

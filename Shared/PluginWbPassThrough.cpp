@@ -122,14 +122,14 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       {
         CString type;
 
-        if (contentType == CFilter::contentTypeDocument) type = "doc";
-        else if (contentType == CFilter::contentTypeObject) type = "object";
-        else if (contentType == CFilter::contentTypeImage) type = "img";
-        else if (contentType == CFilter::contentTypeScript) type = "script";
-        else if (contentType == CFilter::contentTypeOther) type = "other";
-        else if (contentType == CFilter::contentTypeUnknown) type = "?";
-        else if (contentType == CFilter::contentTypeSubdocument) type = "iframe";
-        else if (contentType == CFilter::contentTypeStyleSheet) type = "css";
+        if (contentType == CFilter::contentTypeDocument) type = "DOCUMENT";
+        else if (contentType == CFilter::contentTypeObject) type = "OBJECT";
+        else if (contentType == CFilter::contentTypeImage) type = "IMAGE";
+        else if (contentType == CFilter::contentTypeScript) type = "SCRIPT";
+        else if (contentType == CFilter::contentTypeOther) type = "OTHER";
+        else if (contentType == CFilter::contentTypeUnknown) type = "OTHER";
+        else if (contentType == CFilter::contentTypeSubdocument) type = "SUBDOCUMENT";
+        else if (contentType == CFilter::contentTypeStyleSheet) type = "STYLESHEET";
         else type = "???";
 
         CPluginDebug::DebugResultIgnoring(type, src);
