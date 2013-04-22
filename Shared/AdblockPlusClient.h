@@ -11,11 +11,6 @@ using namespace AdblockPlus;
 
 class CPluginFilter;
 
-#ifdef USE_CONSOLE
-      CONSOLE(message.c_str());
-#endif
-
-    DEBUG_GENERAL(message.c_str());
 class CAdblockPlusClient : public CPluginClientBase
 {
 
