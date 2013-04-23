@@ -103,7 +103,7 @@ inline void WritelnToConsole(int code, int count, const char* format, va_list ar
 
 	SetConsoleTextAttribute(hError, color);
 
-	char out[1024];
+	char out[4096];
     StringCbVPrintfA(out, sizeof(out), buf, args);
 
 	DWORD dwOutput;

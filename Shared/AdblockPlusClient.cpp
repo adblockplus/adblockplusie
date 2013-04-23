@@ -19,6 +19,7 @@ CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 {
   try
   {
+    MessageBox(NULL, L"", L"", MB_OK);
     m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
     AdblockPlus::AppInfo appInfo;
     appInfo.name = "Adblock Plus for Internet Explorer";
@@ -30,11 +31,6 @@ CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
   catch(std::exception ex)
   {
     DEBUG_GENERAL(ex.what());
-  }
-  catch(std::runtime_error ex)
-  {
-    DEBUG_GENERAL(ex.what());
-//    throw ex;
   }
 }
 CAdblockPlusClient::~CAdblockPlusClient()

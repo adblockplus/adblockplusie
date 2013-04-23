@@ -551,8 +551,9 @@ namespace PassthroughAPP
     // So here we detect if there has been too many redirects (ie INET_E_REDIRECT_FAILED) and we just notify WinInet
     // that there has been a generic problem, not redirect specific error. 
 
-    if (hrResult == INET_E_REDIRECT_FAILED)
-      hrResult = S_FALSE;
+      // This seem to only postpone the issue to some different place. Undo for now
+//    if (hrResult == INET_E_REDIRECT_FAILED)
+//      hrResult = S_FALSE;
 
     return m_spInternetProtocolSink ?
       m_spInternetProtocolSink->ReportResult(hrResult, dwError, szResult) :
