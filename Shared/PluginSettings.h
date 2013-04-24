@@ -226,6 +226,7 @@ public:
 
   void SetSubscription(BSTR language);
   void SetSubscription(std::string language);
+  void SetDefaultSubscription();
   CString GetSubscription();
   void RefreshFilterlist();
 

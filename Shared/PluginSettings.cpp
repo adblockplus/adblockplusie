@@ -724,8 +724,7 @@ std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
     std::string title = "";
     std::string url = "";
 
-    //TODO: Property for language name?
-    title = it.get()->GetProperty("title", title);
+    title = it.get()->GetProperty("specialization", title);
     url = it.get()->GetProperty("url", url);
 
     filterList.insert(std::make_pair(CString(CA2T(url.c_str(), CP_UTF8)), CString(CA2T(title.c_str(), CP_UTF8))));
@@ -1670,6 +1669,49 @@ void CPluginSettings::SetSubscription(std::string url)
   }
 }
 
+std::vector<std::string> split(const std::string& s, char delim) {
+    std::vector<std::string> retTokens;
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        retTokens.push_back(item);
+    }
+    return retTokens;
+}
+
+
+void CPluginSettings::SetDefaultSubscription()
+{
+  CPluginSystem* system = CPluginSystem::GetInstance();
+  CString lng = system->GetBrowserLanguage().Left(2);
+  std::string browserLanguage = CW2A(lng, CP_UTF8);
+  FilterEngine* filterEngine = CPluginClient::GetInstance()->GetFilterEngine();
+  std::vector<SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
+  bool subscriptionSet = false;
+  while (!subscriptionSet)
+  {
+    for (int i = 0; i < subscriptions.size(); i++)
+    {
+      std::string prefixes = subscriptions[i]->GetProperty("prefixes", "");
+      std::vector<std::string> tokens = split(prefixes, ',');
+      for (int j = 0; j < tokens.size(); j ++)
+      {
+        if (tokens[j] == browserLanguage)
+        {
+          SetSubscription(subscriptions[i]->GetProperty("url", ""));
+          subscriptionSet = true;
+        }
+      }
+    }
+
+    if (browserLanguage == "en")
+      break;
+    // failed to set the subscription for browser language. Try "en"
+    browserLanguage = "en";
+
+  }
+}
+
 CString CPluginSettings::GetSubscription()
 {
   try
@@ -1679,8 +1721,7 @@ CString CPluginSettings::GetSubscription()
 
     if (subscriptions.size() == 0)
     {
-      // TODO: Decide how to set the default filterlist
-      SetSubscription("https://easylist-downloads.adblockplus.org/easylist.txt");
+      SetDefaultSubscription();
       subscriptions = filterEngine->GetListedSubscriptions();
     }
     for (int i = 0; i < subscriptions.size(); i ++)
@@ -1705,6 +1746,11 @@ void CPluginSettings::RefreshFilterlist()
   try
   {
     FilterEngine* filterEngine= CPluginClient::GetInstance()->GetFilterEngine();
+    
+    // Make sure at least the default subscription is set
+    CPluginSettings* settings = CPluginSettings::GetInstance();
+    settings->GetSubscription();
+
     std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
     for (int i = 0; i < subscriptions.size(); i ++)
     {
