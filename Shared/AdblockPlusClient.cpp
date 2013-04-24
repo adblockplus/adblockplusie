@@ -19,7 +19,7 @@ CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 {
   try
   {
-    MessageBox(NULL, L"", L"", MB_OK);
+//    MessageBox(NULL, L"", L"", MB_OK);
     m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
     AdblockPlus::AppInfo appInfo;
     appInfo.name = "Adblock Plus for Internet Explorer";
@@ -27,6 +27,7 @@ CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
     appInfo.platform = "Internet Explorer";
     JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
     filterEngine = std::auto_ptr<AdblockPlus::FilterEngine>(new AdblockPlus::FilterEngine(jsEngine));
+
   }
   catch(std::exception ex)
   {
