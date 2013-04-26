@@ -72,16 +72,12 @@ STDAPI DllCanUnloadNow(void)
       delete CPluginSettings::s_instance;
     }
 
-    if (CPluginClient::s_instance != NULL)
-    {
-      delete CPluginClient::s_instance;
-    }
 
     if (CPluginSystem::s_instance != NULL)
     {
       delete CPluginSystem::s_instance;
     }
-
+    
     if (CPluginClass::s_mimeFilter != NULL)
     {
       CPluginClass::s_mimeFilter->Unregister();

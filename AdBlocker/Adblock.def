@@ -1,6 +1,6 @@
 ; AdBlocker.def : Declares the module parameters.
 
-LIBRARY      "ADBLOCK.DLL"
+LIBRARY      "ADBLOCKPLUS.DLL"
 
 EXPORTS
 	DllCanUnloadNow      PRIVATE

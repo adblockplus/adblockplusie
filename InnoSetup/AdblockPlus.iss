@@ -10,8 +10,8 @@ DisableDirPage=yes
 
 
 [Files]
-Source: "..\AdBlocker\Release Test\Adblock.dll"; DestDir: "{app}"
-Source: "..\AdBlocker\x64\Release Test\Adblocker.dll"; DestDir: "{app}"
+Source: "..\AdBlocker\Release Test\AdblockPlus.dll"; DestDir: "{app}"
+Source: "..\AdBlocker\x64\Release Test\AdblockPlusX64.dll"; DestDir: "{app}"
 Source: "..\html\static\css\*"; DestDir: "{app}\html\static\css"
 Source: "..\html\static\img\*"; DestDir: "{app}\html\static\img"
 Source: "..\html\static\img\social\*"; DestDir: "{app}\html\static\img\social"
@@ -30,9 +30,9 @@ var
 begin
   if CurStep = ssPostInstall then
   begin
-    Exec(ExpandConstant('{sys}') + '\regsvr32', '/s ' + '"' + ExpandConstant('{app}') + '\Adblock.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{sys}') + '\regsvr32', '/s ' + '"' + ExpandConstant('{app}') + '\AdblockPlus.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
     if IsWin64 then
-      Exec(ExpandConstant('{sys}') + '\regsvr32', '/s ' + '"' + ExpandConstant('{app}') + '\Adblocker.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
+      Exec(ExpandConstant('{sys}') + '\regsvr32', '/s ' + '"' + ExpandConstant('{app}') + '\AdblockPlusX64.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
   end
 end;
 
@@ -42,8 +42,8 @@ var
 begin
   if CurUninstallStep = usUninstall then
   begin
-    Exec(ExpandConstant('{sys}') + '\regsvr32', '/u /s ' + '"' + ExpandConstant('{app}') + '\Adblock.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{sys}') + '\regsvr32', '/u /s ' + '"' + ExpandConstant('{app}') + '\AdblockPlus.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
     if IsWin64 then
-      Exec(ExpandConstant('{sys}') + '\regsvr32', '/u /s ' + '"' + ExpandConstant('{app}') + '\Adblocker.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
+      Exec(ExpandConstant('{sys}') + '\regsvr32', '/u /s ' + '"' + ExpandConstant('{app}') + '\AdblockerPlusX64.dll' + '"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ResultCode);
   end
 end;
