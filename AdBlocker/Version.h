@@ -1,1 +1,1 @@
-#define IEPLUGIN_VERSION "0.0.1"
+#define IEPLUGIN_VERSION "0.0.2"

@@ -962,14 +962,18 @@ bool CPluginClass::InitObject(bool bBHO)
 
 bool CPluginClass::CreateStatusBarPane()
 {
+  DEBUG_GENERAL(L"Getting client");
+
   CPluginClient* client = CPluginClient::GetInstance();
+
+  DEBUG_GENERAL(L"Getting ieversion");
 
   if (client->GetIEVersion()< 7)
 
     return true;
 
   TCHAR szClassName[MAX_PATH];
-
+  DEBUG_GENERAL(L"Getting browser wnd");
   // Get browser window and url
   HWND hBrowserWnd = GetBrowserHWND();
   if (!hBrowserWnd)
@@ -981,6 +985,8 @@ bool CPluginClass::CreateStatusBarPane()
   // Looking for a TabWindowClass window in IE7
   // the last one should be parent for statusbar
   HWND hWndStatusBar = NULL;
+
+  DEBUG_GENERAL(L"Locating status bar window");
 
   HWND hTabWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
   UINT amoundOfNewTabs = 0;
@@ -1039,6 +1045,7 @@ bool CPluginClass::CreateStatusBarPane()
     hTabWnd = ::GetWindow(hTabWnd, GW_HWNDNEXT);
   }
 
+  DEBUG_GENERAL(L"status bar window located");
 
   HWND hWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
   while (hWnd)
@@ -1051,9 +1058,11 @@ bool CPluginClass::CreateStatusBarPane()
       hWndStatusBar = hWnd;
       break;
     }
-
+    
     hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
   }
+
+  DEBUG_GENERAL(L"Status bar located 2");
 
   if (!hWndStatusBar)
   {
@@ -1087,7 +1096,7 @@ bool CPluginClass::CreateStatusBarPane()
     MAKEINTATOM(GetAtomPaneClass()),
     _T(""),
     WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-    rcStatusBar.Width() - 200,0,m_nPaneWidth,rcStatusBar.Height(),
+    rcStatusBar.Width() - 500,0,m_nPaneWidth,rcStatusBar.Height(),
     hWndStatusBar,
     (HMENU)3671,
     _Module.m_hInst,

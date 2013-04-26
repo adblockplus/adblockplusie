@@ -105,7 +105,6 @@
 #undef ENABLE_DEBUG_INFO
 #endif
 
-#define ENABLE_DEBUG_INFO
 #undef ENABLE_DEBUG_SELFTEST
 
 #define DEBUG_FUNC CPluginDebug::Debug
