@@ -22,9 +22,9 @@ CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
     DEBUG_GENERAL("Building client");
     m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
     AdblockPlus::AppInfo appInfo;
-    appInfo.name = "Adblock Plus for Internet Explorer";
+    appInfo.name = "adblockplusie";
     appInfo.version = CT2CA(_T(IEPLUGIN_VERSION), CP_UTF8);
-    appInfo.platform = "Internet Explorer";
+    appInfo.platform = "msie";
   
     DEBUG_GENERAL(L"Building engine");
 
