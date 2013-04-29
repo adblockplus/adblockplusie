@@ -39,9 +39,6 @@ CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 }
 CAdblockPlusClient::~CAdblockPlusClient()
 {
-  filterEngine->jsEngine.reset();
-  filterEngine.release();
-
   s_instance = NULL;
 }
 

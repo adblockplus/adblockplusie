@@ -724,8 +724,8 @@ std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
     std::string title = "";
     std::string url = "";
 
-    title = it.get()->GetProperty("specialization", title);
-    url = it.get()->GetProperty("url", url);
+    title = it.get()->GetProperty("specialization")->AsString();
+    url = it.get()->GetProperty("url")->AsString();
 
     filterList.insert(std::make_pair(CString(CA2T(url.c_str(), CP_UTF8)), CString(CA2T(title.c_str(), CP_UTF8))));
   }
@@ -1500,9 +1500,9 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
       std::vector<AdblockPlus::FilterPtr> filters = CPluginClient::GetInstance()->GetFilterEngine()->GetListedFilters();
       for (int i = 0; i < filters.size(); i ++)
       {
-        if (filters[i]->GetProperty("type", AdblockPlus::Filter::Type::TYPE_INVALID) == AdblockPlus::Filter::Type::TYPE_EXCEPTION)
+        if (filters[i]->GetType() == AdblockPlus::Filter::Type::TYPE_EXCEPTION)
         {
-          std::string text = filters[i]->GetProperty("text", "");
+          std::string text = filters[i]->GetProperty("text")->AsString();
           //@@||example.com^$document
           size_t endPos = text.rfind("^$document");
           if (endPos != std::string::npos)
@@ -1692,13 +1692,13 @@ void CPluginSettings::SetDefaultSubscription()
   {
     for (int i = 0; i < subscriptions.size(); i++)
     {
-      std::string prefixes = subscriptions[i]->GetProperty("prefixes", "");
+      std::string prefixes = subscriptions[i]->GetProperty("prefixes")->AsString();
       std::vector<std::string> tokens = split(prefixes, ',');
       for (int j = 0; j < tokens.size(); j ++)
       {
         if (tokens[j] == browserLanguage)
         {
-          SetSubscription(subscriptions[i]->GetProperty("url", ""));
+          SetSubscription(subscriptions[i]->GetProperty("url")->AsString());
           subscriptionSet = true;
         }
       }
@@ -1726,7 +1726,7 @@ CString CPluginSettings::GetSubscription()
     }
     for (int i = 0; i < subscriptions.size(); i ++)
     {
-      return CString(CA2T(subscriptions[i]->GetProperty("url", std::string()).c_str(), CP_UTF8));
+      return CString(CA2T(subscriptions[i]->GetProperty("url")->AsString().c_str(), CP_UTF8));
     }
   }
   catch(std::exception ex)
