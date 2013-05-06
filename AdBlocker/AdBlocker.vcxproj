@@ -370,7 +370,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     <Link>
       <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;Msi.lib;%(AdditionalDependencies);atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib;winmm.lib;ws2_32.lib;</AdditionalDependencies>
-      <OutputFile>$(OutDir)Adblocker.dll</OutputFile>
+      <OutputFile>$(OutDir)AdblockPlus.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
