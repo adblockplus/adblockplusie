@@ -1,5 +1,5 @@
 syntax: glob
-AdBlocker/Adblock.tlb
+AdBlocker/AdblockPlus.tlb
 AdBlocker/AdBlocker.h
 AdBlocker/AdBlocker_i.c
 AdBlocker/AdBlocker_p.c
