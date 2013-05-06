@@ -222,7 +222,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\v8\include;$(SolutionDir)..\V8\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;%(PreprocessorDefinitions);ABP</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -480,7 +480,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_SIMPLEADBLOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -596,7 +596,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../Shared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -654,7 +654,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\v8\include;$(SolutionDir)..\V8\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
