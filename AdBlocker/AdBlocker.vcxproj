@@ -242,7 +242,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>winhttp.lib;Msi.lib;%(AdditionalDependencies)atlthunk.lib;</AdditionalDependencies>
+      <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)Adblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -369,7 +369,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;Msi.lib;%(AdditionalDependencies);atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib;winmm.lib;ws2_32.lib;</AdditionalDependencies>
+      <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)AdblockPlus.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -436,7 +436,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ResourceCompile>
     <Link>
       <RegisterOutput>true</RegisterOutput>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;winmm.lib;ws2_32.lib;Shlwapi.lib;%(AdditionalDependencies);libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
+      <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)Adblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -499,7 +499,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppw.lib;comDlg32.lib;Msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SimpleAdblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -559,7 +559,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winhttp.lib;comsuppw.lib;comDlg32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
+      <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -616,7 +616,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SimpleAdblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -676,7 +676,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;winhttp.lib;atlthunk.lib;comsuppwd.lib;comDlg32.lib;shlwapi.lib;iepmapi.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)Adblock.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
