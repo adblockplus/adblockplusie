@@ -11,32 +11,130 @@
 
 #include "AdblockPlusClient.h"
 
+namespace
+{
+  const int bufferSize = 512;
+
+  std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
+  {
+    try
+    {
+      DEBUG_GENERAL("Building client");
+      AdblockPlus::AppInfo appInfo;
+      appInfo.name = "adblockplusie";
+      appInfo.version = CT2CA(_T(IEPLUGIN_VERSION), CP_UTF8);
+      appInfo.platform = "msie";
+  
+      DEBUG_GENERAL(L"Building engine");
+
+      JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
+      return std::auto_ptr<AdblockPlus::FilterEngine>(new AdblockPlus::FilterEngine(jsEngine));
+    }
+    catch(std::exception ex)
+    {
+      DEBUG_GENERAL(ex.what());
+    }
+  }
+
+  template<typename T>
+  std::wstring ToWString(const T& value)
+  {
+    std::wstringstream stream;
+    stream << value;
+    return stream.str();
+    
+  }
+
+  std::wstring ToWString(LPCSTR value)
+  {
+    USES_CONVERSION;
+    return ToWString(A2W(value));
+  }
+
+  template<>
+  std::wstring ToWString(const std::string& value)
+  {
+    return ToWString(value.c_str());
+  }
+
+  template<typename T>
+  std::string ToString(const T& value)
+  {
+    std::stringstream stream;
+    stream << value;
+    return stream.str();
+  }
+
+  std::string ToString(LPCWSTR value)
+  {
+    USES_CONVERSION;
+    return ToString(W2A(value));
+  }
+
+  template<>
+  std::string ToString(const std::wstring& value)
+  {
+    return ToString(value.c_str());
+  }
+
+  HANDLE OpenAdblockPlusEnginePipe()
+  {
+    LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
+    HANDLE pipe = CreateFile(pipeName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    if (pipe == INVALID_HANDLE_VALUE || GetLastError())
+    {
+      // TODO: Launch AdblockPlusEngine.exe instead
+      throw std::runtime_error("Unable to open pipe");
+    }
+
+    DWORD mode = PIPE_READMODE_MESSAGE; 
+    if (!SetNamedPipeHandleState(pipe, &mode, 0, 0)) 
+       throw std::runtime_error("SetNamedPipeHandleState failed");
+
+    return pipe;
+  }
+
+  std::string MarshalStrings(const std::vector<std::string>& strings)
+  {
+    std::string marshalledStrings;
+    for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
+      marshalledStrings += *it + '\0';
+    return marshalledStrings;
+  }
+
+  std::string ReadMessage(HANDLE pipe)
+  {
+    // TODO: Read messages larger than the bufferSize
+    char* buffer = new char[bufferSize];
+    DWORD bytesRead;
+    if (!ReadFile(pipe, buffer, bufferSize * sizeof(char), &bytesRead, 0) || !bytesRead)
+      throw std::runtime_error("Error reading from pipe");
+    std::string message(buffer, bytesRead);
+    delete buffer;
+    return message;
+  }
+
+  void WriteMessage(HANDLE pipe, const std::string& message)
+  {
+    // TODO: Make sure messages with >512 chars work
+    DWORD bytesWritten;
+    if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
+      throw std::runtime_error("Failed to write to pipe");
+  }
+}
 
 CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
 
-
 CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 {
-  try
-  {
-    DEBUG_GENERAL("Building client");
-    m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
-    AdblockPlus::AppInfo appInfo;
-    appInfo.name = "adblockplusie";
-    appInfo.version = CT2CA(_T(IEPLUGIN_VERSION), CP_UTF8);
-    appInfo.platform = "msie";
-  
-    DEBUG_GENERAL(L"Building engine");
+  m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
 
-    JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
-    filterEngine = std::auto_ptr<AdblockPlus::FilterEngine>(new AdblockPlus::FilterEngine(jsEngine));
-
-  }
-  catch(std::exception ex)
-  {
-    DEBUG_GENERAL(ex.what());
-  }
+  // TODO: Don't create a filter engine here. For this we need to invoke all
+  //       filter engine methods via IPC. This is already done for
+  //       FilterEngine::Matches().
+  filterEngine = CreateFilterEngine();
 }
+
 CAdblockPlusClient::~CAdblockPlusClient()
 {
   s_instance = NULL;
@@ -162,4 +260,39 @@ int CAdblockPlusClient::GetIEVersion()
   }
   RegCloseKey(hKey);
   return (int)(version[0] - 48);
+}
+
+bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
+{
+  HANDLE pipe = OpenAdblockPlusEnginePipe();
+
+  std::wstringstream stream;
+  stream << "Sending request for " << ToWString(url) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
+  DEBUG_GENERAL(stream.str().c_str());
+
+  std::vector<std::string> args;
+  args.push_back(url);
+  args.push_back(contentType);
+  args.push_back(domain);
+
+  boolean matches = false;
+
+  try
+  {
+    WriteMessage(pipe, MarshalStrings(args));
+    std::string message = ReadMessage(pipe);
+    matches = message == "1";
+
+    stream.str(std::wstring());
+    stream << "Got response for " << ToWString(url) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
+    DEBUG_GENERAL(stream.str().c_str());
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(ToWString(e.what()).c_str());
+  }
+
+  CloseHandle(pipe);
+
+  return matches;
 }
