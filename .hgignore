@@ -25,3 +25,6 @@ Avast/Debug Avast
 Avast/Release Avast
 Avast/dlldata.c
 ipch
+AdblockPlusEngine/AdblockPlusEngine.vcxproj.user
+AdblockPlusEngine/Debug
+Debug

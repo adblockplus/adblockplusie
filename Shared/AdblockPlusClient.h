@@ -4,7 +4,7 @@
 
 #include "PluginTypedef.h"
 #include "PluginClientBase.h"
-#include "AdblockPlus.h"
+#include <AdblockPlus.h>
 
 
 using namespace AdblockPlus;
@@ -18,6 +18,9 @@ private:
 
   std::auto_ptr<CPluginFilter> m_filter;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
+  HWND adblockPlusEngineRequestWindow;
+  HWND adblockPlusEngineResponseWindow;
+  std::wstring adblockPlusEngineResponseWindowName;
 
   CComAutoCriticalSection m_criticalSectionFilter;
   CComAutoCriticalSection m_criticalSectionCache;
@@ -47,6 +50,7 @@ public:
 
   int GetIEVersion();
 
+  bool Matches(const std::string& url, const std::string& contentType, const std::string& domain);
 };
 
 #endif // _SIMPLE_ADBLOCK_CLIENT_H_
