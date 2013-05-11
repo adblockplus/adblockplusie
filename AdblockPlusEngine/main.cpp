@@ -14,6 +14,7 @@ namespace
 
   void Log(const std::string& message)
   {
+    // TODO: Log to a log file
     MessageBoxA(0, message.c_str(), "", MB_OK);
   }
 

@@ -13,6 +13,8 @@
 
 namespace
 {
+  // TODO: bufferSize, ToWideString, ReadMessage and WriteMessage are duplicated in AdblockPlusEngine
+
   const int bufferSize = 512;
 
   std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
@@ -36,45 +38,12 @@ namespace
     }
   }
 
-  template<typename T>
-  std::wstring ToWString(const T& value)
+  LPCWSTR ToWideString(LPCSTR value)
   {
-    std::wstringstream stream;
-    stream << value;
-    return stream.str();
-    
-  }
-
-  std::wstring ToWString(LPCSTR value)
-  {
-    USES_CONVERSION;
-    return ToWString(A2W(value));
-  }
-
-  template<>
-  std::wstring ToWString(const std::string& value)
-  {
-    return ToWString(value.c_str());
-  }
-
-  template<typename T>
-  std::string ToString(const T& value)
-  {
-    std::stringstream stream;
-    stream << value;
-    return stream.str();
-  }
-
-  std::string ToString(LPCWSTR value)
-  {
-    USES_CONVERSION;
-    return ToString(W2A(value));
-  }
-
-  template<>
-  std::string ToString(const std::wstring& value)
-  {
-    return ToString(value.c_str());
+    int size = MultiByteToWideChar(CP_UTF8, 0, value, -1, 0, 0);
+    wchar_t* converted = new wchar_t[size];
+    MultiByteToWideChar(CP_UTF8, 0, value, -1, converted, size);
+    return converted;
   }
 
   HANDLE OpenAdblockPlusEnginePipe()
@@ -83,7 +52,8 @@ namespace
     HANDLE pipe = CreateFile(pipeName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
     if (pipe == INVALID_HANDLE_VALUE || GetLastError())
     {
-      // TODO: Launch AdblockPlusEngine.exe instead
+      // TODO: Consider using WaitNamedPipe with a timeout if this failed
+      // TODO: Launch AdblockPlusEngine.exe
       throw std::runtime_error("Unable to open pipe");
     }
 
@@ -267,7 +237,7 @@ bool CAdblockPlusClient::Matches(const std::string& url, const std::string& cont
   HANDLE pipe = OpenAdblockPlusEnginePipe();
 
   std::wstringstream stream;
-  stream << "Sending request for " << ToWString(url) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
+  stream << "Sending request for " << ToWideString(url.c_str()) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
   DEBUG_GENERAL(stream.str().c_str());
 
   std::vector<std::string> args;
@@ -284,12 +254,12 @@ bool CAdblockPlusClient::Matches(const std::string& url, const std::string& cont
     matches = message == "1";
 
     stream.str(std::wstring());
-    stream << "Got response for " << ToWString(url) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
+    stream << "Got response for " << ToWideString(url.c_str()) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
     DEBUG_GENERAL(stream.str().c_str());
   }
   catch (const std::exception& e)
   {
-    DEBUG_GENERAL(ToWString(e.what()).c_str());
+    DEBUG_GENERAL(ToWideString(e.what()));
   }
 
   CloseHandle(pipe);
