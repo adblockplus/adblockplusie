@@ -10,6 +10,7 @@ namespace
 {
   const int bufferSize = 512;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
+  HANDLE filterEngineMutex;
 
   void Log(const std::string& message)
   {
@@ -57,13 +58,17 @@ namespace
       throw std::runtime_error("Failed to write to pipe");
   }
 
-  void HandleClient(HANDLE pipe)
+  DWORD WINAPI ClientThread(LPVOID param)
   {
+    HANDLE pipe = static_cast<HANDLE>(param);
+
     try
     {
       std::string message = ReadMessage(pipe);
       std::vector<std::string> args = UnmarshalStrings(message, 3);
+      WaitForSingleObject(filterEngineMutex, INFINITE);
       bool matches = filterEngine->Matches(args[0], args[1], args[2]);
+      ReleaseMutex(filterEngineMutex);
       WriteMessage(pipe, matches ? "1" : "0");
     }
     catch (const std::exception& e)
@@ -74,6 +79,7 @@ namespace
     FlushFileBuffers(pipe);
     DisconnectNamedPipe(pipe);
     CloseHandle(pipe);
+    return 0;
   }
 }
 
@@ -86,7 +92,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   AdblockPlus::SubscriptionPtr subscription = subscriptions[0];
   subscription->AddToList();
 
-  // TODO: Launch one thread per client
+  filterEngineMutex = CreateMutex(0, false, 0);
+
   for (;;)
   {
     LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
@@ -107,7 +114,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       continue;
     }
 
-    HandleClient(pipe);
+    HANDLE thread = CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0);
+    if (!thread)
+    {
+      Log("CreateThread failed");
+      return 1;
+    }
+    CloseHandle(thread);
   }
 
   return 0;
