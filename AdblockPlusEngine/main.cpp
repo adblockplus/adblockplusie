@@ -86,6 +86,7 @@ namespace
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+  // TODO: Make sure patterns.ini is created in LocalLow
   // TODO: Pass the app info in
   AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New();
   filterEngine.reset(new AdblockPlus::FilterEngine(jsEngine));
@@ -97,6 +98,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   for (;;)
   {
+    // TODO: Make the pipe available from low integrity processes, only works with UAC disabled right now
     LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
     HANDLE pipe = CreateNamedPipe(pipeName, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
                                   PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, 0);
