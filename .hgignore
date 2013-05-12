@@ -25,3 +25,5 @@ Avast/Debug Avast
 Avast/Release Avast
 Avast/dlldata.c
 ipch
+*.wixobj
+*.wixpdb

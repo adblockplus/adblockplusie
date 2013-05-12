@@ -1,0 +1,65 @@
+<html>
+<head>
+    <title>Installation for Adblock Plus for IE</title>
+</head>
+<body>
+    <h1>Installation for Adblock Plus for IE</h1>
+
+        <h2>Existing Installation</h2>
+       
+            <h3>Directories and Files</h3>
+            
+            Either LOCALLOWFOLDER or AppDataFolder is the location for the HTML tree,
+                depending on OS type.
+            <ul>
+                <li>LOCALLOWFOLDER</li>
+                Initialized from the registry to AppDataLow, the low-integrity application data directory.
+                <ul>
+                    <li>AVASTADBLOCKERFOLDERVISTA</li>
+                    Used only for Windows Vista and above.
+                </ul>
+                
+                <li>AppDataFolder</li>
+                A Windows Installer property: "The full path to the Roaming folder for the current user."
+                <ul>
+                    <li>AVASTADBLOCKERFOLDER</li>
+                    Used only for Windows XP and below. 
+                </ul>
+            </ul>
+            
+            This folder contains per-user application data.
+            <ul>
+                <li>settings.ini</li>
+                <li>settings_page_w.ini</li>
+                <li>dictionary_w.ini</li>
+            </ul>
+            
+            This folder also contains the HTML tree, 
+                which is not user-specific and doesn't really belong in this directory.
+            <ul>
+                <li>html</li>
+                <ul>
+                    <li>static</li>
+                        <ul>
+                            <li>js</li>
+                            <li>img</li>
+                        </ul>
+                    <li>templates</li>
+                </ul>
+            </ul>
+
+
+        <h2>Installation</h2>
+            <h3>Directories and Files</h3>
+            <ul>
+                <li>
+                    <b>DLL</b>. 
+                    The two DLL's appear in the source tree as
+                        <code>AdBlocker\Release Test\AdblockPlus.dll</code> (32-bit)
+                        and <code>AdBlocker\x64\Release Test\AdblockPlusx64.dll</code>.
+                    They sit in <code>INSTALLFOLDER</code>. 
+                </li>                    
+            </ul>                
+            <h3>Registry Entries</h3>
+</body>
+</html>
