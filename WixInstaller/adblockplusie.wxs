@@ -2,21 +2,21 @@
 <!--
     Compilation Note:
     You may see the linking error LGHT0217 : Error executing ICE action 'ICExx' [...] The error code is 2738.
-    The documentation for this error code talks about custom actions, 
+    The documentation for this error code talks about custom actions,
         even though there is not the CustomAction keyword present in this source.
     Certain WiX elements are implemented by custom actions,
         which means this source implicitly declares some custom actions.
     These errors are benign and can be avoided by some fiddling with the registry on the development machine.
-    See http://wix.sourceforge.net/faq.html#Error217  
+    See http://wix.sourceforge.net/faq.html#Error217
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <Product Name="!(loc.ProductName)" 
+    <Product Name="!(loc.ProductName)"
         Manufacturer="Eyeo GmbH"
         Version="0.8.0"
         Language="!(loc.LANG)" Codepage="1252"
         Id="4f27c814-5ee0-4b25-b3ab-3ad565551918"
         UpgradeCode="3a8e3ab4-762d-4641-806e-2dccb953d73f">
-        
+
         <Package Id="*"
             Keywords="!(loc.Keywords)"
             Description="!(loc.Description)"
@@ -30,24 +30,24 @@
         <MediaTemplate EmbedCab="yes"/>
 
         <!--
-            User interface 
-        -->        
+            User interface
+        -->
         <UIRef Id="WixUI_InstallDir"/>
         <UIRef Id="WixUI_ErrorProgressText"/>
         <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
         <!--
             Redefine this variable on the 'light' command line with argument '-d' to localize.
-            
+
             RTF is a binary format, which is suboptimal in many ways.
             It's also, however, the format required for the dialog box.
         -->
         <WixVariable Id="WixUILicenseRtf" Value="license.rtf"/>
-    
+
         <!--
             We have only a single feature, since there aren't any optional parts.
-            The display is hidden for the same reason; there's nothing to choose from. 
+            The display is hidden for the same reason; there's nothing to choose from.
         -->
-        <Feature Id="ProductFeature" 
+        <Feature Id="ProductFeature"
             Title="!(loc.Title)" Description="!(loc.UI_Description)"
             Display="hidden"
             ConfigurableDirectory="INSTALLFOLDER">
@@ -56,15 +56,15 @@
             <ComponentGroupRef Id="HTML_Tree"/>
             <ComponentGroupRef Id="INI_Files"/>
         </Feature>
-        
-    	<!--                                      
+
+    	<!--
     		Remove the "Modify" button from our control panel entry.
     		Since we only have a single feature, there's only a single way of installing the plugin,
     			and thus modifying the installation can't possibly do anything.
             This is currently set by the WiXUI property WIXUI_INSTALLDIR, so it's commented out now.
     	    <Property Id="ARPNOMODIFY" Value="1"/>
     	 -->
-    
+
     	<!--
     		The application data folder has to vary by operating system version.
     		With Vista and later, we have to use an application data folder suitable for low-integrity applications.
@@ -72,8 +72,8 @@
     	-->
     	<Property Id="LOCAL_LOW_APP_DATA_FOLDER">
     		<!-- There's no built-in property with this name, so we need to extract its value from the registry. -->
-    		<RegistrySearch Id="RUMK" 
-                Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" 
+    		<RegistrySearch Id="RUMK"
+                Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
     			Name="{A520A1A4-1780-4FF6-BD18-167343C5AF16}"
                 Type="raw"/>
     	</Property>
@@ -85,11 +85,11 @@
     		Value="[AppDataFolder]">
     		<![CDATA[ VersionNT < 600 ]]>
     	</SetDirectory>
-        
+
         <!--
             We record the locations of directories in the registry.
-            Each directory requires both a property and a component representing the registry key for that property.             
-            For more explanation, see http://robmensching.com/blog/posts/2010/5/2/the-wix-toolsets-remember-property-pattern            
+            Each directory requires both a property and a component representing the registry key for that property.
+            For more explanation, see http://robmensching.com/blog/posts/2010/5/2/the-wix-toolsets-remember-property-pattern
         -->
         <ComponentGroup Id="Installation_Folders">
             <ComponentRef Id="ABP_AppData_Folder.component"/>
@@ -109,7 +109,7 @@
         <!--
             Testing the 32-bit install on a 64 bit OS will cause these entries to be written under Wow6432Node.
             It should be transparent to the application code, but in case it's not ...
-            See http://stackoverflow.com/questions/1882024/wix-will-not-add-hklm-registry-setting-during-windows-7-install 
+            See http://stackoverflow.com/questions/1882024/wix-will-not-add-hklm-registry-setting-during-windows-7-install
         -->
         <Property Id="INSTALLFOLDER">
             <RegistrySearch Id="Registry_Read_Install_Folder"
@@ -125,7 +125,7 @@
                 </RegistryKey>
             </RegistryKey>
         </Component>
-        
+
 
     	<!--
             The top-level directory structure.
@@ -148,24 +148,24 @@
 
         <!--
             The Binaries component group contains the DLL's.
-            
+
             The DLL image is found directly in the build directory.
             There's no parameter as yet for building an unsigned development version vs. a signed release version.
-            
+
             Note the use of SelfRegCost.
             This calls the entry point DLLRegisterServer to make registry entries.
             It is an expedient only; this mechanism create future problems
             http://stackoverflow.com/questions/364187/how-do-you-register-a-win32-com-dll-file-in-wix-3
         -->
     	<ComponentGroup Id="Binaries" Directory="INSTALLFOLDER">
-            <Component Id="Adblocker32.dll" Guid="a3f493f4-41fc-431a-9f5e-e0eba2f4d840">
-                <File Id="adblocker32.dll" Source="..\AdBlocker\Release Test\AdblockPlus.dll" KeyPath="yes" Checksum="yes" SelfRegCost="1"/>
+            <Component Id="AdblockPlus32.dll" Guid="a3f493f4-41fc-431a-9f5e-e0eba2f4d840">
+                <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Test\AdblockPlus.dll" KeyPath="yes" Checksum="yes" SelfRegCost="1"/>
             </Component>
             <!--
                 The preferred way to deal with 32 vs. 64 bit platforms is with two different MSI.
                 The snippet below is copied from the Avast WiX source.
-                It uses a condition to install a 64 bit DLL in addition to the 32 bit one. 
-                
+                It uses a condition to install a 64 bit DLL in addition to the 32 bit one.
+
                 <Component Id="Adblocker64.dll" Guid="a3f493f4-41fc-431a-9f5e-e0eba2f4d841">
                     <Condition><![CDATA[(VersionNT64)]]></Condition>
                     <File Id="adblocker64.dll" Source="..\..\ABP\Signed\Adblocker64.dll" KeyPath="yes" Checksum="yes" SelfRegCost="1"/>
@@ -177,7 +177,7 @@
             The HTML_Tree component group contains all the files in the HTML folder.
             Individual file entries within a single component group must all be in the same directory.
             Also, ComponentGroup is not a valid child of ComponentGroup, so subdirectories are linked by reference.
-        -->        
+        -->
         <ComponentGroup Id="HTML_Tree">
             <ComponentRef Id="html_static_css_settings.css"/>
             <ComponentRef Id="html_static_img_abp.128.png"/>
@@ -198,7 +198,7 @@
             <ComponentRef Id="html_static_js_vendor_html5shiv.js"/>
             <ComponentRef Id="html_templates_index.html"/>
         </ComponentGroup>
-        
+
         <DirectoryRef Id="HTML_Folder">
             <Directory Id="html" FileSource="SourceDir\..\html">
                 <Directory Name="static" Id="html_static">
@@ -242,21 +242,21 @@
 
         <!--
             INI files
-            
+
             The settings.ini file should not be installed this way, since it contains user-generated data.
             A component in Windows Installer represents a fixed piece of data with the MSI, not a changing one.
             The present method of making settings.ini a component is simply an expedient for the present,
                 not a permanent solution.
             The correct solution requires the application to manage this file; the installer can't do it right.
-            See http://stackoverflow.com/questions/357911/manage-configuration-files-with-wix              
+            See http://stackoverflow.com/questions/357911/manage-configuration-files-with-wix
         -->
         <ComponentGroup Id="INI_Files">
             <ComponentRef Id="ini_settings.page.w.ini"/>
             <ComponentRef Id="ini_dictionary.w.ini"/>
             <ComponentRef Id="ini_settings.ini"/>
-        </ComponentGroup>        
+        </ComponentGroup>
         <DirectoryRef Id="ABP_APPDATA_FOLDER">
-            <Directory Id="ini" FileSource="SourceDir\..\AdBlocker\files">
+            <Directory Id="ini" FileSource="SourceDir\..\files">
                 <Component Id="ini_settings.page.w.ini"><File Name="settings_page_w.ini"/></Component>
                 <Component Id="ini_dictionary.w.ini"><File Name="dictionary_w.ini"/></Component>
                 <Component Id="ini_settings.ini"><File Name="settings.ini"/></Component>

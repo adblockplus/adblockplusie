@@ -37,14 +37,14 @@
 // Define actual configurations
 // ----------------------------------------------------------------------------
 
-// AdBlocker configuration
+// AdblockPlus configuration
 
 
 #if (defined PRODUCT_ADBLOCKPLUS)
 #define ABPDOMAIN L"adblockplus.org"
-#ifdef ADPLUGIN_TEST_MODE
+#ifdef ADBLOCKPLUS_TEST_MODE
 #define USERS_HOST L"127.0.0.1"
-#elif (defined ADPLUGIN_PRODUCTION_MODE)
+#elif (defined ADBLOCKPLUS_PRODUCTION_MODE)
 #ifdef _DEBUG
 #define USERS_HOST L"127.0.0.1"
 #else
@@ -223,7 +223,7 @@
 #undef THROW_ON_ERROR
 
 // Should we report errors to the local filesystem and/or to the ad plugin server
-#ifdef ADPLUGIN_PRODUCTION_MODE
+#ifdef ADBLOCKPLUS_PRODUCTION_MODE
 #undef REPORT_ERROR_FILE
 #undef REPORT_ERROR_SERVER
 #else
@@ -231,7 +231,7 @@
 #define REPORT_ERROR_SERVER
 #endif
 
-// Should we shut down plugin automatically before starting the 
+// Should we shut down plugin automatically before starting the
 // installer? Remember to change the dictionary POSTDOWNLOADTEXT text
 // to correspond to this behaviour.
 // ex. AUTOMATIC_SHUTDOWN - "If you choose to install the new plugin, you Explorer will close before installation."

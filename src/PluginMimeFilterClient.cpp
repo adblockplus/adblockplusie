@@ -1,7 +1,6 @@
 #include "PluginStdAfx.h"
 
 #include "PluginMimeFilterClient.h"
-//#include "AdPluginMimeFilter.h"
 #include "PluginClient.h"
 #include "PluginWbPassThrough.h"
 
@@ -19,21 +18,21 @@ CPluginMimeFilterClient::CPluginMimeFilterClient() : m_classFactory(NULL), m_spC
   HRESULT hr = ::CoInternetGetSession(0, &spSession, 0);
   if (FAILED(hr) || !spSession)
   {
-    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_GET_INTERNET_SESSION, "MimeClient::CoInternetGetSession failed"); 
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_GET_INTERNET_SESSION, "MimeClient::CoInternetGetSession failed");
     return;
   }
 
   hr = MetaFactory::CreateInstance(CLSID_HttpProtocol, &m_spCFHTTP);
   if (FAILED(hr) || !m_spCFHTTP)
   {
-    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_CREATE_HTTP_INSTANCE, "MimeClient::CreateInstance failed"); 
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_CREATE_HTTP_INSTANCE, "MimeClient::CreateInstance failed");
     return;
   }
 
   hr = spSession->RegisterNameSpace(m_spCFHTTP, CLSID_HttpProtocol, L"http", 0, 0, 0);
   if (FAILED(hr))
   {
-    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_REGISTER_HTTP_NAMESPACE, "MimeClient::RegisterNameSpace failed"); 
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_REGISTER_HTTP_NAMESPACE, "MimeClient::RegisterNameSpace failed");
     return;
   }
 }
