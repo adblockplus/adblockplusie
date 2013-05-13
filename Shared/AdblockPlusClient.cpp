@@ -15,7 +15,7 @@ namespace
 {
   // TODO: bufferSize, ToWideString, ReadMessage and WriteMessage are duplicated in AdblockPlusEngine
 
-  const int bufferSize = 512;
+  const int bufferSize = 1024;
 
   std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
   {
@@ -46,15 +46,39 @@ namespace
     return converted;
   }
 
+  std::wstring GetDllDirectory()
+  {
+    wchar_t buffer[MAX_PATH];
+    GetModuleFileName(reinterpret_cast<HINSTANCE>(&__ImageBase), buffer, MAX_PATH);
+    std::wstring modulePath(buffer);
+    int lastSeparator = modulePath.find_last_of(L"\\");
+    return modulePath.substr(0, lastSeparator);
+  }
+
+  HANDLE OpenPipe(const std::wstring& name)
+  {
+    HANDLE pipe = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    // TODO: Use WaitNamedPipe before giving up if this is INVALID_HANDLE
+    return pipe;
+  }
+
   HANDLE OpenAdblockPlusEnginePipe()
   {
     LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
-    HANDLE pipe = CreateFile(pipeName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-    if (pipe == INVALID_HANDLE_VALUE || GetLastError())
+    HANDLE pipe = OpenPipe(pipeName);
+    if (pipe == INVALID_HANDLE_VALUE)
     {
-      // TODO: Consider using WaitNamedPipe with a timeout if this failed
-      // TODO: Launch AdblockPlusEngine.exe
-      throw std::runtime_error("Unable to open pipe");
+      std::wstring engineExecutablePath = GetDllDirectory() + L"\\AdblockPlusEngine.exe";
+      STARTUPINFO startupInfo = {};
+      PROCESS_INFORMATION processInformation = {};
+      if (!CreateProcess(engineExecutablePath.c_str(), 0, 0, 0, false, 0, 0, 0, &startupInfo, &processInformation))
+        throw std::runtime_error("Failed to start Adblock Plus Engine");
+      // TODO: The engine needs some time to update its filters and create the pipe, but there should be a better way than Sleep()
+      Sleep(1000);
+
+      pipe = OpenPipe(pipeName);
+      if (pipe == INVALID_HANDLE_VALUE)
+        throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
     }
 
     DWORD mode = PIPE_READMODE_MESSAGE; 
@@ -78,7 +102,12 @@ namespace
     char* buffer = new char[bufferSize];
     DWORD bytesRead;
     if (!ReadFile(pipe, buffer, bufferSize * sizeof(char), &bytesRead, 0) || !bytesRead)
-      throw std::runtime_error("Error reading from pipe");
+    {
+      delete buffer;
+      std::stringstream stream;
+      stream << "Error reading from pipe: " << GetLastError();
+      throw std::runtime_error(stream.str());
+    }
     std::string message(buffer, bytesRead);
     delete buffer;
     return message;
@@ -86,7 +115,7 @@ namespace
 
   void WriteMessage(HANDLE pipe, const std::string& message)
   {
-    // TODO: Make sure messages with >512 chars work
+    // TODO: Make sure messages with >bufferSize chars work
     DWORD bytesWritten;
     if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
       throw std::runtime_error("Failed to write to pipe");
@@ -234,7 +263,17 @@ int CAdblockPlusClient::GetIEVersion()
 
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
 {
-  HANDLE pipe = OpenAdblockPlusEnginePipe();
+  HANDLE pipe;
+  try
+  {
+    pipe = OpenAdblockPlusEnginePipe();
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(ToWideString(e.what()));
+    MessageBoxA(0, e.what(), "Exception", MB_OK);
+    return false;
+  }
 
   std::wstringstream stream;
   stream << "Sending request for " << ToWideString(url.c_str()) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
@@ -260,6 +299,7 @@ bool CAdblockPlusClient::Matches(const std::string& url, const std::string& cont
   catch (const std::exception& e)
   {
     DEBUG_GENERAL(ToWideString(e.what()));
+    MessageBoxA(0, e.what(), "Exception", MB_OK);
   }
 
   CloseHandle(pipe);

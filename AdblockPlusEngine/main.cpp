@@ -4,11 +4,12 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <ShlObj.h>
 #include <Windows.h>
 
 namespace
 {
-  const int bufferSize = 512;
+  const int bufferSize = 1024;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
   HANDLE filterEngineMutex;
 
@@ -45,7 +46,12 @@ namespace
     char* buffer = new char[bufferSize];
     DWORD bytesRead;
     if (!ReadFile(pipe, buffer, bufferSize * sizeof(char), &bytesRead, 0) || !bytesRead)
-      throw std::runtime_error("Error reading from pipe");
+    {
+      delete buffer;
+      std::stringstream stream;
+      stream << "Error reading from pipe: " << GetLastError();
+      throw std::runtime_error(stream.str());
+    }
     std::string message(buffer, bytesRead);
     delete buffer;
     return message;
@@ -53,7 +59,7 @@ namespace
 
   void WriteMessage(HANDLE pipe, const std::string& message)
   {
-    // TODO: Make sure messages with >512 chars work
+    // TODO: Make sure messages with >bufferSize chars work
     DWORD bytesWritten;
     if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
       throw std::runtime_error("Failed to write to pipe");
@@ -84,16 +90,30 @@ namespace
   }
 }
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+std::wstring GetAppDataPath()
 {
-  // TODO: Make sure patterns.ini is created in LocalLow
-  // TODO: Pass the app info in
+  wchar_t appDataPath[MAX_PATH];
+  // TODO: Doesn't support all Windows versions like this. Also duplicated from CPluginSettings
+  if (!SHGetSpecialFolderPath(0, appDataPath, CSIDL_LOCAL_APPDATA, true))
+    throw std::runtime_error("Unable to find app data directory");
+  return std::wstring(appDataPath) + L"\\AdblockPlusEngine";
+}
+
+std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
+{
+    // TODO: Pass the app info in
   AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New();
-  filterEngine.reset(new AdblockPlus::FilterEngine(jsEngine));
+  std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
   std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
   AdblockPlus::SubscriptionPtr subscription = subscriptions[0];
   subscription->AddToList();
+  return filterEngine;
+}
 
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+  SetCurrentDirectory(GetAppDataPath().c_str());
+  filterEngine = CreateFilterEngine();
   filterEngineMutex = CreateMutex(0, false, 0);
 
   for (;;)
@@ -116,6 +136,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       CloseHandle(pipe);
       continue;
     }
+
+    // TODO: Count established connections, kill the engine when there are none left
 
     HANDLE thread = CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0);
     if (!thread)
