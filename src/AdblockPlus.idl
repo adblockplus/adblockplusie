@@ -1,7 +1,7 @@
-// AdBlocker.idl : IDL source for AdBlocker.dll
+// AdBlockPlus.idl : IDL source for AdblockPlus.dll
 //
 
-#include "AdBlockerGuids.h"
+#include "AdblockPlusGuids.h"
 
 import "oaidl.idl";
 import "ocidl.idl";
@@ -10,7 +10,7 @@ import "ocidl.idl";
 	object,
 	uuid(GUUID_IPRODUCT),
 	dual,
-	helpstring("Adblock Interface"),
+	helpstring("Adblock Plus Interface"),
 	pointer_default(unique)
 ]
 interface IIEPlugin : IDispatch
@@ -20,7 +20,7 @@ interface IIEPlugin : IDispatch
 [
 	uuid(GUUID_TYPELIB),
 	version(1.0),
-	helpstring("Adblock 1.0 Type Library")
+	helpstring("Adblock Plus 1.0 Type Library")
 ]
 
 library PluginLib
@@ -30,7 +30,7 @@ library PluginLib
 
 	[
 		uuid(GUUID_CLASS_PRODUCT),
-		helpstring("Adblock Class")
+		helpstring("Adblock Plus Class")
 	]
 	coclass PluginClass
 	{

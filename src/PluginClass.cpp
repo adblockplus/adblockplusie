@@ -12,7 +12,6 @@
 #include "PluginClientFactory.h"
 #include "PluginHttpRequest.h"
 #include "PluginMutex.h"
-#include "PluginProfiler.h"
 #include "DownloadSource.h"
 #include "sddl.h"
 #include "PluginUtil.h"
@@ -33,7 +32,7 @@ DWORD CPluginClass::s_hIconTypes[ICON_MAX] = { IDI_ICON_DISABLED, IDI_ICON_ENABL
 CPluginMimeFilterClient* CPluginClass::s_mimeFilter = NULL;
 
 CLOSETHEMEDATA pfnClose = NULL;
-DRAWTHEMEBACKGROUND pfnDrawThemeBackground = NULL; 
+DRAWTHEMEBACKGROUND pfnDrawThemeBackground = NULL;
 OPENTHEMEDATA pfnOpenThemeData = NULL;
 
 ATOM CPluginClass::s_atomPaneClass = NULL;
@@ -205,7 +204,7 @@ HWND CPluginClass::GetBrowserHWND() const
 {
   SHANDLE_PTR hBrowserWndHandle = NULL;
 
-  CComQIPtr<IWebBrowser2> browser = GetBrowser();    
+  CComQIPtr<IWebBrowser2> browser = GetBrowser();
   if (browser)
   {
     HRESULT hr = browser->get_HWND(&hBrowserWndHandle);
@@ -294,7 +293,7 @@ void CPluginClass::LaunchUpdater(const CString& strPath)
     return;
   }
 #ifndef AUTOMATIC_SHUTDOWN
-  else 
+  else
   {
     ::WaitForSingleObject(pi.hProcess, INFINITE);
   }
@@ -324,17 +323,17 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 
 // This gets called when a new browser window is created (which also triggers the
 // creation of this object). The pointer passed in should be to a IWebBrowser2
-// interface that represents the browser for the window. 
+// interface that represents the browser for the window.
 // it is also called when a tab is closed, this unknownSite will be null
 // so we should handle that it is called this way several times during a session
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
   CPluginSettings* settings = CPluginSettings::GetInstance();
-  CPluginSystem* system = CPluginSystem::GetInstance(); 
+  CPluginSystem* system = CPluginSystem::GetInstance();
 
   MULTIPLE_VERSIONS_CHECK();
 
-  if (unknownSite) 
+  if (unknownSite)
   {
     if (settings->IsMainProcess() && settings->IsMainUiThread())
     {
@@ -357,7 +356,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     }
     s_criticalSectionBrowser.Unlock();
 
-    //register the mimefilter 
+    //register the mimefilter
     //and only mimefilter
     //on some few computers the mimefilter does not get properly registered when it is done on another thread
 
@@ -373,7 +372,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     }
     s_criticalSectionLocal.Unlock();
 
-    try 
+    try
     {
       // Check if loaded as BHO
       if (GetBrowser())
@@ -433,12 +432,12 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
         }
       }
     }
-    catch (std::runtime_error e) 
+    catch (std::runtime_error e)
     {
       Unadvice();
     }
   }
-  else 
+  else
   {
     // Unadvice
     Unadvice();
@@ -553,7 +552,7 @@ void CPluginClass::ShowStatusBar()
   CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
   if (browser)
   {
-    HRESULT hr = S_OK; 
+    HRESULT hr = S_OK;
     hr = browser->get_StatusBar(&isVisible);
     if (SUCCEEDED(hr))
     {
@@ -574,14 +573,14 @@ void CPluginClass::ShowStatusBar()
 
           // Do we have enough rights to enable a status bar?
           if (regRes != 0)
-          { 
+          {
             // We use the tab window here and in the next few calls, since the browser window may still not be available
-            LRESULT res = MessageBox((HWND)m_hTabWnd, dictionary->Lookup("ERROR_CAN_NOT_ENABLE_STATUS_BAR"), 
+            LRESULT res = MessageBox((HWND)m_hTabWnd, dictionary->Lookup("ERROR_CAN_NOT_ENABLE_STATUS_BAR"),
               dictionary->Lookup("ERROR_CAN_NOT_ENABLE_STATUS_BAR_TITLE"), MB_OK);
             return;
           }
           // Ask if a user wants to enable a status bar automatically
-          LRESULT res = MessageBox((HWND)m_hTabWnd, dictionary->Lookup("ERROR_STATUS_BAR_DISABLED"), 
+          LRESULT res = MessageBox((HWND)m_hTabWnd, dictionary->Lookup("ERROR_STATUS_BAR_DISABLED"),
             dictionary->Lookup("ERROR_STATUS_BAR_DISABLED_TITLE"), MB_YESNO);
           if (res == IDYES)
           {
@@ -623,7 +622,7 @@ void CPluginClass::ShowStatusBar()
         }
       }
     }
-    else 
+    else
     {
       DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_STATUSBAR, "Class::Get statusbar state");
     }
@@ -635,7 +634,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 
   if (pDispParams->cArgs < 7)
   {
-    return; 
+    return;
   }
   //Register a mime filter if it's not registered yet
   if (s_mimeFilter == NULL)
@@ -645,12 +644,12 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 
   // Get the IWebBrowser2 interface
   CComQIPtr<IWebBrowser2, &IID_IWebBrowser2> WebBrowser2Ptr;
-  VARTYPE vt = pDispParams->rgvarg[6].vt; 
+  VARTYPE vt = pDispParams->rgvarg[6].vt;
   if (vt == VT_DISPATCH)
   {
     WebBrowser2Ptr = pDispParams->rgvarg[6].pdispVal;
   }
-  else 
+  else
   {
     // Wrong type, return.
     return;
@@ -658,7 +657,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 
   // Get the URL
   CString url;
-  vt = pDispParams->rgvarg[5].vt; 
+  vt = pDispParams->rgvarg[5].vt;
   if (vt == VT_BYREF + VT_VARIANT)
   {
     url = pDispParams->rgvarg[5].pvarVal->bstrVal;
@@ -787,7 +786,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
         MoveWindow(m_hPaneWnd, rect.right - 200, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
       }
     }
-    break;    
+    break;
   case DISPID_STATUSTEXTCHANGE:
     break;
 
@@ -879,7 +878,7 @@ bool CPluginClass::InitObject(bool bBHO)
           DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_UXTHEME_CLOSE, "Class::InitObject - GetProcAddress(CloseThemeData)");
         }
 
-        pfnDrawThemeBackground = (DRAWTHEMEBACKGROUND)::GetProcAddress(s_hUxtheme, "DrawThemeBackground"); 
+        pfnDrawThemeBackground = (DRAWTHEMEBACKGROUND)::GetProcAddress(s_hUxtheme, "DrawThemeBackground");
         if (!pfnDrawThemeBackground)
         {
           DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_UXTHEME_DRAW_BACKGROUND, "Class::InitObject - GetProcAddress(DrawThemeBackground)");
@@ -904,7 +903,7 @@ bool CPluginClass::InitObject(bool bBHO)
   {
     WNDCLASSEX wcex;
 
-    wcex.cbSize = sizeof(WNDCLASSEX); 
+    wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = 0;
     wcex.lpfnWndProc = (WNDPROC)PaneWindowProc;
     wcex.cbClsExtra = 0;
@@ -918,7 +917,7 @@ bool CPluginClass::InitObject(bool bBHO)
     wcex.hIconSm = NULL;
 
     s_criticalSectionLocal.Lock();
-    {        
+    {
       s_atomPaneClass = ::RegisterClassEx(&wcex);
     }
     s_criticalSectionLocal.Unlock();
@@ -1017,7 +1016,7 @@ bool CPluginClass::CreateStatusBarPane()
           {
             for (int i = 0; i < s_instances.GetSize(); i++)
             {
-              if (s_instances[i]->m_hTabWnd == hTabWnd2) 
+              if (s_instances[i]->m_hTabWnd == hTabWnd2)
               {
 
                 bExistingTab = true;
@@ -1058,7 +1057,7 @@ bool CPluginClass::CreateStatusBarPane()
       hWndStatusBar = hWnd;
       break;
     }
-    
+
     hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
   }
 
@@ -1128,7 +1127,7 @@ bool CPluginClass::CreateStatusBarPane()
     ::SendMessage(m_hStatusBarWnd, SB_SETPARTS, nPartCount, (LPARAM)pData);
 
     delete[] pData;
-  }  
+  }
   HDC hdc = GetWindowDC(m_hStatusBarWnd);
   SendMessage(m_hStatusBarWnd, WM_PAINT, (WPARAM)hdc, 0);
   ReleaseDC(m_hStatusBarWnd, hdc);
@@ -1151,7 +1150,7 @@ void CPluginClass::CloseTheme()
 
 void CPluginClass::UpdateTheme()
 {
-  CloseTheme();		
+  CloseTheme();
 
   if (pfnOpenThemeData)
   {
@@ -1362,7 +1361,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
   if (!hMenuWnd)
   {
-    DestroyMenu(hMenu);    
+    DestroyMenu(hMenu);
     return;
   }
 
@@ -1371,7 +1370,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
   int nCommand = ::TrackPopupMenu(hMenu, nMenuFlags, pt.x, pt.y, 0, hMenuWnd, 0);
 
-  ::DestroyMenu(hMenu);    
+  ::DestroyMenu(hMenu);
   ::DestroyWindow(hMenuWnd);
 
   switch (nCommand)
@@ -1458,7 +1457,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
   // Invalidate and redraw the control
   UpdateStatusBar();
 
-  CComQIPtr<IWebBrowser2> browser = GetBrowser();    
+  CComQIPtr<IWebBrowser2> browser = GetBrowser();
   if (!url.IsEmpty() && browser)
   {
     VARIANT vFlags;
@@ -1480,7 +1479,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 }
 
 
-bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url) 
+bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 {
   CString ctext;
 
@@ -1610,7 +1609,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 #else
   RemoveMenu(hMenu, ID_SETTINGS, MF_BYCOMMAND);
   RemoveMenu(hMenu, 5, MF_BYPOSITION);
-#endif	
+#endif
 
   ctext.ReleaseBuffer();
 
@@ -1712,7 +1711,7 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
     return DefWindowProc(hWnd, message, wParam, lParam);
   }
 
-  // Process message 
+  // Process message
   switch (message)
   {
   case SB_SIMPLE:
@@ -1817,21 +1816,21 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
   }
 
   return hIcon;
-}	
+}
 
 
 LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
   // Find tab
   CPluginClass *pClass = FindInstance(GetParent(hWnd));
-  if (!pClass) 
+  if (!pClass)
   {
     return ::DefWindowProc(hWnd, message, wParam, lParam);
   }
 
   CPluginSystem* system = CPluginSystem::GetInstance();
 
-  // Process message 
+  // Process message
   switch (message)
   {
 
@@ -1897,7 +1896,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         HICON hIcon = GetStatusBarIcon(pClass->GetTab()->GetDocumentUrl());
 
         int offx = (rcClient.Height() - 16)/2 + nDrawEdge;
-        if (hIcon) 
+        if (hIcon)
         {
           ::DrawIconEx(hDC, offx, (rcClient.Height() - 16)/2 + 2, hIcon, 16, 16, NULL, NULL, DI_NORMAL);
           offx += 22;
@@ -1946,7 +1945,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
       RECT rc;
       ::GetWindowRect(hWnd, &rc);
 
-      if (rc.left >= 0 && rc.top >= 0) 
+      if (rc.left >= 0 && rc.top >= 0)
       {
         pt.x = rc.left;
         pt.y = rc.top;
@@ -2096,7 +2095,7 @@ void CPluginClass::UpdateStatusBar()
     {
       if (!::InvalidateRect(m_hPaneWnd, NULL, FALSE))
       {
-        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_INVALIDATE_STATUSBAR, "Class::Invalidate statusbar");	
+        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_INVALIDATE_STATUSBAR, "Class::Invalidate statusbar");
       }
     }
 }
@@ -2194,7 +2193,7 @@ HWND CPluginClass::GetTabHWND() const
           {
             for (int i = 0; i < s_instances.GetSize(); i++)
             {
-              if (s_instances[i]->m_hTabWnd == hTabWnd2) 
+              if (s_instances[i]->m_hTabWnd == hTabWnd2)
               {
                 bExistingTab = true;
                 break;

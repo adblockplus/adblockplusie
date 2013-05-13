@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by AdBlocker.rc
+// Used by AdblockPlus.rc
 //
 
 #define IDR_PLUGIN_CLASS				101
@@ -53,7 +53,7 @@
 #define IDT_TIMER                       35100
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        239

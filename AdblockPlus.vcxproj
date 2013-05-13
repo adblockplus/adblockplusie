@@ -138,8 +138,8 @@
     <_ProjectFileVersion>11.0.51106.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|Win32'">
-    <OutDir>$(Configuration)\</OutDir>
-    <IntDir>$(Configuration)\</IntDir>
+    <OutDir>build\ia32\$(Configuration)\</OutDir>
+    <IntDir>build\ia32\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
@@ -147,56 +147,56 @@
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'">
-    <OutDir>$(Configuration)\</OutDir>
-    <IntDir>$(Configuration)\</IntDir>
+    <OutDir>build\ia32\$(Configuration)\</OutDir>
+    <IntDir>build\ia32\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(WINDDKDIR)\lib\ATL\i386</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Test|Win32'">
-    <OutDir>$(Configuration)\</OutDir>
-    <IntDir>$(Configuration)\</IntDir>
+    <OutDir>build\ia32\$(Configuration)\</OutDir>
+    <IntDir>build\ia32\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(WINDDKDIR)\lib\ATL\i386</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">
-    <OutDir>$(Configuration)\</OutDir>
-    <IntDir>$(Configuration)\</IntDir>
+    <OutDir>build\ia32\$(Configuration)\</OutDir>
+    <IntDir>build\ia32\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
     <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);$(WINDDKDIR)\lib\ATL\i386</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|x64'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>build\x64\$(Configuration)\</OutDir>
+    <IntDir>build\x64\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(WINDDKDIR)\lib\ATL\amd64</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>build\x64\$(Configuration)\</OutDir>
+    <IntDir>build\x64\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(WINDDKDIR)\lib\ATL\amd64</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Test|x64'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>build\x64\$(Configuration)\</OutDir>
+    <IntDir>build\x64\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(WINDDKDIR)\lib\ATL\amd64</LibraryPath>
     <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);$(WINDDKDIR)\inc\atl71</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|x64'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>build\x64\$(Configuration)\</OutDir>
+    <IntDir>build\x64\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <LibraryPath>$(VCInstallDir)lib\amd64;$(VCInstallDir)atlmfc\lib\amd64;$(WindowsSDK_LibraryPath_x64);$(WINDDKDIR)\lib\ATL\amd64</LibraryPath>
@@ -212,7 +212,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </CustomBuildStep>
     <Midl>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
-      <HeaderFileName />
+      <OutputDirectory>build</OutputDirectory>
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP  %(AdditionalOptions)</AdditionalOptions>
@@ -222,8 +222,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;%(PreprocessorDefinitions);ABP</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -243,11 +243,11 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <Link>
       <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)Adblock.dll</OutputFile>
+      <OutputFile>$(OutDir)AdblockPlus.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -257,7 +257,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <BaseAddress>0x66000000</BaseAddress>
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\ia32\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libadblockplus\build\ia32\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -280,14 +280,14 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </CustomBuildStep>
     <Midl>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
-      <HeaderFileName />
+      <OutputDirectory>build</OutputDirectory>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -310,7 +310,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)AdblockPlus.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -321,7 +321,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\ia32\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libadblockplus\build\ia32\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ShowProgress>LinkVerboseLib</ShowProgress>
     </Link>
     <Bscmake>
@@ -345,12 +345,12 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </CustomBuildStep>
     <Midl>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
-      <HeaderFileName />
+      <OutputDirectory>build</OutputDirectory>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_TEST_MODE;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -375,7 +375,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -383,7 +383,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\libadblockplus\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libadblockplus\build\ia32\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -406,14 +406,14 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </CustomBuildStep>
     <Midl>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
-      <HeaderFileName />
+      <OutputDirectory>build</OutputDirectory>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -437,11 +437,11 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <Link>
       <RegisterOutput>true</RegisterOutput>
       <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)Adblock.dll</OutputFile>
+      <OutputFile>$(OutDir)AdblockPlus.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug />
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -450,7 +450,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libadblockplus\build\ia32\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -472,16 +472,15 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Outputs>$(OutDir)regsvr32.trg;%(Outputs)</Outputs>
     </CustomBuildStep>
     <Midl>
-      <TargetEnvironment>Itanium</TargetEnvironment>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
-      <HeaderFileName />
+      <OutputDirectory>build</OutputDirectory>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_SIMPLEADBLOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_SIMPLEADBLOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -500,10 +499,10 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)SimpleAdblock.dll</OutputFile>
+      <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -511,7 +510,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\x64\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libadblockplus\build\x64\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -533,16 +532,15 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Outputs>$(OutDir)regsvr32.trg;%(Outputs)</Outputs>
     </CustomBuildStep>
     <Midl>
-      <TargetEnvironment>X64</TargetEnvironment>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
-      <HeaderFileName />
+      <OutputDirectory>build</OutputDirectory>
     </Midl>
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_TEST_MODE;%(PreprocessorDefinitions);ABP</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_TEST_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -564,7 +562,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -572,7 +570,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\x64\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libadblockplus\build\x64\build\Release\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -591,14 +589,13 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <Command />
     </CustomBuildStep>
     <Midl>
-      <TargetEnvironment>X64</TargetEnvironment>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
-      <HeaderFileName />
+      <OutputDirectory>build</OutputDirectory>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -618,10 +615,10 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)SimpleAdblock.dll</OutputFile>
+      <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -629,7 +626,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libadblockplus\build\x64\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -648,16 +645,15 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <Command />
     </CustomBuildStep>
     <Midl>
-      <TargetEnvironment>X64</TargetEnvironment>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
-      <HeaderFileName />
+      <OutputDirectory>build</OutputDirectory>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>../Shared;$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;_USRDLL;ADPLUGIN_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -679,10 +675,10 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)atlthunk.lib;libadblockplus.lib;v8_base.lib;v8_snapshot.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)Adblock.dll</OutputFile>
+      <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>.\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -690,7 +686,7 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <DataExecutionPrevention />
       <ImportLibrary>$(IntDir)$(TargetName).lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\libadblockplus\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\libadblockplus\build\x64\build\Debug\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -704,31 +700,31 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Midl Include="AdBlocker.idl" />
+    <Midl Include="src\AdblockPlus.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Shared\AdblockPlusClient.cpp" />
-    <ClCompile Include="..\Shared\AdblockPlusDomTraverser.cpp" />
-    <ClCompile Include="..\Shared\AdblockPlusTab.cpp" />
-    <ClCompile Include="..\Shared\Plugin.cpp" />
-    <ClCompile Include="..\Shared\PluginChecksum.cpp" />
-    <ClCompile Include="..\Shared\PluginClass.cpp" />
-    <ClCompile Include="..\Shared\PluginClassThread.cpp" />
-    <ClCompile Include="..\Shared\PluginClientBase.cpp" />
-    <ClCompile Include="..\Shared\PluginClientFactory.cpp" />
-    <ClCompile Include="..\Shared\PluginConfiguration.cpp" />
-    <ClCompile Include="..\Shared\PluginDebug.cpp" />
-    <ClCompile Include="..\Shared\PluginDictionary.cpp" />
-    <ClCompile Include="..\Shared\PluginDownloadDialog.cpp" />
-    <ClCompile Include="..\Shared\PluginFilter.cpp" />
-    <ClCompile Include="..\Shared\PluginHttpRequest.cpp" />
-    <ClCompile Include="..\Shared\PluginIniFile.cpp" />
-    <ClCompile Include="..\Shared\PluginIniFileW.cpp" />
-    <ClCompile Include="..\Shared\PluginMimeFilterClient.cpp" />
-    <ClCompile Include="..\Shared\PluginMutex.cpp" />
-    <ClCompile Include="..\Shared\PluginSettings.cpp" />
-    <ClCompile Include="..\Shared\PluginSha1.cpp" />
-    <ClCompile Include="..\Shared\PluginStdAfx.cpp">
+    <ClCompile Include="src\AdblockPlusClient.cpp" />
+    <ClCompile Include="src\AdblockPlusDomTraverser.cpp" />
+    <ClCompile Include="src\AdblockPlusTab.cpp" />
+    <ClCompile Include="src\Plugin.cpp" />
+    <ClCompile Include="src\PluginChecksum.cpp" />
+    <ClCompile Include="src\PluginClass.cpp" />
+    <ClCompile Include="src\PluginClassThread.cpp" />
+    <ClCompile Include="src\PluginClientBase.cpp" />
+    <ClCompile Include="src\PluginClientFactory.cpp" />
+    <ClCompile Include="src\PluginConfiguration.cpp" />
+    <ClCompile Include="src\PluginDebug.cpp" />
+    <ClCompile Include="src\PluginDictionary.cpp" />
+    <ClCompile Include="src\PluginDownloadDialog.cpp" />
+    <ClCompile Include="src\PluginFilter.cpp" />
+    <ClCompile Include="src\PluginHttpRequest.cpp" />
+    <ClCompile Include="src\PluginIniFile.cpp" />
+    <ClCompile Include="src\PluginIniFileW.cpp" />
+    <ClCompile Include="src\PluginMimeFilterClient.cpp" />
+    <ClCompile Include="src\PluginMutex.cpp" />
+    <ClCompile Include="src\PluginSettings.cpp" />
+    <ClCompile Include="src\PluginSha1.cpp" />
+    <ClCompile Include="src\PluginStdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Production|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Test|Win32'">Create</PrecompiledHeader>
@@ -738,64 +734,64 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\Shared\PluginSystem.cpp" />
-    <ClCompile Include="..\Shared\PluginTabBase.cpp" />
-    <ClCompile Include="..\Shared\PluginUpdateDialog.cpp" />
-    <ClCompile Include="..\Shared\PluginUserSettings.cpp" />
-    <ClCompile Include="..\Shared\PluginUtil.cpp" />
-    <ClCompile Include="..\Shared\PluginWbPassThrough.cpp" />
+    <ClCompile Include="src\PluginSystem.cpp" />
+    <ClCompile Include="src\PluginTabBase.cpp" />
+    <ClCompile Include="src\PluginUpdateDialog.cpp" />
+    <ClCompile Include="src\PluginUserSettings.cpp" />
+    <ClCompile Include="src\PluginUtil.cpp" />
+    <ClCompile Include="src\PluginWbPassThrough.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Shared\abp.h" />
-    <ClInclude Include="..\Shared\AdblockPlusClient.h" />
-    <ClInclude Include="..\Shared\AdblockPlusDomTraverser.h" />
-    <ClInclude Include="..\Shared\AdblockPlusTab.h" />
-    <ClInclude Include="AdBlocker.h" />
-    <ClInclude Include="AdBlockerGuids.h" />
-    <ClInclude Include="..\Shared\Config.h" />
-    <ClInclude Include="..\Shared\DownloadSource.h" />
-    <ClInclude Include="..\Shared\Plugin.h" />
-    <ClInclude Include="..\Shared\PluginChecksum.h" />
-    <ClInclude Include="..\Shared\PluginClass.h" />
-    <ClInclude Include="..\Shared\PluginClient.h" />
-    <ClInclude Include="..\Shared\PluginClientBase.h" />
-    <ClInclude Include="..\Shared\PluginClientFactory.h" />
-    <ClInclude Include="..\Shared\PluginConfiguration.h" />
-    <ClInclude Include="..\Shared\PluginDebug.h" />
-    <ClInclude Include="..\Shared\PluginDebugMacros.h" />
-    <ClInclude Include="..\Shared\PluginDictionary.h" />
-    <ClInclude Include="..\Shared\PluginDomTraverser.h" />
-    <ClInclude Include="..\Shared\PluginDomTraverserBase.h" />
-    <ClInclude Include="..\Shared\PluginDownloadDialog.h" />
-    <ClInclude Include="..\Shared\PluginErrorCodes.h" />
-    <ClInclude Include="..\Shared\PluginFilter.h" />
-    <ClInclude Include="..\Shared\PluginHttpRequest.h" />
-    <ClInclude Include="..\Shared\PluginIniFile.h" />
-    <ClInclude Include="..\Shared\PluginIniFileW.h" />
-    <ClInclude Include="..\Shared\PluginMimeFilterClient.h" />
-    <ClInclude Include="..\Shared\PluginMutex.h" />
-    <ClInclude Include="..\Shared\PluginPassthroughObject.h" />
-    <ClInclude Include="..\Shared\PluginSettings.h" />
-    <ClInclude Include="..\Shared\PluginSha1.h" />
-    <ClInclude Include="..\Shared\PluginStdAfx.h" />
-    <ClInclude Include="..\Shared\PluginSystem.h" />
-    <ClInclude Include="..\Shared\PluginTab.h" />
-    <ClInclude Include="..\Shared\PluginTabBase.h" />
-    <ClInclude Include="..\Shared\PluginTypedef.h" />
-    <ClInclude Include="..\Shared\PluginUpdateDialog.h" />
-    <ClInclude Include="..\Shared\PluginUserSettings.h" />
-    <ClInclude Include="..\Shared\PluginUtil.h" />
-    <ClInclude Include="..\Shared\ProtocolCF.h" />
-    <ClInclude Include="..\Shared\ProtocolImpl.h" />
-    <ClInclude Include="BuildVariant.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="Version.h" />
+    <ClInclude Include="src\abp.h" />
+    <ClInclude Include="src\AdblockPlus.h" />
+    <ClInclude Include="src\AdblockPlusClient.h" />
+    <ClInclude Include="src\AdblockPlusDomTraverser.h" />
+    <ClInclude Include="src\AdblockPlusGuids.h" />
+    <ClInclude Include="src\AdblockPlusTab.h" />
+    <ClInclude Include="src\Config.h" />
+    <ClInclude Include="src\DownloadSource.h" />
+    <ClInclude Include="src\Plugin.h" />
+    <ClInclude Include="src\PluginChecksum.h" />
+    <ClInclude Include="src\PluginClass.h" />
+    <ClInclude Include="src\PluginClient.h" />
+    <ClInclude Include="src\PluginClientBase.h" />
+    <ClInclude Include="src\PluginClientFactory.h" />
+    <ClInclude Include="src\PluginConfiguration.h" />
+    <ClInclude Include="src\PluginDebug.h" />
+    <ClInclude Include="src\PluginDebugMacros.h" />
+    <ClInclude Include="src\PluginDictionary.h" />
+    <ClInclude Include="src\PluginDomTraverser.h" />
+    <ClInclude Include="src\PluginDomTraverserBase.h" />
+    <ClInclude Include="src\PluginDownloadDialog.h" />
+    <ClInclude Include="src\PluginErrorCodes.h" />
+    <ClInclude Include="src\PluginFilter.h" />
+    <ClInclude Include="src\PluginHttpRequest.h" />
+    <ClInclude Include="src\PluginIniFile.h" />
+    <ClInclude Include="src\PluginIniFileW.h" />
+    <ClInclude Include="src\PluginMimeFilterClient.h" />
+    <ClInclude Include="src\PluginMutex.h" />
+    <ClInclude Include="src\PluginPassthroughObject.h" />
+    <ClInclude Include="src\PluginSettings.h" />
+    <ClInclude Include="src\PluginSha1.h" />
+    <ClInclude Include="src\PluginStdAfx.h" />
+    <ClInclude Include="src\PluginSystem.h" />
+    <ClInclude Include="src\PluginTab.h" />
+    <ClInclude Include="src\PluginTabBase.h" />
+    <ClInclude Include="src\PluginTypedef.h" />
+    <ClInclude Include="src\PluginUpdateDialog.h" />
+    <ClInclude Include="src\PluginUserSettings.h" />
+    <ClInclude Include="src\PluginUtil.h" />
+    <ClInclude Include="src\ProtocolCF.h" />
+    <ClInclude Include="src\ProtocolImpl.h" />
+    <ClInclude Include="src\BuildVariant.h" />
+    <ClInclude Include="src\Resource.h" />
+    <ClInclude Include="src\Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Shared\ProtocolCF.inl" />
-    <None Include="..\Shared\ProtocolImpl.inl" />
-    <None Include="AdBlocker.rgs" />
-    <None Include="Adblock.def" />
+    <None Include="src\ProtocolCF.inl" />
+    <None Include="src\ProtocolImpl.inl" />
+    <None Include="src\AdblockPlus.rgs" />
+    <None Include="src\AdblockPlus.def" />
     <None Include="files\dictionary_w.ini">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">true</DeploymentContent>
     </None>
@@ -807,19 +803,19 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="AdBlocker.rc" />
+    <ResourceCompile Include="src\AdblockPlus.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\blocking.ico" />
-    <Image Include="res\deactivated.ico" />
-    <Image Include="res\not-blocking.ico" />
+    <Image Include="src\res\blocking.ico" />
+    <Image Include="src\res\deactivated.ico" />
+    <Image Include="src\res\not-blocking.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties RESOURCE_FILE="AdBlocker.rc" />
+      <UserProperties RESOURCE_FILE="src\AdblockPlus.rc" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

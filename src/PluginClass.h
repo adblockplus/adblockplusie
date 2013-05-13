@@ -36,7 +36,7 @@
 class CPluginMimeFilterClient;
 
 
-class ATL_NO_VTABLE CPluginClass : 
+class ATL_NO_VTABLE CPluginClass :
   public CComObjectRootEx<CComMultiThreadModel>,
   public CComCoClass<CPluginClass, &CLSID_PluginClass>,
   public IObjectWithSiteImpl<CPluginClass>,
@@ -75,7 +75,7 @@ public:
 
   STDMETHOD(SetSite)(IUnknown *pUnkSite);
 
-  // IOleCommandTarget	
+  // IOleCommandTarget
 
   STDMETHOD(QueryStatus)(const GUID* pguidCmdGroup, ULONG cCmds, OLECMD prgCmds[], OLECMDTEXT* pCmdText);
   STDMETHOD(Exec)(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG* pvaOut);
@@ -93,7 +93,7 @@ public:
 
 private:
 
-  bool SetMenuBar(HMENU hMenu, const CString& url);	
+  bool SetMenuBar(HMENU hMenu, const CString& url);
   HMENU CreatePluginMenu(const CString& url);
 
   void DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags);
@@ -121,7 +121,7 @@ private:
   void CloseTheme();
   void UpdateTheme();
 
-  static HICON GetStatusBarIcon(const CString& url);	
+  static HICON GetStatusBarIcon(const CString& url);
   static void LaunchUpdater(const CString& path);
   static CPluginClass* FindInstance(HWND hStatusBarWnd);
   static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -149,7 +149,7 @@ private:
   bool m_isAdviced;
   bool m_isInitializedOk;
 
-  // Atom pane class  
+  // Atom pane class
   static ATOM s_atomPaneClass;
 
   static ATOM GetAtomPaneClass();

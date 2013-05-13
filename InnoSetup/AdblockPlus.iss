@@ -10,17 +10,17 @@ DisableDirPage=yes
 
 
 [Files]
-Source: "..\AdBlocker\Release Test\AdblockPlus.dll"; DestDir: "{app}"
-Source: "..\AdBlocker\x64\Release Test\AdblockPlusX64.dll"; DestDir: "{app}"
+Source: "..\build\ia32\Release Test\AdblockPlus.dll"; DestDir: "{app}"
+Source: "..\build\x64\Release Test\AdblockPlusX64.dll"; DestDir: "{app}"
 Source: "..\html\static\css\*"; DestDir: "{app}\html\static\css"
 Source: "..\html\static\img\*"; DestDir: "{app}\html\static\img"
 Source: "..\html\static\img\social\*"; DestDir: "{app}\html\static\img\social"
 Source: "..\html\static\img\button-background\*"; DestDir: "{app}\html\static\img\button-background"
 Source: "..\html\static\js\*"; DestDir: "{app}\html\static\js"
 Source: "..\html\templates\*"; DestDir: "{app}\html\templates"
-Source: "..\AdBlocker\files\settings.ini"; DestDir: "{app}"
-Source: "..\AdBlocker\files\dictionary_w.ini"; DestDir: "{app}"
-Source: "..\AdBlocker\files\settings_page_w.ini"; DestDir: "{app}"
+Source: "..\files\settings.ini"; DestDir: "{app}"
+Source: "..\files\dictionary_w.ini"; DestDir: "{app}"
+Source: "..\files\settings_page_w.ini"; DestDir: "{app}"
 
 [Code]
 

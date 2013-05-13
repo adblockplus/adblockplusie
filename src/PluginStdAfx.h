@@ -62,7 +62,7 @@ extern CComModule _Module;
 #if (defined ENTERPRISE)
 #define CONFIG_IN_REGISTRY
 #endif
-#include "..\AdBlocker\Resource.h"
+#include "Resource.h"
 #endif
 
 #if (defined PRODUCT_ADBLOCKPLUS)
@@ -71,7 +71,6 @@ extern CComModule _Module;
 
 
 #define _CRTDBG_MAP_ALLOC
-#define ABP
 #include <stdlib.h>
 #include <crtdbg.h>
 
@@ -86,7 +85,7 @@ extern CComModule _Module;
 
 #ifndef countof
 #define countof(x) (sizeof(x)/sizeof(*x))
-#endif 
+#endif
 
 #ifdef USE_CONSOLE
 #include "Console.h"

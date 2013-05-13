@@ -1,4 +1,4 @@
-; AdBlocker.def : Declares the module parameters.
+; AdBlockPlus.def : Declares the module parameters.
 
 LIBRARY      "ADBLOCKPLUS.DLL"
 

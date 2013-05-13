@@ -1,9 +1,7 @@
 #include "PluginStdAfx.h"
 
 #include "Plugin.h"
-#if (defined PRODUCT_ADBLOCKPLUS)
-#include "../AdBlocker/AdBlocker_i.c"
-#endif
+#include "../build/AdblockPlus_i.c"
 
 #include "PluginClass.h"
 #include "PluginClient.h"
@@ -30,8 +28,8 @@ END_OBJECT_MAP()
 //Dll Entry Point
 BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD fdwReason, LPVOID reserved)
 {
-  switch( fdwReason ) 
-  { 
+  switch( fdwReason )
+  {
   case DLL_PROCESS_ATTACH:
     TCHAR szFilename[MAX_PATH];
     GetModuleFileName(NULL, szFilename, MAX_PATH);
@@ -77,7 +75,7 @@ STDAPI DllCanUnloadNow(void)
     {
       delete CPluginSystem::s_instance;
     }
-    
+
     if (CPluginClass::s_mimeFilter != NULL)
     {
       CPluginClass::s_mimeFilter->Unregister();
@@ -122,14 +120,14 @@ void InitPlugin(bool isInstall)
   if (isInstall)
   {
     DEBUG_GENERAL(
-      L"================================================================================\nINSTALLER " + 
-      CString(IEPLUGIN_VERSION) + 
+      L"================================================================================\nINSTALLER " +
+      CString(IEPLUGIN_VERSION) +
       L"\n================================================================================")
   }
   else
   {
     DEBUG_GENERAL(
-      L"================================================================================\nUPDATER " + 
+      L"================================================================================\nUPDATER " +
       CString(IEPLUGIN_VERSION) + L" (UPDATED FROM " + settings->GetString(SETTING_PLUGIN_VERSION) + L")"
       L"\n================================================================================")
   }
@@ -141,7 +139,7 @@ void InitPlugin(bool isInstall)
 #endif
 
   // Force creation of default dictionary
-  CPluginDictionary* dictionary = CPluginDictionary::GetInstance(true);   
+  CPluginDictionary* dictionary = CPluginDictionary::GetInstance(true);
   dictionary->Create(true);
 
   // Force creation of default config file
