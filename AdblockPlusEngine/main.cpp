@@ -6,6 +6,7 @@
 #include <vector>
 #include <ShlObj.h>
 #include <Windows.h>
+#include <Sddl.h>
 
 namespace
 {
@@ -118,10 +119,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   for (;;)
   {
-    // TODO: Make the pipe available from low integrity processes, only works with UAC disabled right now
+    //Load the Low Integrity security attributes
+    SECURITY_ATTRIBUTES sa;
+    memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
+
+    //Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
+    LPCWSTR LOW_INTEGRITY_SDDL_SACL_W = L"S:(ML;;NW;;;LW)";
+    PSECURITY_DESCRIPTOR securitydescriptor;
+    //Yes, that's a function name
+    ConvertStringSecurityDescriptorToSecurityDescriptor(
+      LOW_INTEGRITY_SDDL_SACL_W, SDDL_REVISION_1, &securitydescriptor, 0);
+    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa.lpSecurityDescriptor = securitydescriptor;
+    sa.bInheritHandle = TRUE;
+
     LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
     HANDLE pipe = CreateNamedPipe(pipeName, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                                  PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, 0);
+                                  PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
     if (pipe == INVALID_HANDLE_VALUE)
     {
       std::stringstream stream;
