@@ -407,7 +407,6 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     <Midl>
       <TypeLibraryName>$(TargetName).tlb</TypeLibraryName>
       <HeaderFileName />
-      <UndefinePreprocessorDefinitions>AVAST_ABP</UndefinePreprocessorDefinitions>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -796,7 +795,6 @@ xcopy /s /I /y /D "$(ProjectDir)..\html\*" "$(TargetDir)html" </Command>
     <None Include="..\Shared\ProtocolCF.inl" />
     <None Include="..\Shared\ProtocolImpl.inl" />
     <None Include="AdBlocker.rgs" />
-    <None Include="AdBlockerAvast.rgs" />
     <None Include="Adblock.def" />
     <None Include="files\dictionary_w.ini">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">true</DeploymentContent>
