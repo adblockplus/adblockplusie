@@ -42,7 +42,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\libadblockplus\build\Debug\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)..\libadblockplus\build\ia32\build\Debug\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)AdBlocker\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|Win32'">
     <LinkIncremental>false</LinkIncremental>

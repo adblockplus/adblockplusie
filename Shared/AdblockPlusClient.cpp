@@ -75,7 +75,7 @@ namespace
         throw std::runtime_error("Failed to start Adblock Plus Engine");
       // TODO: The engine needs some time to update its filters and create the pipe, but there should be a better way than Sleep()
       Sleep(1000);
-
+      
       pipe = OpenPipe(pipeName);
       if (pipe == INVALID_HANDLE_VALUE)
         throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
