@@ -160,10 +160,6 @@ CAdblockPlusClient* CAdblockPlusClient::GetInstance()
   return instance;
 }
 
-AdblockPlus::FilterEngine* CAdblockPlusClient::GetFilterEngine()
-{
-  return filterEngine.get();
-}
 
 bool CAdblockPlusClient::ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug)
 {
@@ -305,4 +301,40 @@ bool CAdblockPlusClient::Matches(const std::string& url, const std::string& cont
   CloseHandle(pipe);
 
   return matches;
+}
+
+std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(std::string domain)
+{
+  //TODO: implement this
+  return std::vector<std::string>();
+}
+
+std::vector<AdblockPlus::SubscriptionPtr> CAdblockPlusClient::FetchAvailableSubscriptions()
+{
+  //TODO: implement this
+  return std::vector<AdblockPlus::SubscriptionPtr>();
+}
+
+std::vector<AdblockPlus::FilterPtr> CAdblockPlusClient::GetListedFilters()
+{
+  //TODO: implement this
+  return std::vector<AdblockPlus::FilterPtr>();
+}
+
+AdblockPlus::FilterPtr CAdblockPlusClient::GetFilter(std::string text)
+{
+  //TODO: implement this
+  return AdblockPlus::FilterPtr();
+}
+
+std::vector<AdblockPlus::SubscriptionPtr> CAdblockPlusClient::GetListedSubscriptions()
+{
+  //TODO: implement this
+  return std::vector<AdblockPlus::SubscriptionPtr>();
+}
+
+AdblockPlus::SubscriptionPtr CAdblockPlusClient::GetSubscription(std::string url)
+{
+  //TODO: imlement this
+  return AdblockPlus::SubscriptionPtr();
 }
