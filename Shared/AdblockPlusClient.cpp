@@ -112,24 +112,26 @@ namespace
 
   std::string ReadMessage(HANDLE pipe)
   {
-    // TODO: Read messages larger than the bufferSize
-    char* buffer = new char[bufferSize];
-    DWORD bytesRead;
-    if (!ReadFile(pipe, buffer, bufferSize * sizeof(char), &bytesRead, 0) || !bytesRead)
+    std::stringstream stream;
+    std::auto_ptr<char> buffer(new char[bufferSize]);
+    bool hasError;
+    do
     {
-      delete buffer;
-      std::stringstream stream;
-      stream << "Error reading from pipe: " << GetLastError();
-      throw std::runtime_error(stream.str());
-    }
-    std::string message(buffer, bytesRead);
-    delete buffer;
-    return message;
+      DWORD bytesRead;
+      hasError = !ReadFile(pipe, buffer.get(), bufferSize * sizeof(char), &bytesRead, 0);
+      if (hasError && GetLastError() != ERROR_MORE_DATA)
+      {
+        std::stringstream stream;
+        stream << "Error reading from pipe: " << GetLastError();
+        throw std::runtime_error(stream.str());
+      }
+      stream << std::string(buffer.get(), bytesRead);
+    } while (hasError);
+    return stream.str();
   }
 
   void WriteMessage(HANDLE pipe, const std::string& message)
   {
-    // TODO: Make sure messages with >bufferSize chars work
     DWORD bytesWritten;
     if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
       throw std::runtime_error("Failed to write to pipe");
