@@ -1,8 +1,8 @@
 #include <AdblockPlus.h>
 #include <iostream>
+#include <ShlObj.h>
 #include <sstream>
 #include <vector>
-#include <ShlObj.h>
 #include <Windows.h>
 #include <Sddl.h>
 
