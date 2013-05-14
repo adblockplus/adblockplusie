@@ -30,16 +30,22 @@ namespace
     Log(std::string("An exception occurred: ") + exception.what());
   }
 
-  std::vector<std::string> UnmarshalStrings(const std::string& message, int count)
+  std::string MarshalStrings(const std::vector<std::string>& strings)
   {
-    char* remaining_message = const_cast<char*>(message.c_str());
+    // TODO: This is some pretty hacky marshalling, replace it with something more robust
+    std::string marshalledStrings;
+    for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
+      marshalledStrings += *it + ';';
+    return marshalledStrings;
+  }
+
+  std::vector<std::string> UnmarshalStrings(const std::string& message)
+  {
+    std::stringstream stream(message);
     std::vector<std::string> strings;
-    for (int i = 0; i < count; i++)
-    {
-      std::string::value_type* part = remaining_message;
-      strings.push_back(remaining_message);
-      remaining_message += strlen(part) + 1;
-    }
+    std::string string;
+    while (std::getline(stream, string, ';'))
+        strings.push_back(string);
     return strings;
   }
 
@@ -78,6 +84,16 @@ namespace
       throw std::runtime_error("Failed to write to pipe");
   }
 
+  std::string HandleRequest(const std::vector<std::string>& strings)
+  {
+    std::string procedureName = strings[0];
+    if (procedureName == "Matches")
+      return filterEngine->Matches(strings[1], strings[2], strings[3]) ? "1" : "0";
+    if (procedureName == "GetElementHidingSelectors")
+      return MarshalStrings(filterEngine->GetElementHidingSelectors(strings[1]));
+    return "";
+  }
+
   DWORD WINAPI ClientThread(LPVOID param)
   {
     HANDLE pipe = static_cast<HANDLE>(param);
@@ -85,11 +101,11 @@ namespace
     try
     {
       std::string message = ReadMessage(pipe);
-      std::vector<std::string> args = UnmarshalStrings(message, 3);
+      std::vector<std::string> strings = UnmarshalStrings(message);
       WaitForSingleObject(filterEngineMutex, INFINITE);
-      bool matches = filterEngine->Matches(args[0], args[1], args[2]);
+      std::string response = HandleRequest(strings);
       ReleaseMutex(filterEngineMutex);
-      WriteMessage(pipe, matches ? "1" : "0");
+      WriteMessage(pipe, response);
     }
     catch (const std::exception& e)
     {
@@ -107,6 +123,7 @@ std::wstring GetAppDataPath()
 {
   wchar_t appDataPath[MAX_PATH];
   // TODO: Doesn't support all Windows versions like this. Also duplicated from CPluginSettings
+  // TODO: This needs to be LocalLow, not Local, or we can't write to it
   if (!SHGetSpecialFolderPath(0, appDataPath, CSIDL_LOCAL_APPDATA, true))
     throw std::runtime_error("Unable to find app data directory");
   return std::wstring(appDataPath) + L"\\AdblockPlusEngine";
