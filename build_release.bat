@@ -8,8 +8,15 @@ msbuild ..\libadblockplus\build\ia32\libadblockplus.sln /p:Configuration=Release
 msbuild ..\libadblockplus\build\x64\libadblockplus.sln /p:Configuration=Release
 msbuild AdblockPlus.sln "/p:Configuration=Release Test" /p:Platform=Win32
 msbuild AdblockPlus.sln "/p:Configuration=Release Test" /p:Platform=x64
-signtool.exe sign /v /d "Adblock Plus" /du "http://adblockplus.org/" /f %1 /tr "http://www.startssl.com/timestamp" "AdBlocker\Release Test\AdblockPlus.dll"
-signtool.exe sign /v /d "Adblock Plus" /du "http://adblockplus.org/" /f %1 /tr "http://www.startssl.com/timestamp" "AdBlocker\x64\Release Test\AdblockPlusx64.dll"
+signtool.exe sign /v /d "Adblock Plus" /du "http://adblockplus.org/" /f %1 /tr "http://www.startssl.com/timestamp" "build\ia32\Release Test\AdblockPlus.dll"
+signtool.exe sign /v /d "Adblock Plus" /du "http://adblockplus.org/" /f %1 /tr "http://www.startssl.com/timestamp" "build\x64\Release Test\AdblockPlusx64.dll"
+
+pushd WixInstaller
+nmake
+popd
+
+signtool.exe sign /v /d "Adblock Plus" /du "http://adblockplus.org/" /f %1 /tr "http://www.startssl.com/timestamp" "build\adblockplusie-en-us.msi"
+
 popd
 goto End
 
