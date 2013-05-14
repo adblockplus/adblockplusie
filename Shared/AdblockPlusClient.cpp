@@ -50,8 +50,43 @@ namespace
       std::wstring engineExecutablePath = GetDllDirectory() + L"\\AdblockPlusEngine.exe";
       STARTUPINFO startupInfo = {};
       PROCESS_INFORMATION processInformation = {};
-      if (!CreateProcess(engineExecutablePath.c_str(), 0, 0, 0, false, 0, 0, 0, &startupInfo, &processInformation))
+
+      BOOL                  fRet;
+      HANDLE                hToken        = NULL;
+      HANDLE                hNewToken     = NULL;
+
+      fRet = OpenProcessToken(GetCurrentProcess(),
+                              TOKEN_DUPLICATE |
+                              TOKEN_ADJUST_DEFAULT |
+                              TOKEN_QUERY |
+                              TOKEN_ASSIGN_PRIMARY,
+                              &hToken);
+
+
+      fRet = DuplicateTokenEx(hToken,
+                              0,
+                              NULL,
+                              SecurityImpersonation,
+                              TokenPrimary,
+                              &hNewToken);
+
+
+      // Create the FilterEngine process with the same integrity
+      if (!CreateProcessAsUser(hNewToken,
+                                NULL,
+                                (LPWSTR)engineExecutablePath.c_str(),
+                                NULL,
+                                NULL,
+                                FALSE,
+                                0,
+                                NULL,
+                                NULL,
+                                &startupInfo,
+                                &processInformation))
+      {
+        DWORD error = GetLastError();
         throw std::runtime_error("Failed to start Adblock Plus Engine");
+      }
       // TODO: The engine needs some time to update its filters and create the pipe, but there should be a better way than Sleep()
       Sleep(1000);
       
