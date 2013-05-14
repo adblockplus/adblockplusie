@@ -1,5 +1,3 @@
-// TODO: Make this work with UAC enabled
-
 #include <AdblockPlus.h>
 #include <iostream>
 #include <sstream>
