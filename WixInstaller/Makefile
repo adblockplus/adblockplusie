@@ -2,16 +2,16 @@
 
 .wxs.wixobj:
     candle -nologo $*.wxs -out $*.wixobj
-    
-default: adblockplusie-en-us.msi
 
-adblockplusie-en-us.msi: adblockplusie.wixobj
-    light $** -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $*.msi 
+default: ..\build\adblockplusie-en-us.msi
+
+..\build\adblockplusie-en-us.msi: adblockplusie.wixobj "..\build\ia32\Release Test\AdblockPlus.dll"
+    light adblockplusie.wixobj -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $*.msi
 
 install:
-    msiexec /i adblockplusie-en-us.msi /l*v install.log
+    msiexec /i ..\build\adblockplusie-en-us.msi /l*v install.log
 
 uninstall:
-    msiexec /x adblockplusie-en-us.msi
+    msiexec /x ..\build\adblockplusie-en-us.msi
 
-        
+
