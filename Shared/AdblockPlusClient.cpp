@@ -17,27 +17,6 @@ namespace
 
   const int bufferSize = 1024;
 
-  std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
-  {
-    try
-    {
-      DEBUG_GENERAL("Building client");
-      AdblockPlus::AppInfo appInfo;
-      appInfo.name = "adblockplusie";
-      appInfo.version = CT2CA(_T(IEPLUGIN_VERSION), CP_UTF8);
-      appInfo.platform = "msie";
-  
-      DEBUG_GENERAL(L"Building engine");
-
-      JsEnginePtr jsEngine(AdblockPlus::JsEngine::New(appInfo));
-      return std::auto_ptr<AdblockPlus::FilterEngine>(new AdblockPlus::FilterEngine(jsEngine));
-    }
-    catch(std::exception ex)
-    {
-      DEBUG_GENERAL(ex.what());
-    }
-  }
-
   LPCWSTR ToWideString(LPCSTR value)
   {
     int size = MultiByteToWideChar(CP_UTF8, 0, value, -1, 0, 0);
@@ -127,11 +106,6 @@ CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
 CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 {
   m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
-
-  // TODO: Don't create a filter engine here. For this we need to invoke all
-  //       filter engine methods via IPC. This is already done for
-  //       FilterEngine::Matches().
-  filterEngine = CreateFilterEngine();
 }
 
 CAdblockPlusClient::~CAdblockPlusClient()
