@@ -36,9 +36,9 @@ namespace
 
   HANDLE OpenPipe(const std::wstring& name)
   {
-    HANDLE pipe = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-    // TODO: Use WaitNamedPipe before giving up if this is INVALID_HANDLE
-    return pipe;
+    if (WaitNamedPipe(name.c_str(), 1000))
+      return CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    return INVALID_HANDLE_VALUE;
   }
 
   HANDLE OpenAdblockPlusEnginePipe()
