@@ -15,7 +15,19 @@ namespace
   void Log(const std::string& message)
   {
     // TODO: Log to a log file
-    MessageBoxA(0, message.c_str(), "", MB_OK);
+    MessageBoxA(0, ("AdblockPlusEngine: " + message).c_str(), "", MB_OK);
+  }
+
+  void LogLastError(const std::string& message)
+  {
+    std::stringstream stream;
+    stream << message << " (Error code: " << GetLastError() << ")";
+    Log(stream.str());
+  }
+
+  void LogException(const std::exception& exception)
+  {
+    Log(std::string("An exception occurred: ") + exception.what());
   }
 
   std::vector<std::string> UnmarshalStrings(const std::string& message, int count)
@@ -81,7 +93,7 @@ namespace
     }
     catch (const std::exception& e)
     {
-      Log(e.what());
+      LogException(e);
     }
 
     FlushFileBuffers(pipe);
@@ -138,15 +150,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                                   PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
     if (pipe == INVALID_HANDLE_VALUE)
     {
-      std::stringstream stream;
-      stream << "CreateNamedPipe failed: " << GetLastError();
-      Log(stream.str());
+      LogLastError("CreateNamedPipe failed");
       return 1;
     }
 
     if (!ConnectNamedPipe(pipe, 0))
     {
-      Log("Client failed to connect");
+      LogLastError("Client failed to connect");
       CloseHandle(pipe);
       continue;
     }
@@ -156,7 +166,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     HANDLE thread = CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0);
     if (!thread)
     {
-      Log("CreateThread failed");
+      LogLastError("CreateThread failed");
       return 1;
     }
     CloseHandle(thread);
