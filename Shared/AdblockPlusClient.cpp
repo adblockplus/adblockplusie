@@ -13,7 +13,7 @@
 
 namespace
 {
-  // TODO: bufferSize, ToWideString, ReadMessage and WriteMessage are duplicated in AdblockPlusEngine
+  // TODO: bufferSize, ToWideString, ReadMessage, WriteMessage, MarshalStrings and UnmarshalStrings are duplicated in AdblockPlusEngine
 
   const int bufferSize = 1024;
 
@@ -104,10 +104,21 @@ namespace
 
   std::string MarshalStrings(const std::vector<std::string>& strings)
   {
+    // TODO: This is some pretty hacky marshalling, replace it with something more robust
     std::string marshalledStrings;
     for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
-      marshalledStrings += *it + '\0';
+      marshalledStrings += *it + ';';
     return marshalledStrings;
+  }
+
+  std::vector<std::string> UnmarshalStrings(const std::string& message)
+  {
+    std::stringstream stream(message);
+    std::vector<std::string> strings;
+    std::string string;
+    while (std::getline(stream, string, ';'))
+        strings.push_back(string);
+    return strings;
   }
 
   std::string ReadMessage(HANDLE pipe)
@@ -268,56 +279,63 @@ int CAdblockPlusClient::GetIEVersion()
   return (int)(version[0] - 48);
 }
 
-bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
+std::string CallAdblockPlusEngineProcedure(const std::string& name, const std::vector<std::string>& args)
 {
-  HANDLE pipe;
+  // TODO: Use an RAII wrapper for the pipe handle
+  HANDLE pipe = OpenAdblockPlusEnginePipe();
+
   try
   {
-    pipe = OpenAdblockPlusEnginePipe();
+    std::vector<std::string> strings;
+    strings.push_back(name);
+    for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); it++)
+      strings.push_back(*it);
+    WriteMessage(pipe, MarshalStrings(strings));
+    std::string response = ReadMessage(pipe);
+    CloseHandle(pipe);
+    return response;
   }
   catch (const std::exception& e)
   {
-    DEBUG_GENERAL(ToWideString(e.what()));
-    MessageBoxA(0, e.what(), "Exception", MB_OK);
-    return false;
+    CloseHandle(pipe);
+    throw e;
   }
+}
 
-  std::wstringstream stream;
-  stream << "Sending request for " << ToWideString(url.c_str()) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
-  DEBUG_GENERAL(stream.str().c_str());
-
+bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
+{
   std::vector<std::string> args;
   args.push_back(url);
   args.push_back(contentType);
   args.push_back(domain);
 
-  boolean matches = false;
-
   try
   {
-    WriteMessage(pipe, MarshalStrings(args));
-    std::string message = ReadMessage(pipe);
-    matches = message == "1";
-
-    stream.str(std::wstring());
-    stream << "Got response for " << ToWideString(url.c_str()) << " in process " << GetCurrentProcessId() << ", thread " << GetCurrentThreadId();
-    DEBUG_GENERAL(stream.str().c_str());
+    std::string response = CallAdblockPlusEngineProcedure("Matches", args);
+    return response == "1";
   }
   catch (const std::exception& e)
   {
     DEBUG_GENERAL(ToWideString(e.what()));
-    MessageBoxA(0, e.what(), "Exception", MB_OK);
+    return false;
   }
-
-  CloseHandle(pipe);
-
-  return matches;
 }
 
 std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(std::string domain)
 {
-  //TODO: implement this
-  return std::vector<std::string>();
+  std::vector<std::string> args;
+  args.push_back(domain);
+
+  try
+  {
+    std::string response = CallAdblockPlusEngineProcedure("GetElementHidingSelectors", args);
+    return UnmarshalStrings(response);
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(ToWideString(e.what()));
+    return std::vector<std::string>();
+  }
 }
 
 std::vector<AdblockPlus::SubscriptionPtr> CAdblockPlusClient::FetchAvailableSubscriptions()
