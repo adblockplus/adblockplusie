@@ -36,9 +36,56 @@ namespace
 
   HANDLE OpenPipe(const std::wstring& name)
   {
-    if (WaitNamedPipe(name.c_str(), 1000))
+    if (WaitNamedPipe(name.c_str(), 5000))
       return CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
     return INVALID_HANDLE_VALUE;
+  }
+
+
+  std::string MarshalStrings(const std::vector<std::string>& strings)
+  {
+    // TODO: This is some pretty hacky marshalling, replace it with something more robust
+    std::string marshalledStrings;
+    for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
+      marshalledStrings += *it + ';';
+    return marshalledStrings;
+  }
+
+  std::vector<std::string> UnmarshalStrings(const std::string& message)
+  {
+    std::stringstream stream(message);
+    std::vector<std::string> strings;
+    std::string string;
+    while (std::getline(stream, string, ';'))
+        strings.push_back(string);
+    return strings;
+  }
+
+  std::string ReadMessage(HANDLE pipe)
+  {
+    std::stringstream stream;
+    std::auto_ptr<char> buffer(new char[bufferSize]);
+    bool hasError;
+    do
+    {
+      DWORD bytesRead;
+      hasError = !ReadFile(pipe, buffer.get(), bufferSize * sizeof(char), &bytesRead, 0);
+      if (hasError && GetLastError() != ERROR_MORE_DATA)
+      {
+        std::stringstream stream;
+        stream << "Error reading from pipe: " << GetLastError();
+        throw std::runtime_error(stream.str());
+      }
+      stream << std::string(buffer.get(), bytesRead);
+    } while (hasError);
+    return stream.str();
+  }
+
+  void WriteMessage(HANDLE pipe, const std::string& message)
+  {
+    DWORD bytesWritten;
+    if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
+      throw std::runtime_error("Failed to write to pipe");
   }
 
   HANDLE OpenAdblockPlusEnginePipe()
@@ -87,66 +134,23 @@ namespace
         DWORD error = GetLastError();
         throw std::runtime_error("Failed to start Adblock Plus Engine");
       }
-      // TODO: The engine needs some time to update its filters and create the pipe, but there should be a better way than Sleep()
-      Sleep(1000);
-      
       pipe = OpenPipe(pipeName);
       if (pipe == INVALID_HANDLE_VALUE)
         throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
+
     }
 
     DWORD mode = PIPE_READMODE_MESSAGE; 
     if (!SetNamedPipeHandleState(pipe, &mode, 0, 0)) 
        throw std::runtime_error("SetNamedPipeHandleState failed");
 
+    std::string initMessage = ReadMessage(pipe);
+    if (initMessage != "init")
+      throw std::runtime_error("Pipe initialization error");
+
     return pipe;
   }
 
-  std::string MarshalStrings(const std::vector<std::string>& strings)
-  {
-    // TODO: This is some pretty hacky marshalling, replace it with something more robust
-    std::string marshalledStrings;
-    for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
-      marshalledStrings += *it + ';';
-    return marshalledStrings;
-  }
-
-  std::vector<std::string> UnmarshalStrings(const std::string& message)
-  {
-    std::stringstream stream(message);
-    std::vector<std::string> strings;
-    std::string string;
-    while (std::getline(stream, string, ';'))
-        strings.push_back(string);
-    return strings;
-  }
-
-  std::string ReadMessage(HANDLE pipe)
-  {
-    std::stringstream stream;
-    std::auto_ptr<char> buffer(new char[bufferSize]);
-    bool hasError;
-    do
-    {
-      DWORD bytesRead;
-      hasError = !ReadFile(pipe, buffer.get(), bufferSize * sizeof(char), &bytesRead, 0);
-      if (hasError && GetLastError() != ERROR_MORE_DATA)
-      {
-        std::stringstream stream;
-        stream << "Error reading from pipe: " << GetLastError();
-        throw std::runtime_error(stream.str());
-      }
-      stream << std::string(buffer.get(), bytesRead);
-    } while (hasError);
-    return stream.str();
-  }
-
-  void WriteMessage(HANDLE pipe, const std::string& message)
-  {
-    DWORD bytesWritten;
-    if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
-      throw std::runtime_error("Failed to write to pipe");
-  }
 }
 
 CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
