@@ -9,6 +9,7 @@ default: ..\build\adblockplusie-en-us.msi
     light adblockplusie.wixobj -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $*.msi
 
 install:
+    # Doesn't work. MSI does not accept relative paths.
     msiexec /i ..\build\adblockplusie-en-us.msi /l*v install.log
 
 uninstall:
