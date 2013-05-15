@@ -141,7 +141,7 @@ std::wstring GetAppDataPath()
     HRESULT hr = SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, 0, &dataPath); 
     if (FAILED(hr))
       throw std::runtime_error("Unable to find app data directory");
-    wcscpy(appDataPath, dataPath);
+    wcscpy_s(appDataPath, dataPath);
     CoTaskMemFree(dataPath);
   }
   else //XP
@@ -166,6 +166,14 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
   if (WideCharToMultiByte(CP_UTF8, 0, dataPath.c_str(), dataPath.length(), &dataPathA[0], dataPathALength, 0, 0) < 0)
     throw std::runtime_error("Problem creating filter engine");
   ((AdblockPlus::DefaultFileSystem*)jsEngine->GetFileSystem().get())->SetBasePath(dataPathA);
+  try
+  {
+    AdblockPlus::FilterEngine* fe = new AdblockPlus::FilterEngine(jsEngine);
+  }
+  catch(std::exception e)
+  {
+    MessageBoxA(NULL, e.what(), "", MB_OK);
+  }
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
   std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
   AdblockPlus::SubscriptionPtr subscription = subscriptions[0];
@@ -176,12 +184,11 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
   SetCurrentDirectory(GetAppDataPath().c_str());
+  filterEngineMutex = CreateMutex(0, false, 0);
 
   //Load the Low Integrity security attributes
   SECURITY_ATTRIBUTES sa;
   memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
-
-  filterEngineMutex = INVALID_HANDLE_VALUE;
 
   //Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
   LPCWSTR LOW_INTEGRITY_SDDL_SACL_W = L"S:(ML;;NW;;;LW)";
@@ -196,6 +203,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
 
+  filterEngine.reset(0);
+
   for (;;)
   {
     HANDLE pipe = CreateNamedPipe(pipeName, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
@@ -205,7 +214,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       LogLastError("CreateNamedPipe failed");
       return 1;
     }
-
 
     if (!ConnectNamedPipe(pipe, 0))
     {
@@ -217,10 +225,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     if (filterEngine.get() == 0)
     {
       filterEngine = CreateFilterEngine();
-    }
-    if (filterEngineMutex == INVALID_HANDLE_VALUE)
-    {
-      filterEngineMutex = CreateMutex(0, false, 0);
     }
 
 

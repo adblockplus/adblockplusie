@@ -90,8 +90,11 @@ namespace
 
   HANDLE OpenAdblockPlusEnginePipe()
   {
+    HANDLE pipe = INVALID_HANDLE_VALUE;
+    try
+    {
     LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
-    HANDLE pipe = OpenPipe(pipeName);
+    pipe = OpenPipe(pipeName);
     if (pipe == INVALID_HANDLE_VALUE)
     {
       std::wstring engineExecutablePath = GetDllDirectory() + L"\\AdblockPlusEngine.exe";
@@ -134,7 +137,17 @@ namespace
         DWORD error = GetLastError();
         throw std::runtime_error("Failed to start Adblock Plus Engine");
       }
-      pipe = OpenPipe(pipeName);
+      UINT timeout = 5000;
+      UINT step = 10;
+      UINT curTime = 0;
+      pipe = INVALID_HANDLE_VALUE;
+      while ((pipe = OpenPipe(pipeName)) == INVALID_HANDLE_VALUE)
+      {
+        Sleep(10);
+        curTime += step;
+        if (curTime >= timeout)
+          break;
+      }
       if (pipe == INVALID_HANDLE_VALUE)
         throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
 
@@ -147,7 +160,11 @@ namespace
     std::string initMessage = ReadMessage(pipe);
     if (initMessage != "init")
       throw std::runtime_error("Pipe initialization error");
-
+    }
+    catch(std::exception e)
+    {
+      MessageBoxA(NULL, e.what(), "Exception", MB_OK);
+    }
     return pipe;
   }
 
