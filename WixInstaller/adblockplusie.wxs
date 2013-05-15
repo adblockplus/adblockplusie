@@ -97,12 +97,12 @@
         </ComponentGroup>
         <Property Id="ABP_APPDATA_FOLDER">
             <RegistrySearch Id="Registry_Read_ABP_AppData_Folder"
-                Root="HKCU" Key="SOFTWARE\Adblock Plus for IE"
+                Root="HKCU" Key="SOFTWARE\AdblockPlus"
                 Name="AppDataFolder" Type="raw"/>
         </Property>
         <Component Id="ABP_AppData_Folder.component" Directory="ABP_APPDATA_FOLDER">
             <RegistryValue
-                Root="HKCU" Key="SOFTWARE\Adblock Plus for IE"
+                Root="HKCU" Key="SOFTWARE\AdblockPlus"
                 Name="AppDataFolder" Type="string"
                 Value="[ABP_APPDATA_FOLDER]"/>
         </Component>
@@ -138,7 +138,7 @@
                 -->
                 <Directory Id="INSTALLFOLDER" Name="Adblock Plus for IE"></Directory>
                 <Directory Id="APP_DATA_FOLDER">
-                    <Directory Id="ABP_APPDATA_FOLDER" Name="Adblock Plus for IE">
+                    <Directory Id="ABP_APPDATA_FOLDER" Name="AdblockPlus">
                         <Directory Id="HTML_Folder" Name="html">
                         </Directory>
                     </Directory>
@@ -156,15 +156,50 @@
             This calls the entry point DLLRegisterServer to make registry entries.
             It is an expedient only; this mechanism create future problems
             http://stackoverflow.com/questions/364187/how-do-you-register-a-win32-com-dll-file-in-wix-3
+            
+            The present installer is a per-machine installer.
+            That means it writes to HKEY_LOCAL_MACHINE, so that all users on the machine will have the BHO installed.
+            It's possible to write keys to HKEY_CURRENT_USER in a situation where that's not desirable, if needed.
         -->
     	<ComponentGroup Id="Binaries" Directory="INSTALLFOLDER">
             <Component Id="AdblockPlus32.dll" Guid="a3f493f4-41fc-431a-9f5e-e0eba2f4d840">
-                <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Test\AdblockPlus.dll" KeyPath="yes" Checksum="yes" SelfRegCost="1"/>
+                <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Test\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
+                    <!--
+                        We're using a minimal registration model, with only the keys needed to enable function as a BHO.
+                        Notably missing:
+                            - LocalServer32.
+                              This is for out-of-process servers; a BHO is only an in-process one.
+                              Even though we're _also_ using an out-of-process server, there's not one in the BHO DLL.
+                            - AppID
+                              Needed for custom permissions, authentication, and generally for discoverable services.
+                              The DLL registers as a BHO directly by CLSID, without going through an AppId
+                            - ProgID
+                              A string alias for a CLSID.
+                              Again, the BHO registration is by CLSID; no need for an alias.
+                            - All the typelib entries. 
+                              These enable a dynamic languages to bind to the DLL, but IE doesn't need this.
+                            - The attribute "Class/@Programmable".
+                              It's used with ActiveX, which a BHO doesn't need.
+                        References:
+                            Minimal COM object registration  http://blogs.msdn.com/b/larryosterman/archive/2006/01/05/509731.aspx
+                            COM and Registry  http://mariusbancila.ro/blog/2010/06/01/com-and-registry/
+                    -->
+                    <!--
+                        The value "both" for ThreadingModel comes from the output of 'heat' on the compiled DLL.
+                    -->
+                    <Class Id="{FFCB3198-32F3-4E8B-9539-4324694ED664}"
+                        Description="Adblock Plus for IE Browser Helper Object"
+                        Context="InprocServer32" ThreadingModel="both"/>
+                </File>
+                <RegistryValue 
+                    Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
+                    Name="NoExplorer" 
+                    Value="1" Type="integer"/>
             </Component>
             <!--
                 The preferred way to deal with 32 vs. 64 bit platforms is with two different MSI.
                 The snippet below is copied from the Avast WiX source.
-                It uses a condition to install a 64 bit DLL in addition to the 32 bit one.
+                It uses an install-time condition to install a 64 bit DLL in addition to the 32 bit one.
 
                 <Component Id="Adblocker64.dll" Guid="a3f493f4-41fc-431a-9f5e-e0eba2f4d841">
                     <Condition><![CDATA[(VersionNT64)]]></Condition>
