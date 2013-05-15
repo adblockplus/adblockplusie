@@ -166,15 +166,16 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
   if (WideCharToMultiByte(CP_UTF8, 0, dataPath.c_str(), dataPath.length(), &dataPathA[0], dataPathALength, 0, 0) < 0)
     throw std::runtime_error("Problem creating filter engine");
   ((AdblockPlus::DefaultFileSystem*)jsEngine->GetFileSystem().get())->SetBasePath(dataPathA);
-  try
-  {
-    AdblockPlus::FilterEngine* fe = new AdblockPlus::FilterEngine(jsEngine);
-  }
-  catch(std::exception e)
-  {
-    MessageBoxA(NULL, e.what(), "", MB_OK);
-  }
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
+  int timeout = 5000;
+  while (!filterEngine->IsInitialized())
+  {
+    const int step = 10;
+    Sleep(step);
+    timeout -= step;
+    if (timeout <= 0)
+      throw std::runtime_error("Timeout while waiting for FilterEngine initialization");
+  }
   std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
   AdblockPlus::SubscriptionPtr subscription = subscriptions[0];
   subscription->AddToList();
@@ -183,7 +184,6 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-  SetCurrentDirectory(GetAppDataPath().c_str());
   filterEngineMutex = CreateMutex(0, false, 0);
 
   //Load the Low Integrity security attributes
