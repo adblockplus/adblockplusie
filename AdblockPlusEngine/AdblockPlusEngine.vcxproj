@@ -64,6 +64,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)AdBlocker\Debug Production\AdblockPlusEngine.exe</OutputFile>
+      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|Win32'">

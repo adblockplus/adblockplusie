@@ -124,15 +124,48 @@ std::wstring GetAppDataPath()
   wchar_t appDataPath[MAX_PATH];
   // TODO: Doesn't support all Windows versions like this. Also duplicated from CPluginSettings
   // TODO: This needs to be LocalLow, not Local, or we can't write to it
-  if (!SHGetSpecialFolderPath(0, appDataPath, CSIDL_LOCAL_APPDATA, true))
-    throw std::runtime_error("Unable to find app data directory");
-  return std::wstring(appDataPath) + L"\\AdblockPlusEngine";
+
+  OSVERSIONINFOEX osvi;
+
+  BOOL bOsVersionInfoEx;
+
+  ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+
+  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+  bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
+
+ 
+  if (osvi.dwMajorVersion >= 6) // Vista +?
+  {
+    WCHAR *dataPath;
+    HRESULT hr = SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, 0, &dataPath); 
+    if (FAILED(hr))
+      throw std::runtime_error("Unable to find app data directory");
+    wcscpy(appDataPath, dataPath);
+    CoTaskMemFree(dataPath);
+  }
+  else //XP
+  { 
+    if (!SHGetSpecialFolderPath(0, appDataPath, CSIDL_LOCAL_APPDATA, true))
+      throw std::runtime_error("Unable to find app data directory");
+  }
+  return std::wstring(appDataPath) + L"\\AdblockPlus";
 }
 
 std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
 {
-    // TODO: Pass the app info in
-  AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New();
+  AdblockPlus::AppInfo appInfo;
+  appInfo.name = "adblockplusie";
+  appInfo.version = "1";
+  appInfo.platform = "msie";  
+  AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New(appInfo);
+  std::wstring dataPath = GetAppDataPath();
+  int dataPathALength = WideCharToMultiByte(CP_UTF8, 0, dataPath.c_str(), dataPath.length(), 0, 0, 0, 0);
+  std::string dataPathA;
+  dataPathA.resize(dataPathALength);
+  if (WideCharToMultiByte(CP_UTF8, 0, dataPath.c_str(), dataPath.length(), &dataPathA[0], dataPathALength, 0, 0) < 0)
+    throw std::runtime_error("Problem creating filter engine");
+  ((AdblockPlus::DefaultFileSystem*)jsEngine->GetFileSystem().get())->SetBasePath(dataPathA);
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
   std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
   AdblockPlus::SubscriptionPtr subscription = subscriptions[0];
@@ -143,26 +176,28 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
   SetCurrentDirectory(GetAppDataPath().c_str());
-  filterEngine = CreateFilterEngine();
-  filterEngineMutex = CreateMutex(0, false, 0);
+
+  //Load the Low Integrity security attributes
+  SECURITY_ATTRIBUTES sa;
+  memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
+
+  filterEngineMutex = INVALID_HANDLE_VALUE;
+
+  //Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
+  LPCWSTR LOW_INTEGRITY_SDDL_SACL_W = L"S:(ML;;NW;;;LW)";
+  PSECURITY_DESCRIPTOR securitydescriptor;
+  //Yes, that's a function name
+  ConvertStringSecurityDescriptorToSecurityDescriptor(
+    LOW_INTEGRITY_SDDL_SACL_W, SDDL_REVISION_1, &securitydescriptor, 0);
+
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+  sa.lpSecurityDescriptor = securitydescriptor;
+  sa.bInheritHandle = TRUE;
+
+  LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
 
   for (;;)
   {
-    //Load the Low Integrity security attributes
-    SECURITY_ATTRIBUTES sa;
-    memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
-
-    //Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
-    LPCWSTR LOW_INTEGRITY_SDDL_SACL_W = L"S:(ML;;NW;;;LW)";
-    PSECURITY_DESCRIPTOR securitydescriptor;
-    //Yes, that's a function name
-    ConvertStringSecurityDescriptorToSecurityDescriptor(
-      LOW_INTEGRITY_SDDL_SACL_W, SDDL_REVISION_1, &securitydescriptor, 0);
-    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-    sa.lpSecurityDescriptor = securitydescriptor;
-    sa.bInheritHandle = TRUE;
-
-    LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
     HANDLE pipe = CreateNamedPipe(pipeName, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
                                   PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
     if (pipe == INVALID_HANDLE_VALUE)
@@ -171,6 +206,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       return 1;
     }
 
+
     if (!ConnectNamedPipe(pipe, 0))
     {
       LogLastError("Client failed to connect");
@@ -178,6 +214,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       continue;
     }
 
+    if (filterEngine.get() == 0)
+    {
+      filterEngine = CreateFilterEngine();
+    }
+    if (filterEngineMutex == INVALID_HANDLE_VALUE)
+    {
+      filterEngineMutex = CreateMutex(0, false, 0);
+    }
+
+
+    WriteMessage(pipe, "init");
     // TODO: Count established connections, kill the engine when there are none left
 
     HANDLE thread = CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0);
