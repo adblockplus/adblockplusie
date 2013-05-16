@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Compilation Note:
-    You may see the linking error LGHT0217 : Error executing ICE action 'ICExx' [...] The error code is 2738.
+    You may see linking errors that look like these: 
+        <quote>LGHT0217 : Error executing ICE action 'ICExx' [...] The error code is 2738.</quote>
     The documentation for this error code talks about custom actions,
-        even though there is not the CustomAction keyword present in this source.
-    Certain WiX elements are implemented by custom actions,
-        which means this source implicitly declares some custom actions.
+        even though the CustomAction keyword does not appear in this source.
+    Certain WiX elements are implemented by MSI custom actions,
+        which means this source implicitly declares some insofar as the Windows Installer sees it.
     These errors are benign and can be avoided by some fiddling with the registry on the development machine.
     See http://wix.sourceforge.net/faq.html#Error217
 -->
+
+<!-- 
+    sys.BUILDARCH is set by the command line argument '-arch'.
+    The default value to "x86"
+-->
+<?if $(sys.BUILDARCH)="x86"?>
+    <?define Minimum_Version="100"?>
+    <?define Program_Files="ProgramFilesFolder"?>
+<?elseif $(sys.BUILDARCH)="x64"?>
+    <?define Minimum_Version="200"?>
+    <?define Program_Files="ProgramFiles64Folder"?>
+<?else?>
+    <?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
+<?endif?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Product Name="!(loc.ProductName)"
         Manufacturer="Eyeo GmbH"
@@ -21,7 +37,7 @@
             Keywords="!(loc.Keywords)"
             Description="!(loc.Description)"
             Comments="!(loc.Comments)"
-            InstallerVersion="100"
+            InstallerVersion="$(var.Minimum_Version)"
             Languages="!(loc.LANG)" SummaryCodepage="!(loc.CODEPAGE)"
             Compressed="yes"
             InstallScope="perMachine" InstallPrivileges="elevated"
@@ -124,7 +140,7 @@
             The top-level directory structure.
         -->
     	<Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="ProgramFilesFolder">
+            <Directory Id="$(var.Program_Files)">
                 <!--
                     INSTALLFOLDER is within ProgramFilesFolder, which is a protected directory.
                     As a result, this installer requires elevated permissions to operate.
