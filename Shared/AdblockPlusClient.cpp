@@ -8,6 +8,7 @@
 #include "PluginHttpRequest.h"
 #include "PluginMutex.h"
 #include "PluginClass.h"
+#include "PluginUtil.h"
 
 #include "AdblockPlusClient.h"
 
@@ -45,15 +46,6 @@ namespace
     AutoHandle(const AutoHandle& autoHandle);
     AutoHandle& operator=(const AutoHandle& autoHandle);
   };
-
-  std::wstring GetDllDirectory()
-  {
-    wchar_t buffer[MAX_PATH];
-    GetModuleFileName(reinterpret_cast<HINSTANCE>(&__ImageBase), buffer, MAX_PATH);
-    std::wstring modulePath(buffer);
-    int lastSeparator = modulePath.find_last_of(L"\\");
-    return modulePath.substr(0, lastSeparator);
-  }
 
   HANDLE OpenPipe(const std::wstring& name)
   {
@@ -110,7 +102,7 @@ namespace
 
   void SpawnAdblockPlusEngine()
   {
-    std::wstring engineExecutablePath = GetDllDirectory() + L"\\AdblockPlusEngine.exe";
+    std::wstring engineExecutablePath = DllDir() + L"AdblockPlusEngine.exe";
     STARTUPINFO startupInfo = {};
     PROCESS_INFORMATION processInformation = {};
 
