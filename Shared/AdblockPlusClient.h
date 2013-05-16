@@ -4,7 +4,7 @@
 
 #include "PluginTypedef.h"
 #include "PluginClientBase.h"
-#include <AdblockPlus.h>
+#include "AdblockPlus.h"
 
 
 using namespace AdblockPlus;
@@ -18,9 +18,6 @@ private:
 
   std::auto_ptr<CPluginFilter> m_filter;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
-  HWND adblockPlusEngineRequestWindow;
-  HWND adblockPlusEngineResponseWindow;
-  std::wstring adblockPlusEngineResponseWindowName;
 
   CComAutoCriticalSection m_criticalSectionFilter;
   CComAutoCriticalSection m_criticalSectionCache;
@@ -38,7 +35,6 @@ public:
   ~CAdblockPlusClient();
 
   static CAdblockPlusClient* GetInstance();
-
 
   // Removes the url from the list of whitelisted urls if present
   // Only called from ui thread
