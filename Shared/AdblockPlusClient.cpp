@@ -13,17 +13,38 @@
 
 namespace
 {
-  // TODO: bufferSize, ReadMessage, WriteMessage, MarshalStrings and UnmarshalStrings are duplicated in AdblockPlusEngine
+  // TODO: bufferSize, AutoHandle, ReadMessage, WriteMessage, MarshalStrings and UnmarshalStrings are duplicated in AdblockPlusEngine
 
   const int bufferSize = 1024;
 
-  LPCWSTR ToWideString(LPCSTR value)
+  class AutoHandle
   {
-    int size = MultiByteToWideChar(CP_UTF8, 0, value, -1, 0, 0);
-    wchar_t* converted = new wchar_t[size];
-    MultiByteToWideChar(CP_UTF8, 0, value, -1, converted, size);
-    return converted;
-  }
+  public:
+    AutoHandle()
+    {
+    }
+
+    AutoHandle(HANDLE handle) : handle(handle)
+    {
+    }
+
+    ~AutoHandle()
+    {
+      CloseHandle(handle);
+    }
+
+    HANDLE get()
+    {
+      return handle;
+    }
+
+  private:
+    HANDLE handle;
+    static int references;
+
+    AutoHandle(const AutoHandle& autoHandle);
+    AutoHandle& operator=(const AutoHandle& autoHandle);
+  };
 
   std::wstring GetDllDirectory()
   {
@@ -40,7 +61,6 @@ namespace
       return CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
     return INVALID_HANDLE_VALUE;
   }
-
 
   std::string MarshalStrings(const std::vector<std::string>& strings)
   {
@@ -88,74 +108,50 @@ namespace
       throw std::runtime_error("Failed to write to pipe");
   }
 
+  void SpawnAdblockPlusEngine()
+  {
+    std::wstring engineExecutablePath = GetDllDirectory() + L"\\AdblockPlusEngine.exe";
+    STARTUPINFO startupInfo = {};
+    PROCESS_INFORMATION processInformation = {};
+
+    HANDLE token;
+    OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT | TOKEN_QUERY | TOKEN_ASSIGN_PRIMARY, &token);
+    HANDLE newToken;
+    DuplicateTokenEx(token, 0, 0, SecurityImpersonation, TokenPrimary, &newToken);
+
+    if (!CreateProcessAsUser(newToken, 0, const_cast<wchar_t*>(engineExecutablePath.c_str()), 0, 0, 0, 0, 0, 0,
+                              &startupInfo, &processInformation))
+    {
+      DWORD error = GetLastError();
+      throw std::runtime_error("Failed to start Adblock Plus Engine");
+    }
+  }
+
   HANDLE OpenAdblockPlusEnginePipe()
   {
     HANDLE pipe = INVALID_HANDLE_VALUE;
     try
     {
-    LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
-    pipe = OpenPipe(pipeName);
-    if (pipe == INVALID_HANDLE_VALUE)
-    {
-      std::wstring engineExecutablePath = GetDllDirectory() + L"\\AdblockPlusEngine.exe";
-      STARTUPINFO startupInfo = {};
-      PROCESS_INFORMATION processInformation = {};
-
-      BOOL                  fRet;
-      HANDLE                hToken        = NULL;
-      HANDLE                hNewToken     = NULL;
-
-      fRet = OpenProcessToken(GetCurrentProcess(),
-                              TOKEN_DUPLICATE |
-                              TOKEN_ADJUST_DEFAULT |
-                              TOKEN_QUERY |
-                              TOKEN_ASSIGN_PRIMARY,
-                              &hToken);
-
-
-      fRet = DuplicateTokenEx(hToken,
-                              0,
-                              NULL,
-                              SecurityImpersonation,
-                              TokenPrimary,
-                              &hNewToken);
-
-
-      // Create the FilterEngine process with the same integrity
-      if (!CreateProcessAsUser(hNewToken,
-                                NULL,
-                                (LPWSTR)engineExecutablePath.c_str(),
-                                NULL,
-                                NULL,
-                                FALSE,
-                                0,
-                                NULL,
-                                NULL,
-                                &startupInfo,
-                                &processInformation))
-      {
-        DWORD error = GetLastError();
-        throw std::runtime_error("Failed to start Adblock Plus Engine");
-      }
-      UINT timeout = 5000;
-      UINT step = 10;
-      UINT curTime = 0;
-      pipe = INVALID_HANDLE_VALUE;
-      while ((pipe = OpenPipe(pipeName)) == INVALID_HANDLE_VALUE)
-      {
-        Sleep(10);
-        curTime += step;
-        if (curTime >= timeout)
-          break;
-      }
+      LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
+      pipe = OpenPipe(pipeName);
       if (pipe == INVALID_HANDLE_VALUE)
-        throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
+      {
+        SpawnAdblockPlusEngine();
 
-    }
+        int timeout = 5000;
+        while ((pipe = OpenPipe(pipeName)) == INVALID_HANDLE_VALUE)
+        {
+          const int step = 10;
+          Sleep(step);
+          timeout -= step;
+          if (timeout <= 0)
+            throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
+        }
+      }
 
-    DWORD mode = PIPE_READMODE_MESSAGE; 
-    if (!SetNamedPipeHandleState(pipe, &mode, 0, 0)) 
-       throw std::runtime_error("SetNamedPipeHandleState failed");
+      DWORD mode = PIPE_READMODE_MESSAGE; 
+      if (!SetNamedPipeHandleState(pipe, &mode, 0, 0)) 
+         throw std::runtime_error("SetNamedPipeHandleState failed");
     }
     catch(std::exception e)
     {
@@ -163,7 +159,6 @@ namespace
     }
     return pipe;
   }
-
 }
 
 CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
@@ -298,25 +293,14 @@ int CAdblockPlusClient::GetIEVersion()
 
 std::string CallAdblockPlusEngineProcedure(const std::string& name, const std::vector<std::string>& args)
 {
-  // TODO: Use an RAII wrapper for the pipe handle
-  HANDLE pipe = OpenAdblockPlusEnginePipe();
-
-  try
-  {
-    std::vector<std::string> strings;
-    strings.push_back(name);
-    for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); it++)
-      strings.push_back(*it);
-    WriteMessage(pipe, MarshalStrings(strings));
-    std::string response = ReadMessage(pipe);
-    CloseHandle(pipe);
-    return response;
-  }
-  catch (const std::exception& e)
-  {
-    CloseHandle(pipe);
-    throw e;
-  }
+  AutoHandle pipe(OpenAdblockPlusEnginePipe());
+  std::vector<std::string> strings;
+  strings.push_back(name);
+  for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); it++)
+    strings.push_back(*it);
+  WriteMessage(pipe.get(), MarshalStrings(strings));
+  std::string response = ReadMessage(pipe.get());
+  return response;
 }
 
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
@@ -333,7 +317,7 @@ bool CAdblockPlusClient::Matches(const std::string& url, const std::string& cont
   }
   catch (const std::exception& e)
   {
-    DEBUG_GENERAL(ToWideString(e.what()));
+    DEBUG_GENERAL(e.what());
     return false;
   }
 }
@@ -350,7 +334,7 @@ std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(std::stri
   }
   catch (const std::exception& e)
   {
-    DEBUG_GENERAL(ToWideString(e.what()));
+    DEBUG_GENERAL(e.what());
     return std::vector<std::string>();
   }
 }
