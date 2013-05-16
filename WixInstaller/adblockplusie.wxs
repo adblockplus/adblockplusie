@@ -32,16 +32,9 @@
         <!--
             User interface
         -->
-        <UIRef Id="WixUI_InstallDir"/>
+        <UIRef Id="custom_WixUI_InstallDir"/>
         <UIRef Id="WixUI_ErrorProgressText"/>
         <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
-        <!--
-            Redefine this variable on the 'light' command line with argument '-d' to localize.
-
-            RTF is a binary format, which is suboptimal in many ways.
-            It's also, however, the format required for the dialog box.
-        -->
-        <WixVariable Id="WixUILicenseRtf" Value="license.rtf"/>
 
         <!--
             We have only a single feature, since there aren't any optional parts.
