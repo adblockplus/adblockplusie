@@ -6,12 +6,12 @@
     The license and further copyright text can be found in the file
     LICENSE.TXT at the root directory of the distribution.
   </copyright>
+  Modified to remove license dialog. 
 -->
 
 <!--
 First-time install dialog sequence:
  - WixUI_WelcomeDlg
- - WixUI_LicenseAgreementDlg
  - WixUI_InstallDirDlg
  - WixUI_VerifyReadyDlg
  - WixUI_DiskCostDlg
