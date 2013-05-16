@@ -12,6 +12,35 @@ namespace
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
   HANDLE filterEngineMutex;
 
+  class AutoHandle
+  {
+  public:
+    AutoHandle()
+    {
+    }
+
+    AutoHandle(HANDLE handle) : handle(handle)
+    {
+    }
+
+    ~AutoHandle()
+    {
+      CloseHandle(handle);
+    }
+
+    HANDLE get()
+    {
+      return handle;
+    }
+
+  private:
+    HANDLE handle;
+    static int references;
+
+    AutoHandle(const AutoHandle& autoHandle);
+    AutoHandle& operator=(const AutoHandle& autoHandle);
+  };
+
   void Log(const std::string& message)
   {
     // TODO: Log to a log file
@@ -49,12 +78,14 @@ namespace
     return strings;
   }
 
-  LPCWSTR ToWideString(LPCSTR value)
+  std::string ToString(std::wstring value)
   {
-    int size = MultiByteToWideChar(CP_UTF8, 0, value, -1, 0, 0);
-    wchar_t* converted = new wchar_t[size];
-    MultiByteToWideChar(CP_UTF8, 0, value, -1, converted, size);
-    return converted;
+    int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, 0, 0, 0, 0);
+    char* converted = new char[size];
+    WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, converted, size, 0, 0);
+    std::string string(converted);
+    delete converted;
+    return string;
   }
 
   std::string ReadMessage(HANDLE pipe)
@@ -119,32 +150,27 @@ namespace
   }
 }
 
+bool IsWindowsVistaOrLater()
+{
+  OSVERSIONINFOEX osvi;
+  ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+  GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(&osvi));
+  return osvi.dwMajorVersion >= 6;
+}
+
 std::wstring GetAppDataPath()
 {
   wchar_t appDataPath[MAX_PATH];
-  // TODO: Doesn't support all Windows versions like this. Also duplicated from CPluginSettings
-  // TODO: This needs to be LocalLow, not Local, or we can't write to it
-
-  OSVERSIONINFOEX osvi;
-
-  BOOL bOsVersionInfoEx;
-
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-  bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
-
- 
-  if (osvi.dwMajorVersion >= 6) // Vista +?
+  if (IsWindowsVistaOrLater())
   {
-    WCHAR *dataPath;
-    HRESULT hr = SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, 0, &dataPath); 
-    if (FAILED(hr))
+    WCHAR* dataPath;
+    if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, 0, &dataPath)))
       throw std::runtime_error("Unable to find app data directory");
     wcscpy_s(appDataPath, dataPath);
     CoTaskMemFree(dataPath);
   }
-  else //XP
+  else
   { 
     if (!SHGetSpecialFolderPath(0, appDataPath, CSIDL_LOCAL_APPDATA, true))
       throw std::runtime_error("Unable to find app data directory");
@@ -154,18 +180,10 @@ std::wstring GetAppDataPath()
 
 std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
 {
-  AdblockPlus::AppInfo appInfo;
-  appInfo.name = "adblockplusie";
-  appInfo.version = "1";
-  appInfo.platform = "msie";  
-  AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New(appInfo);
-  std::wstring dataPath = GetAppDataPath();
-  int dataPathALength = WideCharToMultiByte(CP_UTF8, 0, dataPath.c_str(), dataPath.length(), 0, 0, 0, 0);
-  std::string dataPathA;
-  dataPathA.resize(dataPathALength);
-  if (WideCharToMultiByte(CP_UTF8, 0, dataPath.c_str(), dataPath.length(), &dataPathA[0], dataPathALength, 0, 0) < 0)
-    throw std::runtime_error("Problem creating filter engine");
-  ((AdblockPlus::DefaultFileSystem*)jsEngine->GetFileSystem().get())->SetBasePath(dataPathA);
+  // TODO: Pass appInfo in, which should be sent by the client
+  AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New();
+  std::string dataPath = ToString(GetAppDataPath());
+  dynamic_cast<AdblockPlus::DefaultFileSystem*>(jsEngine->GetFileSystem().get())->SetBasePath(dataPath);
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
   int timeout = 5000;
   while (!filterEngine->IsInitialized())
@@ -182,33 +200,33 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
   return filterEngine;
 }
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+HANDLE CreatePipe(const std::wstring& pipeName)
 {
-  filterEngineMutex = CreateMutex(0, false, 0);
-
-  //Load the Low Integrity security attributes
   SECURITY_ATTRIBUTES sa;
   memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
+  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 
-  //Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
+  // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
   LPCWSTR LOW_INTEGRITY_SDDL_SACL_W = L"S:(ML;;NW;;;LW)";
   PSECURITY_DESCRIPTOR securitydescriptor;
-  //Yes, that's a function name
   ConvertStringSecurityDescriptorToSecurityDescriptor(
     LOW_INTEGRITY_SDDL_SACL_W, SDDL_REVISION_1, &securitydescriptor, 0);
 
-  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
   sa.lpSecurityDescriptor = securitydescriptor;
   sa.bInheritHandle = TRUE;
 
-  LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
+  return CreateNamedPipe(pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                         PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
+}
 
-  filterEngine.reset(0);
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+  filterEngine = CreateFilterEngine();
+  filterEngineMutex = CreateMutex(0, false, 0);
 
   for (;;)
   {
-    HANDLE pipe = CreateNamedPipe(pipeName, PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                                  PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
+    HANDLE pipe = CreatePipe(L"\\\\.\\pipe\\adblockplusengine");
     if (pipe == INVALID_HANDLE_VALUE)
     {
       LogLastError("CreateNamedPipe failed");
@@ -222,22 +240,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       continue;
     }
 
-    if (filterEngine.get() == 0)
-    {
-      filterEngine = CreateFilterEngine();
-    }
-
-
-    WriteMessage(pipe, "init");
     // TODO: Count established connections, kill the engine when there are none left
 
-    HANDLE thread = CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0);
-    if (!thread)
+    AutoHandle thread(CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0));
+    if (!thread.get())
     {
       LogLastError("CreateThread failed");
       return 1;
     }
-    CloseHandle(thread);
   }
 
   return 0;

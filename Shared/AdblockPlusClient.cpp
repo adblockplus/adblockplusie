@@ -13,7 +13,7 @@
 
 namespace
 {
-  // TODO: bufferSize, ToWideString, ReadMessage, WriteMessage, MarshalStrings and UnmarshalStrings are duplicated in AdblockPlusEngine
+  // TODO: bufferSize, ReadMessage, WriteMessage, MarshalStrings and UnmarshalStrings are duplicated in AdblockPlusEngine
 
   const int bufferSize = 1024;
 
@@ -156,10 +156,6 @@ namespace
     DWORD mode = PIPE_READMODE_MESSAGE; 
     if (!SetNamedPipeHandleState(pipe, &mode, 0, 0)) 
        throw std::runtime_error("SetNamedPipeHandleState failed");
-
-    std::string initMessage = ReadMessage(pipe);
-    if (initMessage != "init")
-      throw std::runtime_error("Pipe initialization error");
     }
     catch(std::exception e)
     {
