@@ -121,11 +121,10 @@ namespace
 
   HANDLE OpenAdblockPlusEnginePipe()
   {
-    HANDLE pipe = INVALID_HANDLE_VALUE;
     try
     {
       LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
-      pipe = OpenPipe(pipeName);
+      HANDLE pipe = OpenPipe(pipeName);
       if (pipe == INVALID_HANDLE_VALUE)
       {
         SpawnAdblockPlusEngine();
@@ -144,12 +143,14 @@ namespace
       DWORD mode = PIPE_READMODE_MESSAGE; 
       if (!SetNamedPipeHandleState(pipe, &mode, 0, 0)) 
          throw std::runtime_error("SetNamedPipeHandleState failed");
+
+      return pipe;
     }
     catch(std::exception e)
     {
-      MessageBoxA(NULL, e.what(), "Exception", MB_OK);
+      DEBUG_GENERAL(e.what());
+      return INVALID_HANDLE_VALUE;
     }
-    return pipe;
   }
 }
 
