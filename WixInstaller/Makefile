@@ -5,8 +5,10 @@
 
 default: ..\build\adblockplusie-en-us.msi
 
-..\build\adblockplusie-en-us.msi: adblockplusie.wixobj "..\build\ia32\Release Test\AdblockPlus.dll"
-    light adblockplusie.wixobj -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $*.msi
+OBJ = adblockplusie.wixobj custom_WixUI_InstallDir.wixobj 
+
+..\build\adblockplusie-en-us.msi: $(OBJ) "..\build\ia32\Release Test\AdblockPlus.dll"
+    light -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $*.msi $(OBJ)
 
 install:
     # Doesn't work. MSI does not accept relative paths.
