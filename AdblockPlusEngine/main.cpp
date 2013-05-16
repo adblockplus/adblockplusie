@@ -8,6 +8,7 @@
 
 namespace
 {
+  const std::wstring pipeName = L"\\\\.\\pipe\\adblockplusengine";
   const int bufferSize = 1024;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
   HANDLE filterEngineMutex;
@@ -195,6 +196,8 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
       throw std::runtime_error("Timeout while waiting for FilterEngine initialization");
   }
   std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
+  // TODO: Select a subscription based on the language, not just the first one.
+  //       This should ideally be done in libadblockplus.
   AdblockPlus::SubscriptionPtr subscription = subscriptions[0];
   subscription->AddToList();
   return filterEngine;
@@ -226,7 +229,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   for (;;)
   {
-    HANDLE pipe = CreatePipe(L"\\\\.\\pipe\\adblockplusengine");
+    HANDLE pipe = CreatePipe(pipeName);
     if (pipe == INVALID_HANDLE_VALUE)
     {
       LogLastError("CreateNamedPipe failed");
@@ -240,7 +243,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       continue;
     }
 
-    // TODO: Count established connections, kill the engine when there are none left
+    // TODO: Count established connections, kill the engine when none are left
 
     AutoHandle thread(CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0));
     if (!thread.get())

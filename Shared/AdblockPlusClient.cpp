@@ -14,8 +14,10 @@
 
 namespace
 {
-  // TODO: bufferSize, AutoHandle, ReadMessage, WriteMessage, MarshalStrings and UnmarshalStrings are duplicated in AdblockPlusEngine
+  // TODO: pipeName, bufferSize, AutoHandle, ReadMessage, WriteMessage, MarshalStrings and UnmarshalStrings are
+  //       duplicated in AdblockPlusEngine. We should find a way to reuse them.
 
+  const std::wstring pipeName = L"\\\\.\\pipe\\adblockplusengine";
   const int bufferSize = 1024;
 
   class AutoHandle
@@ -46,13 +48,6 @@ namespace
     AutoHandle(const AutoHandle& autoHandle);
     AutoHandle& operator=(const AutoHandle& autoHandle);
   };
-
-  HANDLE OpenPipe(const std::wstring& name)
-  {
-    if (WaitNamedPipe(name.c_str(), 5000))
-      return CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-    return INVALID_HANDLE_VALUE;
-  }
 
   std::string MarshalStrings(const std::vector<std::string>& strings)
   {
@@ -100,6 +95,13 @@ namespace
       throw std::runtime_error("Failed to write to pipe");
   }
 
+  HANDLE OpenPipe(const std::wstring& name)
+  {
+    if (WaitNamedPipe(name.c_str(), 5000))
+      return CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    return INVALID_HANDLE_VALUE;
+  }
+
   void SpawnAdblockPlusEngine()
   {
     std::wstring engineExecutablePath = DllDir() + L"AdblockPlusEngine.exe";
@@ -112,7 +114,7 @@ namespace
     DuplicateTokenEx(token, 0, 0, SecurityImpersonation, TokenPrimary, &newToken);
 
     if (!CreateProcessAsUser(newToken, 0, const_cast<wchar_t*>(engineExecutablePath.c_str()), 0, 0, 0, 0, 0, 0,
-                              &startupInfo, &processInformation))
+                             &startupInfo, &processInformation))
     {
       DWORD error = GetLastError();
       throw std::runtime_error("Failed to start Adblock Plus Engine");
@@ -123,7 +125,6 @@ namespace
   {
     try
     {
-      LPCWSTR pipeName = L"\\\\.\\pipe\\adblockplusengine";
       HANDLE pipe = OpenPipe(pipeName);
       if (pipe == INVALID_HANDLE_VALUE)
       {
@@ -292,8 +293,7 @@ std::string CallAdblockPlusEngineProcedure(const std::string& name, const std::v
   for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); it++)
     strings.push_back(*it);
   WriteMessage(pipe.get(), MarshalStrings(strings));
-  std::string response = ReadMessage(pipe.get());
-  return response;
+  return ReadMessage(pipe.get());
 }
 
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
