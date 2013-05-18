@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <!--
+        We're using a minimal registration model, with only the keys needed to enable function as a BHO.
+        Notably missing:
+            - LocalServer32.
+              This is for out-of-process servers; a BHO is only an in-process one.
+              Even though we're _also_ using an out-of-process server, there's not one in the BHO DLL.
+            - AppID
+              Needed for custom permissions, authentication, and generally for discoverable services.
+              The DLL registers as a BHO directly by CLSID, without going through an AppId
+            - ProgID
+              A string alias for a CLSID.
+              Again, the BHO registration is by CLSID; no need for an alias.
+            - All the typelib entries. 
+              These enable a dynamic languages to bind to the DLL, but IE doesn't need this.
+            - The attribute "Class/@Programmable".
+              It's used with ActiveX, which a BHO doesn't need.
+        References:
+            Minimal COM object registration  http://blogs.msdn.com/b/larryosterman/archive/2006/01/05/509731.aspx
+            COM and Registry  http://mariusbancila.ro/blog/2010/06/01/com-and-registry/
+    -->
+    <!--
+        The value "both" for ThreadingModel comes from the output of 'heat' on the compiled DLL.
+    -->
+    <Class Id="{FFCB3198-32F3-4E8B-9539-4324694ED664}"
+        Description="Adblock Plus for IE Browser Helper Object"
+        Context="InprocServer32" ThreadingModel="both"/>
+</Include>

@@ -162,10 +162,6 @@
             Therefore, for 64-bit platforms we must install both the 64-bit plugin as well as the 32-bit one.
             For 32-bit platforms, we only need the 32-bit one.
             
-            For registering the 32-bit DLL on a 64-bit system, we don't need to put in the "Wow6432Node" registry key explicitly.
-            Something in Windows Installer takes care of the mapping transparently.
-            We don't need to do anything about it ourselves.
-
             The DLL images are taken directly from the build directory.
             There's no parameter as yet for building an unsigned development version vs. a signed release version.
 
@@ -183,61 +179,30 @@
             -->
             <Component Id="AdblockPlus32.dll" Win64="no">
                 <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Test\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
-                    <!--
-                        We're using a minimal registration model, with only the keys needed to enable function as a BHO.
-                        Notably missing:
-                            - LocalServer32.
-                              This is for out-of-process servers; a BHO is only an in-process one.
-                              Even though we're _also_ using an out-of-process server, there's not one in the BHO DLL.
-                            - AppID
-                              Needed for custom permissions, authentication, and generally for discoverable services.
-                              The DLL registers as a BHO directly by CLSID, without going through an AppId
-                            - ProgID
-                              A string alias for a CLSID.
-                              Again, the BHO registration is by CLSID; no need for an alias.
-                            - All the typelib entries. 
-                              These enable a dynamic languages to bind to the DLL, but IE doesn't need this.
-                            - The attribute "Class/@Programmable".
-                              It's used with ActiveX, which a BHO doesn't need.
-                        References:
-                            Minimal COM object registration  http://blogs.msdn.com/b/larryosterman/archive/2006/01/05/509731.aspx
-                            COM and Registry  http://mariusbancila.ro/blog/2010/06/01/com-and-registry/
-                    -->
-                    <!--
-                        The value "both" for ThreadingModel comes from the output of 'heat' on the compiled DLL.
-                    -->
-                    <Class Id="{FFCB3198-32F3-4E8B-9539-4324694ED664}"
-                        Description="Adblock Plus for IE Browser Helper Object"
-                        Context="InprocServer32" ThreadingModel="both"/>
+                    <?include dll_class.wxi ?>
                 </File>
-                <RegistryKey 
-                    Root="HKLM" 
-                    Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects">
-                    <RegistryValue 
-                        Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
-                        Name="NoExplorer" 
-                        Value="1" Type="integer"/>
-                </RegistryKey>
+                <?include bho_registry_value.wxi ?>
             </Component>
             <!--
                 The 64-bit version of the DLL is only included in the 64-bit installer. 
-                We don't really need an explicit value for attribute @Win64, but it's there for resilience. 
+                We don't really need an explicit value for attribute @Win64, but it's there for resilience.
+                
+                Note that the <Class> element and the <RegistryKey> element are duplicated from the 32-bit version.
+                We use "include" directives to ensure that they are identical.                
+                They have to be the same to support both the 32- and 64-bit versions of Internet Explorer on a 64-bit system.
+                IE uses the same algorithm to search for BHO regardless of platform,
+                    so with two versions of IE, we need two identical registrations.
+                The 32-bit version on a 64-bit system will be registered under "Wow6432Node" translated keys,
+                    while the 64-bit version will be under the keys as they appear in this source, not translated.
+                We don't need to put in the "Wow6432Node" registry key explicitly;
+                    something in Windows Installer takes care of the mapping transparently.
             -->
             <?if $(sys.BUILDARCH)="x64"?>
                 <Component Id="AdblockPlus64.dll" Win64="yes">
                     <File Id="AdblockPlus64.dll" Source="..\build\x64\Release Test\AdblockPlusx64.dll" KeyPath="yes" Checksum="yes">
-                        <Class Id="{FFCB3198-32F3-4E8B-9539-4324694ED664}"
-                            Description="Adblock Plus for IE Browser Helper Object"
-                            Context="InprocServer32" ThreadingModel="both"/>
+                        <?include dll_class.wxi ?>
                     </File>
-                    <RegistryKey 
-                        Root="HKLM" 
-                        Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects">
-                        <RegistryValue 
-                            Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
-                            Name="NoExplorer" 
-                            Value="1" Type="integer"/>
-                    </RegistryKey>
+                    <?include bho_registry_value.wxi ?>
                 </Component>
             <?endif?>
     	</ComponentGroup>

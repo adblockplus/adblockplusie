@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <RegistryKey
+        Root="HKLM" 
+        Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects">
+        <RegistryValue 
+            Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
+            Name="NoExplorer" 
+            Value="1" Type="integer"/>
+    </RegistryKey>
+</Include>
