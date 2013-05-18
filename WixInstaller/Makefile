@@ -66,9 +66,9 @@ $(Installer_x64): $(objects_x64) "..\build\x64\Release Test\AdblockPlusx64.dll"
 # msiexec .msi --> installed --> uninstalled
 #---------------------
 
-install-ia32:
+install-ia32: $(Installer_ia32)
     # Doesn't work. MSI does not accept relative paths.
-    msiexec /i $@R.msi /l*v install.log
+    msiexec /i $(**R).msi /l*v install.log
 
 uninstall:
     msiexec /x ..\build\adblockplusie-en-us.msi

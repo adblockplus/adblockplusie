@@ -157,21 +157,31 @@
 
         <!--
             The Binaries component group contains the DLL's.
+            64-bit versions of Windows ship with both 32-bit and 64-bit versions of Internet Explorer.
+            Each of these versions hosts only its own bit-size objects.
+            Therefore, for 64-bit platforms we must install both the 64-bit plugin as well as the 32-bit one.
+            For 32-bit platforms, we only need the 32-bit one.
+            
+            For registering the 32-bit DLL on a 64-bit system, we don't need to put in the "Wow6432Node" registry key explicitly.
+            Something in Windows Installer takes care of the mapping transparently.
+            We don't need to do anything about it ourselves.
 
-            The DLL image is found directly in the build directory.
+            The DLL images are taken directly from the build directory.
             There's no parameter as yet for building an unsigned development version vs. a signed release version.
 
-            Note the use of SelfRegCost.
-            This calls the entry point DLLRegisterServer to make registry entries.
-            It is an expedient only; this mechanism create future problems
-            http://stackoverflow.com/questions/364187/how-do-you-register-a-win32-com-dll-file-in-wix-3
+            Note: We do not use SelfRegCost, which calls the entry point DLLRegisterServer to make registry entries.
+            See http://stackoverflow.com/questions/364187/how-do-you-register-a-win32-com-dll-file-in-wix-3
             
             The present installer is a per-machine installer.
             That means it writes to HKEY_LOCAL_MACHINE, so that all users on the machine will have the BHO installed.
             It's possible to write keys to HKEY_CURRENT_USER in a situation where that's not desirable, if needed.
         -->
     	<ComponentGroup Id="Binaries" Directory="INSTALLFOLDER">
-            <Component Id="AdblockPlus32.dll" Guid="a3f493f4-41fc-431a-9f5e-e0eba2f4d840">
+            <!--
+                The 32-bit version of the DLL is included in both 32- and 64-bit installers. 
+                We need an explicit value for attribute @Win64 so that the ARCH argument does not override its implicit value. 
+            -->
+            <Component Id="AdblockPlus32.dll" Win64="no">
                 <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Test\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
                     <!--
                         We're using a minimal registration model, with only the keys needed to enable function as a BHO.
@@ -200,21 +210,36 @@
                         Description="Adblock Plus for IE Browser Helper Object"
                         Context="InprocServer32" ThreadingModel="both"/>
                 </File>
-                <RegistryValue 
-                    Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects\{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
-                    Name="NoExplorer" 
-                    Value="1" Type="integer"/>
+                <RegistryKey 
+                    Root="HKLM" 
+                    Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects">
+                    <RegistryValue 
+                        Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
+                        Name="NoExplorer" 
+                        Value="1" Type="integer"/>
+                </RegistryKey>
             </Component>
             <!--
-                The preferred way to deal with 32 vs. 64 bit platforms is with two different MSI.
-                The snippet below is copied from the Avast WiX source.
-                It uses an install-time condition to install a 64 bit DLL in addition to the 32 bit one.
-
-                <Component Id="Adblocker64.dll" Guid="a3f493f4-41fc-431a-9f5e-e0eba2f4d841">
-                    <Condition><![CDATA[(VersionNT64)]]></Condition>
-                    <File Id="adblocker64.dll" Source="..\..\ABP\Signed\Adblocker64.dll" KeyPath="yes" Checksum="yes" SelfRegCost="1"/>
-                </Component>
+                The 64-bit version of the DLL is only included in the 64-bit installer. 
+                We don't really need an explicit value for attribute @Win64, but it's there for resilience. 
             -->
+            <?if $(sys.BUILDARCH)="x64"?>
+                <Component Id="AdblockPlus64.dll" Win64="yes">
+                    <File Id="AdblockPlus64.dll" Source="..\build\x64\Release Test\AdblockPlusx64.dll" KeyPath="yes" Checksum="yes">
+                        <Class Id="{FFCB3198-32F3-4E8B-9539-4324694ED664}"
+                            Description="Adblock Plus for IE Browser Helper Object"
+                            Context="InprocServer32" ThreadingModel="both"/>
+                    </File>
+                    <RegistryKey 
+                        Root="HKLM" 
+                        Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Browser Helper Objects">
+                        <RegistryValue 
+                            Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
+                            Name="NoExplorer" 
+                            Value="1" Type="integer"/>
+                    </RegistryKey>
+                </Component>
+            <?endif?>
     	</ComponentGroup>
 
         <!--
