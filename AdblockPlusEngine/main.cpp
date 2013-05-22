@@ -80,11 +80,10 @@ namespace
 
   std::string ToString(std::wstring value)
   {
-    int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, 0, 0, 0, 0);
-    char* converted = new char[size];
-    WideCharToMultiByte(CP_UTF8, 0, value.c_str(), -1, converted, size, 0, 0);
-    std::string string(converted);
-    delete converted;
+    int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), value.length(), 0, 0, 0, 0);
+    std::auto_ptr<char> converted(new char[size]);
+    WideCharToMultiByte(CP_UTF8, 0, value.c_str(), value.length(), converted.get(), size, 0, 0);
+    std::string string(converted.get(), size);
     return string;
   }
 
