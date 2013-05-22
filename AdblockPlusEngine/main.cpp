@@ -11,7 +11,6 @@ namespace
   const std::wstring pipeName = L"\\\\.\\pipe\\adblockplusengine";
   const int bufferSize = 1024;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
-  HANDLE filterEngineMutex;
 
   class AutoHandle
   {
@@ -132,9 +131,7 @@ namespace
     {
       std::string message = ReadMessage(pipe);
       std::vector<std::string> strings = UnmarshalStrings(message);
-      WaitForSingleObject(filterEngineMutex, INFINITE);
       std::string response = HandleRequest(strings);
-      ReleaseMutex(filterEngineMutex);
       WriteMessage(pipe, response);
     }
     catch (const std::exception& e)
@@ -223,7 +220,6 @@ HANDLE CreatePipe(const std::wstring& pipeName)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
   filterEngine = CreateFilterEngine();
-  filterEngineMutex = CreateMutex(0, false, 0);
 
   for (;;)
   {
