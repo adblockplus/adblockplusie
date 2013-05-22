@@ -43,7 +43,6 @@ namespace
 
   private:
     HANDLE handle;
-    static int references;
 
     AutoHandle(const AutoHandle& autoHandle);
     AutoHandle& operator=(const AutoHandle& autoHandle);
