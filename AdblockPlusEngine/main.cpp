@@ -90,19 +90,20 @@ namespace
   {
     std::stringstream stream;
     std::auto_ptr<char> buffer(new char[bufferSize]);
-    bool hasError;
-    do
+    bool doneReading = false;
+    while (!doneReading)
     {
       DWORD bytesRead;
-      hasError = !ReadFile(pipe, buffer.get(), bufferSize * sizeof(char), &bytesRead, 0);
-      if (hasError && GetLastError() != ERROR_MORE_DATA)
+      if (ReadFile(pipe, buffer.get(), bufferSize * sizeof(char), &bytesRead, 0))
+        doneReading = true;
+      else if (GetLastError() != ERROR_MORE_DATA)
       {
         std::stringstream stream;
         stream << "Error reading from pipe: " << GetLastError();
         throw std::runtime_error(stream.str());
       }
       stream << std::string(buffer.get(), bytesRead);
-    } while (hasError);
+    }
     return stream.str();
   }
 
