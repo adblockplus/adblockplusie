@@ -196,7 +196,7 @@ std::wstring GetAppDataPath()
       throw std::runtime_error("Unable to find app data directory");
     appDataPath.assign(pathBuffer.get());
   }
-  return std::wstring(appDataPath) + L"\\AdblockPlus";
+  return appDataPath + L"\\AdblockPlus";
 }
 
 std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
