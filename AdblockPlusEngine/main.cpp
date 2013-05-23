@@ -1,5 +1,6 @@
 #include <AdblockPlus.h>
 #include <iostream>
+#include <Lmcons.h>
 #include <ShlObj.h>
 #include <sstream>
 #include <vector>
@@ -8,7 +9,21 @@
 
 namespace
 {
-  const std::wstring pipeName = L"\\\\.\\pipe\\adblockplusengine";
+  std::wstring GetUserName()
+  {
+    const DWORD maxLength = UNLEN + 1;
+    std::auto_ptr<wchar_t> buffer(new wchar_t[maxLength]);
+    DWORD length = maxLength;
+    if (!::GetUserName(buffer.get(), &length))
+    {
+      std::stringstream stream;
+      stream << "Failed to get the current user's name (Error code: " << GetLastError() << ")";
+      throw std::runtime_error("Failed to get the current user's name");
+    }
+    return std::wstring(buffer.get(), length);
+  }
+
+  const std::wstring pipeName = L"\\\\.\\pipe\\adblockplusengine_" + GetUserName();
   const int bufferSize = 1024;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
 
