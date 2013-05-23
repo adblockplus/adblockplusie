@@ -27,4 +27,5 @@ Avast/dlldata.c
 ipch
 AdblockPlusEngine/AdblockPlusEngine.vcxproj.user
 AdblockPlusEngine/Debug Production
+AdblockPlusEngine/Release Production
 Debug Production
