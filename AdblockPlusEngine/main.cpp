@@ -140,6 +140,7 @@ namespace
       LogException(e);
     }
 
+    // TODO: Keep the pipe open until the client disconnects
     FlushFileBuffers(pipe);
     DisconnectNamedPipe(pipe);
     CloseHandle(pipe);
