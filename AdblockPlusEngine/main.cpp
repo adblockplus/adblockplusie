@@ -185,15 +185,6 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
   std::string dataPath = ToString(GetAppDataPath());
   dynamic_cast<AdblockPlus::DefaultFileSystem*>(jsEngine->GetFileSystem().get())->SetBasePath(dataPath);
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
-  int timeout = 5000;
-  while (!filterEngine->IsInitialized())
-  {
-    const int step = 10;
-    Sleep(step);
-    timeout -= step;
-    if (timeout <= 0)
-      throw std::runtime_error("Timeout while waiting for FilterEngine initialization");
-  }
   std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
   // TODO: Select a subscription based on the language, not just the first one.
   //       This should ideally be done in libadblockplus.

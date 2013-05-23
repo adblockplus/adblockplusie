@@ -130,7 +130,7 @@ namespace
       {
         SpawnAdblockPlusEngine();
 
-        int timeout = 5000;
+        int timeout = 10000;
         while ((pipe = OpenPipe(pipeName)) == INVALID_HANDLE_VALUE)
         {
           const int step = 10;
