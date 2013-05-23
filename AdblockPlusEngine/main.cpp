@@ -217,8 +217,10 @@ HANDLE CreatePipe(const std::wstring& pipeName)
   sa.lpSecurityDescriptor = securitydescriptor;
   sa.bInheritHandle = TRUE;
 
-  return CreateNamedPipe(pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                         PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
+  HANDLE pipe = CreateNamedPipe(pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                                PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
+  LocalFree(securitydescriptor);
+  return pipe;
 }
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
