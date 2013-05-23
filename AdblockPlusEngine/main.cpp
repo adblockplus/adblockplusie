@@ -92,13 +92,19 @@ namespace
     return strings;
   }
 
-  std::string ToString(std::wstring value)
+  std::string ToUtf8String(std::wstring str)
   {
-    int size = WideCharToMultiByte(CP_UTF8, 0, value.c_str(), value.length(), 0, 0, 0, 0);
-    std::auto_ptr<char> converted(new char[size]);
-    WideCharToMultiByte(CP_UTF8, 0, value.c_str(), value.length(), converted.get(), size, 0, 0);
-    std::string string(converted.get(), size);
-    return string;
+    size_t length = str.size();
+    if (length == 0)
+      return std::string();
+
+    DWORD utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, 0, 0, 0, 0);
+    if (utf8StringLength == 0)
+      throw std::runtime_error("Failed to determine the required buffer size");
+
+    std::string utf8String(utf8StringLength, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
+    return utf8String;
   }
 
   std::string ReadMessage(HANDLE pipe)
@@ -197,7 +203,7 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
 {
   // TODO: Pass appInfo in, which should be sent by the client
   AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New();
-  std::string dataPath = ToString(GetAppDataPath());
+  std::string dataPath = ToUtf8String(GetAppDataPath());
   dynamic_cast<AdblockPlus::DefaultFileSystem*>(jsEngine->GetFileSystem().get())->SetBasePath(dataPath);
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
   std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
