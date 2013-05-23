@@ -119,6 +119,9 @@ namespace
       DWORD error = GetLastError();
       throw std::runtime_error("Failed to start Adblock Plus Engine");
     }
+
+    CloseHandle(processInformation.hProcess);
+    CloseHandle(processInformation.hThread);
   }
 
   HANDLE OpenAdblockPlusEnginePipe()
