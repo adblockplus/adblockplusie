@@ -159,19 +159,21 @@ namespace
 
 std::wstring GetAppDataPath()
 {
-  wchar_t appDataPath[MAX_PATH];
+  std::wstring appDataPath;
   if (IsWindowsVistaOrLater())
   {
-    WCHAR* dataPath;
-    if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, 0, &dataPath)))
+    WCHAR* pathBuffer;
+    if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, 0, &pathBuffer)))
       throw std::runtime_error("Unable to find app data directory");
-    wcscpy_s(appDataPath, dataPath);
-    CoTaskMemFree(dataPath);
+    appDataPath.assign(pathBuffer);
+    CoTaskMemFree(pathBuffer);
   }
   else
   { 
-    if (!SHGetSpecialFolderPath(0, appDataPath, CSIDL_LOCAL_APPDATA, true))
+    std::auto_ptr<wchar_t> pathBuffer(new wchar_t[MAX_PATH]); 
+    if (!SHGetSpecialFolderPath(0, pathBuffer.get(), CSIDL_LOCAL_APPDATA, true))
       throw std::runtime_error("Unable to find app data directory");
+    appDataPath.assign(pathBuffer.get());
   }
   return std::wstring(appDataPath) + L"\\AdblockPlus";
 }
