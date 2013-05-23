@@ -302,27 +302,24 @@ int CAdblockPlusClient::GetIEVersion()
   return (int)(version[0] - 48);
 }
 
-std::string CallAdblockPlusEngineProcedure(const std::string& name, const std::vector<std::string>& args)
+std::string CallAdblockPlusEngineProcedure(const std::vector<std::string>& args)
 {
   AutoHandle pipe(OpenAdblockPlusEnginePipe());
-  std::vector<std::string> strings;
-  strings.push_back(name);
-  for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); it++)
-    strings.push_back(*it);
-  WriteMessage(pipe.get(), MarshalStrings(strings));
+  WriteMessage(pipe.get(), MarshalStrings(args));
   return ReadMessage(pipe.get());
 }
 
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
 {
   std::vector<std::string> args;
+  args.push_back("Matches");
   args.push_back(url);
   args.push_back(contentType);
   args.push_back(domain);
 
   try
   {
-    std::string response = CallAdblockPlusEngineProcedure("Matches", args);
+    std::string response = CallAdblockPlusEngineProcedure(args);
     return response == "1";
   }
   catch (const std::exception& e)
@@ -335,11 +332,12 @@ bool CAdblockPlusClient::Matches(const std::string& url, const std::string& cont
 std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(std::string domain)
 {
   std::vector<std::string> args;
+  args.push_back("GetElementHidingSelectors");
   args.push_back(domain);
 
   try
   {
-    std::string response = CallAdblockPlusEngineProcedure("GetElementHidingSelectors", args);
+    std::string response = CallAdblockPlusEngineProcedure(args);
     return UnmarshalStrings(response);
   }
   catch (const std::exception& e)
