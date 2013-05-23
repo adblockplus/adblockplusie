@@ -209,10 +209,9 @@ HANDLE CreatePipe(const std::wstring& pipeName)
   sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 
   // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
-  LPCWSTR LOW_INTEGRITY_SDDL_SACL_W = L"S:(ML;;NW;;;LW)";
+  LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
   PSECURITY_DESCRIPTOR securitydescriptor;
-  ConvertStringSecurityDescriptorToSecurityDescriptor(
-    LOW_INTEGRITY_SDDL_SACL_W, SDDL_REVISION_1, &securitydescriptor, 0);
+  ConvertStringSecurityDescriptorToSecurityDescriptor(accessControlEntry, SDDL_REVISION_1, &securitydescriptor, 0);
 
   sa.lpSecurityDescriptor = securitydescriptor;
   sa.bInheritHandle = TRUE;
