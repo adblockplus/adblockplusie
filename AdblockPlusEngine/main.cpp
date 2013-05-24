@@ -236,6 +236,13 @@ HANDLE CreatePipe(const std::wstring& pipeName)
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+  // TODO: Attempt to create the pipe first, and exit immediately if this
+  //       fails. Since multiple instances of the engine could be running,
+  //       this may need named mutices to avoid race conditions.
+  //       Note that as soon as the pipe is created first, we can reduce the
+  //       client timeout after CreateProcess(), but should increase the one
+  //       in WaitNamedPipe().
+
   filterEngine = CreateFilterEngine();
 
   for (;;)
