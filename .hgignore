@@ -3,8 +3,8 @@ build
 *.opensdf
 *.sdf
 *.v11.suo
+*.filters
+*.user
 ipch
 *.wixobj
 *.wixpdb
-AdBlockPlus.vcxproj.user
-AdblockPlusEngine/AdblockPlusEngine.vcxproj.user
