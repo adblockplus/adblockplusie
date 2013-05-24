@@ -41,15 +41,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)..\libadblockplus\build\ia32\build\Debug\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)libadblockplus\build\ia32\build\Debug\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)build\ia32\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)build\ia32\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)..\libadblockplus\build\ia32\build\Release\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)libadblockplus\build\ia32\build\Release\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)build\ia32\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)build\ia32\$(Configuration)\</IntDir>
   </PropertyGroup>
