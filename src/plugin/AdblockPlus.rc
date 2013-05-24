@@ -58,9 +58,9 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON_DEACTIVATED    ICON                    "res\\deactivated.ico"
-IDI_ICON_ENABLED        ICON                    "res\\blocking.ico"
-IDI_ICON_DISABLED       ICON                    "res\\not-blocking.ico"
+IDI_ICON_DEACTIVATED    ICON                    "..\\res\\deactivated.ico"
+IDI_ICON_ENABLED        ICON                    "..\\res\\blocking.ico"
+IDI_ICON_DISABLED       ICON                    "..\\res\\not-blocking.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -153,7 +153,7 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-1 TYPELIB "..\\build\\AdblockPlus.tlb"
+1 TYPELIB "..\\..\\build\\AdblockPlus.tlb"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

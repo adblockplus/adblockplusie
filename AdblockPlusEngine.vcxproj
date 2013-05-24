@@ -41,17 +41,17 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\libadblockplus\build\ia32\build\Debug\lib;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)build\ia32\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\ia32\$(Configuration)\</IntDir>
+    <IncludePath>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\libadblockplus\build\ia32\build\Debug\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)build\ia32\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)build\ia32\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\libadblockplus\include;$(SolutionDir)..\libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\libadblockplus\build\ia32\build\Release\lib;$(LibraryPath)</LibraryPath>
-    <OutDir>build\ia32\$(Configuration)\</OutDir>
-    <IntDir>build\ia32\$(Configuration)\</IntDir>
+    <IncludePath>$(ProjectDir)..\libadblockplus\include;$(ProjectDir)..\libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\libadblockplus\build\ia32\build\Release\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)build\ia32\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)build\ia32\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">
     <ClCompile>
@@ -66,7 +66,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)build\ia32\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
+      <OutputFile>$(ProjectDir)build\ia32\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
       <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
@@ -87,12 +87,12 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)AdBlocker\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
+      <OutputFile>$(ProjectDir)build\ia32\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
       <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\engine\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

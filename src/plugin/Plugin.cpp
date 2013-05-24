@@ -1,7 +1,7 @@
 #include "PluginStdAfx.h"
 
 #include "Plugin.h"
-#include "../build/AdblockPlus_i.c"
+#include "../../build/AdblockPlus_i.c"
 
 #include "PluginClass.h"
 #include "PluginClient.h"

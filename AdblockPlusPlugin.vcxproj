@@ -247,7 +247,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\plugin\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -310,7 +310,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)AdblockPlus.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\plugin\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -375,7 +375,7 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\plugin\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -441,7 +441,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\plugin\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug />
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -502,7 +502,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\plugin\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -562,7 +562,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcw.lib LIBCMT.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\plugin\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -618,7 +618,7 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
       <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\plugin\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -678,7 +678,7 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
       <OutputFile>$(OutDir)AdblockPlusx64.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>nafxcwd.lib LIBCMTD.lib;olepro32.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <ModuleDefinitionFile>src\$(TargetName).def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\plugin\$(TargetName).def</ModuleDefinitionFile>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -700,31 +700,31 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Midl Include="src\AdblockPlus.idl" />
+    <Midl Include="src\plugin\AdblockPlus.idl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\AdblockPlusClient.cpp" />
-    <ClCompile Include="src\AdblockPlusDomTraverser.cpp" />
-    <ClCompile Include="src\AdblockPlusTab.cpp" />
-    <ClCompile Include="src\Plugin.cpp" />
-    <ClCompile Include="src\PluginChecksum.cpp" />
-    <ClCompile Include="src\PluginClass.cpp" />
-    <ClCompile Include="src\PluginClassThread.cpp" />
-    <ClCompile Include="src\PluginClientBase.cpp" />
-    <ClCompile Include="src\PluginClientFactory.cpp" />
-    <ClCompile Include="src\PluginConfiguration.cpp" />
-    <ClCompile Include="src\PluginDebug.cpp" />
-    <ClCompile Include="src\PluginDictionary.cpp" />
-    <ClCompile Include="src\PluginDownloadDialog.cpp" />
-    <ClCompile Include="src\PluginFilter.cpp" />
-    <ClCompile Include="src\PluginHttpRequest.cpp" />
-    <ClCompile Include="src\PluginIniFile.cpp" />
-    <ClCompile Include="src\PluginIniFileW.cpp" />
-    <ClCompile Include="src\PluginMimeFilterClient.cpp" />
-    <ClCompile Include="src\PluginMutex.cpp" />
-    <ClCompile Include="src\PluginSettings.cpp" />
-    <ClCompile Include="src\PluginSha1.cpp" />
-    <ClCompile Include="src\PluginStdAfx.cpp">
+    <ClCompile Include="src\plugin\AdblockPlusClient.cpp" />
+    <ClCompile Include="src\plugin\AdblockPlusDomTraverser.cpp" />
+    <ClCompile Include="src\plugin\AdblockPlusTab.cpp" />
+    <ClCompile Include="src\plugin\Plugin.cpp" />
+    <ClCompile Include="src\plugin\PluginChecksum.cpp" />
+    <ClCompile Include="src\plugin\PluginClass.cpp" />
+    <ClCompile Include="src\plugin\PluginClassThread.cpp" />
+    <ClCompile Include="src\plugin\PluginClientBase.cpp" />
+    <ClCompile Include="src\plugin\PluginClientFactory.cpp" />
+    <ClCompile Include="src\plugin\PluginConfiguration.cpp" />
+    <ClCompile Include="src\plugin\PluginDebug.cpp" />
+    <ClCompile Include="src\plugin\PluginDictionary.cpp" />
+    <ClCompile Include="src\plugin\PluginDownloadDialog.cpp" />
+    <ClCompile Include="src\plugin\PluginFilter.cpp" />
+    <ClCompile Include="src\plugin\PluginHttpRequest.cpp" />
+    <ClCompile Include="src\plugin\PluginIniFile.cpp" />
+    <ClCompile Include="src\plugin\PluginIniFileW.cpp" />
+    <ClCompile Include="src\plugin\PluginMimeFilterClient.cpp" />
+    <ClCompile Include="src\plugin\PluginMutex.cpp" />
+    <ClCompile Include="src\plugin\PluginSettings.cpp" />
+    <ClCompile Include="src\plugin\PluginSha1.cpp" />
+    <ClCompile Include="src\plugin\PluginStdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Production|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug Test|Win32'">Create</PrecompiledHeader>
@@ -734,64 +734,64 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\PluginSystem.cpp" />
-    <ClCompile Include="src\PluginTabBase.cpp" />
-    <ClCompile Include="src\PluginUpdateDialog.cpp" />
-    <ClCompile Include="src\PluginUserSettings.cpp" />
-    <ClCompile Include="src\PluginUtil.cpp" />
-    <ClCompile Include="src\PluginWbPassThrough.cpp" />
+    <ClCompile Include="src\plugin\PluginSystem.cpp" />
+    <ClCompile Include="src\plugin\PluginTabBase.cpp" />
+    <ClCompile Include="src\plugin\PluginUpdateDialog.cpp" />
+    <ClCompile Include="src\plugin\PluginUserSettings.cpp" />
+    <ClCompile Include="src\plugin\PluginUtil.cpp" />
+    <ClCompile Include="src\plugin\PluginWbPassThrough.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\abp.h" />
-    <ClInclude Include="src\AdblockPlus.h" />
-    <ClInclude Include="src\AdblockPlusClient.h" />
-    <ClInclude Include="src\AdblockPlusDomTraverser.h" />
-    <ClInclude Include="src\AdblockPlusGuids.h" />
-    <ClInclude Include="src\AdblockPlusTab.h" />
-    <ClInclude Include="src\Config.h" />
-    <ClInclude Include="src\DownloadSource.h" />
-    <ClInclude Include="src\Plugin.h" />
-    <ClInclude Include="src\PluginChecksum.h" />
-    <ClInclude Include="src\PluginClass.h" />
-    <ClInclude Include="src\PluginClient.h" />
-    <ClInclude Include="src\PluginClientBase.h" />
-    <ClInclude Include="src\PluginClientFactory.h" />
-    <ClInclude Include="src\PluginConfiguration.h" />
-    <ClInclude Include="src\PluginDebug.h" />
-    <ClInclude Include="src\PluginDebugMacros.h" />
-    <ClInclude Include="src\PluginDictionary.h" />
-    <ClInclude Include="src\PluginDomTraverser.h" />
-    <ClInclude Include="src\PluginDomTraverserBase.h" />
-    <ClInclude Include="src\PluginDownloadDialog.h" />
-    <ClInclude Include="src\PluginErrorCodes.h" />
-    <ClInclude Include="src\PluginFilter.h" />
-    <ClInclude Include="src\PluginHttpRequest.h" />
-    <ClInclude Include="src\PluginIniFile.h" />
-    <ClInclude Include="src\PluginIniFileW.h" />
-    <ClInclude Include="src\PluginMimeFilterClient.h" />
-    <ClInclude Include="src\PluginMutex.h" />
-    <ClInclude Include="src\PluginPassthroughObject.h" />
-    <ClInclude Include="src\PluginSettings.h" />
-    <ClInclude Include="src\PluginSha1.h" />
-    <ClInclude Include="src\PluginStdAfx.h" />
-    <ClInclude Include="src\PluginSystem.h" />
-    <ClInclude Include="src\PluginTab.h" />
-    <ClInclude Include="src\PluginTabBase.h" />
-    <ClInclude Include="src\PluginTypedef.h" />
-    <ClInclude Include="src\PluginUpdateDialog.h" />
-    <ClInclude Include="src\PluginUserSettings.h" />
-    <ClInclude Include="src\PluginUtil.h" />
-    <ClInclude Include="src\ProtocolCF.h" />
-    <ClInclude Include="src\ProtocolImpl.h" />
-    <ClInclude Include="src\BuildVariant.h" />
-    <ClInclude Include="src\Resource.h" />
-    <ClInclude Include="src\Version.h" />
+    <ClInclude Include="src\plugin\abp.h" />
+    <ClInclude Include="src\plugin\AdblockPlus.h" />
+    <ClInclude Include="src\plugin\AdblockPlusClient.h" />
+    <ClInclude Include="src\plugin\AdblockPlusDomTraverser.h" />
+    <ClInclude Include="src\plugin\AdblockPlusGuids.h" />
+    <ClInclude Include="src\plugin\AdblockPlusTab.h" />
+    <ClInclude Include="src\plugin\Config.h" />
+    <ClInclude Include="src\plugin\DownloadSource.h" />
+    <ClInclude Include="src\plugin\Plugin.h" />
+    <ClInclude Include="src\plugin\PluginChecksum.h" />
+    <ClInclude Include="src\plugin\PluginClass.h" />
+    <ClInclude Include="src\plugin\PluginClient.h" />
+    <ClInclude Include="src\plugin\PluginClientBase.h" />
+    <ClInclude Include="src\plugin\PluginClientFactory.h" />
+    <ClInclude Include="src\plugin\PluginConfiguration.h" />
+    <ClInclude Include="src\plugin\PluginDebug.h" />
+    <ClInclude Include="src\plugin\PluginDebugMacros.h" />
+    <ClInclude Include="src\plugin\PluginDictionary.h" />
+    <ClInclude Include="src\plugin\PluginDomTraverser.h" />
+    <ClInclude Include="src\plugin\PluginDomTraverserBase.h" />
+    <ClInclude Include="src\plugin\PluginDownloadDialog.h" />
+    <ClInclude Include="src\plugin\PluginErrorCodes.h" />
+    <ClInclude Include="src\plugin\PluginFilter.h" />
+    <ClInclude Include="src\plugin\PluginHttpRequest.h" />
+    <ClInclude Include="src\plugin\PluginIniFile.h" />
+    <ClInclude Include="src\plugin\PluginIniFileW.h" />
+    <ClInclude Include="src\plugin\PluginMimeFilterClient.h" />
+    <ClInclude Include="src\plugin\PluginMutex.h" />
+    <ClInclude Include="src\plugin\PluginPassthroughObject.h" />
+    <ClInclude Include="src\plugin\PluginSettings.h" />
+    <ClInclude Include="src\plugin\PluginSha1.h" />
+    <ClInclude Include="src\plugin\PluginStdAfx.h" />
+    <ClInclude Include="src\plugin\PluginSystem.h" />
+    <ClInclude Include="src\plugin\PluginTab.h" />
+    <ClInclude Include="src\plugin\PluginTabBase.h" />
+    <ClInclude Include="src\plugin\PluginTypedef.h" />
+    <ClInclude Include="src\plugin\PluginUpdateDialog.h" />
+    <ClInclude Include="src\plugin\PluginUserSettings.h" />
+    <ClInclude Include="src\plugin\PluginUtil.h" />
+    <ClInclude Include="src\plugin\ProtocolCF.h" />
+    <ClInclude Include="src\plugin\ProtocolImpl.h" />
+    <ClInclude Include="src\plugin\BuildVariant.h" />
+    <ClInclude Include="src\plugin\Resource.h" />
+    <ClInclude Include="src\plugin\Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\ProtocolCF.inl" />
-    <None Include="src\ProtocolImpl.inl" />
-    <None Include="src\AdblockPlus.rgs" />
-    <None Include="src\AdblockPlus.def" />
+    <None Include="src\plugin\ProtocolCF.inl" />
+    <None Include="src\plugin\ProtocolImpl.inl" />
+    <None Include="src\plugin\AdblockPlus.rgs" />
+    <None Include="src\plugin\AdblockPlus.def" />
     <None Include="files\dictionary_w.ini">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">true</DeploymentContent>
     </None>
@@ -803,7 +803,7 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="src\AdblockPlus.rc" />
+    <ResourceCompile Include="src\plugin\AdblockPlus.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src\res\blocking.ico" />
@@ -815,7 +815,7 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties RESOURCE_FILE="src\AdblockPlus.rc" />
+      <UserProperties RESOURCE_FILE="src\plugin\AdblockPlus.rc" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
