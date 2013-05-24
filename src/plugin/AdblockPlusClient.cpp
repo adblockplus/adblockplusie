@@ -12,103 +12,11 @@
 
 #include "AdblockPlusClient.h"
 
+#include "../shared/AutoHandle.h"
+#include "../shared/Communication.h"
+
 namespace
 {
-  // TODO: GetUserName, pipeName, bufferSize, AutoHandle, ReadMessage, WriteMessage, MarshalStrings and UnmarshalStrings are
-  //       duplicated in AdblockPlusEngine. We should find a way to reuse them.
-
-  std::wstring GetUserName()
-  {
-    const DWORD maxLength = UNLEN + 1;
-    std::auto_ptr<wchar_t> buffer(new wchar_t[maxLength]);
-    DWORD length = maxLength;
-    if (!::GetUserName(buffer.get(), &length))
-    {
-      std::stringstream stream;
-      stream << "Failed to get the current user's name (Error code: " << GetLastError() << ")";
-      throw std::runtime_error("Failed to get the current user's name");
-    }
-    return std::wstring(buffer.get(), length);
-  }
-
-  const std::wstring pipeName = L"\\\\.\\pipe\\adblockplusengine_" + GetUserName();
-  const int bufferSize = 1024;
-
-  class AutoHandle
-  {
-  public:
-    AutoHandle()
-    {
-    }
-
-    AutoHandle(HANDLE handle) : handle(handle)
-    {
-    }
-
-    ~AutoHandle()
-    {
-      CloseHandle(handle);
-    }
-
-    HANDLE get()
-    {
-      return handle;
-    }
-
-  private:
-    HANDLE handle;
-
-    AutoHandle(const AutoHandle& autoHandle);
-    AutoHandle& operator=(const AutoHandle& autoHandle);
-  };
-
-  std::string MarshalStrings(const std::vector<std::string>& strings)
-  {
-    // TODO: This is some pretty hacky marshalling, replace it with something more robust
-    std::string marshalledStrings;
-    for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
-      marshalledStrings += *it + ';';
-    return marshalledStrings;
-  }
-
-  std::vector<std::string> UnmarshalStrings(const std::string& message)
-  {
-    std::stringstream stream(message);
-    std::vector<std::string> strings;
-    std::string string;
-    while (std::getline(stream, string, ';'))
-        strings.push_back(string);
-    return strings;
-  }
-
-  std::string ReadMessage(HANDLE pipe)
-  {
-    std::stringstream stream;
-    std::auto_ptr<char> buffer(new char[bufferSize]);
-    bool doneReading = false;
-    while (!doneReading)
-    {
-      DWORD bytesRead;
-      if (ReadFile(pipe, buffer.get(), bufferSize * sizeof(char), &bytesRead, 0))
-        doneReading = true;
-      else if (GetLastError() != ERROR_MORE_DATA)
-      {
-        std::stringstream stream;
-        stream << "Error reading from pipe: " << GetLastError();
-        throw std::runtime_error(stream.str());
-      }
-      stream << std::string(buffer.get(), bytesRead);
-    }
-    return stream.str();
-  }
-
-  void WriteMessage(HANDLE pipe, const std::string& message)
-  {
-    DWORD bytesWritten;
-    if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
-      throw std::runtime_error("Failed to write to pipe");
-  }
-
   HANDLE OpenPipe(const std::wstring& name)
   {
     if (WaitNamedPipe(name.c_str(), 5000))
@@ -142,13 +50,13 @@ namespace
   {
     try
     {
-      HANDLE pipe = OpenPipe(pipeName);
+      HANDLE pipe = OpenPipe(Communication::pipeName);
       if (pipe == INVALID_HANDLE_VALUE)
       {
         SpawnAdblockPlusEngine();
 
         int timeout = 10000;
-        while ((pipe = OpenPipe(pipeName)) == INVALID_HANDLE_VALUE)
+        while ((pipe = OpenPipe(Communication::pipeName)) == INVALID_HANDLE_VALUE)
         {
           const int step = 10;
           Sleep(step);
@@ -305,8 +213,8 @@ int CAdblockPlusClient::GetIEVersion()
 std::string CallAdblockPlusEngineProcedure(const std::vector<std::string>& args)
 {
   AutoHandle pipe(OpenAdblockPlusEnginePipe());
-  WriteMessage(pipe.get(), MarshalStrings(args));
-  return ReadMessage(pipe.get());
+  Communication::WriteMessage(pipe.get(), Communication::MarshalStrings(args));
+  return Communication::ReadMessage(pipe.get());
 }
 
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
@@ -338,7 +246,7 @@ std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(std::stri
   try
   {
     std::string response = CallAdblockPlusEngineProcedure(args);
-    return UnmarshalStrings(response);
+    return Communication::UnmarshalStrings(response);
   }
   catch (const std::exception& e)
   {

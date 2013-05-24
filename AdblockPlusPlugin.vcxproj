@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug Production|Win32">
@@ -223,7 +223,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <AdditionalIncludeDirectories>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PRECOMPILED_HEADER_FILE="PluginStdAfx.h";PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -287,7 +287,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PRECOMPILED_HEADER_FILE="PluginStdAfx.h";NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -350,7 +350,7 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_TEST_MODE;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PRECOMPILED_HEADER_FILE="PluginStdAfx.h";PRODUCT_ADBLOCKPLUS;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_TEST_MODE;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -413,7 +413,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PRECOMPILED_HEADER_FILE="PluginStdAfx.h";_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -740,6 +740,8 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClCompile Include="src\plugin\PluginUserSettings.cpp" />
     <ClCompile Include="src\plugin\PluginUtil.cpp" />
     <ClCompile Include="src\plugin\PluginWbPassThrough.cpp" />
+    <ClCompile Include="src\shared\AutoHandle.cpp" />
+    <ClCompile Include="src\shared\Communication.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\plugin\abp.h" />
@@ -786,6 +788,8 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClInclude Include="src\plugin\BuildVariant.h" />
     <ClInclude Include="src\plugin\Resource.h" />
     <ClInclude Include="src\plugin\Version.h" />
+    <ClInclude Include="src\shared\AutoHandle.h" />
+    <ClInclude Include="src\shared\Communication.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\plugin\ProtocolCF.inl" />
