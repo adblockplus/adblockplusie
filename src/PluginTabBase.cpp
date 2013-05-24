@@ -135,7 +135,7 @@ void CPluginTabBase::OnNavigate(const CString& url)
 #endif
 
   std::string domainString = CT2A(GetDocumentDomain());
-  m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetFilterEngine()->GetElementHidingSelectors(domainString));
+  m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(domainString));
 
 #ifdef SUPPORT_DOM_TRAVERSER
   m_traverser->ClearCache();
