@@ -1,59 +1,11 @@
-#include <AdblockPlus.h>
-#include <iostream>
-#include <Lmcons.h>
-#include <ShlObj.h>
-#include <sstream>
-#include <vector>
-#include <Windows.h>
-#include <Sddl.h>
+#include "stdafx.h"
+
+#include "../shared/AutoHandle.h"
+#include "../shared/Communication.h"
 
 namespace
 {
-  std::wstring GetUserName()
-  {
-    const DWORD maxLength = UNLEN + 1;
-    std::auto_ptr<wchar_t> buffer(new wchar_t[maxLength]);
-    DWORD length = maxLength;
-    if (!::GetUserName(buffer.get(), &length))
-    {
-      std::stringstream stream;
-      stream << "Failed to get the current user's name (Error code: " << GetLastError() << ")";
-      throw std::runtime_error("Failed to get the current user's name");
-    }
-    return std::wstring(buffer.get(), length);
-  }
-
-  const std::wstring pipeName = L"\\\\.\\pipe\\adblockplusengine_" + GetUserName();
-  const int bufferSize = 1024;
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
-
-  class AutoHandle
-  {
-  public:
-    AutoHandle()
-    {
-    }
-
-    AutoHandle(HANDLE handle) : handle(handle)
-    {
-    }
-
-    ~AutoHandle()
-    {
-      CloseHandle(handle);
-    }
-
-    HANDLE get()
-    {
-      return handle;
-    }
-
-  private:
-    HANDLE handle;
-
-    AutoHandle(const AutoHandle& autoHandle);
-    AutoHandle& operator=(const AutoHandle& autoHandle);
-  };
 
   void Log(const std::string& message)
   {
@@ -73,25 +25,6 @@ namespace
     Log(std::string("An exception occurred: ") + exception.what());
   }
 
-  std::string MarshalStrings(const std::vector<std::string>& strings)
-  {
-    // TODO: This is some pretty hacky marshalling, replace it with something more robust
-    std::string marshalledStrings;
-    for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
-      marshalledStrings += *it + ';';
-    return marshalledStrings;
-  }
-
-  std::vector<std::string> UnmarshalStrings(const std::string& message)
-  {
-    std::stringstream stream(message);
-    std::vector<std::string> strings;
-    std::string string;
-    while (std::getline(stream, string, ';'))
-        strings.push_back(string);
-    return strings;
-  }
-
   std::string ToUtf8String(std::wstring str)
   {
     size_t length = str.size();
@@ -107,41 +40,13 @@ namespace
     return utf8String;
   }
 
-  std::string ReadMessage(HANDLE pipe)
-  {
-    std::stringstream stream;
-    std::auto_ptr<char> buffer(new char[bufferSize]);
-    bool doneReading = false;
-    while (!doneReading)
-    {
-      DWORD bytesRead;
-      if (ReadFile(pipe, buffer.get(), bufferSize * sizeof(char), &bytesRead, 0))
-        doneReading = true;
-      else if (GetLastError() != ERROR_MORE_DATA)
-      {
-        std::stringstream stream;
-        stream << "Error reading from pipe: " << GetLastError();
-        throw std::runtime_error(stream.str());
-      }
-      stream << std::string(buffer.get(), bytesRead);
-    }
-    return stream.str();
-  }
-
-  void WriteMessage(HANDLE pipe, const std::string& message)
-  {
-    DWORD bytesWritten;
-    if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
-      throw std::runtime_error("Failed to write to pipe");
-  }
-
   std::string HandleRequest(const std::vector<std::string>& strings)
   {
     std::string procedureName = strings[0];
     if (procedureName == "Matches")
       return filterEngine->Matches(strings[1], strings[2], strings[3]) ? "1" : "0";
     if (procedureName == "GetElementHidingSelectors")
-      return MarshalStrings(filterEngine->GetElementHidingSelectors(strings[1]));
+      return Communication::MarshalStrings(filterEngine->GetElementHidingSelectors(strings[1]));
     return "";
   }
 
@@ -151,10 +56,10 @@ namespace
 
     try
     {
-      std::string message = ReadMessage(pipe);
-      std::vector<std::string> strings = UnmarshalStrings(message);
+      std::string message = Communication::ReadMessage(pipe);
+      std::vector<std::string> strings = Communication::UnmarshalStrings(message);
       std::string response = HandleRequest(strings);
-      WriteMessage(pipe, response);
+      Communication::WriteMessage(pipe, response);
     }
     catch (const std::exception& e)
     {
@@ -229,7 +134,7 @@ HANDLE CreatePipe(const std::wstring& pipeName)
   sa.bInheritHandle = TRUE;
 
   HANDLE pipe = CreateNamedPipe(pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                                PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
+                                PIPE_UNLIMITED_INSTANCES, Communication::bufferSize, Communication::bufferSize, 0, &sa);
   LocalFree(securitydescriptor);
   return pipe;
 }
@@ -247,7 +152,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   for (;;)
   {
-    HANDLE pipe = CreatePipe(pipeName);
+    HANDLE pipe = CreatePipe(Communication::pipeName);
     if (pipe == INVALID_HANDLE_VALUE)
     {
       LogLastError("CreateNamedPipe failed");
