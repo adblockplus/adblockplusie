@@ -803,7 +803,6 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
   }
 
   CPluginClient* client = CPluginClient::GetInstance();
-  AdblockPlus::FilterEngine* filterEngine = client->GetFilterEngine();
 
   //TODO: Make sure if the content type names are in sync with libadblockplus
   std::string contentTypeString = CT2A(type, CP_UTF8);
@@ -813,7 +812,7 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 
   std::string domainMb = CT2CA(domain);
 
-  if (filterEngine->Matches(url, contentTypeString, domainMb))
+  if (client->Matches(url, contentTypeString, domainMb))
   {
     if (addDebug)
     {
