@@ -29,7 +29,7 @@ std::string Communication::MarshalStrings(const std::vector<std::string>& string
   // TODO: This is some pretty hacky marshalling, replace it with something more robust
   std::string marshalledStrings;
   for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
-    marshalledStrings += *it + ';';
+    marshalledStrings += *it + '\0';
   return marshalledStrings;
 }
 
@@ -38,7 +38,7 @@ std::vector<std::string> Communication::UnmarshalStrings(const std::string& mess
   std::stringstream stream(message);
   std::vector<std::string> strings;
   std::string string;
-  while (std::getline(stream, string, ';'))
+  while (std::getline(stream, string, '\0'))
       strings.push_back(string);
   return strings;
 }
