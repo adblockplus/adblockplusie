@@ -95,8 +95,8 @@ std::wstring GetAppDataPath()
     CoTaskMemFree(pathBuffer);
   }
   else
-  { 
-    std::auto_ptr<wchar_t> pathBuffer(new wchar_t[MAX_PATH]); 
+  {
+    std::auto_ptr<wchar_t> pathBuffer(new wchar_t[MAX_PATH]);
     if (!SHGetSpecialFolderPath(0, pathBuffer.get(), CSIDL_LOCAL_APPDATA, true))
       throw std::runtime_error("Unable to find app data directory");
     appDataPath.assign(pathBuffer.get());
@@ -111,11 +111,6 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
   std::string dataPath = ToUtf8String(GetAppDataPath());
   dynamic_cast<AdblockPlus::DefaultFileSystem*>(jsEngine->GetFileSystem().get())->SetBasePath(dataPath);
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
-  std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->FetchAvailableSubscriptions();
-  // TODO: Select a subscription based on the language, not just the first one.
-  //       This should ideally be done in libadblockplus.
-  AdblockPlus::SubscriptionPtr subscription = subscriptions[0];
-  subscription->AddToList();
   return filterEngine;
 }
 
