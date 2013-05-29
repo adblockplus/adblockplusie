@@ -740,8 +740,12 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClCompile Include="src\plugin\PluginUserSettings.cpp" />
     <ClCompile Include="src\plugin\PluginUtil.cpp" />
     <ClCompile Include="src\plugin\PluginWbPassThrough.cpp" />
-    <ClCompile Include="src\shared\AutoHandle.cpp" />
-    <ClCompile Include="src\shared\Communication.cpp" />
+    <ClCompile Include="src\shared\Communication.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\shared\AutoHandle.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\plugin\abp.h" />

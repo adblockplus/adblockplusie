@@ -66,8 +66,8 @@ namespace
         }
       }
 
-      DWORD mode = PIPE_READMODE_MESSAGE; 
-      if (!SetNamedPipeHandleState(pipe, &mode, 0, 0)) 
+      DWORD mode = PIPE_READMODE_MESSAGE;
+      if (!SetNamedPipeHandleState(pipe, &mode, 0, 0))
          throw std::runtime_error("SetNamedPipeHandleState failed");
 
       return pipe;
@@ -210,25 +210,25 @@ int CAdblockPlusClient::GetIEVersion()
   return (int)(version[0] - 48);
 }
 
-std::string CallAdblockPlusEngineProcedure(const std::vector<std::string>& args)
+Communication::InputBuffer CallAdblockPlusEngineProcedure(Communication::OutputBuffer& message)
 {
   AutoHandle pipe(OpenAdblockPlusEnginePipe());
-  Communication::WriteMessage(pipe.get(), Communication::MarshalStrings(args));
+  Communication::WriteMessage(pipe.get(), message);
   return Communication::ReadMessage(pipe.get());
 }
 
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
 {
-  std::vector<std::string> args;
-  args.push_back("Matches");
-  args.push_back(url);
-  args.push_back(contentType);
-  args.push_back(domain);
+  Communication::OutputBuffer request;
+  request << std::string("Matches") << url << contentType << domain;
 
   try
   {
-    std::string response = CallAdblockPlusEngineProcedure(args);
-    return response == "1";
+    Communication::InputBuffer response = CallAdblockPlusEngineProcedure(request);
+
+    bool match;
+    response >> match;
+    return match;
   }
   catch (const std::exception& e)
   {
@@ -237,16 +237,25 @@ bool CAdblockPlusClient::Matches(const std::string& url, const std::string& cont
   }
 }
 
-std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(std::string domain)
+std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(const std::string& domain)
 {
-  std::vector<std::string> args;
-  args.push_back("GetElementHidingSelectors");
-  args.push_back(domain);
+  Communication::OutputBuffer request;
+  request << std::string("GetElementHidingSelectors") << domain;
 
   try
   {
-    std::string response = CallAdblockPlusEngineProcedure(args);
-    return Communication::UnmarshalStrings(response);
+    Communication::InputBuffer response = CallAdblockPlusEngineProcedure(request);
+
+    std::vector<std::string> selectors;
+    int32_t length;
+    response >> length;
+    for (int32_t i = 0; i < length; i++)
+    {
+      std::string selector;
+      response >> selector;
+      selectors.push_back(selector);
+    }
+    return selectors;
   }
   catch (const std::exception& e)
   {
