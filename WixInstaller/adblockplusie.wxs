@@ -178,7 +178,7 @@
                 We need an explicit value for attribute @Win64 so that the ARCH argument does not override its implicit value. 
             -->
             <Component Id="AdblockPlus32.dll" Win64="no">
-                <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Test\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
+                <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Production\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
                     <?include dll_class.wxi ?>
                 </File>
                 <?include bho_registry_value.wxi ?>
@@ -199,14 +199,20 @@
             -->
             <?if $(sys.BUILDARCH)="x64"?>
                 <Component Id="AdblockPlus64.dll" Win64="yes">
-                    <File Id="AdblockPlus64.dll" Source="..\build\x64\Release Test\AdblockPlusx64.dll" KeyPath="yes" Checksum="yes">
+                    <File Id="AdblockPlus64.dll" Source="..\build\x64\Release Production\AdblockPlusx64.dll" KeyPath="yes" Checksum="yes">
                         <?include dll_class.wxi ?>
                     </File>
                     <?include bho_registry_value.wxi ?>
                 </Component>
             <?endif?>
+            <!--
+                The engine must go into the same directory as the DLL, since that location is searched explicitly (and uniquely).
+            -->
+            <Component Id="AdblockPlusEngine32.dll" Win64="no">
+                <File Id="AdblockPlusEngine32.dll" Source="..\build\ia32\Release Production\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+            </Component>
     	</ComponentGroup>
-
+        
         <!--
             The HTML_Tree component group contains all the files in the HTML folder.
             Individual file entries within a single component group must all be in the same directory.

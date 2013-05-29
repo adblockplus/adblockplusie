@@ -14,6 +14,7 @@
 Build_Dir_common = ..\build\ # 
 Build_Dir_ia32 = ..\build\ia32\ # comment prevents newline 
 Build_Dir_x64  = ..\build\x64\ #
+Configuration = Release Production 
 
 #---------------------
 # Default Targets
@@ -56,10 +57,10 @@ objects_x64 = $(Build_Dir_x64)adblockplusie.wixobj $(objects_common)
 
 Light = light -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $@
 
-$(Installer_ia32): $(objects_ia32) "..\build\ia32\Release Test\AdblockPlus.dll"
+$(Installer_ia32): $(objects_ia32) "..\build\ia32\$(Configuration)\AdblockPlus.dll"
     $(Light) $(objects_ia32)
 
-$(Installer_x64): $(objects_x64) "..\build\x64\Release Test\AdblockPlusx64.dll"
+$(Installer_x64): $(objects_x64) "..\build\x64\$(Configuration)\AdblockPlusx64.dll"
     $(Light) $(objects_x64) 
 
 #---------------------

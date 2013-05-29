@@ -63,5 +63,14 @@
             <h3>Registry Entries</h3>
             From <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa384231%28v=vs.85%29.aspx">Process Interoperability on MSDN</a>:
             "On 64-bit Windows, 64- and 32-bit in-process servers should use the InprocServer32 entry."
+            
+    <h1>Reference</h1>
+    It would seem sensible to use a single MSI for both 32- and 64-bit versions. 
+    Indeed, there's a Stack Overflow question exactly on this topic.
+    <a href="http://stackoverflow.com/questions/3724956/single-msi-to-install-correct-32-or-64-bit-c-sharp-application">Single MSI to install correct 32 or 64 bit c# application</a>
+    The answer, however, is no.
+    This blog post explains why.
+    <a href="http://blogs.msdn.com/b/heaths/archive/2008/01/15/different-packages-are-required-for-different-processor-architectures.aspx">Different Packages are Required for Different Processor Architectures</a>
+    
 </body>
 </html>
