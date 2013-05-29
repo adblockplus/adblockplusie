@@ -46,7 +46,7 @@ public:
   int GetIEVersion();
 
   bool Matches(const std::string& url, const std::string& contentType, const std::string& domain);
-  std::vector<std::string> GetElementHidingSelectors(std::string domain);
+  std::vector<std::string> GetElementHidingSelectors(const std::string& domain);
   std::vector<AdblockPlus::SubscriptionPtr> FetchAvailableSubscriptions();
   std::vector<AdblockPlus::FilterPtr> GetListedFilters();
   AdblockPlus::FilterPtr GetFilter(std::string text);

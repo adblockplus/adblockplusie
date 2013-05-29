@@ -1,7 +1,6 @@
-#include PRECOMPILED_HEADER_FILE
+#include "..\engine\stdafx.h"
 
 #include <Lmcons.h>
-#include <sstream>
 
 #include "Communication.h"
 
@@ -24,26 +23,7 @@ namespace
 
 const std::wstring Communication::pipeName = L"\\\\.\\pipe\\adblockplusengine_" + GetUserName();
 
-std::string Communication::MarshalStrings(const std::vector<std::string>& strings)
-{
-  // TODO: This is some pretty hacky marshalling, replace it with something more robust
-  std::string marshalledStrings;
-  for (std::vector<std::string>::const_iterator it = strings.begin(); it != strings.end(); it++)
-    marshalledStrings += *it + '\0';
-  return marshalledStrings;
-}
-
-std::vector<std::string> Communication::UnmarshalStrings(const std::string& message)
-{
-  std::stringstream stream(message);
-  std::vector<std::string> strings;
-  std::string string;
-  while (std::getline(stream, string, '\0'))
-      strings.push_back(string);
-  return strings;
-}
-
-std::string Communication::ReadMessage(HANDLE pipe)
+Communication::InputBuffer Communication::ReadMessage(HANDLE pipe)
 {
   std::stringstream stream;
   std::auto_ptr<char> buffer(new char[bufferSize]);
@@ -61,12 +41,13 @@ std::string Communication::ReadMessage(HANDLE pipe)
     }
     stream << std::string(buffer.get(), bytesRead);
   }
-  return stream.str();
+  return Communication::InputBuffer(stream.str());
 }
 
-void Communication::WriteMessage(HANDLE pipe, const std::string& message)
+void Communication::WriteMessage(HANDLE pipe, Communication::OutputBuffer& message)
 {
   DWORD bytesWritten;
-  if (!WriteFile(pipe, message.c_str(), message.length(), &bytesWritten, 0)) 
+  std::string data = message.Get();
+  if (!WriteFile(pipe, data.c_str(), data.length(), &bytesWritten, 0))
     throw std::runtime_error("Failed to write to pipe");
 }

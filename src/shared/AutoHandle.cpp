@@ -1,4 +1,4 @@
-#include PRECOMPILED_HEADER_FILE
+#include "..\engine\stdafx.h"
 
 #include "AutoHandle.h"
 

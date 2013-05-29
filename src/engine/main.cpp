@@ -40,14 +40,33 @@ namespace
     return utf8String;
   }
 
-  std::string HandleRequest(const std::vector<std::string>& strings)
+  Communication::OutputBuffer HandleRequest(Communication::InputBuffer& request)
   {
-    std::string procedureName = strings[0];
+    Communication::OutputBuffer response;
+
+    std::string procedureName;
+    request >> procedureName;
     if (procedureName == "Matches")
-      return filterEngine->Matches(strings[1], strings[2], strings[3]) ? "1" : "0";
+    {
+      std::string url;
+      std::string type;
+      std::string documentUrl;
+      request >> url >> type >> documentUrl;
+      response << filterEngine->Matches(url, type, documentUrl);
+    }
     if (procedureName == "GetElementHidingSelectors")
-      return Communication::MarshalStrings(filterEngine->GetElementHidingSelectors(strings[1]));
-    return "";
+    {
+      std::string domain;
+      request >> domain;
+
+      std::vector<std::string> selectors = filterEngine->GetElementHidingSelectors(domain);
+
+      int32_t length = selectors.size();
+      response << length;
+      for (int32_t i = 0; i < length; i++)
+        response << selectors[i];
+    }
+    return response;
   }
 
   DWORD WINAPI ClientThread(LPVOID param)
@@ -56,9 +75,8 @@ namespace
 
     try
     {
-      std::string message = Communication::ReadMessage(pipe);
-      std::vector<std::string> strings = Communication::UnmarshalStrings(message);
-      std::string response = HandleRequest(strings);
+      Communication::InputBuffer message = Communication::ReadMessage(pipe);
+      Communication::OutputBuffer response = HandleRequest(message);
       Communication::WriteMessage(pipe, response);
     }
     catch (const std::exception& e)
