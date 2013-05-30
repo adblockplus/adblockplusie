@@ -35,11 +35,17 @@ default: $(Installer_x64)
 !error Unknown variable ARCH=$(ARCH)
 !endif
 
+all: ia32 x64 setup
+
+ia32: $(Installer_ia32)
+
+x64: $(Installer_x64)
+
 #---------------------
 # candle .wxs --> .wixobj 
 #---------------------
 
-Candle = candle -nologo $(CANDLE_FLAGS) $< -out $@  
+Candle = candle -nologo $(CANDLE_FLAGS) $(*F).wxs -out $@  
 .wxs{$(Build_Dir_common)}.wixobj:
     $(Candle)
 .wxs{$(Build_Dir_ia32)}.wixobj:
@@ -68,11 +74,21 @@ $(Installer_x64): $(objects_x64) "..\build\x64\$(Configuration)\AdblockPlusx64.d
 #---------------------
 
 install-ia32: $(Installer_ia32)
-    # Doesn't work. MSI does not accept relative paths.
-    msiexec /i $(**R).msi /l*v install.log
+    call <<nmake_temporary.bat
+pushd $(Build_Dir_ia32)
+msiexec /i $(**F) /l*v install.log
+popd
+<<
+
+install-x64: $(Installer_x64)
+    call <<nmake_temporary.bat
+pushd $(Build_Dir_x64)
+msiexec /i $(**F) /l*v install.log
+popd
+<<
 
 uninstall:
-    msiexec /x ..\build\adblockplusie-en-us.msi
+    msiexec /x {4f27c814-5ee0-4b25-b3ab-3ad565551918}
 
 #---------------------
 # Miscellaneous
