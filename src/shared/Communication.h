@@ -27,14 +27,28 @@ namespace Communication
     InputBuffer& operator>>(bool& value) { return Read(value, TYPE_BOOL); }
   private:
     std::istringstream buffer;
+    int32_t currentType;
+    bool hasType;
+
+    void CheckType(ValueType expectedType)
+    {
+      if (!hasType)
+        ReadBinary(currentType);
+
+      if (currentType != expectedType)
+      {
+        // Make sure we don't attempt to read the type again
+        hasType = true;
+        throw new std::runtime_error("Unexpected type found in input buffer");
+      }
+      else
+        hasType = false;
+    }
 
     template<class T>
     InputBuffer& ReadString(T& value, ValueType expectedType)
     {
-      int32_t type;
-      ReadBinary(type);
-      if (type != expectedType)
-        throw new std::runtime_error("Unexpected type found in input buffer");
+      CheckType(expectedType);
 
       uint32_t length;
       ReadBinary(length);
@@ -51,11 +65,7 @@ namespace Communication
     template<class T>
     InputBuffer& Read(T& value, ValueType expectedType)
     {
-      int32_t type;
-      ReadBinary(type);
-      if (type != expectedType)
-        throw new std::runtime_error("Unexpected type found in input buffer");
-
+      CheckType(expectedType);
       ReadBinary(value);
       return *this;
     }
