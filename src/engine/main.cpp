@@ -40,6 +40,30 @@ namespace
     return utf8String;
   }
 
+  void WriteStrings(Communication::OutputBuffer& response,
+      const std::vector<std::string> strings)
+  {
+    int32_t count = strings.size();
+    response << count;
+    for (int32_t i = 0; i < count; i++)
+      response << strings[i];
+  }
+
+  void WriteSubscriptions(Communication::OutputBuffer& response,
+      const std::vector<AdblockPlus::SubscriptionPtr> subscriptions)
+  {
+    int32_t count = subscriptions.size();
+    response << count;
+    for (int32_t i = 0; i < count; i++)
+    {
+      AdblockPlus::SubscriptionPtr subscription = subscriptions[i];
+      response << subscription->GetProperty("url")->AsString()
+               << subscription->GetProperty("title")->AsString()
+               << subscription->GetProperty("specialization")->AsString()
+               << subscription->IsListed();
+    }
+  }
+
   Communication::OutputBuffer HandleRequest(Communication::InputBuffer& request)
   {
     Communication::OutputBuffer response;
@@ -54,17 +78,69 @@ namespace
       request >> url >> type >> documentUrl;
       response << filterEngine->Matches(url, type, documentUrl);
     }
-    if (procedureName == "GetElementHidingSelectors")
+    else if (procedureName == "GetElementHidingSelectors")
     {
       std::string domain;
       request >> domain;
+      WriteStrings(response, filterEngine->GetElementHidingSelectors(domain));
+    }
+    else if (procedureName == "FetchAvailableSubscriptions")
+    {
+      WriteSubscriptions(response, filterEngine->FetchAvailableSubscriptions());
+    }
+    else if (procedureName == "GetListedSubscriptions")
+    {
+      WriteSubscriptions(response, filterEngine->GetListedSubscriptions());
+    }
+    else if (procedureName == "SetSubscription")
+    {
+      std::string url;
+      request >> url;
 
-      std::vector<std::string> selectors = filterEngine->GetElementHidingSelectors(domain);
+      std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+      for (size_t i = 0, count = subscriptions.size(); i < count; i++)
+        subscriptions[i]->RemoveFromList();
 
-      int32_t length = selectors.size();
-      response << length;
-      for (int32_t i = 0; i < length; i++)
-        response << selectors[i];
+      filterEngine->GetSubscription(url)->AddToList();
+    }
+    else if (procedureName == "UpdateAllSubscriptions")
+    {
+      std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+      for (size_t i = 0, count = subscriptions.size(); i < count; i++)
+        subscriptions[i]->UpdateFilters();
+    }
+    else if (procedureName == "GetExceptionDomains")
+    {
+      std::vector<AdblockPlus::FilterPtr> filters = filterEngine->GetListedFilters();
+      std::vector<std::string> domains;
+      for (size_t i = 0, count = filters.size(); i < count; i++)
+      {
+        AdblockPlus::FilterPtr filter = filters[i];
+        if (filter->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
+        {
+          std::string text = filter->GetProperty("text")->AsString();
+
+          //@@||example.com^$document
+          const char prefix[] = "@@||";
+          const char suffix[] = "^$document";
+          const int prefixLen = strlen(prefix);
+          const int suffixLen = strlen(suffix);
+          if (!text.compare(0, prefixLen, prefix) &&
+              !text.compare(text.size() - suffixLen, suffixLen, suffix))
+          {
+            domains.push_back(text.substr(prefixLen, text.size() - prefixLen - suffixLen));
+          }
+        }
+      }
+
+      WriteStrings(response, domains);
+    }
+    else if (procedureName == "AddFilter")
+    {
+      std::string text;
+      request >> text;
+
+      filterEngine->GetFilter(text)->AddToList();
     }
     return response;
   }

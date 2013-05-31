@@ -78,6 +78,37 @@ namespace
     }
     return result;
   }
+
+  std::vector<std::string> ReadStrings(Communication::InputBuffer& message)
+  {
+    int32_t count;
+    message >> count;
+
+    std::vector<std::string> result;
+    for (int32_t i = 0; i < count; i++)
+    {
+      std::string str;
+      message >> str;
+      result.push_back(str);
+    }
+    return result;
+  }
+
+  std::vector<SubscriptionDescription> ReadSubscriptions(Communication::InputBuffer& message)
+  {
+    int32_t count;
+    message >> count;
+
+    std::vector<SubscriptionDescription> result;
+    for (int32_t i = 0; i < count; i++)
+    {
+      SubscriptionDescription description;
+      message >> description.url >> description.title
+              >> description.specialization >> description.listed;
+      result.push_back(description);
+    }
+    return result;
+  }
 }
 
 CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
@@ -217,6 +248,13 @@ Communication::InputBuffer CallAdblockPlusEngineProcedure(Communication::OutputB
   return pipe->ReadMessage();
 }
 
+Communication::InputBuffer CallAdblockPlusEngineProcedure(const std::string& proc)
+{
+  Communication::OutputBuffer message;
+  message << proc;
+  return CallAdblockPlusEngineProcedure(message);
+}
+
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
 {
   Communication::OutputBuffer request;
@@ -245,17 +283,7 @@ std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(const std
   try
   {
     Communication::InputBuffer response = CallAdblockPlusEngineProcedure(request);
-
-    std::vector<std::string> selectors;
-    int32_t length;
-    response >> length;
-    for (int32_t i = 0; i < length; i++)
-    {
-      std::string selector;
-      response >> selector;
-      selectors.push_back(selector);
-    }
-    return selectors;
+    return ReadStrings(response);
   }
   catch (const std::exception& e)
   {
@@ -264,32 +292,87 @@ std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(const std
   }
 }
 
-std::vector<AdblockPlus::SubscriptionPtr> CAdblockPlusClient::FetchAvailableSubscriptions()
+std::vector<SubscriptionDescription> CAdblockPlusClient::FetchAvailableSubscriptions()
 {
-  //TODO: implement this
-  return std::vector<AdblockPlus::SubscriptionPtr>();
+  try
+  {
+    Communication::InputBuffer response = CallAdblockPlusEngineProcedure("FetchAvailableSubscriptions");
+    return ReadSubscriptions(response);
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+    return std::vector<SubscriptionDescription>();
+  }
 }
 
-std::vector<AdblockPlus::FilterPtr> CAdblockPlusClient::GetListedFilters()
+std::vector<SubscriptionDescription> CAdblockPlusClient::GetListedSubscriptions()
 {
-  //TODO: implement this
-  return std::vector<AdblockPlus::FilterPtr>();
+  try
+  {
+    Communication::InputBuffer response = CallAdblockPlusEngineProcedure("GetListedSubscriptions");
+    return ReadSubscriptions(response);
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+    return std::vector<SubscriptionDescription>();
+  }
 }
 
-AdblockPlus::FilterPtr CAdblockPlusClient::GetFilter(std::string text)
+void CAdblockPlusClient::SetSubscription(std::string url)
 {
-  //TODO: implement this
-  return AdblockPlus::FilterPtr();
+  Communication::OutputBuffer request;
+  request << std::string("SetSubscription") << url;
+
+  try
+  {
+    CallAdblockPlusEngineProcedure(request);
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+  }
 }
 
-std::vector<AdblockPlus::SubscriptionPtr> CAdblockPlusClient::GetListedSubscriptions()
+void CAdblockPlusClient::UpdateAllSubscriptions()
 {
-  //TODO: implement this
-  return std::vector<AdblockPlus::SubscriptionPtr>();
+  try
+  {
+    CallAdblockPlusEngineProcedure("UpdateAllSubscriptions");
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+  }
 }
 
-AdblockPlus::SubscriptionPtr CAdblockPlusClient::GetSubscription(std::string url)
+std::vector<std::string> CAdblockPlusClient::GetExceptionDomains()
 {
-  //TODO: imlement this
-  return AdblockPlus::SubscriptionPtr();
+  try
+  {
+    Communication::InputBuffer response = CallAdblockPlusEngineProcedure("GetExceptionDomains");
+    return ReadStrings(response);
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+    return std::vector<std::string>();
+  }
 }
+
+void CAdblockPlusClient::AddFilter(const std::string& text)
+{
+  Communication::OutputBuffer request;
+  request << std::string("AddFilter") << text;
+
+  try
+  {
+    CallAdblockPlusEngineProcedure(request);
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+  }
+}
+

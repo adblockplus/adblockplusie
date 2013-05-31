@@ -4,12 +4,17 @@
 
 #include "PluginTypedef.h"
 #include "PluginClientBase.h"
-#include "AdblockPlus.h"
 
-
-using namespace AdblockPlus;
 
 class CPluginFilter;
+
+struct SubscriptionDescription
+{
+  std::string url;
+  std::string title;
+  std::string specialization;
+  bool listed;
+};
 
 class CAdblockPlusClient : public CPluginClientBase
 {
@@ -17,7 +22,6 @@ class CAdblockPlusClient : public CPluginClientBase
 private:
 
   std::auto_ptr<CPluginFilter> m_filter;
-  std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
 
   CComAutoCriticalSection m_criticalSectionFilter;
   CComAutoCriticalSection m_criticalSectionCache;
@@ -47,11 +51,12 @@ public:
 
   bool Matches(const std::string& url, const std::string& contentType, const std::string& domain);
   std::vector<std::string> GetElementHidingSelectors(const std::string& domain);
-  std::vector<AdblockPlus::SubscriptionPtr> FetchAvailableSubscriptions();
-  std::vector<AdblockPlus::FilterPtr> GetListedFilters();
-  AdblockPlus::FilterPtr GetFilter(std::string text);
-  std::vector<AdblockPlus::SubscriptionPtr> GetListedSubscriptions();
-  AdblockPlus::SubscriptionPtr GetSubscription(std::string url);
+  std::vector<SubscriptionDescription> FetchAvailableSubscriptions();
+  std::vector<SubscriptionDescription> GetListedSubscriptions();
+  void SetSubscription(std::string url);
+  void UpdateAllSubscriptions();
+  std::vector<std::string> GetExceptionDomains();
+  void AddFilter(const std::string& text);
 };
 
 #endif // _SIMPLE_ADBLOCK_CLIENT_H_

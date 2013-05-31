@@ -19,7 +19,7 @@ namespace Communication
   class InputBuffer
   {
   public:
-    InputBuffer(const std::string& data) : buffer(data) {}
+    InputBuffer(const std::string& data) : buffer(data), hasType(false) {}
     InputBuffer& operator>>(std::string& value) { return ReadString(value, TYPE_STRING); }
     InputBuffer& operator>>(std::wstring& value) { return ReadString(value, TYPE_WSTRING); }
     InputBuffer& operator>>(int64_t& value) { return Read(value, TYPE_INT64); }
