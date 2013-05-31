@@ -2,28 +2,12 @@
 
 #include "../shared/AutoHandle.h"
 #include "../shared/Communication.h"
+#include "Debug.h"
+#include "Utils.h"
 
 namespace
 {
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
-
-  void Log(const std::string& message)
-  {
-    // TODO: Log to a log file
-    MessageBoxA(0, ("AdblockPlusEngine: " + message).c_str(), "", MB_OK);
-  }
-
-  void LogLastError(const std::string& message)
-  {
-    std::stringstream stream;
-    stream << message << " (Error code: " << GetLastError() << ")";
-    Log(stream.str());
-  }
-
-  void LogException(const std::exception& exception)
-  {
-    Log(std::string("An exception occurred: ") + exception.what());
-  }
 
   std::string ToUtf8String(std::wstring str)
   {
@@ -157,43 +141,13 @@ namespace
     }
     catch (const std::exception& e)
     {
-      LogException(e);
+      DebugException(e);
     }
 
     // TODO: Keep the pipe open until the client disconnects
 
     return 0;
   }
-
-  bool IsWindowsVistaOrLater()
-  {
-    OSVERSIONINFOEX osvi;
-    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-    GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(&osvi));
-    return osvi.dwMajorVersion >= 6;
-  }
-}
-
-std::wstring GetAppDataPath()
-{
-  std::wstring appDataPath;
-  if (IsWindowsVistaOrLater())
-  {
-    WCHAR* pathBuffer;
-    if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, 0, &pathBuffer)))
-      throw std::runtime_error("Unable to find app data directory");
-    appDataPath.assign(pathBuffer);
-    CoTaskMemFree(pathBuffer);
-  }
-  else
-  {
-    std::auto_ptr<wchar_t> pathBuffer(new wchar_t[MAX_PATH]);
-    if (!SHGetSpecialFolderPath(0, pathBuffer.get(), CSIDL_LOCAL_APPDATA, true))
-      throw std::runtime_error("Unable to find app data directory");
-    appDataPath.assign(pathBuffer.get());
-  }
-  return appDataPath + L"\\AdblockPlus";
 }
 
 std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
@@ -229,13 +183,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       if (!thread.get())
       {
         delete pipe;
-        LogLastError("CreateThread failed");
+        DebugLastError("CreateThread failed");
         return 1;
       }
     }
     catch (std::runtime_error e)
     {
-      LogException(e);
+      DebugException(e);
       return 1;
     }
   }
