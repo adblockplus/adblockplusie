@@ -17,13 +17,6 @@
 
 namespace
 {
-  HANDLE OpenPipe(const std::wstring& name)
-  {
-    if (WaitNamedPipe(name.c_str(), 5000))
-      return CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-    return INVALID_HANDLE_VALUE;
-  }
-
   void SpawnAdblockPlusEngine()
   {
     std::wstring engineExecutablePath = DllDir() + L"AdblockPlusEngine.exe";
@@ -46,37 +39,44 @@ namespace
     CloseHandle(processInformation.hThread);
   }
 
-  HANDLE OpenAdblockPlusEnginePipe()
+  std::auto_ptr<Communication::Pipe> OpenAdblockPlusEnginePipe()
   {
+    std::auto_ptr<Communication::Pipe> result;
     try
     {
-      HANDLE pipe = OpenPipe(Communication::pipeName);
-      if (pipe == INVALID_HANDLE_VALUE)
+      try
+      {
+        result.reset(new Communication::Pipe(Communication::pipeName,
+            Communication::Pipe::MODE_CONNECT));
+      }
+      catch (Communication::PipeConnectionError e)
       {
         SpawnAdblockPlusEngine();
 
         int timeout = 10000;
-        while ((pipe = OpenPipe(Communication::pipeName)) == INVALID_HANDLE_VALUE)
+        const int step = 10;
+        while (!result.get())
         {
-          const int step = 10;
-          Sleep(step);
-          timeout -= step;
-          if (timeout <= 0)
-            throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
+          try
+          {
+            result.reset(new Communication::Pipe(Communication::pipeName,
+                  Communication::Pipe::MODE_CONNECT));
+          }
+          catch (Communication::PipeConnectionError e)
+          {
+            Sleep(step);
+            timeout -= step;
+            if (timeout <= 0)
+              throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
+          }
         }
       }
-
-      DWORD mode = PIPE_READMODE_MESSAGE;
-      if (!SetNamedPipeHandleState(pipe, &mode, 0, 0))
-         throw std::runtime_error("SetNamedPipeHandleState failed");
-
-      return pipe;
     }
     catch(std::exception e)
     {
       DEBUG_GENERAL(e.what());
-      return INVALID_HANDLE_VALUE;
     }
+    return result;
   }
 }
 
@@ -212,9 +212,9 @@ int CAdblockPlusClient::GetIEVersion()
 
 Communication::InputBuffer CallAdblockPlusEngineProcedure(Communication::OutputBuffer& message)
 {
-  AutoHandle pipe(OpenAdblockPlusEnginePipe());
-  Communication::WriteMessage(pipe.get(), message);
-  return Communication::ReadMessage(pipe.get());
+  std::auto_ptr<Communication::Pipe> pipe = OpenAdblockPlusEnginePipe();
+  pipe->WriteMessage(message);
+  return pipe->ReadMessage();
 }
 
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)

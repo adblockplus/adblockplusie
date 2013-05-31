@@ -1,7 +1,9 @@
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 
+#include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -119,8 +121,26 @@ namespace Communication
     }
   };
 
-  InputBuffer ReadMessage(HANDLE pipe);
-  void WriteMessage(HANDLE pipe, OutputBuffer& message);
+  class PipeConnectionError : public std::runtime_error
+  {
+  public:
+    PipeConnectionError();
+  };
+
+  class Pipe
+  {
+  public:
+    enum Mode {MODE_CREATE, MODE_CONNECT};
+
+    Pipe(const std::wstring& name, Mode mode);
+    ~Pipe();
+
+    InputBuffer ReadMessage();
+    void WriteMessage(OutputBuffer& message);
+
+  protected:
+    HANDLE pipe;
+  };
 }
 
 #endif

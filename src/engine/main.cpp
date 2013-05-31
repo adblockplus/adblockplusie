@@ -71,13 +71,13 @@ namespace
 
   DWORD WINAPI ClientThread(LPVOID param)
   {
-    HANDLE pipe = static_cast<HANDLE>(param);
+    std::auto_ptr<Communication::Pipe> pipe(static_cast<Communication::Pipe*>(param));
 
     try
     {
-      Communication::InputBuffer message = Communication::ReadMessage(pipe);
+      Communication::InputBuffer message = pipe->ReadMessage();
       Communication::OutputBuffer response = HandleRequest(message);
-      Communication::WriteMessage(pipe, response);
+      pipe->WriteMessage(response);
     }
     catch (const std::exception& e)
     {
@@ -85,9 +85,7 @@ namespace
     }
 
     // TODO: Keep the pipe open until the client disconnects
-    FlushFileBuffers(pipe);
-    DisconnectNamedPipe(pipe);
-    CloseHandle(pipe);
+
     return 0;
   }
 
@@ -132,26 +130,6 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
   return filterEngine;
 }
 
-HANDLE CreatePipe(const std::wstring& pipeName)
-{
-  SECURITY_ATTRIBUTES sa;
-  memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
-  sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-
-  // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
-  LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
-  PSECURITY_DESCRIPTOR securitydescriptor;
-  ConvertStringSecurityDescriptorToSecurityDescriptor(accessControlEntry, SDDL_REVISION_1, &securitydescriptor, 0);
-
-  sa.lpSecurityDescriptor = securitydescriptor;
-  sa.bInheritHandle = TRUE;
-
-  HANDLE pipe = CreateNamedPipe(pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                                PIPE_UNLIMITED_INSTANCES, Communication::bufferSize, Communication::bufferSize, 0, &sa);
-  LocalFree(securitydescriptor);
-  return pipe;
-}
-
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
   // TODO: Attempt to create the pipe first, and exit immediately if this
@@ -165,26 +143,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   for (;;)
   {
-    HANDLE pipe = CreatePipe(Communication::pipeName);
-    if (pipe == INVALID_HANDLE_VALUE)
+    try
     {
-      LogLastError("CreateNamedPipe failed");
-      return 1;
+      Communication::Pipe* pipe = new Communication::Pipe(Communication::pipeName,
+            Communication::Pipe::MODE_CREATE);
+
+      // TODO: Count established connections, kill the engine when none are left
+      AutoHandle thread(CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0));
+      if (!thread.get())
+      {
+        delete pipe;
+        LogLastError("CreateThread failed");
+        return 1;
+      }
     }
-
-    if (!ConnectNamedPipe(pipe, 0))
+    catch (std::runtime_error e)
     {
-      LogLastError("Client failed to connect");
-      CloseHandle(pipe);
-      continue;
-    }
-
-    // TODO: Count established connections, kill the engine when none are left
-
-    AutoHandle thread(CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0));
-    if (!thread.get())
-    {
-      LogLastError("CreateThread failed");
+      LogException(e);
       return 1;
     }
   }
