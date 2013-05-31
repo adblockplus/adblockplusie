@@ -1,5 +1,5 @@
-#ifndef _SIMPLE_ADBLOCK_TAB_H_
-#define _SIMPLE_ADBLOCK_TAB_H_
+#ifndef _ADBLOCK_PLUS_TAB_H_
+#define _ADBLOCK_PLUS_TAB_H_
 
 
 #include "PluginTabBase.h"
@@ -15,4 +15,4 @@ public:
 };
 
 
-#endif // _SIMPLE_ADBLOCK_TAB_H_
+#endif // _ADBLOCK_PLUS_TAB_H_

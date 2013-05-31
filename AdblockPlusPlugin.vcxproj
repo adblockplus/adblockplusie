@@ -37,7 +37,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>AdblockPlus</ProjectName>
     <ProjectGuid>{24AAF1A9-ACC0-4BEB-B781-084734D939B5}</ProjectGuid>
-    <RootNamespace>SimpleAdblock</RootNamespace>
+    <RootNamespace>AdblockPlus</RootNamespace>
     <Keyword>AtlProj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -471,7 +471,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_SIMPLEADBLOCK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
