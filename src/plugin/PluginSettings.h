@@ -9,7 +9,7 @@
 
 
 #include "PluginTypedef.h"
-#include "AdblockPlus.h"
+#include "AdblockPlusClient.h"
 
 // Main settings
 
@@ -91,7 +91,7 @@ private:
   void Clear();
 
   // Private constructor used by the singleton pattern
-  CPluginSettings();	
+  CPluginSettings();
 public:
 
   ~CPluginSettings();
@@ -230,7 +230,7 @@ public:
   CString GetSubscription();
   void RefreshFilterlist();
 
-  std::vector<AdblockPlus::SubscriptionPtr> m_subscriptions;
+  std::vector<SubscriptionDescription> m_subscriptions;
 };
 
 

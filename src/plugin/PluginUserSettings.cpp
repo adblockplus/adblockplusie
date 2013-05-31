@@ -25,7 +25,7 @@ CPluginUserSettings::CPluginUserSettings()
 
 STDMETHODIMP CPluginUserSettings::QueryInterface(REFIID riid, void **ppvObj)
 {
-  if (IID_IUnknown == riid  ||  IID_IDispatch == riid) 
+  if (IID_IUnknown == riid  ||  IID_IDispatch == riid)
   {
     *ppvObj = (LPVOID)this;
     return NOERROR;
@@ -36,7 +36,7 @@ STDMETHODIMP CPluginUserSettings::QueryInterface(REFIID riid, void **ppvObj)
 
 
 /*
-Since CPluginUserSettings is not allocated on the heap, 'AddRef' and 'Release' don't need reference counting,  
+Since CPluginUserSettings is not allocated on the heap, 'AddRef' and 'Release' don't need reference counting,
 because CPluginUserSettings won't be deleted when reference counter == 0
 */
 
@@ -132,7 +132,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     return E_POINTER;
 
   if (!pExcepinfo)
-    return E_POINTER; 
+    return E_POINTER;
 
   if (pDispparams->cNamedArgs)
     return DISP_E_NONAMEDARGS;
@@ -157,7 +157,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       CComBSTR key = pDispparams->rgvarg[0].bstrVal;
       CStringW message = sGetMessage((BSTR)key);
 
-      pVarResult->vt = VT_BSTR; 
+      pVarResult->vt = VT_BSTR;
       pVarResult->bstrVal = SysAllocString(message);
     }
   }
@@ -170,7 +170,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     {
       std::map<CString, CString> languageList = settings->GetFilterLanguageTitleList();
 
-      pVarResult->vt = VT_I4; 
+      pVarResult->vt = VT_I4;
       pVarResult->lVal = languageList.size();
     }
   }
@@ -205,7 +205,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         curIndx++;
       }
 
-      pVarResult->vt = VT_BSTR; 
+      pVarResult->vt = VT_BSTR;
       pVarResult->bstrVal = SysAllocString(language);
     }
   }
@@ -240,7 +240,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         curIndx++;
       }
 
-      pVarResult->vt = VT_BSTR; 
+      pVarResult->vt = VT_BSTR;
       pVarResult->bstrVal = SysAllocString(languageTitle);
     }
   }
@@ -265,7 +265,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     {
       CString url = settings->GetSubscription();
 
-      pVarResult->vt = VT_BSTR; 
+      pVarResult->vt = VT_BSTR;
       pVarResult->bstrVal = SysAllocString(url);
     }
   }
@@ -278,8 +278,8 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     {
       std::vector<std::string> whiteList = settings->GetWhiteListedDomainList();
       CString sWhiteList;
-      for (int i = 0; i < whiteList.size(); i++)
-      {            
+      for (size_t i = 0; i < whiteList.size(); i++)
+      {
         if (!sWhiteList.IsEmpty())
         {
           sWhiteList += ',';
@@ -287,7 +287,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         sWhiteList += CString(CA2W(whiteList[i].c_str(), CP_UTF8));
       }
 
-      pVarResult->vt = VT_BSTR; 
+      pVarResult->vt = VT_BSTR;
       pVarResult->bstrVal = SysAllocString(sWhiteList);
     }
   }
@@ -314,13 +314,13 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       return DISP_E_TYPEMISMATCH;
 
     CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
-    if (settings->IsWhiteListedDomain((BSTR)domain)) 
+    if (settings->IsWhiteListedDomain((BSTR)domain))
     {
       settings->AddWhiteListedDomain((BSTR)domain);
       CPluginClient::GetInstance()->ClearWhiteListCache();
     }
   }
-  else 
+  else
     return DISP_E_MEMBERNOTFOUND;
 
   return S_OK;

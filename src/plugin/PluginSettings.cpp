@@ -29,8 +29,6 @@ class TSettings
   char sPluginId[44];
 };
 
-static void SubsCallback(std::vector<AdblockPlus::SubscriptionPtr>& subscriptions);
-
 
 class CPluginSettingsLock : public CPluginMutex
 {
@@ -71,8 +69,8 @@ CComAutoCriticalSection CPluginSettings::s_criticalSectionDomainHistory;
 #endif
 
 
-CPluginSettings::CPluginSettings() : 
-  m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0), 
+CPluginSettings::CPluginSettings() :
+  m_settingsVersion("1"), m_isDirty(false), m_isFirstRun(false), m_isFirstRunUpdate(false), m_dwMainProcessId(0), m_dwMainThreadId(0), m_dwWorkingThreadId(0),
   m_isDirtyTab(false), m_isPluginEnabledTab(true), m_tabNumber("1")
 {
 
@@ -103,9 +101,9 @@ CPluginSettings::CPluginSettings() :
         TCHAR pf[MAX_PATH];
         SHGetSpecialFolderPath(
           0,
-          pf, 
-          CSIDL_PROGRAM_FILESX86, 
-          FALSE ); 
+          pf,
+          CSIDL_PROGRAM_FILESX86,
+          FALSE );
         //No files found, copy from the dll location
         CString pathToDll;
         DWORD pathResult = GetModuleFileNameW((HINSTANCE)&__ImageBase, pathToDll.GetBufferSetLength(MAX_PATH), MAX_PATH);
@@ -119,10 +117,10 @@ CPluginSettings::CPluginSettings() :
           res = CopyFile(cpyPath + SETTING_PAGE_INI_FILE, GetDataPath(SETTING_PAGE_INI_FILE), TRUE);
 
           SHFILEOPSTRUCT pFileStruct;
-          ZeroMemory(&pFileStruct, sizeof(SHFILEOPSTRUCT)); 
+          ZeroMemory(&pFileStruct, sizeof(SHFILEOPSTRUCT));
           pFileStruct.hwnd  = NULL;
           pFileStruct.wFunc = FO_COPY;
-          WCHAR fromPath[MAX_PATH + 2]; 
+          WCHAR fromPath[MAX_PATH + 2];
           WCHAR toPath[MAX_PATH + 2];
 
           CString source = cpyPath + "html\\*";
@@ -135,9 +133,8 @@ CPluginSettings::CPluginSettings() :
           toPath[GetDataPath(L"html").GetLength() + 1] = '\0';
 
           pFileStruct.pFrom = fromPath;
-          pFileStruct.pTo =  toPath; 
-          pFileStruct.fFlags = FOF_SILENT  | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR | FOF_NO_UI | FOF_RENAMEONCOLLISION; 
-          bool i = pFileStruct.fAnyOperationsAborted ;
+          pFileStruct.pTo =  toPath;
+          pFileStruct.fFlags = FOF_SILENT  | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR | FOF_NO_UI | FOF_RENAMEONCOLLISION;
           SHFileOperation(&pFileStruct);
         }
         is.open(GetDataPath(SETTINGS_INI_FILE), std::ios_base::in);
@@ -194,7 +191,7 @@ CPluginSettings::~CPluginSettings()
 }
 
 
-CPluginSettings* CPluginSettings::GetInstance() 
+CPluginSettings* CPluginSettings::GetInstance()
 {
   CPluginSettings* instance = NULL;
 
@@ -206,15 +203,7 @@ CPluginSettings* CPluginSettings::GetInstance()
 #ifdef USE_CONSOLE
       CONSOLE("Fetching Available Subscription\n");
 #endif
-      try
-      {
-        CPluginSettings::GetInstance()->m_subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
-      }
-      catch(std::exception ex)
-      {
-        DEBUG_GENERAL(ex.what());
-        throw ex;
-      }
+      CPluginSettings::GetInstance()->m_subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
       s_isLightOnly = false;
     }
 
@@ -226,7 +215,7 @@ CPluginSettings* CPluginSettings::GetInstance()
 }
 
 
-bool CPluginSettings::HasInstance() 
+bool CPluginSettings::HasInstance()
 {
   bool hasInstance = true;
 
@@ -254,7 +243,7 @@ bool CPluginSettings::Read(bool bDebug)
     CPluginSettingsLock lock;
     if (lock.IsLocked())
     {
-      isRead = m_settingsFile->Read();        
+      isRead = m_settingsFile->Read();
       if (isRead)
       {
         if (m_settingsFile->IsValidChecksum())
@@ -362,7 +351,7 @@ bool CPluginSettings::MakeRequestForUpdate()
 
 CString CPluginSettings::GetDataPathParent()
 {
-  if (s_dataPathParent == NULL) 
+  if (s_dataPathParent == NULL)
   {
     WCHAR* lpData = new WCHAR[MAX_PATH];
 
@@ -373,10 +362,10 @@ CString CPluginSettings::GetDataPathParent()
 
     ::GetVersionEx(&osVersionInfo);
 
-    //Windows Vista				- 6.0 
-    //Windows Server 2003 R2	- 5.2 
-    //Windows Server 2003		- 5.2 
-    //Windows XP				- 5.1 
+    //Windows Vista       - 6.0
+    //Windows Server 2003 R2  - 5.2
+    //Windows Server 2003   - 5.2
+    //Windows XP        - 5.1
     if (osVersionInfo.dwMajorVersion >= 6)
     {
       if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
@@ -415,7 +404,7 @@ CString CPluginSettings::GetDataPathParent()
 
 CString CPluginSettings::GetDataPath(const CString& filename)
 {
-  if (s_dataPath == NULL) 
+  if (s_dataPath == NULL)
   {
     WCHAR* lpData = new WCHAR[MAX_PATH];
 
@@ -426,10 +415,10 @@ CString CPluginSettings::GetDataPath(const CString& filename)
 
     ::GetVersionEx(&osVersionInfo);
 
-    //Windows Vista				- 6.0 
-    //Windows Server 2003 R2	- 5.2 
-    //Windows Server 2003		- 5.2 
-    //Windows XP				- 5.1 
+    //Windows Vista       - 6.0
+    //Windows Server 2003 R2  - 5.2
+    //Windows Server 2003   - 5.2
+    //Windows XP        - 5.1
     if (osVersionInfo.dwMajorVersion >= 6)
     {
       if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
@@ -494,7 +483,7 @@ CString CPluginSettings::GetTempPath(const CString& filename)
 
   LPWSTR pwszCacheDir = NULL;
 
-  HRESULT hr = ::IEGetWriteableFolderPath(FOLDERID_InternetCache, &pwszCacheDir); 
+  HRESULT hr = ::IEGetWriteableFolderPath(FOLDERID_InternetCache, &pwszCacheDir);
   if (SUCCEEDED(hr))
   {
     tempPath = pwszCacheDir;
@@ -571,7 +560,7 @@ bool CPluginSettings::Has(const CString& key) const
 void CPluginSettings::Remove(const CString& key)
 {
   s_criticalSectionLocal.Lock();
-  {    
+  {
     TProperties::iterator it = m_properties.find(key);
     if (it != m_properties.end())
     {
@@ -619,7 +608,7 @@ void CPluginSettings::SetString(const CString& key, const CString& value)
     }
     else if (it == m_properties.end())
     {
-      m_properties[key] = value; 
+      m_properties[key] = value;
       m_isDirty = true;
     }
   }
@@ -668,7 +657,7 @@ void CPluginSettings::SetValue(const CString& key, int value)
     }
     else if (it == m_properties.end())
     {
-      m_properties[key] = sValue; 
+      m_properties[key] = sValue;
       m_isDirty = true;
     }
   }
@@ -708,26 +697,14 @@ bool CPluginSettings::IsPluginEnabled() const
   return m_isPluginEnabledTab;
 }
 
-static void SubsCallback(std::vector<AdblockPlus::SubscriptionPtr>& subscriptions)
-{
-  CPluginSettings::GetInstance()->m_subscriptions = subscriptions;
-  return;
-}
-
 
 std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
 {
   std::map<CString, CString> filterList;
-  for (int i = 0; i < m_subscriptions.size(); i ++)
-  {  
-    AdblockPlus::SubscriptionPtr it = m_subscriptions[i];
-    std::string title = "";
-    std::string url = "";
-
-    title = it.get()->GetProperty("specialization")->AsString();
-    url = it.get()->GetProperty("url")->AsString();
-
-    filterList.insert(std::make_pair(CString(CA2T(url.c_str(), CP_UTF8)), CString(CA2T(title.c_str(), CP_UTF8))));
+  for (size_t i = 0; i < m_subscriptions.size(); i ++)
+  {
+    SubscriptionDescription it = m_subscriptions[i];
+    filterList.insert(std::make_pair(CString(CA2T(it.url.c_str(), CP_UTF8)), CString(CA2T(it.title.c_str(), CP_UTF8))));
   }
   return filterList;
 }
@@ -753,7 +730,7 @@ bool CPluginSettings::Write(bool isDebug)
     m_settingsFile->Clear();
 
     // Properties
-    CPluginIniFileW::TSectionData settings;        
+    CPluginIniFileW::TSectionData settings;
 
     s_criticalSectionLocal.Lock();
     {
@@ -946,7 +923,7 @@ bool CPluginSettings::ReadTab(bool bDebug)
       DEBUG_GENERAL(L"*** Loading tab settings:" + m_settingsFileTab->GetFilePath());
     }
 
-    isRead = m_settingsFileTab->Read();        
+    isRead = m_settingsFileTab->Read();
     if (isRead)
     {
       ClearTab();
@@ -1009,8 +986,8 @@ bool CPluginSettings::WriteTab(bool isDebug)
   m_settingsFileTab->Clear();
 
   // Properties & errors
-  CPluginIniFileW::TSectionData settings;        
-  CPluginIniFileW::TSectionData errors;        
+  CPluginIniFileW::TSectionData settings;
+  CPluginIniFileW::TSectionData errors;
 
   s_criticalSectionLocal.Lock();
   {
@@ -1077,7 +1054,7 @@ bool CPluginSettings::IncrementTabCount()
     {
       TProperties::iterator it = m_propertiesTab.find(SETTING_TAB_COUNT);
       if (it != m_propertiesTab.end())
-      {        
+      {
         tabCount = _wtoi(it->second) + 1;
       }
 
@@ -1092,7 +1069,7 @@ bool CPluginSettings::IncrementTabCount()
       }
       if ((it != m_propertiesTab.end() && it->second != today))
       {
-        tabCount = 1;        
+        tabCount = 1;
       }
       m_tabNumber.Format(L"%d", tabCount);
 
@@ -1119,7 +1096,7 @@ bool CPluginSettings::IncrementTabCount()
 
     m_isDirtyTab = true;
 
-    WriteTab(false);        
+    WriteTab(false);
   }
 
   return tabCount == 1;
@@ -1177,7 +1154,7 @@ bool CPluginSettings::DecrementTabCount()
           }
         }
 
-        m_isDirtyTab = true;               
+        m_isDirtyTab = true;
       }
     }
     s_criticalSectionLocal.Unlock();
@@ -1262,7 +1239,7 @@ void CPluginSettings::AddError(const CString& error, const CString& errorCode)
     {
       if (m_errorsTab.find(error) == m_errorsTab.end())
       {
-        m_errorsTab[error] = errorCode; 
+        m_errorsTab[error] = errorCode;
         m_isDirtyTab = true;
       }
     }
@@ -1457,7 +1434,7 @@ void CPluginSettings::IncrementTabVersion(const CString& key)
 
     m_isDirtyTab = true;
 
-    WriteTab(false);        
+    WriteTab(false);
   }
 }
 
@@ -1495,35 +1472,7 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
       ClearWhitelist();
 
       s_criticalSectionLocal.Lock();
-      try
-      {
-      std::vector<AdblockPlus::FilterPtr> filters = CPluginClient::GetInstance()->GetListedFilters();
-      for (int i = 0; i < filters.size(); i ++)
-      {
-        if (filters[i]->GetType() == AdblockPlus::Filter::Type::TYPE_EXCEPTION)
-        {
-          std::string text = filters[i]->GetProperty("text")->AsString();
-          //@@||example.com^$document
-          size_t endPos = text.rfind("^$document");
-          if (endPos != std::string::npos)
-          {
-            size_t startPos = text.find("@@||") + 4;
-            if (startPos != std::string::npos)
-            {
-              m_whitelistedDomains.push_back(text.substr(startPos, endPos - startPos));
-            }
-          }
-        }
-      }
-      }
-      catch(std::runtime_error ex)
-      {
-        DEBUG_GENERAL(ex.what());
-      }
-      catch(std::exception ex)
-      {
-        DEBUG_GENERAL(ex.what());
-      }
+      m_whitelistedDomains = CPluginClient::GetInstance()->GetExceptionDomains();
       s_criticalSectionLocal.Unlock();
     }
     else
@@ -1555,10 +1504,7 @@ void CPluginSettings::AddWhiteListedDomain(const CString& domain)
       return;
     }
     s_criticalSectionLocal.Lock();
-    {
-      AdblockPlus::FilterPtr whitelistFilter = CPluginClient::GetInstance()->GetFilter(std::string("@@||").append(CW2A(domain)).append("^$document"));
-      whitelistFilter->AddToList();
-    }
+    CPluginClient::GetInstance()->AddFilter(std::string("@@||").append(CW2A(domain)).append("^$document"));
     s_criticalSectionLocal.Unlock();
 
   }
@@ -1643,29 +1589,9 @@ void CPluginSettings::SetSubscription(BSTR url)
 
 void CPluginSettings::SetSubscription(std::string url)
 {
-  try
-  {
-    std::vector<AdblockPlus::SubscriptionPtr> subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
-    if (subscriptions.size() > 0)
-    {
-      for (int i = 0; i < subscriptions.size(); i ++)
-      {
-        subscriptions[i]->RemoveFromList();
-      }
-    }
-    AdblockPlus::SubscriptionPtr subscription = CPluginClient::GetInstance()->GetSubscription(url);
-    subscription->AddToList();
-    RefreshFilterlist();
-    RefreshWhitelist();
-  }
-  catch(std::exception ex)
-  {
-    DEBUG_GENERAL(ex.what());
-  }
-  catch(std::runtime_error ex)
-  {
-    DEBUG_GENERAL(ex.what());
-  }
+  CPluginClient::GetInstance()->SetSubscription(url);
+  RefreshFilterlist();
+  RefreshWhitelist();
 }
 
 std::vector<std::string> split(const std::string& s, char delim) {
@@ -1679,87 +1605,19 @@ std::vector<std::string> split(const std::string& s, char delim) {
 }
 
 
-void CPluginSettings::SetDefaultSubscription()
-{
-  CPluginSystem* system = CPluginSystem::GetInstance();
-  CString lng = system->GetBrowserLanguage().Left(2);
-  std::string browserLanguage = CW2A(lng, CP_UTF8);
-  std::vector<SubscriptionPtr> subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
-  bool subscriptionSet = false;
-  while (!subscriptionSet)
-  {
-    for (int i = 0; i < subscriptions.size(); i++)
-    {
-      std::string prefixes = subscriptions[i]->GetProperty("prefixes")->AsString();
-      std::vector<std::string> tokens = split(prefixes, ',');
-      for (int j = 0; j < tokens.size(); j ++)
-      {
-        if (tokens[j] == browserLanguage)
-        {
-          SetSubscription(subscriptions[i]->GetProperty("url")->AsString());
-          subscriptionSet = true;
-        }
-      }
-    }
-
-    if (browserLanguage == "en")
-      break;
-    // failed to set the subscription for browser language. Try "en"
-    browserLanguage = "en";
-
-  }
-}
-
 CString CPluginSettings::GetSubscription()
 {
-  try
-  {
-   std::vector<AdblockPlus::SubscriptionPtr> subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
-
-    if (subscriptions.size() == 0)
-    {
-      SetDefaultSubscription();
-      subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
-    }
-    for (int i = 0; i < subscriptions.size(); i ++)
-    {
-      return CString(CA2T(subscriptions[i]->GetProperty("url")->AsString().c_str(), CP_UTF8));
-    }
-  }
-  catch(std::exception ex)
-  {
-    DEBUG_GENERAL(ex.what());
-  }
-  catch(std::runtime_error ex)
-  {
-    DEBUG_GENERAL(ex.what());
-  }
-  return CString(L"");
+  std::vector<SubscriptionDescription> subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
+  if (subscriptions.size() > 0)
+    return CString(CA2T(subscriptions.front().url.c_str(), CP_UTF8));
+  else
+    return CString(L"");
 }
 
 
 void CPluginSettings::RefreshFilterlist()
 {
-  try
-  {  
-    // Make sure at least the default subscription is set
-    CPluginSettings* settings = CPluginSettings::GetInstance();
-    settings->GetSubscription();
-
-    std::vector<AdblockPlus::SubscriptionPtr> subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
-    for (int i = 0; i < subscriptions.size(); i ++)
-    {
-      subscriptions[i]->UpdateFilters();
-    }
-  }
-  catch(std::exception ex)
-  {
-    DEBUG_GENERAL(ex.what());
-  }
-  catch(std::runtime_error ex)
-  {
-    DEBUG_GENERAL(ex.what());
-  }
+  CPluginClient::GetInstance()->UpdateAllSubscriptions();
 }
 
 #endif // SUPPORT_WHITELIST
