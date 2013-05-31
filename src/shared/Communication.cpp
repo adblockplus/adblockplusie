@@ -1,6 +1,6 @@
-#include "..\engine\stdafx.h"
-
+#include <Windows.h>
 #include <Lmcons.h>
+#include <Sddl.h>
 
 #include "Communication.h"
 
@@ -43,19 +43,19 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
     LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
     PSECURITY_DESCRIPTOR securitydescriptor;
-    ConvertStringSecurityDescriptorToSecurityDescriptor(accessControlEntry, SDDL_REVISION_1, &securitydescriptor, 0);
+    ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1, &securitydescriptor, 0);
 
     sa.lpSecurityDescriptor = securitydescriptor;
     sa.bInheritHandle = TRUE;
 
-    pipe = CreateNamedPipe(pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+    pipe = CreateNamedPipeW (pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
                                   PIPE_UNLIMITED_INSTANCES, Communication::bufferSize, Communication::bufferSize, 0, &sa);
     LocalFree(securitydescriptor);
   }
   else
   {
-    if (WaitNamedPipe(pipeName.c_str(), 5000))
-      pipe = CreateFile(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    if (WaitNamedPipeW(pipeName.c_str(), 5000))
+      pipe = CreateFileW(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
   }
 
   if (pipe == INVALID_HANDLE_VALUE)

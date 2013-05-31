@@ -1,5 +1,3 @@
-#include "..\engine\stdafx.h"
-
 #include "AutoHandle.h"
 
 AutoHandle::AutoHandle()
