@@ -1,5 +1,5 @@
-#ifndef _SIMPLE_ADBLOCK_DOM_TRAVERSER_H_
-#define _SIMPLE_ADBLOCK_DOM_TRAVERSER_H_
+#ifndef _ADBLOCK_PLUS_DOM_TRAVERSER_H_
+#define _ADBLOCK_PLUS_DOM_TRAVERSER_H_
 
 
 #include "PluginDomTraverserBase.h"
@@ -39,4 +39,4 @@ protected:
 };
 
 
-#endif // _SIMPLE_ADBLOCK_DOM_TRAVERSER_H_
+#endif // _ADBLOCK_PLUS_DOM_TRAVERSER_H_

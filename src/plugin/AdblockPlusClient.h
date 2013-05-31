@@ -1,5 +1,5 @@
-#ifndef _SIMPLE_ADBLOCK_CLIENT_H_
-#define _SIMPLE_ADBLOCK_CLIENT_H_
+#ifndef _ADBLOCK_PLUS_CLIENT_H_
+#define _ADBLOCK_PLUS_CLIENT_H_
 
 
 #include "PluginTypedef.h"
@@ -59,4 +59,4 @@ public:
   void AddFilter(const std::string& text);
 };
 
-#endif // _SIMPLE_ADBLOCK_CLIENT_H_
+#endif // _ADBLOCK_PLUS_CLIENT_H_
