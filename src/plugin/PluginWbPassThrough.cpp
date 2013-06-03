@@ -130,7 +130,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
         else if (contentType == CFilter::contentTypeUnknown) type = "OTHER";
         else if (contentType == CFilter::contentTypeSubdocument) type = "SUBDOCUMENT";
         else if (contentType == CFilter::contentTypeStyleSheet) type = "STYLESHEET";
-        else type = "???";
+        else type = "OTHER";
 
         CPluginDebug::DebugResultIgnoring(type, src);
       }
