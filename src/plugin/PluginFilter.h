@@ -3,7 +3,7 @@
 
 
 #include "PluginTypedef.h"
-
+#include <memory>
 
 // ============================================================================
 // CFilterElementHideAttrSelector
@@ -31,6 +31,14 @@ public:
   ~CFilterElementHideAttrSelector();
 };
 
+
+enum ETraverserComplexType
+{
+  TRAVERSER_TYPE_PARENT,
+  TRAVERSER_TYPE_IMMEDIATE,
+  TRAVERSER_TYPE_ERROR
+};
+
 // ============================================================================
 // CFilterElementHide
 // ============================================================================
@@ -45,13 +53,16 @@ public:
   // For domain specific filters only
   CString m_tagId;
   CString m_tagClassName;
+  CString m_tag;
 
   std::set<CString> m_domainsNot;
 
   std::vector<CFilterElementHideAttrSelector> m_attributeSelectors;
+  std::shared_ptr<CFilterElementHide> m_predecessor;
 
   CFilterElementHide(const CString& filterText="");
   CFilterElementHide(const CFilterElementHide& filter);
+  ETraverserComplexType m_type;
 };
 
 // ============================================================================
@@ -131,19 +142,15 @@ private:
   typedef std::multimap<CString,CFilterElementHide> TFilterElementHideDomain;
 
   // (Tag,Name) -> Filter
-  typedef std::map<std::pair<CString,CString>, CFilterElementHide> TFilterElementHideTagsNamed;
+  typedef std::multimap<std::pair<CString,CString>, CFilterElementHide> TFilterElementHideTagsNamed;
 
   // Tag -> Filter
-  typedef std::map<CString, CFilterElementHide> TFilterElementHideTags;
+  typedef std::multimap<CString, CFilterElementHide> TFilterElementHideTags;
 
-  // Domain -> Domain list
-  typedef std::map<CString, TFilterElementHideDomain> TFilterElementHideDomains;
 
   TFilterElementHideTagsNamed m_elementHideTagsId;
   TFilterElementHideTagsNamed m_elementHideTagsClass;
   TFilterElementHideTags m_elementHideTags;
-
-  TFilterElementHideDomains m_elementHideDomains;
 
   TFilterMap m_filterMap[2][2];
   TFilterMapDefault m_filterMapDefault[2];
