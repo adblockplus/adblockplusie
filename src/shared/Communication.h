@@ -13,14 +13,26 @@ namespace Communication
 {
   extern const std::wstring pipeName;
 
-  enum {TYPE_STRING, TYPE_WSTRING, TYPE_INT64, TYPE_INT32, TYPE_BOOL};
-  typedef int32_t ValueType;
+  enum ProcType : uint32_t {
+    PROC_MATCHES,
+    PROC_GET_ELEMHIDE_SELECTORS,
+    PROC_AVAILABLE_SUBSCRIPTIONS,
+    PROC_LISTED_SUBSCRIPTIONS,
+    PROC_SET_SUBSCRIPTION,
+    PROC_UPDATE_ALL_SUBSCRIPTIONS,
+    PROC_GET_EXCEPTION_DOMAINS,
+    PROC_ADD_FILTER,
+  };
+  enum ValueType : uint32_t {
+    TYPE_PROC, TYPE_STRING, TYPE_WSTRING, TYPE_INT64, TYPE_INT32, TYPE_BOOL
+  };
   typedef uint32_t SizeType;
 
   class InputBuffer
   {
   public:
     InputBuffer(const std::string& data) : buffer(data), hasType(false) {}
+    InputBuffer& operator>>(ProcType& value) { return Read(value, TYPE_PROC); }
     InputBuffer& operator>>(std::string& value) { return ReadString(value, TYPE_STRING); }
     InputBuffer& operator>>(std::wstring& value) { return ReadString(value, TYPE_WSTRING); }
     InputBuffer& operator>>(int64_t& value) { return Read(value, TYPE_INT64); }
@@ -79,6 +91,7 @@ namespace Communication
     {
       return buffer.str();
     }
+    OutputBuffer& operator<<(ProcType value) { return Write(value, TYPE_PROC); }
     OutputBuffer& operator<<(const std::string& value) { return WriteString(value, TYPE_STRING); }
     OutputBuffer& operator<<(const std::wstring& value) { return WriteString(value, TYPE_WSTRING); }
     OutputBuffer& operator<<(int64_t value) { return Write(value, TYPE_INT64); }
