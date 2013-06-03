@@ -101,6 +101,9 @@ namespace Communication
   private:
     std::ostringstream buffer;
 
+    // Disallow copying
+    const OutputBuffer& operator=(const OutputBuffer&);
+
     template<class T>
     OutputBuffer& WriteString(const T& value, ValueType type)
     {
