@@ -1,41 +1,65 @@
 #include "PluginStdAfx.h"
+#include <algorithm>
+#include <stdexcept>
+#include <vector>
+
 #include "PluginUtil.h"
 #include "PluginSettings.h"
 
-static CString sDllDir()
+BString::BString(const std::wstring& value)
+    : value(::SysAllocString(value.c_str()))
 {
-  TCHAR filePath[MAX_PATH + 1];
-  filePath[0] = L'\0';
+}
 
-  if (GetModuleFileName(_AtlBaseModule.GetModuleInstance(), filePath, countof(filePath) - 1))
+BString::~BString()
+{
+  ::SysFreeString(value);
+}
+
+BString::operator BSTR()
+{
+  return value;
+}
+
+std::wstring DllDir()
+{
+  std::vector<WCHAR> path(MAX_PATH);
+  DWORD length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], path.size());
+
+  while (length == path.size())
   {
-    TCHAR* pLastBackslash = wcsrchr(filePath, L'\\');
-    if (pLastBackslash)
-    {
-      *(pLastBackslash + 1) = L'\0';
-    }
+    // Buffer too small, double buffer size
+    path.resize(path.size() * 2);
+    length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], path.size());
   }
 
-  return filePath;
+  try
+  {
+    if (length == 0)
+      throw std::runtime_error("Failed determining module path");
+
+    std::vector<WCHAR>::reverse_iterator it = std::find(path.rbegin(), path.rend(), L'\\');
+    if (it == path.rend())
+      throw std::runtime_error("Unexpected plugin path, no backslash found");
+
+    return std::wstring(path.begin(), it.base());
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+    return std::wstring();
+  }
 }
 
-const CString& DllDir()
+std::wstring UserSettingsFileUrl()
 {
-  static CString s_dllDir = sDllDir();
-  return s_dllDir;
+  return FileUrl(DllDir() + L"html\\templates\\index.html");
 }
 
-const CString& UserSettingsFileUrl()
+std::wstring FileUrl(const std::wstring& path)
 {
-  static CString s_url = FileUrl(CPluginSettings::GetDataPath("html\\templates\\index.html"));
-  return s_url;
-}
-
-CString FileUrl(const CString& url)
-{
-  CString tmpUrl = url;
-  tmpUrl.Replace(L'\\', L'/');
-
-  return CString("file:///") + tmpUrl;
+  std::wstring url = path;
+  std::replace(url.begin(), url.end(), L'\\', L'/');
+  return L"file:///" + url;
 }
 
