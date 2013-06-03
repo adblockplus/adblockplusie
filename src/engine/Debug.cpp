@@ -73,5 +73,8 @@ void DebugException(const std::exception& exception)
 {
   Debug(std::string("An exception occurred: ") + exception.what());
 }
-
+#else
+void Debug(const std::string& text) {}
+void DebugLastError(const std::string& message) {}
+void DebugException(const std::exception& exception) {}
 #endif // _DEBUG

@@ -2,9 +2,7 @@
 
 #include "../shared/AutoHandle.h"
 #include "../shared/Communication.h"
-#ifdef _DEBUG
 #include "Debug.h"
-#endif
 #include "Utils.h"
 
 namespace
@@ -62,18 +60,8 @@ namespace
       std::string type;
       std::string documentUrl;
       request >> url >> type >> documentUrl;
-      AdblockPlus::FilterPtr filterPtr = filterEngine->Matches(url, type, documentUrl);
-      if (filterPtr != 0)
-      {
-        if (filterPtr->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
-          response << false;
-        else
-          response << true;
-      }
-      else
-      {
-        response << false;
-      }
+      AdblockPlus::FilterPtr filter = filterEngine->Matches(url, type, documentUrl);
+      response << (filter && filter->GetType() != AdblockPlus::Filter::TYPE_EXCEPTION);
     }
     else if (procedureName == "GetElementHidingSelectors")
     {
@@ -154,9 +142,7 @@ namespace
     }
     catch (const std::exception& e)
     {
-#ifdef _DEBUG
       DebugException(e);
-#endif
     }
 
     // TODO: Keep the pipe open until the client disconnects
@@ -198,17 +184,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       if (!thread.get())
       {
         delete pipe;
-#ifdef _DEBUG
         DebugLastError("CreateThread failed");
-#endif
         return 1;
       }
     }
     catch (std::runtime_error e)
     {
-#ifdef _DEBUG
       DebugException(e);
-#endif
       return 1;
     }
   }
