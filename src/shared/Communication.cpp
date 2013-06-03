@@ -6,6 +6,8 @@
 
 namespace
 {
+  const int bufferSize = 1024;
+
   std::string AppendErrorCode(const std::string& message)
   {
     std::stringstream stream;
@@ -25,6 +27,21 @@ namespace
 }
 
 const std::wstring Communication::pipeName = L"\\\\.\\pipe\\adblockplusengine_" + GetUserName();
+
+void Communication::InputBuffer::CheckType(Communication::ValueType expectedType)
+{
+  if (!hasType)
+    ReadBinary(currentType);
+
+  if (currentType != expectedType)
+  {
+    // Make sure we don't attempt to read the type again
+    hasType = true;
+    throw new std::runtime_error("Unexpected type found in input buffer");
+  }
+  else
+    hasType = false;
+}
 
 Communication::PipeConnectionError::PipeConnectionError()
     : std::runtime_error(AppendErrorCode("Unable to connect to a named pipe"))
@@ -49,7 +66,7 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     sa.bInheritHandle = TRUE;
 
     pipe = CreateNamedPipeW (pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                                  PIPE_UNLIMITED_INSTANCES, Communication::bufferSize, Communication::bufferSize, 0, &sa);
+                                  PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
     LocalFree(securitydescriptor);
   }
   else

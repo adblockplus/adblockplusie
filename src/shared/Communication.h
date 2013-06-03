@@ -12,7 +12,6 @@
 namespace Communication
 {
   extern const std::wstring pipeName;
-  const int bufferSize = 1024;
 
   enum {TYPE_STRING, TYPE_WSTRING, TYPE_INT64, TYPE_INT32, TYPE_BOOL};
   typedef int32_t ValueType;
@@ -32,20 +31,7 @@ namespace Communication
     ValueType currentType;
     bool hasType;
 
-    void CheckType(ValueType expectedType)
-    {
-      if (!hasType)
-        ReadBinary(currentType);
-
-      if (currentType != expectedType)
-      {
-        // Make sure we don't attempt to read the type again
-        hasType = true;
-        throw new std::runtime_error("Unexpected type found in input buffer");
-      }
-      else
-        hasType = false;
-    }
+    void CheckType(ValueType expectedType);
 
     template<class T>
     InputBuffer& ReadString(T& value, ValueType expectedType)
