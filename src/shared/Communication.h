@@ -14,7 +14,9 @@ namespace Communication
   extern const std::wstring pipeName;
   const int bufferSize = 1024;
 
-  enum ValueType {TYPE_STRING, TYPE_WSTRING, TYPE_INT64, TYPE_INT32, TYPE_BOOL};
+  enum {TYPE_STRING, TYPE_WSTRING, TYPE_INT64, TYPE_INT32, TYPE_BOOL};
+  typedef int32_t ValueType;
+  typedef uint32_t SizeType;
 
   class InputBuffer
   {
@@ -27,7 +29,7 @@ namespace Communication
     InputBuffer& operator>>(bool& value) { return Read(value, TYPE_BOOL); }
   private:
     std::istringstream buffer;
-    int32_t currentType;
+    ValueType currentType;
     bool hasType;
 
     void CheckType(ValueType expectedType)
@@ -50,7 +52,7 @@ namespace Communication
     {
       CheckType(expectedType);
 
-      uint32_t length;
+      SizeType length;
       ReadBinary(length);
 
       std::auto_ptr<T::value_type> data(new T::value_type[length]);
@@ -100,11 +102,11 @@ namespace Communication
     std::ostringstream buffer;
 
     template<class T>
-    OutputBuffer& WriteString(const T& value, int32_t type)
+    OutputBuffer& WriteString(const T& value, ValueType type)
     {
       WriteBinary(type);
 
-      uint32_t length = value.size();
+      SizeType length = value.size();
       WriteBinary(length);
 
       buffer.write(reinterpret_cast<const char*>(value.c_str()), sizeof(T::value_type) * length);
@@ -115,7 +117,7 @@ namespace Communication
     }
 
     template<class T>
-    OutputBuffer& Write(const T value, int32_t type)
+    OutputBuffer& Write(const T value, ValueType type)
     {
       WriteBinary(type);
       WriteBinary(value);
