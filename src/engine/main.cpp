@@ -52,80 +52,91 @@ namespace
   {
     Communication::OutputBuffer response;
 
-    std::string procedureName;
-    request >> procedureName;
-    if (procedureName == "Matches")
+    Communication::ProcType procedure;
+    request >> procedure;
+    switch (procedure)
     {
-      std::string url;
-      std::string type;
-      std::string documentUrl;
-      request >> url >> type >> documentUrl;
-      AdblockPlus::FilterPtr filter = filterEngine->Matches(url, type, documentUrl);
-      response << (filter && filter->GetType() != AdblockPlus::Filter::TYPE_EXCEPTION);
-    }
-    else if (procedureName == "GetElementHidingSelectors")
-    {
-      std::string domain;
-      request >> domain;
-      WriteStrings(response, filterEngine->GetElementHidingSelectors(domain));
-    }
-    else if (procedureName == "FetchAvailableSubscriptions")
-    {
-      WriteSubscriptions(response, filterEngine->FetchAvailableSubscriptions());
-    }
-    else if (procedureName == "GetListedSubscriptions")
-    {
-      WriteSubscriptions(response, filterEngine->GetListedSubscriptions());
-    }
-    else if (procedureName == "SetSubscription")
-    {
-      std::string url;
-      request >> url;
-
-      std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
-      for (size_t i = 0, count = subscriptions.size(); i < count; i++)
-        subscriptions[i]->RemoveFromList();
-
-      filterEngine->GetSubscription(url)->AddToList();
-    }
-    else if (procedureName == "UpdateAllSubscriptions")
-    {
-      std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
-      for (size_t i = 0, count = subscriptions.size(); i < count; i++)
-        subscriptions[i]->UpdateFilters();
-    }
-    else if (procedureName == "GetExceptionDomains")
-    {
-      std::vector<AdblockPlus::FilterPtr> filters = filterEngine->GetListedFilters();
-      std::vector<std::string> domains;
-      for (size_t i = 0, count = filters.size(); i < count; i++)
+      case Communication::PROC_MATCHES:
       {
-        AdblockPlus::FilterPtr filter = filters[i];
-        if (filter->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
-        {
-          std::string text = filter->GetProperty("text")->AsString();
+        std::string url;
+        std::string type;
+        std::string documentUrl;
+        request >> url >> type >> documentUrl;
+        AdblockPlus::FilterPtr filter = filterEngine->Matches(url, type, documentUrl);
+        response << (filter && filter->GetType() != AdblockPlus::Filter::TYPE_EXCEPTION);
+        break;
+      }
+      case Communication::PROC_GET_ELEMHIDE_SELECTORS:
+      {
+        std::string domain;
+        request >> domain;
+        WriteStrings(response, filterEngine->GetElementHidingSelectors(domain));
+        break;
+      }
+      case Communication::PROC_AVAILABLE_SUBSCRIPTIONS:
+      {
+        WriteSubscriptions(response, filterEngine->FetchAvailableSubscriptions());
+        break;
+      }
+      case Communication::PROC_LISTED_SUBSCRIPTIONS:
+      {
+        WriteSubscriptions(response, filterEngine->GetListedSubscriptions());
+        break;
+      }
+      case Communication::PROC_SET_SUBSCRIPTION:
+      {
+        std::string url;
+        request >> url;
 
-          //@@||example.com^$document
-          const char prefix[] = "@@||";
-          const char suffix[] = "^$document";
-          const int prefixLen = strlen(prefix);
-          const int suffixLen = strlen(suffix);
-          if (!text.compare(0, prefixLen, prefix) &&
-              !text.compare(text.size() - suffixLen, suffixLen, suffix))
+        std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+        for (size_t i = 0, count = subscriptions.size(); i < count; i++)
+          subscriptions[i]->RemoveFromList();
+
+        filterEngine->GetSubscription(url)->AddToList();
+        break;
+      }
+      case Communication::PROC_UPDATE_ALL_SUBSCRIPTIONS:
+      {
+        std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+        for (size_t i = 0, count = subscriptions.size(); i < count; i++)
+          subscriptions[i]->UpdateFilters();
+        break;
+      }
+      case Communication::PROC_GET_EXCEPTION_DOMAINS:
+      {
+        std::vector<AdblockPlus::FilterPtr> filters = filterEngine->GetListedFilters();
+        std::vector<std::string> domains;
+        for (size_t i = 0, count = filters.size(); i < count; i++)
+        {
+          AdblockPlus::FilterPtr filter = filters[i];
+          if (filter->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
           {
-            domains.push_back(text.substr(prefixLen, text.size() - prefixLen - suffixLen));
+            std::string text = filter->GetProperty("text")->AsString();
+
+            //@@||example.com^$document
+            const char prefix[] = "@@||";
+            const char suffix[] = "^$document";
+            const int prefixLen = strlen(prefix);
+            const int suffixLen = strlen(suffix);
+            if (!text.compare(0, prefixLen, prefix) &&
+                !text.compare(text.size() - suffixLen, suffixLen, suffix))
+            {
+              domains.push_back(text.substr(prefixLen, text.size() - prefixLen - suffixLen));
+            }
           }
         }
+
+        WriteStrings(response, domains);
+        break;
       }
+      case Communication::PROC_ADD_FILTER:
+      {
+        std::string text;
+        request >> text;
 
-      WriteStrings(response, domains);
-    }
-    else if (procedureName == "AddFilter")
-    {
-      std::string text;
-      request >> text;
-
-      filterEngine->GetFilter(text)->AddToList();
+        filterEngine->GetFilter(text)->AddToList();
+        break;
+      }
     }
     return response;
   }
