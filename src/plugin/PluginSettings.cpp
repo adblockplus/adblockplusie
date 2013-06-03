@@ -104,39 +104,6 @@ CPluginSettings::CPluginSettings() :
           pf,
           CSIDL_PROGRAM_FILESX86,
           FALSE );
-        //No files found, copy from the dll location
-        CString pathToDll;
-        DWORD pathResult = GetModuleFileNameW((HINSTANCE)&__ImageBase, pathToDll.GetBufferSetLength(MAX_PATH), MAX_PATH);
-        if (pathResult > 0)
-        {
-          CString cpyPath;
-          cpyPath = pathToDll.Left(pathToDll.ReverseFind('\\') + 1);
-
-          BOOL res = CopyFile(cpyPath + SETTINGS_INI_FILE, GetDataPath(SETTINGS_INI_FILE), TRUE);
-          res = CopyFile(cpyPath + DICTIONARY_INI_FILE, GetDataPath(DICTIONARY_INI_FILE), TRUE);
-          res = CopyFile(cpyPath + SETTING_PAGE_INI_FILE, GetDataPath(SETTING_PAGE_INI_FILE), TRUE);
-
-          SHFILEOPSTRUCT pFileStruct;
-          ZeroMemory(&pFileStruct, sizeof(SHFILEOPSTRUCT));
-          pFileStruct.hwnd  = NULL;
-          pFileStruct.wFunc = FO_COPY;
-          WCHAR fromPath[MAX_PATH + 2];
-          WCHAR toPath[MAX_PATH + 2];
-
-          CString source = cpyPath + "html\\*";
-          wcscpy(fromPath, source);
-          fromPath[source.GetLength()] = '\0';
-          fromPath[source.GetLength() + 1] = '\0';
-
-          wcscpy(toPath, GetDataPath(L"html"));
-          toPath[GetDataPath(L"html").GetLength()] = '\0';
-          toPath[GetDataPath(L"html").GetLength() + 1] = '\0';
-
-          pFileStruct.pFrom = fromPath;
-          pFileStruct.pTo =  toPath;
-          pFileStruct.fFlags = FOF_SILENT  | FOF_NOCONFIRMATION | FOF_NOCONFIRMMKDIR | FOF_NO_UI | FOF_RENAMEONCOLLISION;
-          SHFileOperation(&pFileStruct);
-        }
         is.open(GetDataPath(SETTINGS_INI_FILE), std::ios_base::in);
         if (!is.is_open())
         {

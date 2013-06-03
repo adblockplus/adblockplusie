@@ -162,23 +162,23 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
     }
 
     CString log;
-    log.Format(L"Current URL: %s, settings URL: %s", url, UserSettingsFileUrl()); 
+    log.Format(L"Current URL: %s, settings URL: %s", url, UserSettingsFileUrl().c_str());
     DEBUG_ERROR_LOG(0, 0, 0, log);
-    if (0 == url.CompareNoCase(UserSettingsFileUrl()))
+    if (0 == url.CompareNoCase(CString(UserSettingsFileUrl().c_str())))
     {
       CComPtr<IDispatch> pDocDispatch;
       browser->get_Document(&pDocDispatch);
       CComQIPtr<IHTMLDocument2> pDoc2 = pDocDispatch;
-      if (pDoc2) 
+      if (pDoc2)
       {
         CComPtr<IHTMLWindow2> pWnd2;
         pDoc2->get_parentWindow(&pWnd2);
-        if (pWnd2) 
+        if (pWnd2)
         {
-          CComQIPtr<IDispatchEx> pWndEx = pWnd2; 
-          if (pWndEx) 
+          CComQIPtr<IDispatchEx> pWndEx = pWnd2;
+          if (pWndEx)
           {
-            // Create "Settings" object in JavaScript. 
+            // Create "Settings" object in JavaScript.
             // A method call of "Settings" in JavaScript, transfered to "Invoke" of m_pluginUserSettings
             DISPID dispid;
             HRESULT hr = pWndEx->GetDispID(L"Settings", fdexNameEnsure, &dispid);
@@ -189,7 +189,7 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
               DISPPARAMS params;
               params.cArgs = 1;
               params.cNamedArgs = 0;
-              params.rgvarg = &var;            
+              params.rgvarg = &var;
               params.rgdispidNamedArgs = 0;
               hr = pWndEx->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYPUT | DISPATCH_PROPERTYPUTREF, &params, 0, 0, 0);
               if (FAILED(hr))

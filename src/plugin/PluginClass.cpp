@@ -1411,7 +1411,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 #ifndef ENTERPRISE
   case ID_SETTINGS:
     {
-      url = UserSettingsFileUrl();
+      url = CString(UserSettingsFileUrl().c_str());
     }
     break;
 #endif
@@ -1960,12 +1960,12 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         vFlags.vt = VT_I4;
         vFlags.intVal = navOpenInNewTab;
 
-        HRESULT hr = browser->Navigate(CComBSTR(UserSettingsFileUrl()), &vFlags, NULL, NULL, NULL);
+        HRESULT hr = browser->Navigate(BString(UserSettingsFileUrl()), &vFlags, NULL, NULL, NULL);
         if (FAILED(hr))
         {
           vFlags.intVal = navOpenInNewWindow;
 
-          hr = browser->Navigate(CComBSTR(UserSettingsFileUrl()), &vFlags, NULL, NULL, NULL);
+          hr = browser->Navigate(BString(UserSettingsFileUrl()), &vFlags, NULL, NULL, NULL);
           if (FAILED(hr))
           {
             DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_SETTINGS, "Navigation::Failed")

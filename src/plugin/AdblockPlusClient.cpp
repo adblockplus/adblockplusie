@@ -44,37 +44,30 @@ namespace
     std::auto_ptr<Communication::Pipe> result;
     try
     {
-      try
-      {
-        result.reset(new Communication::Pipe(Communication::pipeName,
-            Communication::Pipe::MODE_CONNECT));
-      }
-      catch (Communication::PipeConnectionError e)
-      {
-        SpawnAdblockPlusEngine();
+      result.reset(new Communication::Pipe(Communication::pipeName,
+          Communication::Pipe::MODE_CONNECT));
+    }
+    catch (Communication::PipeConnectionError e)
+    {
+      SpawnAdblockPlusEngine();
 
-        int timeout = 10000;
-        const int step = 10;
-        while (!result.get())
+      int timeout = 10000;
+      const int step = 10;
+      while (!result.get())
+      {
+        try
         {
-          try
-          {
-            result.reset(new Communication::Pipe(Communication::pipeName,
-                  Communication::Pipe::MODE_CONNECT));
-          }
-          catch (Communication::PipeConnectionError e)
-          {
-            Sleep(step);
-            timeout -= step;
-            if (timeout <= 0)
-              throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
-          }
+          result.reset(new Communication::Pipe(Communication::pipeName,
+                Communication::Pipe::MODE_CONNECT));
+        }
+        catch (Communication::PipeConnectionError e)
+        {
+          Sleep(step);
+          timeout -= step;
+          if (timeout <= 0)
+            throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
         }
       }
-    }
-    catch(std::exception e)
-    {
-      DEBUG_GENERAL(e.what());
     }
     return result;
   }
