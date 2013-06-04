@@ -20,6 +20,7 @@ namespace
   void SpawnAdblockPlusEngine()
   {
     std::wstring engineExecutablePath = DllDir() + L"AdblockPlusEngine.exe";
+    CString browserLanguage = CPluginSystem::GetInstance()->GetBrowserLanguage();
     STARTUPINFO startupInfo = {};
     PROCESS_INFORMATION processInformation = {};
 
@@ -28,8 +29,9 @@ namespace
     HANDLE newToken;
     DuplicateTokenEx(token, 0, 0, SecurityImpersonation, TokenPrimary, &newToken);
 
-    if (!CreateProcessAsUser(newToken, 0, const_cast<wchar_t*>(engineExecutablePath.c_str()), 0, 0, 0, 0, 0, 0,
-                             &startupInfo, &processInformation))
+    if (!CreateProcessAsUserW(newToken, engineExecutablePath.c_str(),
+                              browserLanguage.GetBuffer(browserLanguage.GetLength() + 1),
+                              0, 0, 0, 0, 0, 0, &startupInfo, &processInformation))
     {
       DWORD error = GetLastError();
       throw std::runtime_error("Failed to start Adblock Plus Engine");

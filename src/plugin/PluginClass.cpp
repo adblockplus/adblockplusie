@@ -1909,7 +1909,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         CRect rcText = rcClient;
         rcText.left += offx;
         ::SetBkMode(hDC, TRANSPARENT);
-        ::DrawText(hDC, _T(IEPLUGIN_VERSION), -1, &rcText, DT_WORD_ELLIPSIS|DT_LEFT|DT_SINGLELINE|DT_VCENTER);
+        ::DrawTextW(hDC, IEPLUGIN_VERSION, -1, &rcText, DT_WORD_ELLIPSIS|DT_LEFT|DT_SINGLELINE|DT_VCENTER);
 
         ::SelectObject(hDC, hOldFont);
 #endif // _DEBUG

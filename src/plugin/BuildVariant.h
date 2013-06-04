@@ -1,2 +1,2 @@
 #include "Plugin.h"
-#include "Version.h"
+#include "../shared/Version.h"

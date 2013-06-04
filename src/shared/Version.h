@@ -1,0 +1,1 @@
+#define IEPLUGIN_VERSION L"1.0"

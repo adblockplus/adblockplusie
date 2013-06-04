@@ -2,6 +2,7 @@
 
 #include "../shared/AutoHandle.h"
 #include "../shared/Communication.h"
+#include "../shared/Version.h"
 #include "Debug.h"
 #include "Utils.h"
 
@@ -162,10 +163,15 @@ namespace
   }
 }
 
-std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine()
+std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& locale)
 {
-  // TODO: Pass appInfo in, which should be sent by the client
-  AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New();
+  AdblockPlus::AppInfo appInfo;
+  appInfo.version = ToUtf8String(IEPLUGIN_VERSION);
+  appInfo.name = "adblockplusie";
+  appInfo.platform = "msie";
+  appInfo.locale = ToUtf8String(locale);
+
+  AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New(appInfo);
   std::string dataPath = ToUtf8String(GetAppDataPath());
   dynamic_cast<AdblockPlus::DefaultFileSystem*>(jsEngine->GetFileSystem().get())->SetBasePath(dataPath);
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
@@ -181,7 +187,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   //       client timeout after CreateProcess(), but should increase the one
   //       in WaitNamedPipe().
 
-  filterEngine = CreateFilterEngine();
+  int argc;
+  LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+  std::wstring locale(argc >= 1 ? argv[0] : L"");
+  LocalFree(argv);
+
+  filterEngine = CreateFilterEngine(locale);
 
   for (;;)
   {

@@ -162,7 +162,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
         // Show update dialog
         CUpdateDialog uDlg;
 
-        uDlg.SetVersions(updateVersion, _T(IEPLUGIN_VERSION));
+        uDlg.SetVersions(updateVersion, IEPLUGIN_VERSION);
 
         if (uDlg.DoModal(::GetDesktopWindow()) == IDOK)
         {
