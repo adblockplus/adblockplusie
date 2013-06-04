@@ -15,7 +15,8 @@ pushd WixInstaller
 nmake
 popd
 
-signtool.exe sign /v /d "Adblock Plus" /du "http://adblockplus.org/" /f %1 /tr "http://www.startssl.com/timestamp" "build\adblockplusie-en-us.msi"
+signtool.exe sign /v /d "Adblock Plus" /du "http://adblockplus.org/" /f %1 /tr "http://www.startssl.com/timestamp" "build\ia32\adblockplusie-en-us-ia32.msi"
+signtool.exe sign /v /d "Adblock Plus" /du "http://adblockplus.org/" /f %1 /tr "http://www.startssl.com/timestamp" "build\x64\adblockplusie-en-us-x64.msi"
 
 popd
 goto End
