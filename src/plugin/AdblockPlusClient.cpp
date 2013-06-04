@@ -12,7 +12,6 @@
 
 #include "AdblockPlusClient.h"
 
-#include "../shared/AutoHandle.h"
 #include "../shared/Communication.h"
 
 namespace
