@@ -1,3 +1,6 @@
+#include <memory>
+#include <stdexcept>
+
 #include <Windows.h>
 #include <ShlObj.h>
 
