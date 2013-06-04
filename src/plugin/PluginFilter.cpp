@@ -51,25 +51,17 @@ CComAutoCriticalSection CPluginFilter::s_criticalSectionFilterMap;
 // CFilterElementHideAttrSelector
 // ============================================================================
 
-CFilterElementHideAttrSelector::CFilterElementHideAttrSelector() : m_isStarting(false), m_isEnding(false), m_isAnywhere(false), m_isExact(false), m_isStyle(false), m_isId(false), m_isClass(false), m_bstrAttr(NULL)
+CFilterElementHideAttrSelector::CFilterElementHideAttrSelector() : m_type(TYPE_NONE), m_pos(POS_NONE), m_bstrAttr(NULL)
 {
 }
 
 CFilterElementHideAttrSelector::CFilterElementHideAttrSelector(const CFilterElementHideAttrSelector& filter)
 {
-  m_isStarting = filter.m_isStarting;
-  m_isEnding = filter.m_isEnding;
-  m_isAnywhere = filter.m_isAnywhere;
-  m_isExact = filter.m_isExact;
-
-  m_isStyle = filter.m_isStyle;
-  m_isId = filter.m_isId;
-  m_isClass = filter.m_isClass;
-
+  m_type = filter.m_type;
+  m_pos = filter.m_pos;
   m_bstrAttr = filter.m_bstrAttr;
 
   m_value = filter.m_value;
-
 }
 
 CFilterElementHideAttrSelector::~CFilterElementHideAttrSelector()
@@ -83,6 +75,184 @@ CFilterElementHideAttrSelector::~CFilterElementHideAttrSelector()
 
 CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText(filterText), m_type(ETraverserComplexType::TRAVERSER_TYPE_ERROR)
 {
+  // Find tag name, class or any (*)
+  CString tag;
+  CString filterString = filterText;
+
+  TCHAR firstTag = filterString.GetAt(0);
+  // Any tag
+  if (firstTag == '*')
+  {
+    filterString = filterString.Right(filterString.GetLength() - 1);
+  }
+  // Any tag (implicitely)
+  else if (firstTag == '[' || firstTag == '.' || firstTag == '#')
+  {
+  }
+  // Real tag
+  else if (isalnum(firstTag))
+  {
+    //TODO: Add support for descendant selectors
+    int pos = filterString.FindOneOf(L".#[(");
+    if (pos > 0) 
+    {
+      tag = filterString.Left(pos).MakeLower();
+    }
+    else
+    {
+      tag = filterString.MakeLower();
+    }
+    filterString = filterString.Right(filterString.GetLength() - tag.GetLength());
+  }
+  // Error
+  else
+  {
+    DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (invalid tag)")
+    return;
+  }
+
+  // Find Id and class name
+  CString id;
+  CString className;
+
+  if (!filterString.IsEmpty())
+  {
+    TCHAR firstId = filterString.GetAt(0);
+
+    // Id
+    if (firstId == '#')
+    {
+      int pos = filterString.Find('[');
+      if (pos > 0)
+      {
+        id = filterString.Mid(1, pos - 1);
+      }
+      else
+      {
+        id = filterString.Right(filterString.GetLength() - 1);
+      }
+      if (id.Find(L".") > 0)
+      {
+        className = id.Right(id.GetLength() - id.Find(L".") - 1);
+        id = id.Left(id.Find(L"."));
+      }
+
+      filterString = filterString.Right(filterString.GetLength() - id.GetLength() - 1);
+    }
+    // Class name
+    else if (firstId == '.')
+    {
+      int pos = filterString.Find('[');
+      if (pos > 0)
+      {
+        className = filterString.Mid(1, pos - 1);
+      }
+      else
+      {
+        className = filterString.Right(filterString.GetLength() - 1);
+      }
+      filterString = filterString.Right(filterString.GetLength() - className.GetLength() - 1);
+    }
+  }
+
+  //TODO: Room for improvement here. Possibly to have attribute to be a separate object
+  char chAttrStart = '[';
+  char chAttrEnd   = ']';
+
+  // Find attribute selectors
+  if (!filterString.IsEmpty() && filterString.GetAt(0) != chAttrStart)
+  {
+    DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (invalid attr selector)")
+      return;
+  }
+
+  int endPos = 0;
+  while (!filterString.IsEmpty())
+  {
+    if (filterString.GetAt(0) != chAttrStart)
+    {
+      DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (more data)")
+      break;
+    }
+    endPos = filterString.Find(']') ;
+    if (endPos < 0)
+    {
+      DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (more data)")
+      break;
+    }
+        
+    CFilterElementHideAttrSelector attrSelector;
+
+    CString arg = filterString.Mid(1, endPos - 1);
+    filterString = filterString.Right(filterString.GetLength() - endPos - 1);
+
+    int delimiterPos = 0;
+    if ((delimiterPos = arg.Find('=')) > 0)
+    {
+      attrSelector.m_value = arg.Mid(delimiterPos + 1, arg.GetLength() - delimiterPos - 1);
+      if (attrSelector.m_value.GetAt(0) == '\"' && attrSelector.m_value.GetAt(attrSelector.m_value.GetLength() - 1) == '\"' && attrSelector.m_value.GetLength() >= 2)
+      {
+        attrSelector.m_value = attrSelector.m_value.Mid(1, attrSelector.m_value.GetLength() - 2);
+      }
+
+      if (arg.GetAt(delimiterPos - 1) == '^')
+      {
+        attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
+        attrSelector.m_pos = CFilterElementHideAttrPos::STARTING;
+      }
+      else if (arg.GetAt(delimiterPos - 1) == '*')
+      {
+        attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
+        attrSelector.m_pos = CFilterElementHideAttrPos::ANYWHERE;
+      }
+      else if (arg.GetAt(delimiterPos - 1) == '$')
+      {
+        attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
+        attrSelector.m_pos = CFilterElementHideAttrPos::ENDING;
+      }
+      else
+      {
+        attrSelector.m_bstrAttr = arg.Left(delimiterPos);
+        attrSelector.m_pos = CFilterElementHideAttrPos::EXACT;
+      }
+    }
+    CString tag = attrSelector.m_bstrAttr;
+    if (tag == "style")
+    {
+      attrSelector.m_type = CFilterElementHideAttrType::STYLE;
+      attrSelector.m_value.MakeLower();
+    }
+    else if (tag == "id")
+    {
+      attrSelector.m_type = CFilterElementHideAttrType::ID;
+    }
+    else if (tag == "class")
+    {
+      attrSelector.m_type = CFilterElementHideAttrType::CLASS;
+    }
+    m_attributeSelectors.push_back(attrSelector);
+
+  }
+
+  // End check
+  if (!filterString.IsEmpty())
+  {
+    DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (more data)")
+    return;
+  }
+
+  if (!id.IsEmpty())
+  {
+    m_tagId = id;
+  }
+  if (!className.IsEmpty())
+  {
+    m_tagClassName = className;
+  }
+  if (!tag.IsEmpty())
+  {
+    m_tag = tag;
+  }
 }
 
 CFilterElementHide::CFilterElementHide(const CFilterElementHide& filter)
@@ -92,7 +262,6 @@ CFilterElementHide::CFilterElementHide(const CFilterElementHide& filter)
   m_tagId = filter.m_tagId;
   m_tagClassName = filter.m_tagClassName;
 
-  m_domainsNot = filter.m_domainsNot;
   m_attributeSelectors = filter.m_attributeSelectors;
 
   m_predecessor = filter.m_predecessor;
@@ -113,24 +282,239 @@ CFilter::CFilter(const CFilter& filter)
 
   m_isMatchCase  = filter.m_isMatchCase;
   m_isFromStart = filter.m_isFromStart;
-  m_isFromStartDomain = filter.m_isFromStartDomain;
   m_isFromEnd = filter.m_isFromEnd;
 
   m_stringElements = filter.m_stringElements;
 
   m_filterText = filter.m_filterText;
 
-  m_domains = filter.m_domains;
-  m_domainsNot = filter.m_domainsNot;
-
   m_hitCount = filter.m_hitCount;
 }
 
 
 CFilter::CFilter() : m_isMatchCase(false), m_isFirstParty(false), m_isThirdParty(false), m_contentType(CFilter::contentTypeAny),
-  m_isFromStart(false), m_isFromStartDomain(false), m_isFromEnd(false), m_hitCount(0)
+  m_isFromStart(false), m_isFromEnd(false), m_hitCount(0)
 {
 }
+
+
+bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
+{
+  bool isHidden = true;
+  HRESULT hr;
+
+  if ((!m_tagId.IsEmpty()) && (isHidden))
+  {
+    CComBSTR id;
+    hr = pEl->get_id(&id);
+    CComBSTR tagId = CComBSTR(m_tagId);
+    if ((hr != S_OK) || (id != tagId))
+    {
+      return false;
+    }
+  }
+  else if ((!m_tagClassName.IsEmpty()) && (isHidden))
+  {
+    CComBSTR classNameBSTR;
+    hr = pEl->get_className(&classNameBSTR);
+    if (hr == S_OK)
+    {
+      CString className = classNameBSTR;
+      int start = 0;
+      CString specificClass;
+      bool foundMatch = false;
+      while ((specificClass = className.Tokenize(L" ", start)) != L"")
+      {
+        if (specificClass == m_tagClassName)
+        {
+          foundMatch = true;
+        }
+      }
+      if (!foundMatch)
+      {
+        return false;
+      }
+    }
+  }
+  else if ((!m_tag.IsEmpty()) && (isHidden))
+  {
+    CComBSTR tagName;
+    tagName.ToLower();
+    hr = pEl->get_tagName(&tagName);
+    if ((hr != S_OK) || (tagName != CComBSTR(m_tag)))
+    {
+      return false;
+    }
+  }
+
+
+  // Check attributes
+  if (!m_attributeSelectors.empty())
+  {
+    CString style;
+
+    CComPtr<IHTMLStyle> pStyle;
+    if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
+    {
+      CComBSTR bstrStyle;
+
+      if (SUCCEEDED(pStyle->get_cssText(&bstrStyle)) && bstrStyle)
+      {
+        style = bstrStyle;
+        style.MakeLower();
+      }
+    }
+
+    std::vector<CFilterElementHideAttrSelector>::const_iterator attrIt = m_attributeSelectors.begin();
+
+    while (attrIt != m_attributeSelectors.end())
+    {
+      CComVariant vAttr;
+      UINT attrLength = 0;
+
+      CString value;
+
+      if (attrIt->m_type == CFilterElementHideAttrType::STYLE)
+      {
+        if (!style.IsEmpty())
+        {
+          value = style;
+        }
+      }
+      else if (attrIt->m_type == CFilterElementHideAttrType::CLASS)
+      {
+        CComBSTR bstrClassNames;
+        if (SUCCEEDED(pEl->get_className(&bstrClassNames)) && bstrClassNames)
+        {
+          value = bstrClassNames;
+        }
+      }
+      else if (attrIt->m_type == CFilterElementHideAttrType::ID)
+      {
+        CComBSTR bstrId;
+        if (SUCCEEDED(pEl->get_id(&bstrId)) && bstrId)
+        {
+          value = bstrId;
+        }
+      }
+      else if (SUCCEEDED(pEl->getAttribute(attrIt->m_bstrAttr, 0, &vAttr)) && vAttr.vt != VT_NULL)
+      {
+        if (vAttr.vt == VT_BSTR)
+        {
+          value = vAttr.bstrVal;
+        }
+        else if (vAttr.vt == VT_I4)
+        {
+          value.Format(L"%u", vAttr.iVal);
+        }
+      }
+
+      if (!value.IsEmpty())
+      {
+        if (attrIt->m_pos == CFilterElementHideAttrPos::EXACT)
+        {
+          if (attrIt->m_pos == CFilterElementHideAttrType::STYLE)
+          {
+            // IE adds ; to the end of the style
+            isHidden = (value + ';' == attrIt->m_value);
+            if (!isHidden)
+              return false;
+          }
+          else
+          {
+            isHidden = (value == attrIt->m_value);
+            if (!isHidden)
+              return false;
+          }
+        }
+        else if (attrIt->m_pos == CFilterElementHideAttrPos::STARTING)
+        {
+          isHidden = value.Find(attrIt->m_value) == 0;
+          if (!isHidden)
+            return false;
+        }
+        else if (attrIt->m_pos == CFilterElementHideAttrPos::ENDING)
+        {
+          isHidden = value.Find(attrIt->m_value) == attrLength - attrIt->m_value.GetLength();
+          if (!isHidden)
+            return false;
+        }
+        else if (attrIt->m_pos == CFilterElementHideAttrPos::ANYWHERE)
+        {
+          isHidden = value.Find(attrIt->m_value) >= 0;
+          if (!isHidden)
+            return false;
+        }
+      }
+      else
+      {
+        return false;
+      }
+
+      ++attrIt;
+    }
+  }
+
+  if (m_predecessor.get() != 0)
+  {
+    if (m_predecessor.get())
+    {
+      CComPtr<IHTMLElement> pDomPredecessor;
+      HRESULT hr = S_FALSE;
+      switch (m_predecessor->m_type)
+      {
+      case ETraverserComplexType::TRAVERSER_TYPE_PARENT:
+        hr = pEl->get_parentElement(&pDomPredecessor);
+        break;
+      case ETraverserComplexType::TRAVERSER_TYPE_IMMEDIATE:
+        isHidden = false;
+        hr = S_FALSE;
+        CComQIPtr<IHTMLDOMNode> pDomNode = pEl;
+        if (pDomNode)
+        {
+          CComPtr<IHTMLDOMNode> pPrevSibilingNode;
+          pDomNode->get_previousSibling(&pPrevSibilingNode);
+          if (pPrevSibilingNode)
+          {
+            long type;
+            hr = pPrevSibilingNode->get_nodeType(&type);
+
+            //Element node 1; Text node 3
+            while((hr == S_OK) && (type != 1))
+            {
+              CComPtr<IHTMLDOMNode> newPrevSibiling;
+              hr = pPrevSibilingNode->get_previousSibling(&newPrevSibiling);
+              if (newPrevSibiling)
+              {
+                hr = newPrevSibiling->get_nodeType(&type);
+                pPrevSibilingNode = newPrevSibiling;
+              }
+              else
+              {
+                hr = S_FALSE;
+              }
+            }
+            if (hr == S_OK)
+            {
+              CComBSTR nodeName;
+              pPrevSibilingNode->get_nodeName(&nodeName);
+              hr = pPrevSibilingNode.QueryInterface(&pDomPredecessor);
+            }
+          }
+        }
+        if (hr != S_OK)
+          return false;
+        break;
+      }
+      if (hr != S_OK)
+        return false;
+      isHidden = m_predecessor->IsMatchFilterElementHide(pDomPredecessor);
+    }
+  }
+
+  return isHidden;
+}
+
 
 
 // ============================================================================
@@ -171,517 +555,80 @@ CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
 bool CPluginFilter::AddFilterElementHide(CString filterText)
 {
 
+
   DEBUG_FILTER("Input: " + filterText + " filterFile" + filterFile);
 
   s_criticalSectionFilterMap.Lock();    
   {
 
     CString filterString  = filterText;
-
     // Create filter descriptor
     std::auto_ptr<CFilterElementHide> filter;
-    filter.reset(new CFilterElementHide(filterText));
     std::auto_ptr<CFilterElementHide> filterParent; 
 
     CString wholeFilterString = filterString;
-    int chunkStart = 0;
-    bool isComplex = false;
-    bool isComplexHeadPresent = false;
-    bool fullyParsed = false;
-    char seperatorChar = '\0';
-    while (!fullyParsed)
+    char separatorChar = '\0';
+    bool isComplexRule = false;
+    do
     {
-      chunkStart = wholeFilterString.FindOneOf(L">+");
-      if (chunkStart > 0)
+      int chunkEnd = filterText.FindOneOf(L"+>");
+      if (chunkEnd > 0)
       {
-        seperatorChar = wholeFilterString.GetAt(chunkStart);
-        filterString = wholeFilterString.Left(chunkStart).TrimRight();
-        chunkStart ++;
-        wholeFilterString = wholeFilterString.Right(wholeFilterString.GetLength() - chunkStart);
-        wholeFilterString.TrimLeft();
-        isComplex = true;
-        if (isComplexHeadPresent)
-        {
-          filterParent.reset(filter.release());
-        }
-        isComplexHeadPresent = true;
+        separatorChar = filterText.GetAt(chunkEnd);
       }
       else
       {
-        fullyParsed = true;
-        isComplex = false;
-        filterString = wholeFilterString;
-        wholeFilterString = "";
-        if (isComplexHeadPresent)
-        {
-          filterParent.reset(filter.release());
-        }
+        chunkEnd = filterText.GetLength();
+        separatorChar = '\0';
       }
 
-      filter.reset(new CFilterElementHide(filterString));
-      if (chunkStart > 0)
+      CString filterChunk = filterText.Left(chunkEnd).TrimRight();
+      std::auto_ptr<CFilterElementHide> filterParent ;
+      if (isComplexRule)
+        filterParent = filter;
+
+      filter.reset(new CFilterElementHide(filterChunk));       
+
+      if (separatorChar != '\0')
       {
-        if (seperatorChar == '+')
-        {
-          filter->m_type = ETraverserComplexType::TRAVERSER_TYPE_IMMEDIATE;
-        }
-        else if (seperatorChar == '>')
-        {
-          filter->m_type = ETraverserComplexType::TRAVERSER_TYPE_PARENT;
-        }
+        filterText = filterText.Right(filterText.GetLength() - chunkEnd - 1).TrimLeft();
+        isComplexRule = true;
+        if (separatorChar == '+')
+          filter->m_type = CFilterElementHide::TRAVERSER_TYPE_IMMEDIATE;
+        else if (separatorChar == '>')
+          filter->m_type = CFilterElementHide::TRAVERSER_TYPE_PARENT;
       }
+      else
+      {
+        isComplexRule = false;
+      }
+
       if (filterParent.get() != 0)
       {
         filter->m_predecessor.reset(filterParent.release());
       }
-      // Find tag name, class or any (*)
-      CString tag;
-
-      TCHAR firstTag = filterString.GetAt(0);
-      // Any tag
-      if (firstTag == '*')
+      if (!isComplexRule)
       {
-        filterString = filterString.Right(filterString.GetLength() - 1);
-      }
-      // Any tag (implicitely)
-      else if (firstTag == '[' || firstTag == '.' || firstTag == '#')
-      {
-      }
-      // Real tag
-      else if (isalnum(firstTag))
-      {
-        int pos = filterString.FindOneOf(L".#[(");
-        if (pos > 0) 
+        if (!filter->m_tagId.IsEmpty())
         {
-          tag = filterString.Left(pos).MakeLower();
+          m_elementHideTagsId.insert(std::make_pair(std::make_pair(filter->m_tag, filter->m_tagId), *filter));
+        }
+        else if (!filter->m_tagClassName.IsEmpty())
+        {
+          m_elementHideTagsClass.insert(std::make_pair(std::make_pair(filter->m_tag, filter->m_tagClassName), *filter));
         }
         else
         {
-          tag = filterString.MakeLower();
-        }
-        filterString = filterString.Right(filterString.GetLength() - tag.GetLength());
-      }
-      // Error
-      else
-      {
-        DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (invalid tag)")
-          s_criticalSectionFilterMap.Unlock();    
-        return false;
-      }
-
-      // Find Id and class name
-      CString id;
-      CString className;
-
-      // In old format, id/class is part of attributes
-      if (!filterString.IsEmpty())
-      {
-        TCHAR firstId = filterString.GetAt(0);
-
-        // Id
-        if (firstId == '#')
-        {
-          int pos = filterString.Find('[');
-          if (pos > 0)
-          {
-            id = filterString.Mid(1, pos - 1);
-          }
-          else
-          {
-            id = filterString.Right(filterString.GetLength() - 1);
-          }
-          filterString = filterString.Right(filterString.GetLength() - id.GetLength() - 1);
-        }
-        // Class name
-        else if (firstId == '.')
-        {
-          int pos = filterString.Find('[');
-          if (pos > 0)
-          {
-            className = filterString.Mid(1, pos - 1);
-          }
-          else
-          {
-            className = filterString.Right(filterString.GetLength() - 1);
-          }
-          filterString = filterString.Right(filterString.GetLength() - className.GetLength() - 1);
-        }
-        // None
-        else if (firstId == '[')
-        {
-        }
-        else
-        {
-          DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (invalid id/class)")
-            s_criticalSectionFilterMap.Unlock();    
-          return false;
-        }
-      }
-
-      char chAttrStart = '[';
-      char chAttrEnd   = ']';
-
-      // Find attribute selectors
-      if (!filterString.IsEmpty() && filterString.GetAt(0) != chAttrStart)
-      {
-        DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (invalid attr selector)")
-          s_criticalSectionFilterMap.Unlock();    
-        return false;
-      }
-
-      if (!filterString.IsEmpty())
-      {
-        int startPos = 0;
-        int endPos = 0;
-
-        while ((startPos = filterString.Find(chAttrStart, startPos)) >= 0 && (endPos = filterString.Find(chAttrEnd, startPos)) > startPos)
-        {
-          CFilterElementHideAttrSelector attrSelector;
-
-          CString arg = filterString.Mid(startPos + 1, endPos - startPos - 1);
-          int delimiterPos = 0;
-
-          if ((delimiterPos = arg.Find('=')) > 0)
-          {
-            attrSelector.m_value = arg.Mid(delimiterPos + 1, arg.GetLength() - delimiterPos - 1);
-            if (attrSelector.m_value.GetAt(0) == '\"' && attrSelector.m_value.GetAt(attrSelector.m_value.GetLength() - 1) == '\"' && attrSelector.m_value.GetLength() >= 2)
-            {
-              attrSelector.m_value = attrSelector.m_value.Mid(1, attrSelector.m_value.GetLength() - 2);
-            }
-
-            if (arg.GetAt(delimiterPos - 1) == '^')
-            {
-              attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
-              attrSelector.m_isStarting = true;
-            }
-            else if (arg.GetAt(delimiterPos - 1) == '*')
-            {
-              attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
-              attrSelector.m_isAnywhere = true;
-            }
-            else if (arg.GetAt(delimiterPos - 1) == '$')
-            {
-              attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
-              attrSelector.m_isEnding = true;
-            }
-            else
-            {
-              attrSelector.m_bstrAttr = arg.Left(delimiterPos);
-              attrSelector.m_isExact = true;
-            }
-
-            CString tag = attrSelector.m_bstrAttr;
-            if (tag == "style")
-            {
-              attrSelector.m_isStyle = true;
-              attrSelector.m_value.MakeLower();
-            }
-            else if (tag == "id")
-            {
-              attrSelector.m_isId = true;
-            }
-            else if (tag == "class")
-            {
-              attrSelector.m_isClass = true;
-            }
-
-            filter->m_attributeSelectors.push_back(attrSelector);
-          }
-
-          startPos = endPos + 1;
-        }
-
-        // End check
-        if (filterString.GetLength() != endPos + 1)
-        {
-          DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (more data)")
-            s_criticalSectionFilterMap.Unlock();    
-          return false;
-        }
-      }
-
-      if (!id.IsEmpty())
-      {
-        if (id.Find(L".") > 0)
-        {
-          id = id.Left(id.Find(L"."));
-          filter->m_tagClassName = id.Right(id.Find(L"."));
-          filter->m_tagId = id;
-        }
-        if (!isComplex)
-        {
-          m_elementHideTagsId.insert(std::make_pair(std::make_pair(tag, id), *filter));
-        }
-        else
-        {
-          filter->m_tagId = id;
-        }
-      }
-      else if (!className.IsEmpty())
-      {
-        if (!isComplex)
-        {
-          m_elementHideTagsClass.insert(std::make_pair(std::make_pair(tag, className), *filter));
-        }
-        else
-        {
-          filter->m_tagClassName = className;
-        }
-      }
-      else
-      {
-        if (!isComplex)
-        {
-          if (filter->m_filterText == L"div[style]")
-          {
-            int r = 1;
-          }
-          std::pair<CString, CFilterElementHide> pair = std::make_pair(tag, *filter);
+          std::pair<CString, CFilterElementHide> pair = std::make_pair(filter->m_tag, *filter);
           m_elementHideTags.insert(pair);
         }
-        else
-        {
-          filter->m_tag = tag;
-        }
       }
-    }
+    } while (separatorChar != '\0');
   }
   s_criticalSectionFilterMap.Unlock();    
 
   return true;
 }
-
-
-bool CPluginFilter::IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CString& domain) const
-{
-  bool isHidden = true;
-
-  // Check is not domains
-  if (!filter.m_domainsNot.empty())
-  {
-    for (std::set<CString>::const_iterator it = filter.m_domainsNot.begin(); isHidden && it != filter.m_domainsNot.end(); ++it)
-    {
-      if (domain == *(it) || IsSubdomain(domain, *it))
-      {
-        isHidden = false;
-      }
-    }
-  }
-
-  // Check attributes
-  if (isHidden && !filter.m_attributeSelectors.empty())
-  {
-    CString style;
-
-    CComPtr<IHTMLStyle> pStyle;
-    if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
-    {
-      CComBSTR bstrStyle;
-
-      if (SUCCEEDED(pStyle->get_cssText(&bstrStyle)) && bstrStyle)
-      {
-        style = bstrStyle;
-        style.MakeLower();
-      }
-    }
-
-    std::vector<CFilterElementHideAttrSelector>::const_iterator attrIt = filter.m_attributeSelectors.begin();
-
-    while (isHidden && attrIt != filter.m_attributeSelectors.end())
-    {
-      CComVariant vAttr;
-      UINT attrLength = 0;
-
-      CString value;
-
-      if (attrIt->m_isStyle)
-      {
-        if (!style.IsEmpty())
-        {
-          value = style;
-        }
-      }
-      else if (attrIt->m_isClass)
-      {
-        CComBSTR bstrClassNames;
-        if (SUCCEEDED(pEl->get_className(&bstrClassNames)) && bstrClassNames)
-        {
-          value = bstrClassNames;
-        }
-      }
-      else if (attrIt->m_isId)
-      {
-        CComBSTR bstrId;
-        if (SUCCEEDED(pEl->get_id(&bstrId)) && bstrId)
-        {
-          value = bstrId;
-        }
-      }
-      else if (SUCCEEDED(pEl->getAttribute(attrIt->m_bstrAttr, 0, &vAttr)) && vAttr.vt != VT_NULL)
-      {
-        if (vAttr.vt == VT_BSTR)
-        {
-          value = vAttr.bstrVal;
-        }
-        else if (vAttr.vt == VT_I4)
-        {
-          value.Format(L"%u", vAttr.iVal);
-        }
-      }
-
-      if (!value.IsEmpty())
-      {
-        if (attrIt->m_isExact)
-        {
-          if (attrIt->m_isStyle)
-          {
-            // IE adds ; to the end of the style
-            isHidden = (value + ';' == attrIt->m_value);
-          }
-          else
-          {
-            isHidden = (value == attrIt->m_value);
-          }
-        }
-        else if (attrIt->m_isStarting)
-        {
-          isHidden = value.Find(attrIt->m_value) == 0;
-        }
-        else if (attrIt->m_isEnding)
-        {
-          isHidden = value.Find(attrIt->m_value) == attrLength - attrIt->m_value.GetLength();
-        }
-        else if (attrIt->m_isAnywhere)
-        {
-          isHidden = value.Find(attrIt->m_value) >= 0;
-        }
-      }
-      else
-      {
-        isHidden = false;
-        break;
-      }
-
-      ++attrIt;
-    }
-  }
-
-  if (isHidden)
-  {
-    if (filter.m_predecessor.get() != 0)
-    {
-      CFilterElementHide* predecessorFilter = filter.m_predecessor.get();
-      while (predecessorFilter)
-      {
-        CComPtr<IHTMLElement> pDomPredecessor;
-        HRESULT hr = S_FALSE;
-        switch (predecessorFilter->m_type)
-        {
-        case ETraverserComplexType::TRAVERSER_TYPE_PARENT:
-          hr = pEl->get_parentElement(&pDomPredecessor);
-          break;
-        case ETraverserComplexType::TRAVERSER_TYPE_IMMEDIATE:
-          isHidden = false;
-          hr = S_FALSE;
-          CComQIPtr<IHTMLDOMNode> pDomNode = pEl;
-          if (pDomNode)
-          {
-            CComPtr<IHTMLDOMNode> pPrevSibilingNode;
-            pDomNode->get_previousSibling(&pPrevSibilingNode);
-            if (pPrevSibilingNode)
-            {
-              long type;
-              hr = pPrevSibilingNode->get_nodeType(&type);
-
-              //Element node 1; Text node 3
-              while((hr == S_OK) && (type != 1))
-              {
-                CComPtr<IHTMLDOMNode> newPrevSibiling;
-                hr = pPrevSibilingNode->get_previousSibling(&newPrevSibiling);
-                if (newPrevSibiling)
-                {
-                  hr = newPrevSibiling->get_nodeType(&type);
-                  pPrevSibilingNode = newPrevSibiling;
-                }
-                else
-                {
-                  hr = S_FALSE;
-                }
-              }
-              if (hr == S_OK)
-              {
-                CComBSTR nodeName;
-                pPrevSibilingNode->get_nodeName(&nodeName);
-                hr = pPrevSibilingNode.QueryInterface(&pDomPredecessor);
-              }
-            }
-          }
-          isHidden = (hr == S_OK);
-          break;
-        }
-        if (hr != S_OK)
-          isHidden = false;
-        if ((predecessorFilter->m_tagId) && (isHidden))
-        {
-          CComBSTR id;
-          if (pDomPredecessor)
-          {
-            hr = pDomPredecessor->get_id(&id);
-            CComBSTR tagId = CComBSTR(predecessorFilter->m_tagId);
-            if ((hr != S_OK) || (id != tagId))
-            {
-              isHidden = false;
-            }
-          }
-          else
-          {
-            isHidden = false;
-          }
-        }
-        else if ((predecessorFilter->m_tagClassName) && (isHidden))
-        {
-          CComBSTR className;
-          if (pDomPredecessor)
-          {
-            hr = pDomPredecessor->get_className(&className);
-            if ((hr != S_OK) || (className != CComBSTR(predecessorFilter->m_tagClassName)))
-            {
-              isHidden = false;
-            }
-          }
-          else
-          {
-            isHidden = false;
-          }
-        }
-        else if ((predecessorFilter->m_tag) && (isHidden))
-        {
-          CComBSTR tagName;
-          if (pDomPredecessor)
-          {
-            hr = pDomPredecessor->get_tagName(&tagName);
-            if ((hr != S_OK) || (tagName != CComBSTR(predecessorFilter->m_tag)))
-            {
-              isHidden = false;
-            }
-          }
-          else
-          {
-            isHidden = false;
-          }
-        }
-        if (SUCCEEDED(hr) && (isHidden))
-        {
-          isHidden = IsMatchFilterElementHide(*predecessorFilter, pDomPredecessor, domain);
-        }
-        predecessorFilter = predecessorFilter->m_predecessor.get();
-      }
-    }
-  }
-
-  return isHidden;
-}
-
 
 bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent) const
 {
@@ -708,10 +655,11 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
     // Search tag/id filters
     if (isHidden == false && !id.IsEmpty())
     {
-      TFilterElementHideTagsNamed::const_iterator idIt = m_elementHideTagsId.find(std::make_pair(tag, id));
-      if (idIt != m_elementHideTagsId.end())
+        std::pair<TFilterElementHideTagsNamed::const_iterator, TFilterElementHideTagsNamed::const_iterator> idItEnum =
+          m_elementHideTagsId.equal_range(std::make_pair(tag, id));
+      for (TFilterElementHideTagsNamed::const_iterator idIt = idItEnum.first; idIt != idItEnum.second; idIt ++)
       {
-        isHidden = IsMatchFilterElementHide(idIt->second, pEl, domain);
+        isHidden = idIt->second.IsMatchFilterElementHide(pEl);
 #ifdef ENABLE_DEBUG_RESULT
         if (isHidden)
         {
@@ -724,10 +672,11 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
       // Search general id
       if (isHidden == false)
       {
-        idIt = m_elementHideTagsId.find(std::make_pair("", id));
-        if (idIt != m_elementHideTagsId.end())
+        std::pair<TFilterElementHideTagsNamed::const_iterator, TFilterElementHideTagsNamed::const_iterator> idItEnum =
+          m_elementHideTagsId.equal_range(std::make_pair("", id));
+        for (TFilterElementHideTagsNamed::const_iterator idIt = idItEnum.first; idIt != idItEnum.second; idIt ++)
         {
-          isHidden = IsMatchFilterElementHide(idIt->second, pEl, domain);
+          isHidden = idIt->second.IsMatchFilterElementHide(pEl);
 #ifdef ENABLE_DEBUG_RESULT
           if (isHidden)
           {
@@ -749,17 +698,17 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
         std::pair<TFilterElementHideTagsNamed::const_iterator, TFilterElementHideTagsNamed::const_iterator> classItEnum = 
           m_elementHideTagsClass.equal_range(std::make_pair(tag, className));
 
-        TFilterElementHideTagsNamed::const_iterator classIt = classItEnum.first;
-        for (classIt = classItEnum.first; classIt != classItEnum.second; ++classIt)
+        for (TFilterElementHideTagsNamed::const_iterator classIt = classItEnum.first; classIt != classItEnum.second; ++classIt)
         {
           if (classIt != m_elementHideTagsClass.end())
           {
-            isHidden = IsMatchFilterElementHide(classIt->second, pEl, domain);
+            isHidden = classIt->second.IsMatchFilterElementHide(pEl);
   #ifdef ENABLE_DEBUG_RESULT
             if (isHidden)
             {
               DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
                 CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
+              break;
             }
   #endif
           }
@@ -768,15 +717,17 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
         // Search general class name
         if (isHidden == false)
         {
-          classItEnum = m_elementHideTagsClass.equal_range(std::make_pair("", className));
-          for (classIt = classItEnum.first; classIt != classItEnum.second; ++ classIt)
+          std::pair<TFilterElementHideTagsNamed::const_iterator, TFilterElementHideTagsNamed::const_iterator> classItEnum = 
+            m_elementHideTagsClass.equal_range(std::make_pair("", className));
+          for (TFilterElementHideTagsNamed::const_iterator classIt = classItEnum.first; classIt != classItEnum.second; ++ classIt)
           {
-            isHidden = IsMatchFilterElementHide(classIt->second, pEl, domain);
+            isHidden = classIt->second.IsMatchFilterElementHide(pEl);
 #ifdef ENABLE_DEBUG_RESULT
             if (isHidden)
             {
               DEBUG_HIDE_EL(indent + "HideEl::Found (?/class) filter:" + classIt->second.m_filterText)
                 CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
+              break;
             }
 #endif
           }
@@ -794,12 +745,13 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
         = m_elementHideTags.equal_range(tag);
       for (TFilterElementHideTags::const_iterator tagIt = tagItEnum.first; tagIt != tagItEnum.second; ++ tagIt)
       {
-        isHidden = IsMatchFilterElementHide(tagIt->second, pEl, domain);
+        isHidden = tagIt->second.IsMatchFilterElementHide(pEl);
 #ifdef ENABLE_DEBUG_RESULT
         if (isHidden)
         {
           DEBUG_HIDE_EL(indent + "HideEl::Found (tag) filter:" + tagIt->second.m_filterText)
             CPluginDebug::DebugResultHiding(tag, "-", tagIt->second.m_filterText);
+          break;
         }
 #endif
       }
@@ -915,7 +867,6 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
 
   CPluginClient* client = CPluginClient::GetInstance();
 
-  //TODO: Make sure if the content type names are in sync with libadblockplus
   std::string contentTypeString = CT2A(type, CP_UTF8);
 
   CT2CA srcMb(src, CP_UTF8);

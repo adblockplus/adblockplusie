@@ -5,6 +5,15 @@
 #include "PluginTypedef.h"
 #include <memory>
 
+enum CFilterElementHideAttrPos
+{
+  POS_NONE = 0, STARTING, ENDING, ANYWHERE, EXACT
+};
+
+enum CFilterElementHideAttrType
+{
+  TYPE_NONE = 0, STYLE, ID, CLASS
+};
 // ============================================================================
 // CFilterElementHideAttrSelector
 // ============================================================================
@@ -14,14 +23,9 @@ class CFilterElementHideAttrSelector
 
 public:
 
-  bool m_isStarting;
-  bool m_isEnding;
-  bool m_isAnywhere;
-  bool m_isExact;
+  CFilterElementHideAttrPos m_pos;
 
-  bool m_isStyle;
-  bool m_isId;
-  bool m_isClass;
+  CFilterElementHideAttrType m_type;
 
   CComBSTR m_bstrAttr;
   CString m_value;
@@ -32,6 +36,15 @@ public:
 };
 
 
+
+// ============================================================================
+// CFilterElementHide
+// ============================================================================
+class CFilterElementHide
+{
+
+public:
+
 enum ETraverserComplexType
 {
   TRAVERSER_TYPE_PARENT,
@@ -39,14 +52,6 @@ enum ETraverserComplexType
   TRAVERSER_TYPE_ERROR
 };
 
-// ============================================================================
-// CFilterElementHide
-// ============================================================================
-
-class CFilterElementHide
-{
-
-public:
 
   CString m_filterText;
 
@@ -55,14 +60,15 @@ public:
   CString m_tagClassName;
   CString m_tag;
 
-  std::set<CString> m_domainsNot;
-
   std::vector<CFilterElementHideAttrSelector> m_attributeSelectors;
   std::shared_ptr<CFilterElementHide> m_predecessor;
 
   CFilterElementHide(const CString& filterText="");
   CFilterElementHide(const CFilterElementHide& filter);
   ETraverserComplexType m_type;
+
+  bool IsMatchFilterElementHide(IHTMLElement* pEl) const;
+
 };
 
 // ============================================================================
@@ -108,12 +114,9 @@ public:
   bool m_isFirstParty;
   bool m_isThirdParty;
   bool m_isFromStart;
-  bool m_isFromStartDomain;
   bool m_isFromEnd;
   int m_hitCount;
   CString m_filterText;
-  std::set<CString> m_domains;
-  std::set<CString> m_domainsNot;
 
   CFilter(const CFilter&);
   CFilter();
@@ -137,9 +140,6 @@ private:
 
   typedef std::map<DWORD, CFilter> TFilterMap;
   typedef std::vector<CFilter> TFilterMapDefault;
-
-  // Tag* -> Filter
-  typedef std::multimap<CString,CFilterElementHide> TFilterElementHideDomain;
 
   // (Tag,Name) -> Filter
   typedef std::multimap<std::pair<CString,CString>, CFilterElementHide> TFilterElementHideTagsNamed;
@@ -172,7 +172,6 @@ public:
 
   bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent) const;
 
-  bool IsMatchFilterElementHide(const CFilterElementHide& filter, IHTMLElement* pEl, const CString& domain) const;
 
   bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false) const;
   bool ShouldWhiteList(CString url) const;
