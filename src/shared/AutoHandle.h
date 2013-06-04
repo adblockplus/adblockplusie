@@ -14,8 +14,8 @@ public:
 private:
   HANDLE handle;
 
-  AutoHandle(const AutoHandle& autoHandle);
-  AutoHandle& operator=(const AutoHandle& autoHandle);
+  AutoHandle(const AutoHandle&);
+  AutoHandle& operator=(const AutoHandle&);
 };
 
 #endif
