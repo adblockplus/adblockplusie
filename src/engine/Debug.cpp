@@ -3,8 +3,9 @@
 #include <fstream>
 #include <stdio.h>
 
+#include "../shared/Utils.h"
+
 #include "Debug.h"
-#include "Utils.h"
 
 #ifdef _DEBUG
 

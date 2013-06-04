@@ -14,6 +14,7 @@
 #endif
 #include "PluginMutex.h"
 #include "PluginHttpRequest.h"
+#include "../shared/Utils.h"
 #include <memory>
 
 
@@ -56,9 +57,6 @@ public:
 };
 
 #endif
-
-WCHAR* CPluginSettings::s_dataPath;
-WCHAR* CPluginSettings::s_dataPathParent;
 
 CPluginSettings* CPluginSettings::s_instance = NULL;
 bool CPluginSettings::s_isLightOnly = false;
@@ -149,11 +147,6 @@ CPluginSettings::CPluginSettings() :
 
 CPluginSettings::~CPluginSettings()
 {
-
-  if (s_dataPathParent != NULL)
-  {
-    delete s_dataPathParent;
-  }
   s_instance = NULL;
 }
 
@@ -316,110 +309,10 @@ bool CPluginSettings::MakeRequestForUpdate()
   return true;
 }
 
-CString CPluginSettings::GetDataPathParent()
-{
-  if (s_dataPathParent == NULL)
-  {
-    WCHAR* lpData = new WCHAR[MAX_PATH];
-
-    OSVERSIONINFO osVersionInfo;
-    ::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
-
-    osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-    ::GetVersionEx(&osVersionInfo);
-
-    //Windows Vista       - 6.0
-    //Windows Server 2003 R2  - 5.2
-    //Windows Server 2003   - 5.2
-    //Windows XP        - 5.1
-    if (osVersionInfo.dwMajorVersion >= 6)
-    {
-      if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
-      {
-        wcscat(lpData, L"Low");
-      }
-      else
-      {
-        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_LOCAL, "Settings::GetDataPath failed");
-      }
-    }
-    else
-    {
-      if (!SHGetSpecialFolderPath(NULL, lpData, CSIDL_APPDATA, TRUE))
-      {
-        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER, "Settings::GetDataPath failed");
-      }
-    }
-
-    ::PathAddBackslash(lpData);
-
-    s_dataPathParent = lpData;
-
-    if (!::CreateDirectory(s_dataPathParent, NULL))
-    {
-      DWORD errorCode = ::GetLastError();
-      if (errorCode != ERROR_ALREADY_EXISTS)
-      {
-        DEBUG_ERROR_LOG(errorCode, PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_CREATE_FOLDER, "Settings::CreateDirectory failed");
-      }
-    }
-  }
-
-  return s_dataPathParent;
-}
-
 CString CPluginSettings::GetDataPath(const CString& filename)
 {
-  if (s_dataPath == NULL)
-  {
-    WCHAR* lpData = new WCHAR[MAX_PATH];
-
-    OSVERSIONINFO osVersionInfo;
-    ::ZeroMemory(&osVersionInfo, sizeof(OSVERSIONINFO));
-
-    osVersionInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-
-    ::GetVersionEx(&osVersionInfo);
-
-    //Windows Vista       - 6.0
-    //Windows Server 2003 R2  - 5.2
-    //Windows Server 2003   - 5.2
-    //Windows XP        - 5.1
-    if (osVersionInfo.dwMajorVersion >= 6)
-    {
-      if (::SHGetSpecialFolderPath(NULL, lpData, CSIDL_LOCAL_APPDATA, TRUE))
-      {
-        wcscat(lpData, L"Low");
-      }
-      else
-      {
-        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER_LOCAL, "Settings::GetDataPath failed");
-      }
-    }
-    else
-    {
-      if (!SHGetSpecialFolderPath(NULL, lpData, CSIDL_APPDATA, TRUE))
-      {
-        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_SYSINFO, PLUGIN_ERROR_SYSINFO_GET_SPECIAL_FOLDER, "Settings::GetDataPath failed");
-      }
-    }
-
-    ::PathAddBackslash(lpData);
-
-    s_dataPath = lpData;
-
-    if (!::CreateDirectory(s_dataPath + CString(USER_DIR), NULL))
-    {
-      DWORD errorCode = ::GetLastError();
-      if (errorCode != ERROR_ALREADY_EXISTS)
-      {
-        DEBUG_ERROR_LOG(errorCode, PLUGIN_ERROR_SETTINGS, PLUGIN_ERROR_SETTINGS_CREATE_FOLDER, "Settings::CreateDirectory failed");
-      }
-    }
-  }
-
-  return s_dataPath + CString(USER_DIR) + filename;
+  std::wstring path = ::GetAppDataPath() + L"\\" + static_cast<LPCWSTR>(filename);
+  return CString(path.c_str());
 }
 
 CString CPluginSettings::GetSystemLanguage()

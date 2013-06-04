@@ -77,9 +77,6 @@ private:
   CString m_settingsVersion;
   std::auto_ptr<CPluginIniFileW> m_settingsFile;
 
-  static WCHAR* s_dataPath;
-  static WCHAR* s_dataPathParent;
-
 
   static CComAutoCriticalSection s_criticalSectionLocal;
 #ifdef SUPPORT_WHITELIST
@@ -105,7 +102,6 @@ public:
   bool Read(bool bDebug=true);
   bool Write(bool bDebug=true);
 
-  static CString GetDataPathParent();
   static CString GetDataPath(const CString& filename=L"");
 
   static CString GetTempPath(const CString& filename=L"");

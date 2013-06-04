@@ -92,11 +92,13 @@
   <ItemGroup>
     <ClCompile Include="src\engine\main.cpp" />
     <ClCompile Include="src\engine\Debug.cpp" />
-    <ClCompile Include="src\engine\Utils.cpp" />
     <ClCompile Include="src\shared\Communication.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\shared\AutoHandle.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\shared\Utils.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
