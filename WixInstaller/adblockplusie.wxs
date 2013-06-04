@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Compilation Note:
-    You may see linking errors that look like these: 
+    You may see linking errors that look like these:
         <quote>LGHT0217 : Error executing ICE action 'ICExx' [...] The error code is 2738.</quote>
     The documentation for this error code talks about custom actions,
         even though the CustomAction keyword does not appear in this source.
@@ -11,7 +11,7 @@
     See http://wix.sourceforge.net/faq.html#Error217
 -->
 
-<!-- 
+<!--
     sys.BUILDARCH is set by the command line argument '-arch'.
     The default value to "x86"
 -->
@@ -161,21 +161,21 @@
             Each of these versions hosts only its own bit-size objects.
             Therefore, for 64-bit platforms we must install both the 64-bit plugin as well as the 32-bit one.
             For 32-bit platforms, we only need the 32-bit one.
-            
+
             The DLL images are taken directly from the build directory.
             There's no parameter as yet for building an unsigned development version vs. a signed release version.
 
             Note: We do not use SelfRegCost, which calls the entry point DLLRegisterServer to make registry entries.
             See http://stackoverflow.com/questions/364187/how-do-you-register-a-win32-com-dll-file-in-wix-3
-            
+
             The present installer is a per-machine installer.
             That means it writes to HKEY_LOCAL_MACHINE, so that all users on the machine will have the BHO installed.
             It's possible to write keys to HKEY_CURRENT_USER in a situation where that's not desirable, if needed.
         -->
     	<ComponentGroup Id="Binaries" Directory="INSTALLFOLDER">
             <!--
-                The 32-bit version of the DLL is included in both 32- and 64-bit installers. 
-                We need an explicit value for attribute @Win64 so that the ARCH argument does not override its implicit value. 
+                The 32-bit version of the DLL is included in both 32- and 64-bit installers.
+                We need an explicit value for attribute @Win64 so that the ARCH argument does not override its implicit value.
             -->
             <Component Id="AdblockPlus32.dll" Win64="no">
                 <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Production\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
@@ -184,11 +184,11 @@
                 <?include bho_registry_value.wxi ?>
             </Component>
             <!--
-                The 64-bit version of the DLL is only included in the 64-bit installer. 
+                The 64-bit version of the DLL is only included in the 64-bit installer.
                 We don't really need an explicit value for attribute @Win64, but it's there for resilience.
-                
+
                 Note that the <Class> element and the <RegistryKey> element are duplicated from the 32-bit version.
-                We use "include" directives to ensure that they are identical.                
+                We use "include" directives to ensure that they are identical.
                 They have to be the same to support both the 32- and 64-bit versions of Internet Explorer on a 64-bit system.
                 IE uses the same algorithm to search for BHO regardless of platform,
                     so with two versions of IE, we need two identical registrations.
@@ -208,11 +208,11 @@
             <!--
                 The engine must go into the same directory as the DLL, since that location is searched explicitly (and uniquely).
             -->
-            <Component Id="AdblockPlusEngine32.dll" Win64="no">
-                <File Id="AdblockPlusEngine32.dll" Source="..\build\ia32\Release Production\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+            <Component Id="AdblockPlusEngine.exe" Win64="no">
+                <File Id="AdblockPlusEngine.exe" Source="..\build\ia32\Release Production\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
             </Component>
     	</ComponentGroup>
-        
+
         <!--
             The HTML_Tree component group contains all the files in the HTML folder.
             Individual file entries within a single component group must all be in the same directory.
