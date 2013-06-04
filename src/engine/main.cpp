@@ -2,9 +2,9 @@
 
 #include "../shared/AutoHandle.h"
 #include "../shared/Communication.h"
+#include "../shared/Utils.h"
 #include "../shared/Version.h"
 #include "Debug.h"
-#include "Utils.h"
 
 namespace
 {

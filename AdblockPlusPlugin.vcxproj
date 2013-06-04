@@ -730,6 +730,9 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClCompile Include="src\shared\AutoHandle.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\shared\Utils.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\plugin\abp.h" />

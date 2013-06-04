@@ -1,9 +1,11 @@
-#include "stdafx.h"
+#include <Windows.h>
+#include <ShlObj.h>
+
 #include "Utils.h"
 
 namespace
 {
-  static std::wstring appDataPath;
+  std::wstring appDataPath;
 
   bool IsWindowsVistaOrLater()
   {
@@ -34,7 +36,10 @@ std::wstring GetAppDataPath()
         throw std::runtime_error("Unable to find app data directory");
       appDataPath.assign(pathBuffer.get());
     }
-    appDataPath += L"\\AdblockPlus";
+    appDataPath += L"\\Adblock Plus for IE";
+
+    // Ignore errors here, this isn't a critical operation
+    ::CreateDirectoryW(appDataPath.c_str(), NULL);
   }
   return appDataPath;
 }
