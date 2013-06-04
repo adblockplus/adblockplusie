@@ -13,7 +13,7 @@ AutoHandle::~AutoHandle()
   CloseHandle(handle);
 }
 
-HANDLE AutoHandle::get()
+AutoHandle::operator HANDLE()
 {
   return handle;
 }

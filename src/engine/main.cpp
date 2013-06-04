@@ -181,7 +181,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
       // TODO: Count established connections, kill the engine when none are left
       AutoHandle thread(CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0));
-      if (!thread.get())
+      if (!thread)
       {
         delete pipe;
         DebugLastError("CreateThread failed");
