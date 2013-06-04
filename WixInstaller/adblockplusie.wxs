@@ -145,12 +145,11 @@
                     INSTALLFOLDER is within ProgramFilesFolder, which is a protected directory.
                     As a result, this installer requires elevated permissions to operate.
                 -->
-                <Directory Id="INSTALLFOLDER" Name="Adblock Plus for IE"></Directory>
+                <Directory Id="INSTALLFOLDER" Name="Adblock Plus for IE">
+                    <Directory Id="HTML_Folder" Name="html"></Directory>
+                </Directory>
                 <Directory Id="APP_DATA_FOLDER">
-                    <Directory Id="ABP_APPDATA_FOLDER" Name="AdblockPlus">
-                        <Directory Id="HTML_Folder" Name="html">
-                        </Directory>
-                    </Directory>
+                    <Directory Id="ABP_APPDATA_FOLDER" Name="Adblock Plus for IE"></Directory>
                 </Directory>
             </Directory>
         </Directory>
