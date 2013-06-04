@@ -38,12 +38,16 @@ namespace
       }
     private:
       LPCRITICAL_SECTION section;
+      Lock(const Lock&);
+      Lock& operator=(const Lock&);
     };
   private:
     CRITICAL_SECTION section;
+    CriticalSection(const CriticalSection&);
+    CriticalSection& operator=(const CriticalSection&);
   };
 
-  static CriticalSection debugLock;
+  CriticalSection debugLock;
 }
 
 void Debug(const std::string& text)
