@@ -26,7 +26,7 @@ namespace
   }
 
   void WriteStrings(Communication::OutputBuffer& response,
-      const std::vector<std::string> strings)
+      const std::vector<std::string>& strings)
   {
     int32_t count = strings.size();
     response << count;
@@ -35,7 +35,7 @@ namespace
   }
 
   void WriteSubscriptions(Communication::OutputBuffer& response,
-      const std::vector<AdblockPlus::SubscriptionPtr> subscriptions)
+      const std::vector<AdblockPlus::SubscriptionPtr>& subscriptions)
   {
     int32_t count = subscriptions.size();
     response << count;
