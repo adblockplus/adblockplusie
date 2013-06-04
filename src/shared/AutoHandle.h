@@ -9,7 +9,7 @@ public:
   AutoHandle();
   explicit AutoHandle(HANDLE handle);
   ~AutoHandle();
-  HANDLE get();
+  operator HANDLE();
 
 private:
   HANDLE handle;
