@@ -15,16 +15,13 @@
 
 #define SETTING_PLUGIN_INFO_PANEL	    L"plugininfopanel"
 #define SETTING_PLUGIN_VERSION          L"pluginversion"
-#define SETTING_PLUGIN_UPDATE_URL       L"pluginupdateurl"
 #define SETTING_PLUGIN_UPDATE_VERSION   L"pluginupdateversion"
-#define SETTING_PLUGIN_UPDATE_TIME      L"pluginupdatetime"
 #define SETTING_PLUGIN_SELFTEST         L"pluginselftest"
 #define SETTING_LANGUAGE                L"language"
 
 #ifdef SUPPORT_CONFIG
 #define SETTING_CONFIG_VERSION          L"configversion"
 #endif
-#define SETTING_LAST_UPDATE_TIME        L"lastupdatetime"
 #define SETTING_DICTIONARY_VERSION      L"dictionaryversion"
 
 // Tab settings
@@ -122,7 +119,6 @@ public:
   void SetBool(const CString& key, bool value);
 
   bool IsPluginEnabled() const;
-  bool IsPluginUpdateAvailable() const;
 
   bool IsPluginSelftestEnabled();
 
@@ -216,7 +212,6 @@ public:
   std::vector<std::string> GetWhiteListedDomainList();
 #endif //SUPPORT_WHITELIST
 
-  bool MakeRequestForUpdate();
   bool RefreshWhitelist();
   DWORD GetWindowsBuildNumber();
 

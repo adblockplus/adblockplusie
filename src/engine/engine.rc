@@ -1,0 +1,57 @@
+#include "Resource.h"
+#include "winres.h"
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,0,2,0
+ PRODUCTVERSION 0,0,2,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Eyeo GmbH"
+            VALUE "FileDescription", "Adblock Plus Engine"
+            VALUE "FileVersion", "0, 0, 2, 0"
+            VALUE "InternalName", "Adblock Plus Engine"
+            VALUE "LegalCopyright", "Copyright 2013"
+            VALUE "OriginalFilename", "AdblockPlusEngine.exe"
+            VALUE "ProductName", "Adblock Plus"
+            VALUE "ProductVersion", "0, 0, 2, 0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+IDD_UPDATEDIALOG DIALOGEX 0, 0, 159, 86
+STYLE WS_EX_TOPMOST | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "Update Adblock Plus"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDOK,22,65,50,14
+    PUSHBUTTON      "No",IDCANCEL,82,65,50,14
+    LTEXT           "A new version of Adblock Plus is available for download",IDC_UPDATETEXT,7,10,142,17
+    LTEXT           "Do you wish to download it now?",IDC_DOYOU,7,39,145,8
+END
+
+IDD_DOWNLOADDIALOG DIALOGEX 0, 0, 259, 68
+STYLE WS_EX_TOPMOST | DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
+CAPTION "Downloading Adblock Plus"
+FONT 8, "Microsoft Sans Serif", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,202,47,50,14
+    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,7,28,245,12
+    LTEXT           "Please wait ...",IDC_INSTALLMSG,7,7,245,17
+END

@@ -50,8 +50,6 @@ CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
 std::map<UINT,CString> CPluginClass::s_menuDomains;
 #endif
 
-bool CPluginClass::s_isPluginToBeUpdated = false;
-
 CPluginTab* CPluginClass::s_activeTab = NULL;
 
 
@@ -104,10 +102,6 @@ CPluginClass::CPluginClass()
     if (settings->IsFirstRunUpdate() || settings->GetString(SETTING_PLUGIN_UPDATE_VERSION) == IEPLUGIN_VERSION || oldVersion != IEPLUGIN_VERSION)
     {
       settings->SetString(SETTING_PLUGIN_VERSION, IEPLUGIN_VERSION);
-
-      settings->Remove(SETTING_PLUGIN_UPDATE_TIME);
-      settings->Remove(SETTING_PLUGIN_UPDATE_VERSION);
-      settings->Remove(SETTING_PLUGIN_UPDATE_URL);
 
       settings->SetFirstRunUpdate();
     }
@@ -1375,12 +1369,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
   switch (nCommand)
   {
-  case ID_PLUGIN_UPDATE:
-    {
-      s_isPluginToBeUpdated = true;
-    }
-    break;
-
   case ID_PLUGIN_ENABLE:
     {
       CPluginSettings* settings = CPluginSettings::GetInstance();
@@ -1518,20 +1506,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   // Update settings
   m_tab->OnUpdateSettings(false);
 
-  // Plugin update
-  if (settings->IsPluginUpdateAvailable())
-  {
-    ctext = dictionary->Lookup("MENU_UPDATE");
-    fmii.fMask  = MIIM_STATE | MIIM_STRING;
-    fmii.fState = MFS_ENABLED;
-    fmii.dwTypeData = ctext.GetBuffer();
-    fmii.cch = ctext.GetLength();
-    ::SetMenuItemInfo(hMenu, ID_PLUGIN_UPDATE, FALSE, &fmii);
-  }
-  else
-  {
-    ::DeleteMenu(hMenu, ID_PLUGIN_UPDATE, FALSE);
-  }
 #ifdef SUPPORT_WHITELIST
   {
     // White list domain

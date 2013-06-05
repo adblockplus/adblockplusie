@@ -260,55 +260,6 @@ void CPluginSettings::Clear()
   s_criticalSectionLocal.Unlock();
 }
 
-bool CPluginSettings::MakeRequestForUpdate()
-{
-  time_t updateTime = this->GetValue(SETTING_LAST_UPDATE_TIME);
-
-  if (time(NULL) <= updateTime)
-    return false;
-
-  CPluginHttpRequest httpRequest(PLUGIN_UPDATE_URL);
-
-  CPluginSystem* system = CPluginSystem::GetInstance();
-
-  httpRequest.Add("lang", this->GetString(SETTING_LANGUAGE, "err"));
-  httpRequest.Add("ie", system->GetBrowserVersion());
-  httpRequest.Add("ielang", system->GetBrowserLanguage());
-
-  httpRequest.AddOsInfo();
-
-  httpRequest.Send();
-
-  this->SetValue(SETTING_LAST_UPDATE_TIME, time(NULL) + (5 * 24 * 60 * 60) * ((rand() % 100) / 100 * 0.4 + 0.8));
-  if (httpRequest.IsValidResponse())
-  {
-    const std::auto_ptr<CPluginIniFile>& iniFile = httpRequest.GetResponseFile();
-
-    CPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
-    CPluginIniFile::TSectionData::iterator it;
-
-    it = settingsData.find("pluginupdate");
-    if (it != settingsData.end())
-    {
-      CString url(it->second);
-      SetString(SETTING_PLUGIN_UPDATE_URL, url);
-      m_isDirty = true;
-      DEBUG_SETTINGS("Settings::Configuration plugin update url:" + it->second);
-    }
-
-    it = settingsData.find("pluginupdatev");
-    if (it != settingsData.end())
-    {
-      CString ver(it->second);
-      SetString(SETTING_PLUGIN_UPDATE_VERSION, ver);
-      m_isDirty = true;
-      DEBUG_SETTINGS("Settings::Configuration plugin update version:" + it->second);
-    }
-  }
-
-  return true;
-}
-
 CString CPluginSettings::GetDataPath(const CString& filename)
 {
   std::wstring path = ::GetAppDataPath() + L"\\" + static_cast<LPCWSTR>(filename);
@@ -622,34 +573,6 @@ bool CPluginSettings::Write(bool isDebug)
   return isWritten;
 }
 
-
-bool CPluginSettings::IsPluginUpdateAvailable() const
-{
-  bool isAvailable = Has(SETTING_PLUGIN_UPDATE_VERSION);
-  if (isAvailable)
-  {
-    CString newVersion = GetString(SETTING_PLUGIN_UPDATE_VERSION);
-    CString curVersion = IEPLUGIN_VERSION;
-
-    isAvailable = newVersion != curVersion;
-    if (isAvailable)
-    {
-      int curPos = 0;
-      int curMajor = _wtoi(curVersion.Tokenize(L".", curPos));
-      int curMinor = _wtoi(curVersion.Tokenize(L".", curPos));
-      int curDev   = _wtoi(curVersion.Tokenize(L".", curPos));
-
-      int newPos = 0;
-      int newMajor = _wtoi(newVersion.Tokenize(L".", newPos));
-      int newMinor = newPos > 0 ? _wtoi(newVersion.Tokenize(L".", newPos)) : 0;
-      int newDev   = newPos > 0 ? _wtoi(newVersion.Tokenize(L".", newPos)) : 0;
-
-      isAvailable = newMajor > curMajor || newMajor == curMajor && newMinor > curMinor || newMajor == curMajor && newMinor == curMinor && newDev > curDev;
-    }
-  }
-
-  return isAvailable;
-}
 
 bool CPluginSettings::IsMainProcess(DWORD dwProcessId) const
 {

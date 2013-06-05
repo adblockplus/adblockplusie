@@ -313,6 +313,7 @@
   <ItemGroup>
     <ClCompile Include="src\engine\main.cpp" />
     <ClCompile Include="src\engine\Debug.cpp" />
+    <ClCompile Include="src\engine\Updater.cpp" />
     <ClCompile Include="src\shared\Communication.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -325,10 +326,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Debug.h" />
+    <ClInclude Include="src\engine\Resource.h" />
+    <ClInclude Include="src\engine\Updater.h" />
     <ClInclude Include="src\shared\AutoHandle.h" />
     <ClInclude Include="src\shared\Communication.h" />
     <ClInclude Include="src\shared\Utils.h" />
     <ClInclude Include="src\shared\Version.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\engine\engine.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

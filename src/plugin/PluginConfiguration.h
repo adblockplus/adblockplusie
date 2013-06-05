@@ -21,7 +21,6 @@ public:
   bool IsValid() const;
   bool IsValidUserId() const;
   bool IsValidPluginExpired() const;
-  bool IsValidPluginUpdate() const;
   bool IsValidPluginInfoPanel() const;
   bool IsValidDictionary() const;
 #ifdef SUPPORT_FILTER
@@ -43,15 +42,11 @@ public:
   int GetAdBlockLimit() const;
   CString GetUserId() const;
 
-  // Does there exists a new version, that can be downloaded and installed
-  CString GetPluginUpdateVersion() const;
-  CString GetPluginUpdateUrl() const;
-
   int GetPluginInfoPanel() const;
 
   // Dictionary information
-  int GetDictionaryVersion() const;	
-  CString GetDictionaryUrl() const;	
+  int GetDictionaryVersion() const;
+  CString GetDictionaryUrl() const;
 
 #ifdef SUPPORT_CONFIG
   CString GetConfigUrl() const;
@@ -65,7 +60,6 @@ private:
   bool m_isValidPluginActivated;
   bool m_isValidPluginActivateEnabled;
   bool m_isValidPluginExpired;
-  bool m_isValidPluginUpdate;
   bool m_isValidPluginInfoPanel;
   bool m_isValidDictionary;
   bool m_isPluginRegistered;
@@ -87,10 +81,6 @@ private:
 
   // User registration
   CString m_userId;
-
-  // The version that currently can be downloaded from the server
-  CString m_pluginUpdateVersion;
-  CString m_pluginUpdateUrl;
 
   // Dictionary that currently can be downloaded from the server
   int m_dictionaryVersion;
