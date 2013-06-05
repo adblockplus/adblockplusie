@@ -170,6 +170,11 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
   appInfo.name = "adblockplusie";
   appInfo.platform = "msie";
   appInfo.locale = ToUtf8String(locale);
+#ifdef ADBLOCK_PLUS_TEST_MODE
+  appInfo.developmentBuild = true;
+#else
+  appInfo.developmentBuild = false;
+#endif
 
   AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New(appInfo);
   std::string dataPath = ToUtf8String(GetAppDataPath());
