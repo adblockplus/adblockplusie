@@ -222,7 +222,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <PreprocessorDefinitions>WIN32;PRECOMPILED_HEADER_FILE="PluginStdAfx.h";PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -284,7 +284,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <PreprocessorDefinitions>WIN32;PRECOMPILED_HEADER_FILE="PluginStdAfx.h";NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -345,7 +345,7 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;PRECOMPILED_HEADER_FILE="PluginStdAfx.h";PRODUCT_ADBLOCKPLUS;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_TEST_MODE;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;PRODUCT_ADBLOCKPLUS;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_TEST_MODE;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_X64;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -406,7 +406,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <PreprocessorDefinitions>WIN32;PRECOMPILED_HEADER_FILE="PluginStdAfx.h";_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ADBLOCKPLUS_PRODUCTION_MODE;PRODUCT_ADBLOCKPLUS;ENABLE_LATIN_1;ENABLE_DEBUGGER_SUPPORT;V8_TARGET_ARCH_IA32;WIN32;DEBUG;ENABLE_DISASSEMBLER;V8_ENABLE_CHECKS;OBJECT_PRINT;VERIFY_HEAP;ENABLE_EXTRA_CHECKS;FILTER_ENGINE_STUBS=0;HAVE_WININET;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
