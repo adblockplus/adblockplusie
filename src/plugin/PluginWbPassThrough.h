@@ -17,6 +17,8 @@ public:
 	CComPtr<IInternetProtocol> m_pTargetProtocol;
 	CString m_url;
 
+  int GetContentType(CString src);
+
 public:
 	BEGIN_COM_MAP(WBPassthruSink)
 		COM_INTERFACE_ENTRY(IHttpNegotiate)
