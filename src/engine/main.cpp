@@ -1,4 +1,5 @@
 #include <AdblockPlus.h>
+#include <functional>
 #include <vector>
 #include <Windows.h>
 
@@ -7,25 +8,11 @@
 #include "../shared/Utils.h"
 #include "../shared/Version.h"
 #include "Debug.h"
+#include "Updater.h"
 
 namespace
 {
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
-
-  std::string ToUtf8String(std::wstring str)
-  {
-    size_t length = str.size();
-    if (length == 0)
-      return std::string();
-
-    DWORD utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, 0, 0, 0, 0);
-    if (utf8StringLength == 0)
-      throw std::runtime_error("Failed to determine the required buffer size");
-
-    std::string utf8String(utf8StringLength, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
-    return utf8String;
-  }
 
   void WriteStrings(Communication::OutputBuffer& response,
       const std::vector<std::string>& strings)
@@ -163,6 +150,18 @@ namespace
 
     return 0;
   }
+
+  void OnUpdateAvailable(AdblockPlus::JsEnginePtr jsEngine, AdblockPlus::JsValueList& params)
+  {
+    if (params.size() < 1)
+    {
+      Debug("updateAvailable event missing URL");
+      return;
+    }
+
+    Updater updater(jsEngine, params[0]->AsString());
+    updater.Update();
+  }
 }
 
 std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& locale)
@@ -179,6 +178,9 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
 #endif
 
   AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New(appInfo);
+  jsEngine->SetEventCallback("updateAvailable",
+      std::bind(&OnUpdateAvailable, jsEngine, std::placeholders::_1));
+
   std::string dataPath = ToUtf8String(GetAppDataPath());
   dynamic_cast<AdblockPlus::DefaultFileSystem*>(jsEngine->GetFileSystem().get())->SetBasePath(dataPath);
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));

@@ -172,9 +172,6 @@ private:
   static CSimpleArray<CPluginClass*> s_instances;
   static std::map<DWORD,CPluginClass*> s_threadInstances;
 
-  // Is plugin to be updated?
-  static bool s_isPluginToBeUpdated;
-
 #ifdef SUPPORT_WHITELIST
   static std::map<UINT, CString> s_menuDomains;
 #endif

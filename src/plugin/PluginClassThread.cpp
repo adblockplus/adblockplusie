@@ -15,8 +15,6 @@
 #endif
 #include "PluginMimeFilterClient.h"
 
-#include "PluginUpdateDialog.h"
-#include "PluginDownloadDialog.h"
 #include "PluginClient.h"
 #include "PluginClientFactory.h"
 #include "PluginWbPassThrough.h"
@@ -139,43 +137,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
   }
 
   // --------------------------------------------------------------------
-  // Should update plugin ?
-  // --------------------------------------------------------------------
-
-  if (!IsMainThreadDone(hMainThread) && settings->IsPluginUpdateAvailable())
-  {
-    DEBUG_THREAD(L"Thread::Should update plugin");
-
-    CString lastUpdateStr = settings->GetString(SETTING_PLUGIN_UPDATE_TIME);
-
-    std::time_t today = std::time(NULL);
-    std::time_t lastUpdate = lastUpdateStr.IsEmpty() ? today : _wtoi(lastUpdateStr.GetBuffer());
-
-    if (today != (std::time_t)(-1) && lastUpdate != (std::time_t)(-1))
-    {
-      if (today == lastUpdate || std::difftime(today, lastUpdate) / (60 * 60 * 24) >= 5.0)
-      {
-        CString updateVersion = settings->GetString(SETTING_PLUGIN_UPDATE_VERSION);
-
-        DEBUG_GENERAL(L"*** Displaying update plugin dialog for version " + updateVersion);
-
-        // Show update dialog
-        CUpdateDialog uDlg;
-
-        uDlg.SetVersions(updateVersion, IEPLUGIN_VERSION);
-
-        if (uDlg.DoModal(::GetDesktopWindow()) == IDOK)
-        {
-          s_isPluginToBeUpdated = true;
-        }
-
-        settings->SetValue(SETTING_PLUGIN_UPDATE_TIME, (int)today);
-        settings->Write();
-      }
-    }
-  }
-
-  // --------------------------------------------------------------------
   // Main loop
   // --------------------------------------------------------------------
 
@@ -243,8 +204,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
             DEBUG_GENERAL("*** before CheckFilterAndDownload");
             settings->RefreshFilterlist();
 
-            settings->MakeRequestForUpdate();
-
 
             settings->Write();
 
@@ -255,52 +214,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
       }
 
 
-#ifndef ENTERPRISE
-      // --------------------------------------------------------------------
-      // Update plugin
-      // --------------------------------------------------------------------
-
-      if (!IsMainThreadDone(hMainThread) && s_isPluginToBeUpdated)
-      {
-        DEBUG_GENERAL(L"*** Displaying download plugin dialog");
-
-        s_isPluginToBeUpdated = false;
-
-        try
-        {
-          CString updateUrl = settings->GetString(SETTING_PLUGIN_UPDATE_URL);
-          CString updatePath = L"";
-          if (updateUrl.Find(L".exe") == updateUrl.GetLength() - 4)
-          {
-            updatePath = CPluginSettings::GetTempPath(INSTALL_EXE_FILE);
-            // Delete old installer
-            ::DeleteFile(CPluginSettings::GetTempPath(INSTALL_EXE_FILE));
-          }
-          else
-          {
-            updatePath = CPluginSettings::GetTempPath(INSTALL_MSI_FILE);
-            // Delete old installer
-            ::DeleteFile(CPluginSettings::GetTempPath(INSTALL_MSI_FILE));
-          }
-
-          CPluginDownloadDialog dlDlg;
-
-          dlDlg.SetUrlAndPath(updateUrl, updatePath);
-          if (dlDlg.DoModal(::GetDesktopWindow()) == IDC_INSTALLBTN)
-          {
-            LaunchUpdater(updatePath);
-#ifdef AUTOMATIC_SHUTDOWN
-            settings->EraseTab();
-            ::ExitProcess(0);
-#endif // AUTOMATIC_SHUTDOWN
-          }
-        }
-        catch (std::runtime_error& er)
-        {
-          DEBUG_ERROR(er.what());
-        }
-      }
-#endif
       // ----------------------------------------------------------------
       // End loop
       // ----------------------------------------------------------------
@@ -311,7 +224,7 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
         DWORD sleepLoopIteration = 1;
 
         // Sleep loop
-        while (!isDone && !IsMainThreadDone(hMainThread) && !s_isPluginToBeUpdated)
+        while (!isDone && !IsMainThreadDone(hMainThread))
         {
           // Non-hanging sleep
           Sleep(5000);

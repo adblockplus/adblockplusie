@@ -18,25 +18,11 @@
 #define IDC_NVERSION                    213
 #define IDC_ABOUTTEXT                   214
 #define IDC_AUTHORS                     215
-#define IDC_UPDATETEXT                  217
-#define IDC_DOYOU                       218
-#define IDC_CURVERSION                  219
-#define IDC_NEWVERSION                  220
-#define IDC_PROGRESS1                   221
-#define IDC_INSTALLBTN                  222
-#define IDC_INSTALLMSG                  223
 #define IDC_HOMEPAGE                    224
-#define IDC_DOWNLOAD_MSG                225
-#define IDC_DOWNLOAD_PROGRESS           226
 
 #define IDI_ICON_DEACTIVATED            300
 #define IDI_ICON_ENABLED                301
 #define IDI_ICON_DISABLED               302
-
-#define IDD_ABOUTDIALOG                 400
-#define IDD_UPDATEDIALOG                401
-#define IDD_DOWNLOADDIALOG              402
-#define IDD_DOWNLOAD_FILE_DIALOG        403
 
 #define ID_ABOUT                        35001
 #define ID_INVITEFRIENDS                35002

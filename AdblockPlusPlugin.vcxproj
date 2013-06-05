@@ -704,7 +704,6 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClCompile Include="src\plugin\PluginConfiguration.cpp" />
     <ClCompile Include="src\plugin\PluginDebug.cpp" />
     <ClCompile Include="src\plugin\PluginDictionary.cpp" />
-    <ClCompile Include="src\plugin\PluginDownloadDialog.cpp" />
     <ClCompile Include="src\plugin\PluginFilter.cpp" />
     <ClCompile Include="src\plugin\PluginHttpRequest.cpp" />
     <ClCompile Include="src\plugin\PluginIniFile.cpp" />
@@ -725,7 +724,6 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     </ClCompile>
     <ClCompile Include="src\plugin\PluginSystem.cpp" />
     <ClCompile Include="src\plugin\PluginTabBase.cpp" />
-    <ClCompile Include="src\plugin\PluginUpdateDialog.cpp" />
     <ClCompile Include="src\plugin\PluginUserSettings.cpp" />
     <ClCompile Include="src\plugin\PluginUtil.cpp" />
     <ClCompile Include="src\plugin\PluginWbPassThrough.cpp" />
@@ -760,7 +758,6 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClInclude Include="src\plugin\PluginDictionary.h" />
     <ClInclude Include="src\plugin\PluginDomTraverser.h" />
     <ClInclude Include="src\plugin\PluginDomTraverserBase.h" />
-    <ClInclude Include="src\plugin\PluginDownloadDialog.h" />
     <ClInclude Include="src\plugin\PluginErrorCodes.h" />
     <ClInclude Include="src\plugin\PluginFilter.h" />
     <ClInclude Include="src\plugin\PluginHttpRequest.h" />
@@ -776,7 +773,6 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClInclude Include="src\plugin\PluginTab.h" />
     <ClInclude Include="src\plugin\PluginTabBase.h" />
     <ClInclude Include="src\plugin\PluginTypedef.h" />
-    <ClInclude Include="src\plugin\PluginUpdateDialog.h" />
     <ClInclude Include="src\plugin\PluginUserSettings.h" />
     <ClInclude Include="src\plugin\PluginUtil.h" />
     <ClInclude Include="src\plugin\ProtocolCF.h" />

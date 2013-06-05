@@ -21,7 +21,6 @@ void CPluginConfiguration::Invalidate()
   m_isValidPluginActivated = false;
   m_isValidPluginActivateEnabled = false;
   m_isValidPluginExpired = false;
-  m_isValidPluginUpdate = false;
   m_isValidPluginInfoPanel = false;
   m_isValidDictionary = false;
 #ifdef SUPPORT_FILTER
@@ -98,19 +97,6 @@ bool CPluginConfiguration::Download()
   CPluginIniFile::TSectionData settingsData = iniFile->GetSectionData("Settings");
   CPluginIniFile::TSectionData::iterator it;
 
-  it = settingsData.find("pluginupdate");
-  if (it != settingsData.end())
-  {
-    m_pluginUpdateUrl = it->second;
-    DEBUG_SETTINGS("Settings::Configuration plugin update url:" + it->second);
-  }
-
-  it = settingsData.find("pluginupdatev");
-  if (it != settingsData.end())
-  {
-    m_pluginUpdateVersion = it->second;
-    DEBUG_SETTINGS("Settings::Configuration plugin update version:" + it->second);
-  }
   it = settingsData.find("userid");
   if (it != settingsData.end())
   {
@@ -132,16 +118,12 @@ bool CPluginConfiguration::Download()
     DEBUG_SETTINGS("Settings::Configuration dictionary version:" + it->second);
   }
 
-  m_isValidPluginUpdate = 
-    settingsData.find("pluginupdate") != settingsData.end() && 
-    settingsData.find("pluginupdatev") != settingsData.end();
-
   m_isValidUserId =
     settingsData.find("userid") != settingsData.end();
 
   m_isValidDictionary =
-    settingsData.find("dictionary") != settingsData.end() && 
-    settingsData.find("dictionaryv") != settingsData.end(); 
+    settingsData.find("dictionary") != settingsData.end() &&
+    settingsData.find("dictionaryv") != settingsData.end();
 
   it = settingsData.find("plugininfopanel");
   if (it != settingsData.end())
@@ -218,29 +200,17 @@ bool CPluginConfiguration::IsValidPluginExpired() const
 }
 
 
-bool CPluginConfiguration::IsValidPluginUpdate() const
-{
-  return m_isValidPluginUpdate;
-}
-
-
-bool CPluginConfiguration::IsValidDictionary() const
-{
-  return m_isValidDictionary;
-}
-
-
 bool CPluginConfiguration::IsPluginActivated() const
 {
   return m_isPluginActivated;
 }
 
-bool CPluginConfiguration::IsPluginRegistered() const 
+bool CPluginConfiguration::IsPluginRegistered() const
 {
   return m_isPluginRegistered;
 }
 
-int CPluginConfiguration::GetAdBlockLimit() const 
+int CPluginConfiguration::GetAdBlockLimit() const
 {
   return m_adBlockLimit;
 }
@@ -301,18 +271,6 @@ CString CPluginConfiguration::GetUserId() const
 int CPluginConfiguration::GetPluginInfoPanel() const
 {
   return m_pluginInfoPanel;
-}
-
-
-CString CPluginConfiguration::GetPluginUpdateUrl() const
-{
-  return PLUGIN_UPDATE_URL;
-}
-
-
-CString CPluginConfiguration::GetPluginUpdateVersion() const
-{
-  return m_pluginUpdateVersion;
 }
 
 
