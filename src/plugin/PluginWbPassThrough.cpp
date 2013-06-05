@@ -20,6 +20,49 @@ WBPassthruSink::WBPassthruSink()
 {
   m_pTargetProtocol = NULL;
 }
+
+int WBPassthruSink::GetContentType(CString src)
+{
+  CString srcExt = src;
+
+  int pos = 0;
+  if ((pos = src.Find('?')) > 0)
+  {
+    srcExt = src.Left(pos);
+  }
+
+  CString ext = srcExt.Right(4);
+
+  if (ext == L".jpg" || ext == L".gif" || ext == L".png")
+  {
+    return CFilter::contentTypeImage;
+  }
+  else if (ext == L".css")
+  {
+    return CFilter::contentTypeStyleSheet;
+  }
+  else if (ext.Right(3) == L".js")
+  {
+    return CFilter::contentTypeScript;
+  }
+  else if (ext == L".xml")
+  {
+    return CFilter::contentTypeXmlHttpRequest;
+  }
+  else if (ext == L".swf")
+  {
+    return CFilter::contentTypeObject;
+  }
+  else if (ext == L".jsp" || ext == L".php" || ext == L"html")
+  {
+    return CFilter::contentTypeSubdocument;
+  }
+  else
+  {
+    return CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
+  }
+
+}
 ////////////////////////////////////////////////////////////////////////////////////////
 //WBPassthruSink
 //Monitor and/or cancel every request and responde
@@ -72,44 +115,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       else
 #endif // SUPPORT_FRAME_CACHING
       {
-        CString srcExt = src;
-
-        int pos = 0;
-        if ((pos = src.Find('?')) > 0)
-        {
-          srcExt = src.Left(pos);
-        }
-
-        CString ext = srcExt.Right(4);
-
-        if (ext == L".jpg" || ext == L".gif" || ext == L".png")
-        {
-          contentType = CFilter::contentTypeImage;
-        }
-        else if (ext == L".css")
-        {
-          contentType = CFilter::contentTypeStyleSheet;
-        }
-        else if (ext.Right(3) == L".js")
-        {
-          contentType = CFilter::contentTypeScript;
-        }
-        else if (ext == L".xml")
-        {
-          contentType = CFilter::contentTypeXmlHttpRequest;
-        }
-        else if (ext == L".swf")
-        {
-          contentType = CFilter::contentTypeObjectSubrequest;
-        }
-        else if (ext == L".jsp" || ext == L".php" || ext == L"html")
-        {
-          contentType = CFilter::contentTypeSubdocument;
-        }
-        else
-        {
-          contentType = CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
-        }
+        contentType = GetContentType(src);
       }
       if (client->ShouldBlock(src, contentType, domain, true))
       {
@@ -146,48 +152,11 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
   if (tab == NULL)
   {
-    if (client->ShouldBlock(src, NULL, L"", true))
+    int contentType = GetContentType(src);
+    //TODO: Figure out where to get a domain name in this case
+    if (client->ShouldBlock(src, contentType, L"", true))
     {
       isBlocked = true;
-      CString srcExt = src;
-
-      int pos = 0;
-      if ((pos = src.Find('?')) > 0)
-      {
-        srcExt = src.Left(pos);
-      }
-
-      CString ext = srcExt.Right(4);
-
-      if (ext == L".jpg" || ext == L".gif" || ext == L".png")
-      {
-        contentType = CFilter::contentTypeImage;
-      }
-      else if (ext == L".css")
-      {
-        contentType = CFilter::contentTypeStyleSheet;
-      }
-      else if (ext.Right(3) == L".js")
-      {
-        contentType = CFilter::contentTypeScript;
-      }
-      else if (ext == L".xml")
-      {
-        contentType = CFilter::contentTypeXmlHttpRequest;
-      }
-      else if (ext == L".swf")
-      {
-        contentType = CFilter::contentTypeObjectSubrequest;
-      }
-      else if (ext == L".jsp" || ext == L".php" || ext == L"html")
-      {
-        contentType = CFilter::contentTypeSubdocument;
-      }
-      else
-      {
-        contentType = CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
-      }
-
     }
   }
 
