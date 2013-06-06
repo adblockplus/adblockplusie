@@ -779,9 +779,10 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClInclude Include="src\plugin\ProtocolImpl.h" />
     <ClInclude Include="src\plugin\BuildVariant.h" />
     <ClInclude Include="src\plugin\Resource.h" />
-    <ClInclude Include="src\plugin\Version.h" />
     <ClInclude Include="src\shared\AutoHandle.h" />
     <ClInclude Include="src\shared\Communication.h" />
+    <ClInclude Include="src\shared\Utils.h" />
+    <ClInclude Include="src\shared\Version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\plugin\ProtocolCF.inl" />
