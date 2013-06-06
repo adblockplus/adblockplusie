@@ -130,3 +130,8 @@ void Communication::Pipe::WriteMessage(Communication::OutputBuffer& message)
   if (!WriteFile(pipe, data.c_str(), data.length(), &bytesWritten, 0))
     throw std::runtime_error("Failed to write to pipe");
 }
+
+bool Communication::PipeExists(const std::wstring& name)
+{
+  return WaitNamedPipe(name.c_str(), 100) || GetLastError() == ERROR_SEM_TIMEOUT;
+}

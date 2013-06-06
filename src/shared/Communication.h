@@ -161,6 +161,8 @@ namespace Communication
   protected:
     HANDLE pipe;
   };
+
+  bool PipeExists(const std::wstring& name);
 }
 
 #endif
