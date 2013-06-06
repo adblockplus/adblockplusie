@@ -204,12 +204,19 @@
                     <?include bho_registry_value.wxi ?>
                 </Component>
             <?endif?>
+
             <!--
                 The engine must go into the same directory as the DLL, since that location is searched explicitly (and uniquely).
             -->
-            <Component Id="AdblockPlusEngine.exe" Win64="no">
-                <File Id="AdblockPlusEngine.exe" Source="..\build\ia32\Release Production\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
-            </Component>
+            <?if $(sys.BUILDARCH)="x86"?>
+                <Component Id="AdblockPlusEngine.exe" Win64="no">
+                    <File Id="AdblockPlusEngine.exe" Source="..\build\ia32\Release Production\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+                </Component>
+            <?elseif $(sys.BUILDARCH)="x64"?>
+                <Component Id="AdblockPlusEngine.exe" Win64="yes">
+                    <File Id="AdblockPlusEngine.exe" Source="..\build\x64\Release Production\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+                </Component>
+            <?endif?>
     	</ComponentGroup>
 
         <!--

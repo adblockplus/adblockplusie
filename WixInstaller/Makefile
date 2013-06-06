@@ -35,7 +35,7 @@ default: $(Installer_x64)
 !error Unknown variable ARCH=$(ARCH)
 !endif
 
-all: ia32 x64 setup
+all: ia32 x64
 
 ia32: $(Installer_ia32)
 
