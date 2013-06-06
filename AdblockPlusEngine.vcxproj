@@ -324,8 +324,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\shared\Communication.h" />
+    <ClInclude Include="src\engine\Debug.h" />
     <ClInclude Include="src\shared\AutoHandle.h" />
+    <ClInclude Include="src\shared\Communication.h" />
+    <ClInclude Include="src\shared\Utils.h" />
+    <ClInclude Include="src\shared\Version.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
