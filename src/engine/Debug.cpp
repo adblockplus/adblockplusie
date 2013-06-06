@@ -1,7 +1,7 @@
-#include "stdafx.h"
-
 #include <fstream>
 #include <stdio.h>
+#include <sstream>
+#include <Windows.h>
 
 #include "../shared/Utils.h"
 

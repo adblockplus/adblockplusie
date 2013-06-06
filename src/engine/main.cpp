@@ -1,4 +1,6 @@
-#include "stdafx.h"
+#include <AdblockPlus.h>
+#include <vector>
+#include <Windows.h>
 
 #include "../shared/AutoHandle.h"
 #include "../shared/Communication.h"
