@@ -48,6 +48,11 @@ Communication::PipeConnectionError::PipeConnectionError()
 {
 }
 
+Communication::PipeBusyError::PipeBusyError()
+  : std::runtime_error("Timeout while trying to connect to a named pipe, pipe is busy")
+{
+}
+
 Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mode mode)
 {
   pipe = INVALID_HANDLE_VALUE;
@@ -71,8 +76,14 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
   }
   else
   {
-    if (WaitNamedPipeW(pipeName.c_str(), 5000))
+    pipe = CreateFileW(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    if (pipe == INVALID_HANDLE_VALUE && GetLastError() == ERROR_PIPE_BUSY)
+    {
+      if (!WaitNamedPipeW(pipeName.c_str(), 5000))
+        throw PipeBusyError();
+
       pipe = CreateFileW(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+    }
   }
 
   if (pipe == INVALID_HANDLE_VALUE)

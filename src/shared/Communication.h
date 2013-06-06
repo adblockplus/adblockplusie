@@ -141,6 +141,12 @@ namespace Communication
     PipeConnectionError();
   };
 
+  class PipeBusyError : public std::runtime_error
+  {
+  public:
+    PipeBusyError();
+  };
+
   class Pipe
   {
   public:
