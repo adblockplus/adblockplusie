@@ -10,6 +10,41 @@
     These errors are benign and can be avoided by some fiddling with the registry on the development machine.
     See http://wix.sourceforge.net/faq.html#Error217
 -->
+<!--
+    These definitions enable compiling multiple versions & Product ID's from the same file.
+    This is to allow testing upgrade features without having to switch back and forth between working copies.  
+-->
+<?ifdef Version ?>
+    <!-- 
+        If we're given a version on the command line, use it.
+        We use a short name on the command line for ease of use.
+        We use a longer name within this file for clarity about which "version" it is specifically 
+    -->
+    <?define Product_Version=$(var.Version) ?>
+<?else?>
+    <!-- 
+        Assert no version definition was given on the command line.
+    -->
+    <?ifdef NoDefault ?>
+        <?error Found "NoDefault" but no "Version" ?>
+    <?else?>
+        <!-- The default version -->
+        <?define Product_Version="0.8.1" ?>
+    <?endif?>
+<?endif?>
+
+<!--
+    Convenience link for obtaining a new GUID, required at each version increment.
+    http://www.newguid.com/
+-->
+<?if $(var.Product_Version)="0.8.1" ?>
+    <!-- Default version -->
+    <?define Product_ID="3caab5a9-43a7-4a57-8373-b7d0952b709c" ?>
+<?elseif $(var.Product_Version)="0.8.2" ?>
+    <?define Product_ID="794cdc54-95ae-4513-b2d7-2a01103a7c97" ?>
+<?else?>
+    <?error Unknown product version="$(var.Product_Version)" ?>
+<?endif?>
 
 <!--
     sys.BUILDARCH is set by the command line argument '-arch'.
@@ -18,19 +53,22 @@
 <?if $(sys.BUILDARCH)="x86"?>
     <?define Minimum_Version="100"?>
     <?define Program_Files="ProgramFilesFolder"?>
+    <?define Product_Name="!(loc.ProductName32)"?>
 <?elseif $(sys.BUILDARCH)="x64"?>
     <?define Minimum_Version="200"?>
     <?define Program_Files="ProgramFiles64Folder"?>
+    <?define Product_Name="!(loc.ProductName64)"?>
 <?else?>
     <?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
 <?endif?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <Product Name="!(loc.ProductName)"
+    <Product 
+        Name="$(var.Product_Name)"
         Manufacturer="Eyeo GmbH"
-        Version="0.8.0"
+        Version="$(var.Product_Version)"
         Language="!(loc.LANG)" Codepage="1252"
-        Id="4f27c814-5ee0-4b25-b3ab-3ad565551918"
+        Id="$(var.Product_ID)"
         UpgradeCode="3a8e3ab4-762d-4641-806e-2dccb953d73f">
 
         <Package Id="*"
@@ -42,7 +80,22 @@
             Compressed="yes"
             InstallScope="perMachine" InstallPrivileges="elevated"
         />
-        <MajorUpgrade DowngradeErrorMessage="!(loc.AlreadyInstalled)" />
+        <!--
+            The MajorUgrade tag allows us to specify the relationship between our version number and the one installed.
+            The attribute AllowDowngrades="yes" permits our version number to be lower than the one installed.
+            The attribute Disallow="no" (the default) permits our version number to be higher than the one installed.
+            For development releases (at least), we permit both cases.
+            For general releases, at present we also permit both.
+            
+            The @Schedule attribute looks a little opaque.
+            Suffice it to say that it's the only option for scheduling where uninstallation of the previous version
+                and installation of the present version is _always_ going to act atomically.
+            It's a shame that you to even explicitly make that choice.
+        -->
+        <MajorUpgrade
+            AllowDowngrades="yes"
+            Schedule="afterInstallExecute"
+        />
         <MediaTemplate EmbedCab="yes"/>
 
         <!--

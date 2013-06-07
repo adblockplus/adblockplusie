@@ -1,0 +1,126 @@
+<html>
+<head>
+    <title>Release History for Adblock Plus for IE</title>
+    <style type="text/css">
+        td.guid { white-space: nowrap; font-family: Courier; font-size: smaller }
+    </style>
+</head>
+<body>
+    <h1>Release History for Adblock Plus for IE</h1>
+        This file documents the release history for Adblock Plus for IE, their version numbers and various identifiers.
+    
+    <h2>Upgrade Code</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Upgrade Code</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Adblock Plus for IE</td>
+                    <td class="guid">3a8e3ab4-762d-4641-806e-2dccb953d73f</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><i>Whatever the Avast product was called</i></td>
+                    <td>&nbsp;???</td>
+                    <td>Need to research</td>
+                </tr>
+            </tbody>
+        </table>
+    
+    <h2>Planned Releases</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Version</th>
+                    <th>Target Release Date</th>
+                    <th>Product ID (if known)</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0.8.1</td>
+                    <td>>= 2013-06-10</td>
+                    <td class="guid">3caab5a9-43a7-4a57-8373-b7d0952b709c</td>
+                    <td>
+                        "IE development build v7". 
+                        Internal development release.
+                        Will be able to upgrade 0.8.0 versions.
+                    </td>
+                </tr><tr>
+                    <td>0.8.2</td>
+                    <td>&nbsp;???</td>
+                    <td class="guid">794cdc54-95ae-4513-b2d7-2a01103a7c97</td>
+                    <td>
+                        Right now, the same as 0.8.1, available for testing upgrades.
+                        It will likely get used for a proper release.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    <h2>Published Releases</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Version</th>
+                    <th>Release Date</th>
+                    <th>Product ID</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0.8.0</td>
+                    <td>2013-06-07</td>
+                    <td class="guid">4f27c814-5ee0-4b25-b3ab-3ad565551918</td>
+                    <td>"IE development build v6". 
+                        There were several other prior development builds, all using the same version number and Product ID.
+                        Since upgrading was not supported at that time, this deficiency didn't matter much.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    
+    <h1>Background</h1>
+    <p>
+        Windows Installer uses a few pieces of information to manage its upgrade process.
+        <ul>
+            <li>
+                <b>Product ID</b>.
+                This is a GUID that names a particular product release; it's the primary name.
+                It has to be changed with each release.
+                Within WiX, this is the attribute <code>Product/@Id</code>.
+                Within the Windows Installer, this is the <a href="http://msdn.microsoft.com/en-us/library/aa370854%28v=vs.85%29.aspx"><code>ProductCode</code> property</a>.
+                Caution: The property called <code>ProductID</code> in Windows Installer is called <code>Product/@Name</code> in WiX. 
+            </li><li>
+                <b>Version</b>.
+                This is an informational field, which is dependent upon the Product ID.
+                The version number is a dotted triple, with an optional fourth field.
+                For comparison and equality, the first three fields are used and the fourth is ignored.
+                Within WiX, this is the attribute <code>Product/@Version</code>.
+                Within the Windows Installer, this is the <a href="http://msdn.microsoft.com/en-us/library/aa370859%28v=vs.85%29.aspx"><code>ProductVersion</code> property</a>. 
+            </li><li>
+                <b>Upgrade Code</b>.
+                This GUID designates membership in a category that all may be upgraded by another, common package.
+                Colloquially, it names what we would call the "Product", irrespective of revision.
+                Technically, it's an identifier that allows one package to declare that it is able to supersede another package.
+                Within WiX, this is the attribute <code>Product/@UpgradeCode</code>.
+                Within the Windows Installer, this is the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa372375%28v=vs.85%29.aspx"><code>UpgradeCode</code> property</a>. 
+            </li><li>
+                <b>Package ID</b>.
+                This is a GUID that identifies a particular <code>.msi</code> file (in WI lingo, a particular package).
+                Within WiX, this is the attribute <code>Product/Package/@Id</code>.
+                Within the Windows Installer, this is called a <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa370568%28v=vs.85%29.aspx">package code</a>.
+                We never need to care about this, because the WiX syntax <code>Id="*"</code> generates unique identifiers each time.
+                It's documented here in order to inform the reader that they may ignore it without peril.
+            </li>
+        </ul>
+    </p>
+</body>
+</html>
