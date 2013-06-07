@@ -8,7 +8,6 @@
 
 #include "PluginSettings.h"
 #include "PluginSystem.h"
-#include "PluginDictionary.h"
 #include "PluginHttpRequest.h"
 #include "PluginMutex.h"
 #include "PluginClass.h"
@@ -91,9 +90,6 @@ void CPluginClientBase::SetLocalization()
 {
   CPluginSystem* system = CPluginSystem::GetInstance();
   CString browserLanguage = system->GetBrowserLanguage();
-
-  CPluginDictionary* dic = CPluginDictionary::GetInstance();
-  dic->SetLanguage(browserLanguage);
 
   CPluginSettings* settings = CPluginSettings::GetInstance();
   if (settings->IsMainProcess() && settings->IsMainThread() && !settings->Has(SETTING_LANGUAGE))

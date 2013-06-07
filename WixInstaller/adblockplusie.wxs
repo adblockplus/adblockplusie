@@ -63,6 +63,7 @@
             <ComponentGroupRef Id="Installation_Folders"/>
             <ComponentGroupRef Id="Binaries"/>
             <ComponentGroupRef Id="HTML_Tree"/>
+            <ComponentGroupRef Id="Locale_Files"/>
             <ComponentGroupRef Id="INI_Files"/>
         </Feature>
 
@@ -147,6 +148,7 @@
                 -->
                 <Directory Id="INSTALLFOLDER" Name="Adblock Plus for IE">
                     <Directory Id="HTML_Folder" Name="html"></Directory>
+                    <Directory Id="Locales_Folder" Name="locales"></Directory>
                 </Directory>
                 <Directory Id="APP_DATA_FOLDER">
                     <Directory Id="ABP_APPDATA_FOLDER" Name="Adblock Plus for IE"></Directory>
@@ -287,6 +289,20 @@
         </DirectoryRef>
 
         <!--
+            Locale files
+        -->
+        <ComponentGroup Id="Locale_Files">
+            <ComponentRef Id="locales_en.ini"/>
+            <ComponentRef Id="locales_ru.ini"/>
+        </ComponentGroup>
+        <DirectoryRef Id="Locales_Folder">
+            <Directory Id="locales" FileSource="SourceDir\..\locales">
+                <Component Id="locales_en.ini"><File Name="en.ini"/></Component>
+                <Component Id="locales_ru.ini"><File Name="ru.ini"/></Component>
+            </Directory>
+        </DirectoryRef>
+
+        <!--
             INI files
 
             The settings.ini file should not be installed this way, since it contains user-generated data.
@@ -297,14 +313,10 @@
             See http://stackoverflow.com/questions/357911/manage-configuration-files-with-wix
         -->
         <ComponentGroup Id="INI_Files">
-            <ComponentRef Id="ini_settings.page.w.ini"/>
-            <ComponentRef Id="ini_dictionary.w.ini"/>
             <ComponentRef Id="ini_settings.ini"/>
         </ComponentGroup>
         <DirectoryRef Id="ABP_APPDATA_FOLDER">
             <Directory Id="ini" FileSource="SourceDir\..\files">
-                <Component Id="ini_settings.page.w.ini"><File Name="settings_page_w.ini"/></Component>
-                <Component Id="ini_dictionary.w.ini"><File Name="dictionary_w.ini"/></Component>
                 <Component Id="ini_settings.ini"><File Name="settings.ini"/></Component>
             </Directory>
         </DirectoryRef>

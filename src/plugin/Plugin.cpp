@@ -7,7 +7,6 @@
 #include "PluginClient.h"
 #include "PluginSystem.h"
 #include "PluginSettings.h"
-#include "PluginDictionary.h"
 #include "PluginMimeFilterClient.h"
 #include "Msiquery.h"
 
@@ -18,6 +17,7 @@
 #include "PluginConfig.h"
 #endif
 
+#include "../shared/Dictionary.h"
 
 CComModule _Module;
 
@@ -138,9 +138,8 @@ void InitPlugin(bool isInstall)
   //    CPluginFilter::CreateFilters();
 #endif
 
-  // Force creation of default dictionary
-  CPluginDictionary* dictionary = CPluginDictionary::GetInstance(true);
-  dictionary->Create(true);
+  std::wstring locale((LPCWSTR)CPluginSystem::GetInstance()->GetBrowserLanguage());
+  Dictionary::Create(locale);
 
   // Force creation of default config file
 #ifdef SUPPORT_CONFIG

@@ -4,6 +4,7 @@
 #include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/WebRequest.h>
 
+#include "../shared/Dictionary.h"
 #include "../shared/Utils.h"
 #include "Debug.h"
 #include "Resource.h"
@@ -22,7 +23,12 @@ namespace
     {
       case WM_INITDIALOG:
       {
-        // TODO: Localize dialog strings
+        Dictionary* dict = Dictionary::GetInstance();
+        SetWindowTextW(hWnd, dict->Lookup("updater", "update-title").c_str());
+        SetDlgItemTextW(hWnd, IDC_UPDATETEXT, dict->Lookup("updater", "update-text").c_str());
+        SetDlgItemTextW(hWnd, IDC_DOYOU, dict->Lookup("updater", "update-question").c_str());
+        SetDlgItemTextW(hWnd, IDOK, dict->Lookup("general", "button-yes").c_str());
+        SetDlgItemTextW(hWnd, IDCANCEL, dict->Lookup("general", "button-no").c_str());
         return TRUE;
       }
       case WM_COMMAND:
@@ -47,7 +53,11 @@ namespace
     {
       case WM_INITDIALOG:
       {
-        // TODO: Localize dialog strings
+        Dictionary* dict = Dictionary::GetInstance();
+        SetWindowTextW(hWnd, dict->Lookup("updater", "download-title").c_str());
+        SetDlgItemTextW(hWnd, IDC_INSTALLMSG, dict->Lookup("updater", "download-progress-text").c_str());
+        SetDlgItemTextW(hWnd, IDCANCEL, dict->Lookup("general", "button-cancel").c_str());
+
         std::auto_ptr<DialogCallbackType> callback(reinterpret_cast<DialogCallbackType*>(lParam));
         (*callback)(hWnd);
         return TRUE;
@@ -94,8 +104,11 @@ void Updater::Update()
         reinterpret_cast<LPARAM>(callback));
     if (result == DOWNLOAD_FAILED)
     {
-      // TODO: Localize
-      MessageBoxW(NULL, L"Download failed", L"Downloading update", 0);
+      Dictionary* dict = Dictionary::GetInstance();
+      MessageBoxW(NULL,
+          dict->Lookup("updater", "download-error-neterror").c_str(),
+          dict->Lookup("updater", "download-error-title").c_str(),
+          0);
     }
     if (result != IDOK)
       return;
@@ -108,8 +121,11 @@ void Updater::Update()
 
     if (!::CreateProcessW(tempFile.c_str(), NULL, NULL, NULL, FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL, &si, &pi))
     {
-      // TODO: Localize
-      MessageBoxW(NULL, L"Failed to run updater", L"Downloading update", 0);
+      Dictionary* dict = Dictionary::GetInstance();
+      MessageBoxW(NULL,
+          dict->Lookup("updater", "download-error-runerror").c_str(),
+          dict->Lookup("updater", "download-error-title").c_str(),
+          0);
       DebugLastError("Creating updater process failed");
       return;
     }

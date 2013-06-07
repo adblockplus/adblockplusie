@@ -2,7 +2,6 @@
 
 #include "PluginClient.h"
 #include "PluginSettings.h"
-#include "PluginDictionary.h"
 #ifdef SUPPORT_CONFIG
 #include "PluginConfig.h"
 #endif
@@ -347,10 +346,7 @@ DWORD WINAPI CPluginTabBase::ThreadProc(LPVOID pParam)
 
   DEBUG_GENERAL(debugText)
 
-    CPluginClient* client = CPluginClient::GetInstance();
-
-  // Force loading/creation of dictionary
-  CPluginDictionary::GetInstance();
+  CPluginClient* client = CPluginClient::GetInstance();
 
   client->SetLocalization();
 

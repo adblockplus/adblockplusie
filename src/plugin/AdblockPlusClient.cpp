@@ -4,22 +4,22 @@
 #include "PluginSystem.h"
 #include "PluginFilter.h"
 #include "PluginClientFactory.h"
-#include "PluginDictionary.h"
 #include "PluginHttpRequest.h"
 #include "PluginMutex.h"
 #include "PluginClass.h"
-#include "PluginUtil.h"
 
 #include "AdblockPlusClient.h"
 
 #include "../shared/Communication.h"
+#include "../shared/Utils.h"
 
 namespace
 {
   void SpawnAdblockPlusEngine()
   {
-    std::wstring engineExecutablePath = DllDir() + L"AdblockPlusEngine.exe";
-    CString browserLanguage = CPluginSystem::GetInstance()->GetBrowserLanguage();
+    std::wstring engineExecutablePath = GetDllDir() + L"AdblockPlusEngine.exe";
+    CString params = L"AdblockPlusEngine.exe " + CPluginSystem::GetInstance()->GetBrowserLanguage();
+
     STARTUPINFO startupInfo = {};
     PROCESS_INFORMATION processInformation = {};
 
@@ -29,7 +29,7 @@ namespace
     DuplicateTokenEx(token, 0, 0, SecurityImpersonation, TokenPrimary, &newToken);
 
     if (!CreateProcessAsUserW(newToken, engineExecutablePath.c_str(),
-                              browserLanguage.GetBuffer(browserLanguage.GetLength() + 1),
+                              params.GetBuffer(params.GetLength() + 1),
                               0, 0, 0, 0, 0, 0, &startupInfo, &processInformation))
     {
       DWORD error = GetLastError();

@@ -1,7 +1,6 @@
 #include "PluginStdAfx.h"
 
 #include "PluginClass.h"
-#include "PluginDictionary.h"
 #include "PluginSettings.h"
 #include "PluginSystem.h"
 #ifdef SUPPORT_FILTER
@@ -16,6 +15,8 @@
 #include "sddl.h"
 #include "PluginUtil.h"
 #include "PluginUserSettings.h"
+
+#include "../shared/Dictionary.h"
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -556,7 +557,7 @@ void CPluginClass::ShowStatusBar()
         {
           SHANDLE_PTR pBrowserHWnd;
           browser->get_HWND((SHANDLE_PTR*)&pBrowserHWnd);
-          CPluginDictionary* dictionary = CPluginDictionary::GetInstance(false);
+          Dictionary* dictionary = Dictionary::GetInstance();
           settings->SetBool("statusbarasked", true);
           settings->Write();
 
@@ -569,13 +570,17 @@ void CPluginClass::ShowStatusBar()
           if (regRes != 0)
           {
             // We use the tab window here and in the next few calls, since the browser window may still not be available
-            LRESULT res = MessageBox((HWND)m_hTabWnd, dictionary->Lookup("ERROR_CAN_NOT_ENABLE_STATUS_BAR"),
-              dictionary->Lookup("ERROR_CAN_NOT_ENABLE_STATUS_BAR_TITLE"), MB_OK);
+            LRESULT res = MessageBox((HWND)m_hTabWnd,
+                dictionary->Lookup("status-bar", "error-text").c_str(),
+                dictionary->Lookup("status-bar", "error-title").c_str(),
+                MB_OK);
             return;
           }
           // Ask if a user wants to enable a status bar automatically
-          LRESULT res = MessageBox((HWND)m_hTabWnd, dictionary->Lookup("ERROR_STATUS_BAR_DISABLED"),
-            dictionary->Lookup("ERROR_STATUS_BAR_DISABLED_TITLE"), MB_YESNO);
+          LRESULT res = MessageBox((HWND)m_hTabWnd,
+              dictionary->Lookup("status-bar", "question").c_str(),
+              dictionary->Lookup("status-bar", "title").c_str(),
+              MB_YESNO);
           if (res == IDYES)
           {
             DWORD trueth = 1;
@@ -1469,7 +1474,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 {
-  CString ctext;
+  std::wstring ctext;
 
   s_criticalSectionLocal.Lock();
   {
@@ -1485,13 +1490,13 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     return false;
   }
 
-  CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
+  Dictionary* dictionary = Dictionary::GetInstance();
 
-  MENUITEMINFO fmii;
+  MENUITEMINFOW fmii;
   memset(&fmii, 0, sizeof(MENUITEMINFO));
   fmii.cbSize = sizeof(MENUITEMINFO);
 
-  MENUITEMINFO miiSep;
+  MENUITEMINFOW miiSep;
   memset(&miiSep, 0, sizeof(MENUITEMINFO));
   miiSep.cbSize = sizeof(MENUITEMINFO);
   miiSep.fMask = MIIM_TYPE | MIIM_FTYPE;
@@ -1509,15 +1514,15 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 #ifdef SUPPORT_WHITELIST
   {
     // White list domain
-    ctext = dictionary->Lookup("MENU_DISABLE_ON");
+    ctext = dictionary->Lookup("menu", "disable-on-site");
     fmii.fMask = MIIM_STRING | MIIM_STATE;
     fmii.fState = MFS_DISABLED;
-    fmii.dwTypeData = ctext.GetBuffer();
-    fmii.cch = ctext.GetLength();
+    fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
+    fmii.cch = ctext.size();
 
     UINT index = WM_WHITELIST_DOMAIN;
 
-    ::SetMenuItemInfo(hMenu, ID_WHITELISTDOMAIN, FALSE, &fmii);
+    ::SetMenuItemInfoW(hMenu, ID_WHITELISTDOMAIN, FALSE, &fmii);
   }
 #else
   {
@@ -1526,66 +1531,64 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 #endif // SUPPORT_WHITELIST
 
   // Invite friends
-  ctext = dictionary->Lookup("MENU_INVITE_FRIENDS");
+  ctext = dictionary->Lookup("menu", "invite");
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = ctext.GetBuffer();
-  fmii.cch = ctext.GetLength();
-  ::SetMenuItemInfo(hMenu, ID_INVITEFRIENDS, FALSE, &fmii);
+  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
+  fmii.cch = ctext.size();
+  ::SetMenuItemInfoW(hMenu, ID_INVITEFRIENDS, FALSE, &fmii);
 
   // FAQ
-  ctext = dictionary->Lookup("MENU_FAQ");
+  ctext = dictionary->Lookup("menu", "faq");
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = ctext.GetBuffer();
-  fmii.cch = ctext.GetLength();
-  ::SetMenuItemInfo(hMenu, ID_FAQ, FALSE, &fmii);
+  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
+  fmii.cch = ctext.size();
+  ::SetMenuItemInfoW(hMenu, ID_FAQ, FALSE, &fmii);
 
   // About
-  ctext = dictionary->Lookup("MENU_ABOUT");
+  ctext = dictionary->Lookup("menu", "about");
   fmii.fMask = MIIM_STATE | MIIM_STRING;
   fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = ctext.GetBuffer();
-  fmii.cch = ctext.GetLength();
-  ::SetMenuItemInfo(hMenu, ID_ABOUT, FALSE, &fmii);
+  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
+  fmii.cch = ctext.size();
+  ::SetMenuItemInfoW(hMenu, ID_ABOUT, FALSE, &fmii);
 
   // Feedback
-  ctext = dictionary->Lookup("MENU_FEEDBACK");
+  ctext = dictionary->Lookup("menu", "feedback");
   fmii.fMask = MIIM_STATE | MIIM_STRING;
   fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = ctext.GetBuffer();
-  fmii.cch = ctext.GetLength();
-  ::SetMenuItemInfo(hMenu, ID_FEEDBACK, FALSE, &fmii);
+  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
+  fmii.cch = ctext.size();
+  ::SetMenuItemInfoW(hMenu, ID_FEEDBACK, FALSE, &fmii);
 
   // Plugin enable
   if (settings->GetPluginEnabled())
   {
-    ctext = dictionary->Lookup("MENU_DISABLE");
+    ctext = dictionary->Lookup("menu", "disable");
   }
   else
   {
-    ctext = dictionary->Lookup("MENU_ENABLE");
+    ctext = dictionary->Lookup("menu", "enable");
   }
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.fState = client ? MFS_ENABLED : MFS_DISABLED;
-  fmii.dwTypeData = ctext.GetBuffer();
-  fmii.cch = ctext.GetLength();
-  ::SetMenuItemInfo(hMenu, ID_PLUGIN_ENABLE, FALSE, &fmii);
+  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
+  fmii.cch = ctext.size();
+  ::SetMenuItemInfoW(hMenu, ID_PLUGIN_ENABLE, FALSE, &fmii);
 
   // Settings
 #ifndef ENTERPRISE
-  ctext = dictionary->Lookup("MENU_SETTINGS");
+  ctext = dictionary->Lookup("menu", "settings");
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = ctext.GetBuffer();
-  fmii.cch = ctext.GetLength();
-  ::SetMenuItemInfo(hMenu, ID_SETTINGS, FALSE, &fmii);
+  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
+  fmii.cch = ctext.size();
+  ::SetMenuItemInfoW(hMenu, ID_SETTINGS, FALSE, &fmii);
 #else
   RemoveMenu(hMenu, ID_SETTINGS, MF_BYCOMMAND);
   RemoveMenu(hMenu, 5, MF_BYPOSITION);
 #endif
-
-  ctext.ReleaseBuffer();
 
   return true;
 }
@@ -1971,9 +1974,12 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
           {
             if (!isVisible)
             {
-              CPluginDictionary* dictionary = CPluginDictionary::GetInstance();
+              Dictionary* dictionary = Dictionary::GetInstance();
 
-              LRESULT res = MessageBox(NULL, dictionary->Lookup("ERROR_STATUS_BAR_DISABLED"), dictionary->Lookup("ERROR_STATUS_BAR_DISABLED_TITLE"), MB_YESNO);
+              LRESULT res = MessageBox(NULL,
+                  dictionary->Lookup("status-bar", "question").c_str(),
+                  dictionary->Lookup("status-bar", "title").c_str(),
+                  MB_YESNO);
               if (res == IDYES)
               {
                 hr = browser->put_StatusBar(TRUE);

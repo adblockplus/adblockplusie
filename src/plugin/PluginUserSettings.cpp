@@ -4,7 +4,6 @@
 #include "PluginSettings.h"
 #include "PluginClient.h"
 #include "PluginIniFileW.h"
-#include "PluginDictionary.h"
 
 static const CString s_GetMessage = L"GetMessage";
 static const CString s_GetLanguageCount = L"GetLanguageCount";
