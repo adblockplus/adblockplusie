@@ -14,7 +14,8 @@
 Build_Dir_common = ..\build\ # 
 Build_Dir_ia32 = ..\build\ia32\ # comment prevents newline 
 Build_Dir_x64  = ..\build\x64\ #
-Configuration = Release Production 
+Configuration = Release Production
+Version = 0.8.1
 
 #---------------------
 # Default Targets
@@ -22,8 +23,9 @@ Configuration = Release Production
 # We change the default rule depending upon the ARCH (architecture) definition.
 #---------------------
 
-Installer_ia32 = $(Build_Dir_ia32)adblockplusie-en-us-ia32.msi 
-Installer_x64  = $(Build_Dir_x64)adblockplusie-en-us-x64.msi 
+Installer_ia32 = $(Build_Dir_ia32)adblockplusie-$(Version)-en-us-ia32.msi 
+Installer_x64  = $(Build_Dir_x64)adblockplusie-$(Version)-en-us-x64.msi
+Setup = $(Build_Dir_common)setup-$(Version).exe 
 
 !ifndef ARCH
 default: $(Installer_ia32) $(Installer_x64)
@@ -35,17 +37,19 @@ default: $(Installer_x64)
 !error Unknown variable ARCH=$(ARCH)
 !endif
 
-all: ia32 x64
+all: ia32 x64 setup
 
 ia32: $(Installer_ia32)
 
 x64: $(Installer_x64)
 
+setup: $(Setup) 
+
 #---------------------
 # candle .wxs --> .wixobj 
 #---------------------
 
-Candle = candle -nologo $(CANDLE_FLAGS) $(*F).wxs -out $@  
+Candle = candle -nologo -dNoDefault -dVersion=$(Version) $(CANDLE_FLAGS) $(*F).wxs -out $@  
 .wxs{$(Build_Dir_common)}.wixobj:
     $(Candle)
 .wxs{$(Build_Dir_ia32)}.wixobj:
@@ -56,6 +60,10 @@ Candle = candle -nologo $(CANDLE_FLAGS) $(*F).wxs -out $@
 objects_common = $(Build_Dir_common)custom_WixUI_InstallDir.wixobj 
 objects_ia32 = $(Build_Dir_ia32)adblockplusie.wixobj $(objects_common)  
 objects_x64 = $(Build_Dir_x64)adblockplusie.wixobj $(objects_common)
+
+object_setup = $(Build_Dir_common)setup.wixobj
+$(object_setup): setup.wxs
+    $(Candle) -ext WixBalExtension
 
 #---------------------
 # light .wixobj --> .msi 
@@ -68,6 +76,13 @@ $(Installer_ia32): $(objects_ia32) "..\build\ia32\$(Configuration)\AdblockPlus.d
 
 $(Installer_x64): $(objects_x64) "..\build\x64\$(Configuration)\AdblockPlusx64.dll"
     $(Light) $(objects_x64) 
+
+#---------------------
+# light .wixobj --> .exe 
+#---------------------
+
+$(Setup): $(object_setup)
+    $(Light) $(object_setup) -ext WixBalExtension
 
 #---------------------
 # msiexec .msi --> installed --> uninstalled
@@ -89,6 +104,9 @@ popd
 
 uninstall:
     msiexec /x {4f27c814-5ee0-4b25-b3ab-3ad565551918}
+    
+install-setup: $(Setup)
+    $(Setup)
 
 #---------------------
 # Miscellaneous

@@ -3,64 +3,195 @@
     <title>Installation for Adblock Plus for IE</title>
 </head>
 <body>
-    <h1>Installation for Adblock Plus for IE</h1>
-
-        <h2>Existing Installation</h2>
-       
-            <h3>Directories and Files</h3>
-            
-            Either LOCALLOWFOLDER or AppDataFolder is the location for the HTML tree,
-                depending on OS type.
-            <ul>
-                <li>LOCALLOWFOLDER</li>
-                Initialized from the registry to AppDataLow, the low-integrity application data directory.
-                <ul>
-                    <li>AVASTADBLOCKERFOLDERVISTA</li>
-                    Used only for Windows Vista and above.
-                </ul>
-                
-                <li>AppDataFolder</li>
-                A Windows Installer property: "The full path to the Roaming folder for the current user."
-                <ul>
-                    <li>AVASTADBLOCKERFOLDER</li>
-                    Used only for Windows XP and below. 
-                </ul>
-            </ul>
-            
-            This folder contains per-user application data.
-            <ul>
-                <li>settings.ini</li>
-                <li>settings_page_w.ini</li>
-                <li>dictionary_w.ini</li>
-            </ul>
-           
-            This folder also contains the HTML tree, 
-                which is not user-specific and doesn't really belong in this directory.
-            <ul>
-                <li>html</li>
-                <ul>
-                    <li>static</li>
-                        <ul>
-                            <li>js</li>
-                            <li>img</li>
-                        </ul>
-                    <li>templates</li>
-                </ul>
-            </ul>
-
-
-        <h2>Installation</h2>
-            <h3>Directories and Files</h3>
+    <h1>Installation Goals</h1>
+        <h2>Use Cases Supported</h2>
+            We have three basic use cases:
             <ul>
                 <li>
-                    <b>DLL</b>. 
-                    The two DLL's appear in the source tree as
-                        <code>AdBlocker\Release Test\AdblockPlus.dll</code> (32-bit)
-                        and <code>AdBlocker\x64\Release Test\AdblockPlusx64.dll</code>.
-                    They sit in <code>INSTALLFOLDER</code>. 
-                </li>                    
-            </ul>                
+                    <b>Individual Users</b>.
+                    <p>
+                        For individuals, we have the distinction between initial installation and upgrade installation.
+                        For initial installation, we provide as single <code>.exe</code> file that can be downloaded and run.
+                        This executable handles both 32- and 64-bit versions of Windows automatically.
+                        It provides an ordinary user interface.
+                        For upgrade installation, we use the update facility inside <code>libadblockplus</code> to automatically download an updater.
+                        The updater is an <code>.msi</code> package, either a 32-bit or 64-bit as appropriate.                        
+                    </p><p>
+                        For the single <code>.exe</code>, we use the Wix <code>burn</code> tool, whose output is bootstrap executable.
+                        The bootstrapper contains, as internal payloads, both 32- and 64-bit <code>.msi</code> files
+                            in order to deal with an important limitation of the Windows installer.
+                        These are essentially the same as the individual upgrade files that are delivered automatically,
+                            although the same payloads may be arranged a bit differently. 
+                    </p>
+                </li>
+                <li>
+                    <b>Corporate Deployment</b>.
+                    <p>
+                        For corporate users, we provide <code>.msi</code> files that can be centrally deployed.
+                        As required, we provide two <code>.msi</code> files, one for 32-bit Windows and one for 64-bit.
+                        These files are able to be run without a user interface for headless, remote-controlled installation. 
+                    </p><p>
+                        We provide <code>.msi</code> files with user interfaces,
+                            rather than ones without.
+                        This requires the adminstrator to run the installers with command line arguments,
+                            but that's typical already.
+                        The reason to provide a user interface is allow administrators to prepare their installations with feedback.
+                        These are the same <code>.msi</code> packages as above, but with the UI conditionally compiled into the package.
+                    </p>
+                </li>
+                <li>
+                    <b>Developers</b>.
+                    <p>
+                        For developers, we provide a mechanism by which the plugin will function
+                            either in-place, with no file copying, or with minimal file copying.
+                        There is a silent and rapid way of installing the plugin
+                            that is suitable for integration into larger automatic build and test.  
+                    </p><p>
+                        This use case is not presently supported separately,
+                            since it requires code changes.
+                        File locations are currently scattered throughout the code,
+                            and these locations do not admit anything simpler than a regular install.
+                        Regardless, when this use case is ready, it will use per-user installation,
+                            which avoids invoking the UAC and allows completely automatic installation with no interactive user input.                        
+                    </p>                    
+                </li>
+            </ul>
+            
+    <h1>Technical Details</h1>
+        <h2>Current Installations</h2>
+            <p>
+                Well, the current planned installation.
+                The actual code doesn't quite match reality yet.
+            </p>
+            
+            <h3>User Data Directory</h3>
+                <p>
+                    In Windows Vista and later, Internet Explorer runs Browser Helper Objects in low-integrity mode.
+                    This mode does not exist on XP and earlier.
+                    The ordinary user data folder is a medium-integrity object on Vista and later.
+                    Hence the user data folder perforce differs between these versions of Windows.
+                    This directory is available in installer property <code>APP_DATA_FOLDER</code>.
+                </p><p>
+                    The algorithm to obtain this variable depends upon the Windows version.
+                    For Vista and later, we search the registry for <code>AppDataLow</code>,
+                        which is a symbol not known to the Windows Installer,
+                        but which does have a well-known GUID.
+                    This directory is available for low-integrity processes to write to.
+                    For XP and earlier, we use the Windows installer property <code>AppDataFolder</code>,
+                        documented as the "full path to the Roaming folder for the current user." 
+                </p><p>
+                    Underneath <code>APP_DATA_FOLDER</code> we create a directory for Adblock Plus to use for itself.
+                    It's available symbolically as installer property <code>ABP_APPDATA_FOLDER</code>.
+                    This is the current per-user data.
+                </p>
+                <ul>
+                    <li>
+                        <code>settings.ini</code>.
+                        This is the user settings file.
+                        We can eliminate that from the installation by writing out a default if not present,
+                            either in the installer or the plugin itself.
+                    </li>
+                </ul>
+
+            <h3>Application Binary Directories</h3>
+            
+                <h4>Ordinary Per-Machine</h4>
+                
+                    <p>
+                        Note:
+                        All 64-bit objects are simply absent in 32-bit installs.
+                        With one exception (the engine), all the files in the 32-bit installation are also in the 64-bit one.
+                    </p>
+                    <ul>
+                        <li>
+                            <code>Program Files (x86)</code>
+                            The 32-bit program files directory.
+                            <ul>
+                                <li>
+                                    <code>Adblock Plus for IE</code>
+                                    <ul>
+                                        <li>
+                                            <code>AdblockPlus.dll</code>
+                                            The 32-bit BHO.
+                                        </li><li>
+                                            <code>AdblockPlusEngine.exe</code>
+                                            (32-bit only) The 32-bit engine.
+                                            It has the same name as the 64-bit one, but only one executable is ever installed.
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li><li>
+                            <code>Program Files</code>
+                            The 64-bit program files directory.
+                            <ul>
+                                <li>
+                                    <code>Adblock Plus for IE</code>
+                                    <ul>
+                                        <li>
+                                            <code>AdblockPlusx64.dll</code>
+                                            The 64-bit BHO.
+                                        </li><li>
+                                            <code>AdblockPlusEngine.exe</code>
+                                            The 64-bit engine.
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    
+                <h4>Ordinary Per-User</h4>
+            
+                    <p>
+                        Layout not defined yet.
+                    </p>
+                
+                <h4>Developer</h4>
+                
+                    <p>
+                        For the program files directories, we substitute <code>adblockplusie/build/ia32</code> and <code>adblockplusie/build/x64</code>.  
+                    </p>
+                    
+            <h3>Application Data Directories</h3>
+            
+                <h4>Ordinary Per-Machine</h4>
+                    
+                    <p>
+                        The root directory is Program Files directory for the native platform.
+                    </p>
+                    <ul>
+                        <li>
+                            <i>&lt;root&gt;</i>
+                            <ul>
+                                <li>
+                                    <code>html</code>
+                                    The HTML directory tree.
+                                    Full contents not listed here.
+                                </li><li>
+                                    <code>locale</code>
+                                    The directory for locale files.
+                                    Full contents not listed here.                            
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>                    
+                
+                <h4>Ordinary Per-User</h4>
+            
+                    <p>
+                        Layout not defined yet.
+                    </p>
+                
+               
+                <h4>Developer</h4>
+                
+                    <p>
+                        In the <code>adblockplusie/</code> directory.
+                    </p>
+
             <h3>Registry Entries</h3>
+            [Incomplete]
             From <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa384231%28v=vs.85%29.aspx">Process Interoperability on MSDN</a>:
             "On 64-bit Windows, 64- and 32-bit in-process servers should use the InprocServer32 entry."
             
