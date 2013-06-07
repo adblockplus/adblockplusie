@@ -190,7 +190,14 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
-  if (Communication::PipeExists(Communication::pipeName))
+  AutoHandle mutex(CreateMutexW(0, false, L"AdblockPlusEngine"));
+  if (!mutex)
+  {
+    DebugLastError("CreateMutex failed");
+    return 1;
+  }
+
+  if (GetLastError() == ERROR_ALREADY_EXISTS)
   {
     DebugLastError("Named pipe exists, another engine instance appears to be running");
     return 1;
