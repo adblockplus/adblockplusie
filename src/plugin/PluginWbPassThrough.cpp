@@ -31,9 +31,11 @@ int WBPassthruSink::GetContentType(CString src)
     srcExt = src.Left(pos);
   }
 
-  CString ext = srcExt.Right(4);
-
-  if (ext == L".jpg" || ext == L".gif" || ext == L".png")
+  int lastDotIndex = srcExt.ReverseFind('.');
+  if (lastDotIndex < 0)
+    return CFilter::contentTypeAny;
+  CString ext = srcExt.Mid(lastDotIndex);
+  if (ext == L".jpg" || ext == L".gif" || ext == L".png" || ext == L".jpeg")
   {
     return CFilter::contentTypeImage;
   }
@@ -53,7 +55,7 @@ int WBPassthruSink::GetContentType(CString src)
   {
     return CFilter::contentTypeObject;
   }
-  else if (ext == L".jsp" || ext == L".php" || ext == L"html")
+  else if (ext == L".jsp" || ext == L".php" || ext == L".html")
   {
     return CFilter::contentTypeSubdocument;
   }
