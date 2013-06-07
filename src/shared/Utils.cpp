@@ -1,5 +1,6 @@
 #include <memory>
 #include <stdexcept>
+#include <vector>
 
 #include <Windows.h>
 #include <ShlObj.h>
@@ -8,6 +9,9 @@
 
 namespace
 {
+  // See http://blogs.msdn.com/b/oldnewthing/archive/2004/10/25/247180.aspx
+  EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+
   std::wstring appDataPath;
 
   bool IsWindowsVistaOrLater()
@@ -20,7 +24,7 @@ namespace
   }
 }
 
-std::string ToUtf8String(std::wstring str)
+std::string ToUtf8String(const std::wstring& str)
 {
   size_t length = str.size();
   if (length == 0)
@@ -33,6 +37,50 @@ std::string ToUtf8String(std::wstring str)
   std::string utf8String(utf8StringLength, '\0');
   WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, &utf8String[0], utf8StringLength, 0, 0);
   return utf8String;
+}
+
+std::wstring ToUtf16String(const std::string& str)
+{
+  size_t length = str.size();
+  if (length == 0)
+    return std::wstring();
+
+  DWORD utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, NULL, 0);
+  if (utf16StringLength == 0)
+    throw std::runtime_error("ToUTF16String failed. Can't determine the length of the buffer needed.");
+
+  std::wstring utf16String(utf16StringLength, L'\0');
+  MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, &utf16String[0], utf16StringLength);
+  return utf16String;
+}
+
+std::wstring GetDllDir()
+{
+  std::vector<WCHAR> path(MAX_PATH);
+  DWORD length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], path.size());
+
+  while (length == path.size())
+  {
+    // Buffer too small, double buffer size
+    path.resize(path.size() * 2);
+    length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], path.size());
+  }
+
+  try
+  {
+    if (length == 0)
+      throw std::runtime_error("Failed determining module path");
+
+    std::vector<WCHAR>::reverse_iterator it = std::find(path.rbegin(), path.rend(), L'\\');
+    if (it == path.rend())
+      throw std::runtime_error("Unexpected plugin path, no backslash found");
+
+    return std::wstring(path.begin(), it.base());
+  }
+  catch (const std::exception&)
+  {
+    return std::wstring();
+  }
 }
 
 std::wstring GetAppDataPath()
@@ -50,7 +98,7 @@ std::wstring GetAppDataPath()
     else
     {
       std::auto_ptr<wchar_t> pathBuffer(new wchar_t[MAX_PATH]);
-      if (!SHGetSpecialFolderPath(0, pathBuffer.get(), CSIDL_LOCAL_APPDATA, true))
+      if (!SHGetSpecialFolderPathW(0, pathBuffer.get(), CSIDL_LOCAL_APPDATA, true))
         throw std::runtime_error("Unable to find app data directory");
       appDataPath.assign(pathBuffer.get());
     }

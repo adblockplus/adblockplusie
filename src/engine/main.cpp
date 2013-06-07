@@ -5,6 +5,7 @@
 
 #include "../shared/AutoHandle.h"
 #include "../shared/Communication.h"
+#include "../shared/Dictionary.h"
 #include "../shared/Utils.h"
 #include "../shared/Version.h"
 #include "Debug.h"
@@ -197,9 +198,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   int argc;
   LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-  std::wstring locale(argc >= 1 ? argv[0] : L"");
+  std::wstring locale(argc >= 2 ? argv[1] : L"");
   LocalFree(argv);
 
+  Dictionary::Create(locale);
   filterEngine = CreateFilterEngine(locale);
 
   for (;;)

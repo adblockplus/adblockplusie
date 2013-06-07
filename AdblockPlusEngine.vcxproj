@@ -314,15 +314,10 @@
     <ClCompile Include="src\engine\main.cpp" />
     <ClCompile Include="src\engine\Debug.cpp" />
     <ClCompile Include="src\engine\Updater.cpp" />
-    <ClCompile Include="src\shared\Communication.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="src\shared\AutoHandle.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="src\shared\Utils.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="src\shared\Communication.cpp" />
+    <ClCompile Include="src\shared\AutoHandle.cpp" />
+    <ClCompile Include="src\shared\Dictionary.cpp" />
+    <ClCompile Include="src\shared\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\Debug.h" />
@@ -330,6 +325,7 @@
     <ClInclude Include="src\engine\Updater.h" />
     <ClInclude Include="src\shared\AutoHandle.h" />
     <ClInclude Include="src\shared\Communication.h" />
+    <ClInclude Include="src\shared\Dictionary.h" />
     <ClInclude Include="src\shared\Utils.h" />
     <ClInclude Include="src\shared\Version.h" />
   </ItemGroup>

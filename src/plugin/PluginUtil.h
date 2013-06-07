@@ -13,6 +13,5 @@ private:
   BString& operator=(const BString&);
 };
 
-std::wstring DllDir();
 std::wstring UserSettingsFileUrl();
 std::wstring FileUrl(const std::wstring& url);

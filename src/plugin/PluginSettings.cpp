@@ -5,7 +5,6 @@
 #include "PluginIniFileW.h"
 #include "PluginIniFile.h"
 #include "PluginSettings.h"
-#include "PluginDictionary.h"
 #include "PluginClient.h"
 #include "PluginChecksum.h"
 #include "PluginSystem.h"

@@ -265,9 +265,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Bscmake>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
-copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
-copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
-xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
+xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html"
+xcopy /s /I /y /D "$(ProjectDir)locales\*" "$(TargetDir)locales" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'">
@@ -329,9 +328,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Bscmake>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
-copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
-copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
-xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
+xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html"
+xcopy /s /I /y /D "$(ProjectDir)locales\*" "$(TargetDir)locales" </Command>
     </PostBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -389,9 +387,8 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     </Bscmake>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
-copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
-copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
-xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
+xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html"
+xcopy /s /I /y /D "$(ProjectDir)locales\*" "$(TargetDir)locales" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|Win32'">
@@ -455,9 +452,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Bscmake>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
-copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
-copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
-xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
+xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html"
+xcopy /s /I /y /D "$(ProjectDir)locales\*" "$(TargetDir)locales" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|x64'">
@@ -513,9 +509,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Bscmake>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
-copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
-copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
-xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
+xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html"
+xcopy /s /I /y /D "$(ProjectDir)locales\*" "$(TargetDir)locales" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'">
@@ -571,9 +566,8 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
     </Bscmake>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
-copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
-copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
-xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
+xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html"
+xcopy /s /I /y /D "$(ProjectDir)locales\*" "$(TargetDir)locales" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Test|x64'">
@@ -625,9 +619,8 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     </Bscmake>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
-copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
-copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
-xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
+xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html"
+xcopy /s /I /y /D "$(ProjectDir)locales\*" "$(TargetDir)locales" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|x64'">
@@ -683,9 +676,8 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     </Bscmake>
     <PostBuildEvent>
       <Command>copy "$(ProjectDir)files\settings.ini" "$(TargetDir)settings.ini"
-copy /y /D "$(ProjectDir)files\settings_page_w.ini" "$(TargetDir)settings_page_w.ini"
-copy /y /D "$(ProjectDir)files\dictionary_w.ini" "$(TargetDir)dictionary_w.ini"
-xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
+xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html"
+xcopy /s /I /y /D "$(ProjectDir)locales\*" "$(TargetDir)locales" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -703,7 +695,6 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClCompile Include="src\plugin\PluginClientFactory.cpp" />
     <ClCompile Include="src\plugin\PluginConfiguration.cpp" />
     <ClCompile Include="src\plugin\PluginDebug.cpp" />
-    <ClCompile Include="src\plugin\PluginDictionary.cpp" />
     <ClCompile Include="src\plugin\PluginFilter.cpp" />
     <ClCompile Include="src\plugin\PluginHttpRequest.cpp" />
     <ClCompile Include="src\plugin\PluginIniFile.cpp" />
@@ -733,6 +724,9 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClCompile Include="src\shared\AutoHandle.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\shared\Dictionary.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\shared\Utils.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -755,7 +749,6 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClInclude Include="src\plugin\PluginConfiguration.h" />
     <ClInclude Include="src\plugin\PluginDebug.h" />
     <ClInclude Include="src\plugin\PluginDebugMacros.h" />
-    <ClInclude Include="src\plugin\PluginDictionary.h" />
     <ClInclude Include="src\plugin\PluginDomTraverser.h" />
     <ClInclude Include="src\plugin\PluginDomTraverserBase.h" />
     <ClInclude Include="src\plugin\PluginErrorCodes.h" />
@@ -781,6 +774,7 @@ xcopy /s /I /y /D "$(ProjectDir)html\*" "$(TargetDir)html" </Command>
     <ClInclude Include="src\plugin\Resource.h" />
     <ClInclude Include="src\shared\AutoHandle.h" />
     <ClInclude Include="src\shared\Communication.h" />
+    <ClInclude Include="src\shared\Dictionary.h" />
     <ClInclude Include="src\shared\Utils.h" />
     <ClInclude Include="src\shared\Version.h" />
   </ItemGroup>

@@ -10,11 +10,14 @@
     'sources': [
       'src/shared/AutoHandle.cpp',
       'src/shared/Communication.cpp',
+      'src/shared/Dictionary.cpp',
+      'src/shared/Utils.cpp',
       'test/CommunicationTest.cpp',
+      'test/DictionaryTest.cpp',
     ],
     'defines': ['WINVER=0x0501'],
     'link_settings': {
-      'libraries': ['-ladvapi32'],
+      'libraries': ['-ladvapi32', '-lshell32', '-lole32'],
     },
     'msvs_settings': {
       'VCLinkerTool': {

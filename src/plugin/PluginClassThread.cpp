@@ -3,7 +3,6 @@
 #include <ctime>
 
 #include "PluginClass.h"
-#include "PluginDictionary.h"
 #include "PluginSettings.h"
 #include "PluginSystem.h"
 #include "PluginConfiguration.h"
@@ -83,8 +82,6 @@ DWORD WINAPI CPluginClass::MainThreadProc(LPVOID pParam)
 
   CPluginClient* client = CPluginClient::GetInstance();
   client->SetLocalization();
-
-  CPluginDictionary::GetInstance();
 
   DWORD nNextUserTimerBase = GetTickCount() / TIMER_INTERVAL_USER_REGISTRATION + 1;
   DWORD nUserTimerBaseStep = 1;
