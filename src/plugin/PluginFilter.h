@@ -45,12 +45,12 @@ class CFilterElementHide
 
 public:
 
-enum ETraverserComplexType
-{
-  TRAVERSER_TYPE_PARENT,
-  TRAVERSER_TYPE_IMMEDIATE,
-  TRAVERSER_TYPE_ERROR
-};
+  enum ETraverserComplexType
+  {
+    TRAVERSER_TYPE_PARENT,
+    TRAVERSER_TYPE_IMMEDIATE,
+    TRAVERSER_TYPE_ERROR
+  };
 
 
   CString m_filterText;
