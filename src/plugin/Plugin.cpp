@@ -138,9 +138,6 @@ void InitPlugin(bool isInstall)
   //    CPluginFilter::CreateFilters();
 #endif
 
-  std::wstring locale((LPCWSTR)CPluginSystem::GetInstance()->GetBrowserLanguage());
-  Dictionary::Create(locale);
-
   // Force creation of default config file
 #ifdef SUPPORT_CONFIG
   DEBUG_GENERAL("*** Generating config file")

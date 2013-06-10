@@ -77,6 +77,9 @@ CPluginClass::CPluginClass()
 
   CPluginSystem* system = CPluginSystem::GetInstance();
 
+  std::wstring locale((LPCWSTR)system->GetBrowserLanguage());
+  Dictionary::Create(locale);
+
   bool isMainTab = settings->IncrementTabCount();
 
   if (isMainTab)
