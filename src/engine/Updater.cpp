@@ -1,6 +1,10 @@
 #include <functional>
 #include <memory>
 #include <sstream>
+
+#include <Windows.h>
+#include <Msi.h>
+
 #include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/WebRequest.h>
 
@@ -84,7 +88,7 @@ namespace
 }
 
 Updater::Updater(AdblockPlus::JsEnginePtr jsEngine, const std::string& url)
-    : jsEngine(jsEngine), url(url), tempFile(GetAppDataPath() + L"\\update.exe")
+    : jsEngine(jsEngine), url(url), tempFile(GetAppDataPath() + L"\\update.msi")
 {
 }
 
@@ -97,40 +101,43 @@ void Updater::Update()
   {
     Debug("User accepted update");
 
-    DialogCallbackType* callback = new DialogCallbackType(std::bind(&Updater::StartDownload,
-        this, std::placeholders::_1));
-    int result = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DOWNLOADDIALOG), GetDesktopWindow(),
-        reinterpret_cast<DLGPROC>(&DownloadDlgProc),
-        reinterpret_cast<LPARAM>(callback));
-    if (result == DOWNLOAD_FAILED)
     {
-      Dictionary* dict = Dictionary::GetInstance();
-      MessageBoxW(NULL,
-          dict->Lookup("updater", "download-error-neterror").c_str(),
-          dict->Lookup("updater", "download-error-title").c_str(),
-          0);
+      DialogCallbackType* callback = new DialogCallbackType(std::bind(&Updater::StartDownload,
+          this, std::placeholders::_1));
+      int result = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DOWNLOADDIALOG), GetDesktopWindow(),
+          reinterpret_cast<DLGPROC>(&DownloadDlgProc),
+          reinterpret_cast<LPARAM>(callback));
+      if (result == DOWNLOAD_FAILED)
+      {
+        Dictionary* dict = Dictionary::GetInstance();
+        MessageBoxW(NULL,
+            dict->Lookup("updater", "download-error-neterror").c_str(),
+            dict->Lookup("updater", "download-error-title").c_str(),
+            0);
+      }
+      if (result != IDOK)
+        return;
     }
-    if (result != IDOK)
-      return;
 
-    PROCESS_INFORMATION pi;
-    STARTUPINFO si;
-    ::ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    si.wShowWindow = FALSE;
-
-    if (!::CreateProcessW(tempFile.c_str(), NULL, NULL, NULL, FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL, &si, &pi))
     {
-      Dictionary* dict = Dictionary::GetInstance();
-      MessageBoxW(NULL,
-          dict->Lookup("updater", "download-error-runerror").c_str(),
-          dict->Lookup("updater", "download-error-title").c_str(),
-          0);
-      DebugLastError("Creating updater process failed");
-      return;
+      UINT result = ::MsiInstallProductW(tempFile.c_str(), L"ACTION=INSTALL INSTALLUILEVEL=2");
+      if (result != ERROR_SUCCESS)
+      {
+        Dictionary* dict = Dictionary::GetInstance();
+        std::wstringstream message;
+        message << dict->Lookup("updater", "download-error-runerror");
+        message << std::endl << L"(error " << result << L")";
+        MessageBoxW(NULL,
+            message.str().c_str(),
+            dict->Lookup("updater", "download-error-title").c_str(),
+            0);
+
+        std::stringstream error;
+        error << "Installing update failed (error " << result << ")";
+        Debug(error.str());
+        return;
+      }
     }
-    ::CloseHandle(pi.hProcess);
-    ::CloseHandle(pi.hThread);
   }
 }
 

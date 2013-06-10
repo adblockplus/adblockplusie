@@ -185,9 +185,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\ia32\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
-      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Test|Win32'">
@@ -201,9 +201,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\ia32\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
-      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'">
@@ -217,9 +217,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\ia32\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
-      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|x64'">
@@ -233,9 +233,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\x64\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
-      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Test|x64'">
@@ -249,9 +249,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\x64\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
-      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'">
@@ -265,9 +265,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\x64\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
-      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|Win32'">
@@ -285,9 +285,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\ia32\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
-      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|x64'">
@@ -305,9 +305,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\x64\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
-      <DelayLoadDLLs>Shell32.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
