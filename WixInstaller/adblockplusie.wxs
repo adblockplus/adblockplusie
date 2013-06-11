@@ -12,39 +12,24 @@
 -->
 <!--
     These definitions enable compiling multiple versions & Product ID's from the same file.
-    This is to allow testing upgrade features without having to switch back and forth between working copies.  
+    This is to allow testing upgrade features without having to switch back and forth between working copies.
 -->
 <?ifdef Version ?>
-    <!-- 
+    <!--
         If we're given a version on the command line, use it.
         We use a short name on the command line for ease of use.
-        We use a longer name within this file for clarity about which "version" it is specifically 
+        We use a longer name within this file for clarity about which "version" it is specifically
     -->
     <?define Product_Version=$(var.Version) ?>
 <?else?>
-    <!-- 
-        Assert no version definition was given on the command line.
-    -->
-    <?ifdef NoDefault ?>
-        <?error Found "NoDefault" but no "Version" ?>
-    <?else?>
-        <!-- The default version -->
-        <?define Product_Version="0.8.1" ?>
-    <?endif?>
+    <?error "Version" parameter is required ?>
 <?endif?>
 
-<!--
-    Convenience link for obtaining a new GUID, required at each version increment.
-    http://www.newguid.com/
--->
-<?if $(var.Product_Version)="0.8.1" ?>
-    <!-- Default version -->
-    <?define Product_ID="3caab5a9-43a7-4a57-8373-b7d0952b709c" ?>
-<?elseif $(var.Product_Version)="0.8.2" ?>
-    <?define Product_ID="794cdc54-95ae-4513-b2d7-2a01103a7c97" ?>
-<?else?>
-    <?error Unknown product version="$(var.Product_Version)" ?>
+<?ifndef Configuration ?>
+    <?error "Configuration" parameter is required ?>
 <?endif?>
+
+<?define Product_ID="3caab5a9-43a7-4a57-8373-b7d0952b709c" ?>
 
 <!--
     sys.BUILDARCH is set by the command line argument '-arch'.
@@ -63,7 +48,7 @@
 <?endif?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-    <Product 
+    <Product
         Name="$(var.Product_Name)"
         Manufacturer="Eyeo GmbH"
         Version="$(var.Product_Version)"
@@ -86,7 +71,7 @@
             The attribute Disallow="no" (the default) permits our version number to be higher than the one installed.
             For development releases (at least), we permit both cases.
             For general releases, at present we also permit both.
-            
+
             The @Schedule attribute looks a little opaque.
             Suffice it to say that it's the only option for scheduling where uninstallation of the previous version
                 and installation of the present version is _always_ going to act atomically.
@@ -176,12 +161,12 @@
         -->
         <Property Id="INSTALLFOLDER">
             <RegistrySearch Id="Registry_Read_Install_Folder"
-                Root="HKLM" Key="Software\Adblock Plus for IE\0.8.0"
+                Root="HKLM" Key="Software\Adblock Plus for IE\$(var.Product_Version)"
                 Name="InstallFolder" Type="raw"/>
         </Property>
         <Component Id="Install_Folder.component" Directory="INSTALLFOLDER">
             <RegistryKey Root="HKLM" Key="Software\Adblock Plus for IE">
-                <RegistryKey Key="0.8.0">
+                <RegistryKey Key="$(var.Product_Version)">
                     <RegistryValue
                         Name="InstallFolder" Type="string"
                         Value="[INSTALLFOLDER]"/>
@@ -232,7 +217,7 @@
                 We need an explicit value for attribute @Win64 so that the ARCH argument does not override its implicit value.
             -->
             <Component Id="AdblockPlus32.dll" Win64="no">
-                <File Id="AdblockPlus32.dll" Source="..\build\ia32\Release Production\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
+                <File Id="AdblockPlus32.dll" Source="..\build\ia32\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
                     <?include dll_class.wxi ?>
                 </File>
                 <?include bho_registry_value.wxi ?>
@@ -253,7 +238,7 @@
             -->
             <?if $(sys.BUILDARCH)="x64"?>
                 <Component Id="AdblockPlus64.dll" Win64="yes">
-                    <File Id="AdblockPlus64.dll" Source="..\build\x64\Release Production\AdblockPlusx64.dll" KeyPath="yes" Checksum="yes">
+                    <File Id="AdblockPlus64.dll" Source="..\build\x64\$(var.Configuration)\AdblockPlusx64.dll" KeyPath="yes" Checksum="yes">
                         <?include dll_class.wxi ?>
                     </File>
                     <?include bho_registry_value.wxi ?>
@@ -265,11 +250,11 @@
             -->
             <?if $(sys.BUILDARCH)="x86"?>
                 <Component Id="AdblockPlusEngine.exe" Win64="no">
-                    <File Id="AdblockPlusEngine.exe" Source="..\build\ia32\Release Production\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+                    <File Id="AdblockPlusEngine.exe" Source="..\build\ia32\$(var.Configuration)\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
                 </Component>
             <?elseif $(sys.BUILDARCH)="x64"?>
                 <Component Id="AdblockPlusEngine.exe" Win64="yes">
-                    <File Id="AdblockPlusEngine.exe" Source="..\build\x64\Release Production\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+                    <File Id="AdblockPlusEngine.exe" Source="..\build\x64\$(var.Configuration)\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
                 </Component>
             <?endif?>
     	</ComponentGroup>
