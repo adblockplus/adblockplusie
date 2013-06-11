@@ -6,6 +6,9 @@
 #include <functional>
 #include <string>
 
+
+bool IsWindowsVistaOrLater();
+
 std::string ToUtf8String(const std::wstring& str);
 std::wstring ToUtf16String(const std::string& str);
 std::wstring GetDllDir();

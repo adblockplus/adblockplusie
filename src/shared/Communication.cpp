@@ -3,6 +3,7 @@
 #include <Sddl.h>
 
 #include "Communication.h"
+#include "Utils.h"
 
 namespace
 {
@@ -62,17 +63,26 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 
-    // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
-    LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
     PSECURITY_DESCRIPTOR securitydescriptor;
-    ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1, &securitydescriptor, 0);
+    if (IsWindowsVistaOrLater())
+    {
+      // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
+      LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
+      ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1, &securitydescriptor, 0);
+      sa.lpSecurityDescriptor = securitydescriptor;
+    }
 
-    sa.lpSecurityDescriptor = securitydescriptor;
     sa.bInheritHandle = TRUE;
 
     pipe = CreateNamedPipeW (pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
                                   PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
-    LocalFree(securitydescriptor);
+    if (IsWindowsVistaOrLater())
+    {
+      if (securitydescriptor)
+      {
+        LocalFree(securitydescriptor);
+      }
+    }
   }
   else
   {

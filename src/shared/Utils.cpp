@@ -14,14 +14,15 @@ namespace
 
   std::wstring appDataPath;
 
-  bool IsWindowsVistaOrLater()
-  {
-    OSVERSIONINFOEX osvi;
-    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-    GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(&osvi));
-    return osvi.dwMajorVersion >= 6;
-  }
+}
+
+bool IsWindowsVistaOrLater()
+{
+  OSVERSIONINFOEX osvi;
+  ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+  GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(&osvi));
+  return osvi.dwMajorVersion >= 6;
 }
 
 std::string ToUtf8String(const std::wstring& str)
