@@ -1,31 +1,34 @@
 #----------------------------------
 # Makefile for Microsoft NMAKE
 #
-# Call with no arguments to set the default target to all installers.
-#   nmake 
+# Call with only the version parameter to set the default target to all installers.
+#   nmake VERSION=1.2.3
 # Call with a definition of the NMAKE variable ARCH on the command line
-#   nmake ARCH=ia32
-#   nmake ARCH=x64
+#   nmake VERSION=1.2.3 ARCH=ia32
+#   nmake VERSION=1.2.3 ARCH=x64
 # If an architecture is specified, the default target is constrained to it.
 #----------------------------------
 
 .SUFFIXES: .msi .wixobj .wxs
 
-Build_Dir_common = ..\build\ # 
-Build_Dir_ia32 = ..\build\ia32\ # comment prevents newline 
+Build_Dir_common = ..\build\ #
+Build_Dir_ia32 = ..\build\ia32\ # comment prevents newline
 Build_Dir_x64  = ..\build\x64\ #
-Configuration = Release Production
-Version = 0.8.1
+Configuration = Release Test
+
+!ifndef VERSION
+!error VERSION parameter is required
+!endif
 
 #---------------------
 # Default Targets
-# 
+#
 # We change the default rule depending upon the ARCH (architecture) definition.
 #---------------------
 
-Installer_ia32 = $(Build_Dir_ia32)adblockplusie-$(Version)-en-us-ia32.msi 
-Installer_x64  = $(Build_Dir_x64)adblockplusie-$(Version)-en-us-x64.msi
-Setup = $(Build_Dir_common)setup-$(Version).exe 
+Installer_ia32 = $(Build_Dir_ia32)adblockplusie-$(VERSION)-en-us-ia32.msi
+Installer_x64  = $(Build_Dir_x64)adblockplusie-$(VERSION)-en-us-x64.msi
+Setup = $(Build_Dir_common)setup-$(VERSION).exe
 
 !ifndef ARCH
 default: $(Installer_ia32) $(Installer_x64)
@@ -43,13 +46,13 @@ ia32: $(Installer_ia32)
 
 x64: $(Installer_x64)
 
-setup: $(Setup) 
+setup: $(Setup)
 
 #---------------------
-# candle .wxs --> .wixobj 
+# candle .wxs --> .wixobj
 #---------------------
 
-Candle = candle -nologo -dNoDefault -dVersion=$(Version) $(CANDLE_FLAGS) $(*F).wxs -out $@  
+Candle = candle -nologo -dNoDefault -dVersion=$(VERSION) "-dConfiguration=$(Configuration)" $(CANDLE_FLAGS) $(*F).wxs -out $@
 .wxs{$(Build_Dir_common)}.wixobj:
     $(Candle)
 .wxs{$(Build_Dir_ia32)}.wixobj:
@@ -57,8 +60,8 @@ Candle = candle -nologo -dNoDefault -dVersion=$(Version) $(CANDLE_FLAGS) $(*F).w
 .wxs{$(Build_Dir_x64)}.wixobj:
     $(Candle) -arch x64
 
-objects_common = $(Build_Dir_common)custom_WixUI_InstallDir.wixobj 
-objects_ia32 = $(Build_Dir_ia32)adblockplusie.wixobj $(objects_common)  
+objects_common = $(Build_Dir_common)custom_WixUI_InstallDir.wixobj
+objects_ia32 = $(Build_Dir_ia32)adblockplusie.wixobj $(objects_common)
 objects_x64 = $(Build_Dir_x64)adblockplusie.wixobj $(objects_common)
 
 object_setup = $(Build_Dir_common)setup.wixobj
@@ -66,7 +69,7 @@ $(object_setup): setup.wxs
     $(Candle) -ext WixBalExtension
 
 #---------------------
-# light .wixobj --> .msi 
+# light .wixobj --> .msi
 #---------------------
 
 Light = light -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $@
@@ -75,10 +78,10 @@ $(Installer_ia32): $(objects_ia32) "..\build\ia32\$(Configuration)\AdblockPlus.d
     $(Light) $(objects_ia32)
 
 $(Installer_x64): $(objects_x64) "..\build\x64\$(Configuration)\AdblockPlusx64.dll"
-    $(Light) $(objects_x64) 
+    $(Light) $(objects_x64)
 
 #---------------------
-# light .wixobj --> .exe 
+# light .wixobj --> .exe
 #---------------------
 
 $(Setup): $(object_setup)
@@ -104,7 +107,7 @@ popd
 
 uninstall:
     msiexec /x {4f27c814-5ee0-4b25-b3ab-3ad565551918}
-    
+
 install-setup: $(Setup)
     $(Setup)
 
@@ -113,4 +116,4 @@ install-setup: $(Setup)
 #---------------------
 
 clean:
-    del $(objects_ia32) 
+    del $(objects_ia32)

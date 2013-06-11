@@ -120,7 +120,7 @@ void Updater::Update()
     }
 
     {
-      UINT result = ::MsiInstallProductW(tempFile.c_str(), L"ACTION=INSTALL INSTALLUILEVEL=2");
+      UINT result = ::MsiInstallProductW(tempFile.c_str(), L"ACTION=INSTALL INSTALLUILEVEL=2 REINSTALL=ALL REINSTALLMODE=vomus MSIENFORCEUPGRADECOMPONENTRULES=1");
       if (result != ERROR_SUCCESS)
       {
         Dictionary* dict = Dictionary::GetInstance();
