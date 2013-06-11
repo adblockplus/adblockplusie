@@ -76,12 +76,9 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
 
     pipe = CreateNamedPipeW (pipeName.c_str(), PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
                                   PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
-    if (IsWindowsVistaOrLater())
+    if (IsWindowsVistaOrLater() && securitydescriptor)
     {
-      if (securitydescriptor)
-      {
         LocalFree(securitydescriptor);
-      }
     }
   }
   else
