@@ -137,7 +137,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)libadblockplus\build\ia32\build\Debug\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)libadblockplus\build\ia32\build\Release\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)build\ia32\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)build\ia32\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -158,7 +158,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)libadblockplus\build\x64\build\Debug\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)libadblockplus\build\x64\build\Release\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)build\x64\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)build\x64\$(Configuration)\</IntDir>
   </PropertyGroup>
