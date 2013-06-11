@@ -714,7 +714,7 @@ namespace PassthroughAPP
     //We return INET_E_REDIRECT_FAILED in case we have iframe blocking.
     if (hr == INET_E_REDIRECT_FAILED)
     {
-      return hr;
+      return S_OK;
     }
     CComPtr<IInternetProtocolSink> spSink;
     CComPtr<IInternetBindInfo> spBindInfo;
