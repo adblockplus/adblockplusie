@@ -54,8 +54,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
+    <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Production|x64'" Label="Configuration">
@@ -72,8 +73,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
+    <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Production|Win32'" Label="Configuration">
@@ -133,7 +135,7 @@
     <IntDir>$(ProjectDir)build\ia32\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|Win32'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)libadblockplus\build\ia32\build\Debug\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)build\ia32\$(Configuration)\</OutDir>
@@ -154,7 +156,7 @@
     <IntDir>$(ProjectDir)build\x64\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Test|x64'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)libadblockplus\include;$(ProjectDir)libadblockplus\third_party\v8\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)libadblockplus\build\x64\build\Debug\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(ProjectDir)build\x64\$(Configuration)\</OutDir>
@@ -213,12 +215,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ADBLOCK_PLUS_TEST_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;ADBLOCK_PLUS_TEST_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\ia32\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
       <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
@@ -263,12 +267,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;ADBLOCK_PLUS_TEST_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;ADBLOCK_PLUS_TEST_MODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>libadblockplus.lib;shlwapi.lib;user32.lib;v8_base.lib;v8_snapshot.lib;winhttp.lib;winmm.lib;ws2_32.lib;msi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(ProjectDir)build\x64\$(Configuration)\AdblockPlusEngine.exe</OutputFile>
       <DelayLoadDLLs>Shell32.dll;Msi.dll</DelayLoadDLLs>
