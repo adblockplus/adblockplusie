@@ -171,9 +171,9 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
   appInfo.version = ToUtf8String(IEPLUGIN_VERSION);
   appInfo.name = "adblockplusie";
 #ifdef _WIN64
-  appInfo.platform = "win64";
+  appInfo.platform = "msie64";
 #else
-  appInfo.platform = "win32";
+  appInfo.platform = "msie32";
 #endif
   appInfo.locale = ToUtf8String(locale);
 #ifdef ADBLOCK_PLUS_TEST_MODE
