@@ -15,10 +15,7 @@ Build_Dir_common = ..\build\ #
 Build_Dir_ia32 = ..\build\ia32\ # comment prevents newline
 Build_Dir_x64  = ..\build\x64\ #
 Configuration = Release Test
-
-!ifndef VERSION
-!error VERSION parameter is required
-!endif
+VERSION = 99.9
 
 #---------------------
 # Default Targets
