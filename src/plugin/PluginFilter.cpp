@@ -426,22 +426,6 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
 
 CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
 {
-  m_contentMap["document"] = CFilter::contentTypeDocument;
-  m_contentMap["subdocument"] = CFilter::contentTypeSubdocument;
-  m_contentMap["sub-document"] = CFilter::contentTypeSubdocument;
-  m_contentMap["sub_document"] = CFilter::contentTypeSubdocument;
-  m_contentMap["other"] = CFilter::contentTypeOther;
-  m_contentMap["image"] = CFilter::contentTypeImage;
-  m_contentMap["script"] = CFilter::contentTypeScript;
-  m_contentMap["object"] = CFilter::contentTypeObject;
-  m_contentMap["object-subrequest"] = CFilter::contentTypeObjectSubrequest;
-  m_contentMap["object_subrequest"] = CFilter::contentTypeObjectSubrequest;
-  m_contentMap["xml-request"] = CFilter::contentTypeXmlHttpRequest;
-  m_contentMap["xml_request"] = CFilter::contentTypeXmlHttpRequest;
-  m_contentMap["xmlhttprequest"] = CFilter::contentTypeXmlHttpRequest;
-  m_contentMap["stylesheet"] = CFilter::contentTypeStyleSheet;
-  m_contentMap["background"] = CFilter::contentTypeBackground;
-
   m_contentMapText[CFilter::contentTypeDocument] = "DOCUMENT";
   m_contentMapText[CFilter::contentTypeObject] = "OBJECT";
   m_contentMapText[CFilter::contentTypeImage] = "IMAGE";
@@ -450,6 +434,7 @@ CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
   m_contentMapText[CFilter::contentTypeUnknown] = "OTHER";
   m_contentMapText[CFilter::contentTypeSubdocument] = "SUBDOCUMENT";
   m_contentMapText[CFilter::contentTypeStyleSheet] = "STYLESHEET";
+  m_contentMapText[CFilter::contentTypeXmlHttpRequest] = "XMLHTTPREQUEST";
 
   ClearFilters(); 
 }

@@ -133,7 +133,6 @@ private:
 
   CString m_dataPath;
 
-  std::map<CString, int> m_contentMap;
   std::map<int, CString> m_contentMapText;
 
   static CComAutoCriticalSection s_criticalSectionFilterMap;
