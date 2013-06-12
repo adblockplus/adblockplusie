@@ -20,8 +20,38 @@ WBPassthruSink::WBPassthruSink()
 {
   m_pTargetProtocol = NULL;
 }
+int WBPassthruSink::GetContentTypeFromMimeType(CString mimeType)
+{
+  if (mimeType.Find(L"image/") >= 0)
+  {
+    return CFilter::contentTypeImage;
+  }
+  if (mimeType.Find(L"text/css") >= 0)
+  {
+    return CFilter::contentTypeStyleSheet;
+  }
+  if ((mimeType.Find(L"application/javascript") >= 0) || (mimeType.Find(L"application/json") >= 0))
+  {
+    return CFilter::contentTypeScript;
+  }
+  if (mimeType.Find(L"application/x-shockwave-flash") >= 0)
+  {
+    return CFilter::contentTypeObject;
+  }
+  if (mimeType.Find(L"text/html") >= 0)
+  {
+    return CFilter::contentTypeSubdocument;
+  }
+  // It is important to have this check last, since it is rather generic, and might overlay text/html, for example
+  if (mimeType.Find(L"xml") >= 0)
+  {
+    return CFilter::contentTypeXmlHttpRequest;
+  }
 
-int WBPassthruSink::GetContentType(CString src)
+  return CFilter::contentTypeAny;
+}
+
+int WBPassthruSink::GetContentTypeFromURL(CString src)
 {
   CString srcExt = src;
 
@@ -65,6 +95,23 @@ int WBPassthruSink::GetContentType(CString src)
   }
 
 }
+
+int WBPassthruSink::GetContentType(CString mimeType, CString domain, CString src)
+{
+  // No referer or mime type
+  // BINDSTRING_XDR_ORIGIN works only for IE v8+
+  if (mimeType.IsEmpty() && domain.IsEmpty() && CPluginClient::GetInstance()->GetIEVersion() >= 8)
+  {
+    return CFilter::contentTypeXmlHttpRequest;
+  }
+  int contentType = GetContentTypeFromMimeType(mimeType);
+  if (contentType == CFilter::contentTypeAny)
+  {
+    contentType = GetContentTypeFromURL(src);
+  }
+  return contentType;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //WBPassthruSink
 //Monitor and/or cancel every request and responde
@@ -84,6 +131,37 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   DEBUG_GENERAL(src);
   CPluginClient::UnescapeUrl(src);
   m_url = szUrl;
+
+  CString boundDomain;
+  CString mimeType;
+  if (pOIBindInfo)
+  {
+    ULONG resLen = 0;
+    LPOLESTR mime = 0;
+    HRESULT hr = pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, &mime, 1, &resLen);
+    if (mime && resLen > 0)
+    {
+      mimeType.SetString(mime);
+    }
+    LPOLESTR domainRetrieved = 0;
+    hr = pOIBindInfo->GetBindString(BINDSTRING_XDR_ORIGIN, &domainRetrieved, 1, &resLen);
+    if ((hr == S_OK) && domainRetrieved && (resLen > 0))
+    {
+      boundDomain.SetString(domainRetrieved);
+      // Remove protocol
+      int pos = boundDomain.Find(L"://");
+      if (pos > 0)
+      {
+        boundDomain = boundDomain.Mid(pos + 3);
+      }
+      // Remove port
+      pos = boundDomain.Find(L":");
+      if (pos > 0)
+      {
+        boundDomain.Left(pos);
+      }
+    }
+  }
 
   CString cookie;
   ULONG len1 = 2048;
@@ -116,9 +194,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       }
       else
 #endif // SUPPORT_FRAME_CACHING
-      {
-        contentType = GetContentType(src);
-      }
+      contentType = GetContentType(mimeType, boundDomain, src);
       if (client->ShouldBlock(src, contentType, domain, true))
       {
         isBlocked = true;
@@ -154,9 +230,8 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
   if (tab == NULL)
   {
-    int contentType = GetContentType(src);
-    //TODO: Figure out where to get a domain name in this case
-    if (client->ShouldBlock(src, contentType, L"", true))
+    int contentType = GetContentType(mimeType, boundDomain, src);
+    if (client->ShouldBlock(src, contentType, boundDomain, true))
     {
       isBlocked = true;
     }
