@@ -50,9 +50,10 @@ namespace
     {
       SpawnAdblockPlusEngine();
 
-      const int step = 10;
-      for (int timeout = 10000; timeout > 0; timeout -= step)
+      const int step = 100;
+      for (int timeout = 5000; timeout > 0; timeout -= step)
       {
+        Sleep(step);
         try
         {
           return std::auto_ptr<Communication::Pipe>(new Communication::Pipe(Communication::pipeName, Communication::Pipe::MODE_CONNECT));
@@ -60,7 +61,6 @@ namespace
         catch (Communication::PipeConnectionError e)
         {
         }
-        Sleep(step);
       }
       throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
     }
