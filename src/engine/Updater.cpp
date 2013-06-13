@@ -3,11 +3,11 @@
 #include <sstream>
 
 #include <Windows.h>
-#include <Msi.h>
 
 #include <AdblockPlus/FileSystem.h>
 #include <AdblockPlus/WebRequest.h>
 
+#include "../shared/AutoHandle.h"
 #include "../shared/Dictionary.h"
 #include "../shared/Utils.h"
 #include "Debug.h"
@@ -85,6 +85,54 @@ namespace
     (*callback)();
     return 0;
   }
+
+  std::wstring EscapeCommandLineArg(const std::wstring& arg)
+  {
+    // This does the inverse of CommandLineToArgvW(). See
+    // http://blogs.msdn.com/b/oldnewthing/archive/2010/09/17/10063629.aspx for
+    // a description of the rules - the backslash rules are very non-obvious.
+    std::wstring result = arg;
+    size_t pos = arg.find(L'"');
+    while (pos != std::wstring::npos)
+    {
+      // Protect the quotation mark
+      result.insert(pos, 1, L'\\');
+      pos++;
+
+      // Protect any of the preceding backslashes
+      for (int offset = -2; pos + offset >= 0 && result[pos + offset] == L'\\'; offset -= 2)
+      {
+        result.insert(pos + offset, 1, L'\\');
+        pos++;
+      }
+
+      // Find next quotation mark
+      pos = arg.find(L'"', pos);
+    }
+    return L'"' + result + L'"';
+  }
+
+  BOOL InstallUpdate(const std::wstring& path)
+  {
+    WCHAR sysDir[MAX_PATH];
+    UINT sysDirLen = GetSystemDirectoryW(sysDir, sizeof(sysDir) / sizeof(sysDir[0]));
+    if (sysDirLen == 0)
+      return false;
+
+    std::wstring msiexec = std::wstring(sysDir, sysDirLen) + L"\\msiexec.exe";
+
+    std::wstring params = L"/i " + EscapeCommandLineArg(path)
+        + L" ACTION=INSTALL INSTALLUILEVEL=2 REINSTALL=ALL"
+          L" REINSTALLMODE=vomus MSIENFORCEUPGRADECOMPONENTRULES=1";
+
+    HINSTANCE instance = ShellExecuteW(NULL, L"runas", msiexec.c_str(), params.c_str(), NULL, SW_HIDE);
+    if (reinterpret_cast<int>(instance) <= 32)
+      return false;
+
+    // As far as we are concerned everything is fine - MSI service will handle
+    // further errors.
+    return true;
+  }
 }
 
 Updater::Updater(AdblockPlus::JsEnginePtr jsEngine, const std::string& url)
@@ -101,42 +149,31 @@ void Updater::Update()
   {
     Debug("User accepted update");
 
+    DialogCallbackType* callback = new DialogCallbackType(std::bind(&Updater::StartDownload,
+        this, std::placeholders::_1));
+    int result = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DOWNLOADDIALOG), GetDesktopWindow(),
+        reinterpret_cast<DLGPROC>(&DownloadDlgProc),
+        reinterpret_cast<LPARAM>(callback));
+    if (result == DOWNLOAD_FAILED)
     {
-      DialogCallbackType* callback = new DialogCallbackType(std::bind(&Updater::StartDownload,
-          this, std::placeholders::_1));
-      int result = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DOWNLOADDIALOG), GetDesktopWindow(),
-          reinterpret_cast<DLGPROC>(&DownloadDlgProc),
-          reinterpret_cast<LPARAM>(callback));
-      if (result == DOWNLOAD_FAILED)
-      {
-        Dictionary* dict = Dictionary::GetInstance();
-        MessageBoxW(NULL,
-            dict->Lookup("updater", "download-error-neterror").c_str(),
-            dict->Lookup("updater", "download-error-title").c_str(),
-            0);
-      }
-      if (result != IDOK)
-        return;
+      Dictionary* dict = Dictionary::GetInstance();
+      MessageBoxW(NULL,
+          dict->Lookup("updater", "download-error-neterror").c_str(),
+          dict->Lookup("updater", "download-error-title").c_str(),
+          0);
     }
+    if (result != IDOK)
+      return;
 
+    if (!InstallUpdate(tempFile))
     {
-      UINT result = ::MsiInstallProductW(tempFile.c_str(), L"ACTION=INSTALL INSTALLUILEVEL=2 REINSTALL=ALL REINSTALLMODE=vomus MSIENFORCEUPGRADECOMPONENTRULES=1");
-      if (result != ERROR_SUCCESS)
-      {
-        Dictionary* dict = Dictionary::GetInstance();
-        std::wstringstream message;
-        message << dict->Lookup("updater", "download-error-runerror");
-        message << std::endl << L"(error " << result << L")";
-        MessageBoxW(NULL,
-            message.str().c_str(),
-            dict->Lookup("updater", "download-error-title").c_str(),
-            0);
+      DebugLastError("Running updater failed");
 
-        std::stringstream error;
-        error << "Installing update failed (error " << result << ")";
-        Debug(error.str());
-        return;
-      }
+      Dictionary* dict = Dictionary::GetInstance();
+      MessageBoxW(NULL,
+          dict->Lookup("updater", "download-error-runerror").c_str(),
+          dict->Lookup("updater", "download-error-title").c_str(),
+          0);
     }
   }
 }
