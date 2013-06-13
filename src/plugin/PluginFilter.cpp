@@ -15,32 +15,6 @@
 #include "PluginClass.h"
 #include "mlang.h"
 
-#if (defined PRODUCT_ADBLOCKPLUS)
-
-class CPluginFilterLock : public CPluginMutex
-{
-
-private:
-
-  static CComAutoCriticalSection s_criticalSectionFilterLock;
-
-public:
-
-  CPluginFilterLock(const CString& filterFile) : CPluginMutex("FilterFile" + filterFile, PLUGIN_ERROR_MUTEX_FILTER_FILE)
-  {
-    s_criticalSectionFilterLock.Lock();
-  }
-
-  ~CPluginFilterLock()
-  {
-    s_criticalSectionFilterLock.Unlock();
-  }
-};
-
-CComAutoCriticalSection CPluginFilterLock::s_criticalSectionFilterLock;
-
-#endif
-
 
 // The filters are described at http://adblockplus.org/en/filters
 
@@ -98,13 +72,13 @@ CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText
       pos = filterString.GetLength();
     m_tag = filterString.Left(pos).MakeLower();
 
-    filterString = filterString.Mid(m_tag.GetLength());
+    filterString = filterString.Mid(pos);
   }
   // Error
   else
   {
-    DEBUG_FILTER("Filter::Error parsing filter:" + filterText + " (invalid tag)");
-    throw std::runtime_error(CStringA("Filter::Error parsing filter:" + filterText + " (invalid tag)").GetString());
+    DEBUG_FILTER("Filter::Error parsing selector:" + filterText + " (invalid tag)");
+    throw std::runtime_error(CStringA("Filter::Error parsing selector:" + filterText + " (invalid tag)").GetString());
   }
 
   // Find Id and class name
@@ -122,13 +96,13 @@ CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText
         pos = filterString.GetLength();
       }
       m_tagId = filterString.Mid(1, pos - 1);
-      if (m_tagId.Find(L".") > 0)
+      filterString = filterString.Mid(pos);
+      pos = m_tagId.Find(L".");
+      if (pos > 0)
       {
-        m_tagClassName = m_tagId.Mid(m_tagId.Find(L"."));
-        m_tagId = m_tagId.Left(m_tagId.Find(L"."));
+        m_tagClassName = m_tagId.Mid(pos + 1);
+        m_tagId = m_tagId.Left(pos);
       }
-
-      filterString = filterString.Mid(m_tagId.GetLength() + 1);
     }
     // Class name
     else if (firstId == '.')
@@ -139,26 +113,25 @@ CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText
         pos = filterString.GetLength();
       }
       m_tagClassName = filterString.Mid(1, pos - 1);
-      filterString = filterString.Mid(m_tagClassName.GetLength() + 1);
+      filterString = filterString.Mid(pos);
     }
   }
 
   char chAttrStart = '[';
   char chAttrEnd   = ']';
 
-  int endPos = 0;
   while (!filterString.IsEmpty())
   {
     if (filterString.GetAt(0) != chAttrStart)
     {
-      DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (more data)")
-      break;
+      DEBUG_FILTER("Filter::Error parsing selector:" + filterText + " (more data)");
+      throw std::runtime_error(CStringA("Filter::Error parsing selector:" + filterText + " (more data)").GetString());
     }
-    endPos = filterString.Find(']') ;
+    int endPos = filterString.Find(']') ;
     if (endPos < 0)
     {
-      DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (more data)")
-      break;
+      DEBUG_FILTER("Filter::Error parsing selector:" + filterText + " (more data)");
+      throw std::runtime_error(CStringA("Filter::Error parsing selector:" + filterText + " (more data)").GetString());
     }
         
     CFilterElementHideAttrSelector attrSelector;
@@ -166,10 +139,10 @@ CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText
     CString arg = filterString.Mid(1, endPos - 1);
     filterString = filterString.Mid(endPos + 1);
 
-    int delimiterPos;
-    if ((delimiterPos = arg.Find('=')) > 0)
+    int delimiterPos = arg.Find('=');
+    if (delimiterPos > 0)
     {
-      attrSelector.m_value = arg.Mid(delimiterPos + 1, arg.GetLength() - delimiterPos - 1);
+      attrSelector.m_value = arg.Mid(delimiterPos + 1);
       if (attrSelector.m_value.GetLength() >= 2 && attrSelector.m_value.GetAt(0) == '\"' && attrSelector.m_value.GetAt(attrSelector.m_value.GetLength() - 1) == '\"')
       {
         attrSelector.m_value = attrSelector.m_value.Mid(1, attrSelector.m_value.GetLength() - 2);
@@ -217,8 +190,8 @@ CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText
   // End check
   if (!filterString.IsEmpty())
   {
-    DEBUG_FILTER("Filter::Error parsing filter:" + filterFile + "/" + filterText + " (more data)")
-    throw new std::runtime_error(CStringA("Filter::Error parsing filter:"  + filterText + " (more data)").GetString());
+    DEBUG_FILTER("Filter::Error parsing selector:" + filterFile + "/" + filterText + " (more data)")
+    throw new std::runtime_error(CStringA("Filter::Error parsing selector:"  + filterText + " (more data)").GetString());
   }
 }
 
@@ -322,8 +295,6 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
     bool attrFound = false;
     if (attrIt->m_type == CFilterElementHideAttrType::STYLE)
     {
-      CString style;
-
       CComPtr<IHTMLStyle> pStyle;
       if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
       {
@@ -331,15 +302,10 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
 
         if (SUCCEEDED(pStyle->get_cssText(&bstrStyle)) && bstrStyle)
         {
-          style = bstrStyle;
-          style.MakeLower();
+          value = bstrStyle;
+          value.MakeLower();
           attrFound = true;
         }
-      }
-
-      if (!style.IsEmpty())
-      {
-        value = style;
       }
     }
     else if (attrIt->m_type == CFilterElementHideAttrType::CLASS)
@@ -381,26 +347,18 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
     {
       if (attrIt->m_pos == CFilterElementHideAttrPos::EXACT)
       {
-        if (attrIt->m_pos == CFilterElementHideAttrType::STYLE)
-        {
-          // IE adds ; to the end of the style
-          if (value + ';' != attrIt->m_value)
-            return false;
-        }
-        else
-        {
-          if (value != attrIt->m_value)
-            return false;
-        }
+        // TODO: IE rearranges the style attribute completely. Figure out if anything can be done about it.
+        if (value != attrIt->m_value)
+          return false;
       }
       else if (attrIt->m_pos == CFilterElementHideAttrPos::STARTING)
       {
-        if (value.Find(attrIt->m_value) != 0)
+        if (value.Left(attrIt->m_value.GetLength()) != attrIt->m_value)
           return false;
       }
       else if (attrIt->m_pos == CFilterElementHideAttrPos::ENDING)
       {
-        if (value.Find(attrIt->m_value) != value.GetLength() - attrIt->m_value.GetLength())
+        if (value.Right(attrIt->m_value.GetLength()) != attrIt->m_value)
           return false;
       }
       else if (attrIt->m_pos == CFilterElementHideAttrPos::ANYWHERE)
@@ -525,12 +483,7 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
         chunkEnd = filterText.GetLength();
         separatorChar = L'\0';
       }
-      //TODO: Remove this if. testing
-      if (filterText.Find(L".mw") > 0)
-      {
-        int ttt = 0;
-      }
-      
+
       CString filterChunk = filterText.Left(chunkEnd).TrimRight();
       std::auto_ptr<CFilterElementHide> filterParent(filter);
 
@@ -636,16 +589,13 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
 
         for (TFilterElementHideTagsNamed::const_iterator classIt = classItEnum.first; classIt != classItEnum.second; ++classIt)
         {
-          if (classIt != m_elementHideTagsClass.end())
+          if (classIt->second.IsMatchFilterElementHide(pEl))
           {
-            if (classIt->second.IsMatchFilterElementHide(pEl))
-            {
-  #ifdef ENABLE_DEBUG_RESULT
-              DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
-                CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
-  #endif
-              return true;
-            }
+#ifdef ENABLE_DEBUG_RESULT
+            DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
+              CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
+#endif
+            return true;
           }
         }
 
