@@ -42,35 +42,28 @@ namespace
 
   std::auto_ptr<Communication::Pipe> OpenAdblockPlusEnginePipe()
   {
-    std::auto_ptr<Communication::Pipe> result;
     try
     {
-      result.reset(new Communication::Pipe(Communication::pipeName,
-          Communication::Pipe::MODE_CONNECT));
+      return std::auto_ptr<Communication::Pipe>(new Communication::Pipe(Communication::pipeName, Communication::Pipe::MODE_CONNECT));
     }
     catch (Communication::PipeConnectionError e)
     {
       SpawnAdblockPlusEngine();
 
-      int timeout = 10000;
       const int step = 10;
-      while (!result.get())
+      for (int timeout = 10000; timeout > 0; timeout -= step)
       {
         try
         {
-          result.reset(new Communication::Pipe(Communication::pipeName,
-                Communication::Pipe::MODE_CONNECT));
+          return std::auto_ptr<Communication::Pipe>(new Communication::Pipe(Communication::pipeName, Communication::Pipe::MODE_CONNECT));
         }
         catch (Communication::PipeConnectionError e)
         {
-          Sleep(step);
-          timeout -= step;
-          if (timeout <= 0)
-            throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
         }
+        Sleep(step);
       }
+      throw std::runtime_error("Unable to open Adblock Plus Engine pipe");
     }
-    return result;
   }
 
   std::vector<std::string> ReadStrings(Communication::InputBuffer& message)
