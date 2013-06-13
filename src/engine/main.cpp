@@ -207,22 +207,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     return 1;
   }
 
+  int argc;
+  LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+  std::wstring locale(argc >= 2 ? argv[1] : L"");
+  LocalFree(argv);
+  Dictionary::Create(locale);
+  filterEngine = CreateFilterEngine(locale);
+
   for (;;)
   {
     try
     {
       Communication::Pipe* pipe = new Communication::Pipe(Communication::pipeName,
             Communication::Pipe::MODE_CREATE);
-
-      if (!filterEngine.get())
-      {
-        int argc;
-        LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-        std::wstring locale(argc >= 2 ? argv[1] : L"");
-        LocalFree(argv);
-        Dictionary::Create(locale);
-        filterEngine = CreateFilterEngine(locale);
-      }
 
       // TODO: Count established connections, kill the engine when none are left
       AutoHandle thread(CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0));

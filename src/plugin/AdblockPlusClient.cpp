@@ -51,7 +51,7 @@ namespace
       SpawnAdblockPlusEngine();
 
       const int step = 100;
-      for (int timeout = 5000; timeout > 0; timeout -= step)
+      for (int timeout = 10000; timeout > 0; timeout -= step)
       {
         Sleep(step);
         try
