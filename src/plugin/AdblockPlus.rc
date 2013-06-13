@@ -1,5 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
+#include "../shared/Version.h"
 #include "Resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -18,8 +19,8 @@ IDR_PLUGIN_CLASS      REGISTRY                "AdBlockPlus.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,2,0
- PRODUCTVERSION 0,0,2,0
+ FILEVERSION VERSIONINFO_VERSION
+ PRODUCTVERSION VERSIONINFO_VERSION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -36,12 +37,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Adblock Plus"
             VALUE "FileDescription", "Adblock Plus Module"
-            VALUE "FileVersion", "0, 0, 2, 0"
+            VALUE "FileVersion", VERSIONINFO_VERSION_STR
             VALUE "InternalName", "Adblock Plus"
             VALUE "LegalCopyright", "Copyright 2013"
             VALUE "OriginalFilename", "AdblockPlus.dll"
             VALUE "ProductName", "Adblock Plus"
-            VALUE "ProductVersion", "0, 0, 2, 0"
+            VALUE "ProductVersion", VERSIONINFO_VERSION_STR
         END
     END
     BLOCK "VarFileInfo"

@@ -1,9 +1,10 @@
+#include "../shared/Version.h"
 #include "Resource.h"
 #include "winres.h"
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,2,0
- PRODUCTVERSION 0,0,2,0
+ FILEVERSION VERSIONINFO_VERSION
+ PRODUCTVERSION VERSIONINFO_VERSION
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -20,12 +21,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Eyeo GmbH"
             VALUE "FileDescription", "Adblock Plus Engine"
-            VALUE "FileVersion", "0, 0, 2, 0"
+            VALUE "FileVersion", VERSIONINFO_VERSION_STR
             VALUE "InternalName", "Adblock Plus Engine"
             VALUE "LegalCopyright", "Copyright 2013"
             VALUE "OriginalFilename", "AdblockPlusEngine.exe"
             VALUE "ProductName", "Adblock Plus"
-            VALUE "ProductVersion", "0, 0, 2, 0"
+            VALUE "ProductVersion", VERSIONINFO_VERSION_STR
         END
     END
     BLOCK "VarFileInfo"
