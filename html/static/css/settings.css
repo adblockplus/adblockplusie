@@ -122,11 +122,6 @@ header
   background-image: url(../img/features/adblocking.png);
 }
 
-#feature-acceptable
-{
-  background-image: url(../img/features/acceptable.png);
-}
-
 .feature button
 {
   cursor: pointer;
