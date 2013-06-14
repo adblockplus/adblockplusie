@@ -55,19 +55,21 @@ setup: $(Setup)
 # candle .wxs --> .wixobj
 #---------------------
 
-Candle = candle -nologo -dNoDefault -dVersion=$(VERSION) "-dConfiguration=$(Configuration)" $(CANDLE_FLAGS) $(*F).wxs -out $@
-.wxs{$(Build_Dir_common)}.wixobj:
-    $(Candle)
-.wxs{$(Build_Dir_ia32)}.wixobj:
-    $(Candle) -arch x86
-.wxs{$(Build_Dir_x64)}.wixobj:
-    $(Candle) -arch x64
+Candle = candle -nologo -dNoDefault -dVersion=$(VERSION) "-dConfiguration=$(Configuration)" $(CANDLE_FLAGS) $** -out $@
 
 objects_common = $(Build_Dir_common)custom_WixUI_InstallDir.wixobj
-objects_ia32 = $(Build_Dir_ia32)adblockplusie.wixobj $(objects_common)
-objects_x64 = $(Build_Dir_x64)adblockplusie.wixobj $(objects_common)
+$(objects_common): custom_WixUI_InstallDir.wxs
+		$(Candle)
 
-object_setup = $(Build_Dir_common)setup.wixobj
+objects_ia32 = $(Build_Dir_ia32)adblockplusie-$(VERSION).wixobj
+$(objects_ia32): adblockplusie.wxs
+		$(Candle) -arch x86
+
+objects_x64 = $(Build_Dir_x64)adblockplusie-$(VERSION).wixobj
+$(objects_x64): adblockplusie.wxs
+		$(Candle) -arch x64
+
+object_setup = $(Build_Dir_common)setup-$(VERSION).wixobj
 $(object_setup): setup.wxs
     $(Candle) -ext WixBalExtension
 
@@ -77,11 +79,11 @@ $(object_setup): setup.wxs
 
 Light = light -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $@
 
-$(Installer_ia32): $(objects_ia32) "..\build\ia32\$(Configuration)\AdblockPlus.dll"
-    $(Light) $(objects_ia32)
+$(Installer_ia32): $(objects_ia32) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll"
+    $(Light) $(objects_ia32) $(objects_common)
 
-$(Installer_x64): $(objects_x64) "..\build\x64\$(Configuration)\AdblockPlusx64.dll"
-    $(Light) $(objects_x64)
+$(Installer_x64): $(objects_x64) $(objects_common) "..\build\x64\$(Configuration)\AdblockPlusx64.dll"
+    $(Light) $(objects_x64) $(objects_common)
 
 #---------------------
 # light .wixobj --> .exe
