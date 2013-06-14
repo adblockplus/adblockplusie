@@ -362,4 +362,3 @@ void CAdblockPlusClient::AddFilter(const std::string& text)
     DEBUG_GENERAL(e.what());
   }
 }
-
