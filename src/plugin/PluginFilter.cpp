@@ -736,7 +736,7 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
       DEBUG_FILTER("Filter::ShouldBlock " + type + " YES")
 
 #ifdef ENABLE_DEBUG_RESULT
-        CPluginDebug::DebugResultBlocking(type, src);
+        CPluginDebug::DebugResultBlocking(type, src, domain);
 #endif
     }
     return true;

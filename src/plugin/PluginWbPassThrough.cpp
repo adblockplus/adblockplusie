@@ -216,7 +216,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
         else if (contentType == CFilter::contentTypeStyleSheet) type = "STYLESHEET";
         else type = "OTHER";
 
-        CPluginDebug::DebugResultIgnoring(type, src);
+        CPluginDebug::DebugResultIgnoring(type, src, boundDomain);
       }
 #endif // ENABLE_DEBUG_RESULT_IGNORED
     }
