@@ -4,6 +4,7 @@
 
 #include "PluginTypedef.h"
 #include <memory>
+#include "..\shared\Utils.h"
 
 enum CFilterElementHideAttrPos
 {
@@ -134,9 +135,7 @@ private:
   CString m_dataPath;
 
   std::map<int, CString> m_contentMapText;
-
-  static CComAutoCriticalSection s_criticalSectionFilterMap;
-
+  
   typedef std::map<DWORD, CFilter> TFilterMap;
   typedef std::vector<CFilter> TFilterMapDefault;
 
