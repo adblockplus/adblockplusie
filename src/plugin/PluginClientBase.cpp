@@ -162,15 +162,6 @@ bool CPluginClientBase::PopFirstPluginError(CPluginError& pluginError)
 
 #ifdef SUPPORT_WHITELIST
 
-void CPluginClientBase::CacheWhiteListedUrl(const CString& url, bool isWhitelisted)
-{
-  m_criticalSectionWhitelist.Lock();
-  {
-    m_cacheWhitelistedUrls[url] = isWhitelisted;
-  }
-  m_criticalSectionWhitelist.Unlock();
-}
-
 bool CPluginClientBase::IsUrlWhiteListed(const CString& url)
 {
   if (url.IsEmpty())
@@ -178,49 +169,18 @@ bool CPluginClientBase::IsUrlWhiteListed(const CString& url)
     return false;
   }
 
-  bool isWhitelisted = false;
-  bool isCached = false;
-
-  m_criticalSectionWhitelist.Lock();
+  int pos = 0;
+  CString scheme = url.Find('/',pos) >= 0 ? url.Tokenize(L"/", pos) : L"";
+  CString domain = ExtractDomain(url);
+  if (scheme == L"res:" || scheme == L"file:")
   {
-    std::map<CString,bool>::iterator it = m_cacheWhitelistedUrls.find(url);
-
-    isCached = it != m_cacheWhitelistedUrls.end();
-    if (isCached)
-    {
-      isWhitelisted = it->second;
-    }
-  }
-  m_criticalSectionWhitelist.Unlock();
-
-  if (!isCached)
-  {
-    int pos = 0;
-    CString http = url.Find('/',pos) >= 0 ? url.Tokenize(L"/", pos) : L"";
-    CString domain = ExtractDomain(url);
-    if (http == L"res:" || http == L"file:")
-    {
-      isWhitelisted = true;
-    }
-    else
-    {
-      isWhitelisted = CPluginSettings::GetInstance()->IsWhiteListedDomain(domain);
-    }
-
-    CacheWhiteListedUrl(url, isWhitelisted);
+    return true;
   }
 
-  return isWhitelisted;
+  // TODO: Caching whitelist entries in PluginSettings is redundant and wasteful. We should have an engine call for IsWhitelistedDomain.
+  CPluginSettings* pluginSettings = CPluginSettings::GetInstance();
+  pluginSettings->RefreshWhitelist();
+  return pluginSettings->IsWhiteListedDomain(domain);
 }
-
-void CPluginClientBase::ClearWhiteListCache()
-{
-  m_criticalSectionWhitelist.Lock();
-  {
-    m_cacheWhitelistedUrls.clear();
-  }
-  m_criticalSectionWhitelist.Unlock();
-}
-
 
 #endif // SUPPORT_WHITELIST

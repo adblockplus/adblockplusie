@@ -197,11 +197,6 @@ bool CAdblockPlusClient::IsUrlWhiteListed(const CString& url)
       isWhitelisted = m_filter.get() && m_filter->ShouldWhiteList(url);
     }
     m_criticalSectionFilter.Unlock();
-
-    if (isWhitelisted)
-    {
-      CacheWhiteListedUrl(url, isWhitelisted);
-    }
   }
 
   return isWhitelisted;
@@ -352,6 +347,21 @@ void CAdblockPlusClient::AddFilter(const std::string& text)
 {
   Communication::OutputBuffer request;
   request << Communication::PROC_ADD_FILTER << text;
+
+  try
+  {
+    CallAdblockPlusEngineProcedure(request);
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+  }
+}
+
+void CAdblockPlusClient::RemoveFilter(const std::string& text)
+{
+  Communication::OutputBuffer request;
+  request << Communication::PROC_REMOVE_FILTER << text;
 
   try
   {

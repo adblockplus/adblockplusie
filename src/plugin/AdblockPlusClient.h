@@ -57,6 +57,7 @@ public:
   void UpdateAllSubscriptions();
   std::vector<std::string> GetExceptionDomains();
   void AddFilter(const std::string& text);
+  void RemoveFilter(const std::string& text);
 };
 
 #endif // _ADBLOCK_PLUS_CLIENT_H_
