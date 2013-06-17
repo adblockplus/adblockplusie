@@ -66,11 +66,11 @@
       InstallScope="perMachine" InstallPrivileges="elevated"
     />
     <!--
-      The MajorUgrade tag allows us to specify the relationship between our version number and the one installed.
-      The attribute AllowDowngrades="yes" permits our version number to be lower than the one installed.
-      The attribute Disallow="no" (the default) permits our version number to be higher than the one installed.
-      For development releases (at least), we permit both cases.
-      For general releases, at present we also permit both.
+      The MajorUpgrade tag allows us to specify the relationship between our
+      version number and the one installed. The attribute Disallow="no" is
+      implied and allows major upgrades to be performed. Downgrades aren't
+      allowed by default.
+
 
       The @Schedule attribute looks a little opaque.
       Suffice it to say that it's the only option for scheduling where uninstallation of the previous version
@@ -78,7 +78,6 @@
       It's a shame that you to even explicitly make that choice.
     -->
     <MajorUpgrade
-      AllowDowngrades="yes"
       Schedule="afterInstallExecute"
     />
     <MediaTemplate EmbedCab="yes"/>
