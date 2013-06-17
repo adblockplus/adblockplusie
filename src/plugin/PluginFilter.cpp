@@ -286,7 +286,6 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
     }
   }
 
-
   // Check attributes
   for (std::vector<CFilterElementHideAttrSelector>::const_iterator attrIt = m_attributeSelectors.begin(); 
         attrIt != m_attributeSelectors.end(); ++ attrIt)
@@ -558,6 +557,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
           DEBUG_HIDE_EL(indent + "HideEl::Found (tag/id) filter:" + idIt->second.m_filterText)
             CPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText);
 #endif
+          s_criticalSectionFilterMap.Unlock();
           return true;
         }
       }
@@ -572,6 +572,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
           DEBUG_HIDE_EL(indent + "HideEl::Found (?/id) filter:" + idIt->second.m_filterText)
             CPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText);
 #endif
+          s_criticalSectionFilterMap.Unlock();
           return true;
         }
       }
@@ -595,6 +596,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
             DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
               CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
 #endif
+            s_criticalSectionFilterMap.Unlock();
             return true;
           }
         }
@@ -609,6 +611,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
             DEBUG_HIDE_EL(indent + "HideEl::Found (?/class) filter:" + classIt->second.m_filterText)
               CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
 #endif
+            s_criticalSectionFilterMap.Unlock();
             return true;
           }
         }
@@ -629,6 +632,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
         DEBUG_HIDE_EL(indent + "HideEl::Found (tag) filter:" + tagIt->second.m_filterText)
           CPluginDebug::DebugResultHiding(tag, "-", tagIt->second.m_filterText);
 #endif
+        s_criticalSectionFilterMap.Unlock();
         return true;
       }
     }
