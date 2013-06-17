@@ -178,7 +178,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
   {
     CComVariant vCacheIndex;
 
-    if (FAILED(pBodyEl->getAttribute(L"sab", 0, &vCacheIndex)) || vCacheIndex.vt == VT_NULL)
+    if (FAILED(pBodyEl->getAttribute(L"abp", 0, &vCacheIndex)) || vCacheIndex.vt == VT_NULL)
     {
       ClearCache();
     }
@@ -308,7 +308,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
   m_criticalSection.Lock();
   {
     CComVariant vCacheIndex;
-    if (isCached && SUCCEEDED(pEl->getAttribute(L"sab", 0, &vCacheIndex)) && vCacheIndex.vt == VT_I4)
+    if (isCached && SUCCEEDED(pEl->getAttribute(L"abp", 0, &vCacheIndex)) && vCacheIndex.vt == VT_I4)
     {
       cacheIndex = vCacheIndex.intVal;
 
@@ -339,7 +339,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
       vCacheIndex.vt = VT_I4;
       vCacheIndex.intVal = cacheIndex;
 
-      pEl->setAttribute(L"sab", vCacheIndex);
+      pEl->setAttribute(L"abp", vCacheIndex);
     }
   }
   m_criticalSection.Unlock();
