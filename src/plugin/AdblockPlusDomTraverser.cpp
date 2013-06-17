@@ -122,14 +122,12 @@ void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const CString& type, co
 
   if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
   {
-#ifdef ENABLE_DEBUG_RESULT
     CComBSTR bstrDisplay;
 
     if (SUCCEEDED(pStyle->get_display(&bstrDisplay)) && bstrDisplay && CString(bstrDisplay) == L"none")
     {
       return;
     }
-#endif // ENABLE_DEBUG_RESULT
 
     static const CComBSTR sbstrNone(L"none");
 
