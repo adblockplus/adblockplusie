@@ -58,10 +58,6 @@ CString CPluginClientBase::ExtractDomain(const CString& url)
   CString http = url.Find('/',pos) >= 0 ? url.Tokenize(L"/", pos) : L"";
   CString domain = url.Tokenize(L"/", pos);
 
-  domain.Replace(L"www.", L"");
-  domain.Replace(L"www1.", L"");
-  domain.Replace(L"www2.", L"");
-
   domain.MakeLower();
 
   return domain;

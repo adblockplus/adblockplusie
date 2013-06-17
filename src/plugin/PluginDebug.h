@@ -17,13 +17,13 @@ public:
 #if (defined ENABLE_DEBUG_RESULT)
   static void DebugResult(const CString& text);
   static void DebugResultDomain(const CString& domain);
-  static void DebugResultBlocking(const CString& type, const CString& src);
+  static void DebugResultBlocking(const CString& type, const CString& src, const CString& domain);
   static void DebugResultHiding(const CString& tag, const CString& id, const CString& filter);
   static void DebugResultClear();
 #endif
 
 #if (defined ENABLE_DEBUG_RESULT_IGNORED)
-  static void DebugResultIgnoring(const CString& type, const CString& src);
+  static void DebugResultIgnoring(const CString& type, const CString& src, const CString& domain);
 #endif
 };
 
