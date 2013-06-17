@@ -79,6 +79,7 @@
     -->
     <MajorUpgrade
       Schedule="afterInstallExecute"
+      DowngradeErrorMessage="!(loc.AlreadyInstalled)"
     />
     <MediaTemplate EmbedCab="yes"/>
 
