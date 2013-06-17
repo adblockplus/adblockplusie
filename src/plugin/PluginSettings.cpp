@@ -22,6 +22,14 @@
 
 #include <knownfolders.h>
 
+namespace
+{
+  std::string CreateDomainWhitelistingFilter(CString domain)
+  {
+    return std::string("@@||").append(CW2A(domain)).append("^$document");
+  }
+}
+
 class TSettings
 {
   DWORD processorId;
@@ -1269,34 +1277,14 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
 void CPluginSettings::AddWhiteListedDomain(const CString& domain)
 {
   DEBUG_SETTINGS("SettingsWhitelist::AddWhiteListedDomain domain:" + domain)
-
-  bool isNewVersion = false;
-  bool isForcingUpdateOnStart = false;
-
-  CPluginSettingsWhitelistLock lock;
-  if (lock.IsLocked())
-  {
-    ReadWhitelist(false);
-
-    std::string newDomain = CW2A(domain, CP_UTF8);
-
-    //Domain already present?
-    if (std::find(m_whitelistedDomains.begin(), m_whitelistedDomains.end(), newDomain) != m_whitelistedDomains.end())
-    {
-      return;
-    }
-    s_criticalSectionLocal.Lock();
-    CPluginClient::GetInstance()->AddFilter(std::string("@@||").append(CW2A(domain)).append("^$document"));
-    s_criticalSectionLocal.Unlock();
-
-  }
-
-  if (isForcingUpdateOnStart)
-  {
-    ForceConfigurationUpdateOnStart();
-  }
+  CPluginClient::GetInstance()->AddFilter(CreateDomainWhitelistingFilter(domain));
 }
 
+void CPluginSettings::RemoveWhiteListedDomain(const CString& domain)
+{
+  DEBUG_SETTINGS("SettingsWhitelist::RemoveWhiteListedDomain domain:" + domain)
+  CPluginClient::GetInstance()->RemoveFilter(CreateDomainWhitelistingFilter(domain));
+}
 
 bool CPluginSettings::IsWhiteListedDomain(const CString& domain) const
 {

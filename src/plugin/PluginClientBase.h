@@ -50,11 +50,6 @@ class CPluginClientBase
 
 private:
 
-#ifdef SUPPORT_WHITELIST
-  CComAutoCriticalSection m_criticalSectionWhitelist;
-  std::map<CString,bool> m_cacheWhitelistedUrls;
-#endif
-
   static std::vector<CPluginError> s_pluginErrors;
 
   static bool s_isErrorLogging;
@@ -73,9 +68,7 @@ public:
   static void SetLocalization();
 
 #ifdef SUPPORT_WHITELIST
-  void CacheWhiteListedUrl(const CString& url, bool isWhitelisted);
   bool IsUrlWhiteListed(const CString& url);
-  void ClearWhiteListCache();
 #endif // SUPPORT_WHITELIST
 
   static bool IsValidDomain(const CString& domain);

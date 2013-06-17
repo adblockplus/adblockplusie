@@ -399,7 +399,6 @@ DWORD WINAPI CPluginTabBase::ThreadProc(LPVOID pParam)
         {
           s_whitelistVersion = newWhitelistVersion;
           settings->RefreshWhitelist();
-          client->ClearWhiteListCache();
           isChanged = true;
         }
 #endif // SUPPORT_WHITELIST

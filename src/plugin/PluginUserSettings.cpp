@@ -313,10 +313,9 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       return DISP_E_TYPEMISMATCH;
 
     CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
-    if (settings->IsWhiteListedDomain((BSTR)domain))
+    if (domain.Length())
     {
-      settings->AddWhiteListedDomain((BSTR)domain);
-      CPluginClient::GetInstance()->ClearWhiteListCache();
+      settings->RemoveWhiteListedDomain((BSTR)domain);
     }
   }
   else

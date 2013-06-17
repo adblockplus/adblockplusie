@@ -128,6 +128,13 @@ namespace
         filterEngine->GetFilter(text)->AddToList();
         break;
       }
+      case Communication::PROC_REMOVE_FILTER:
+      {
+        std::string text;
+        request >> text;
+        filterEngine->GetFilter(text)->RemoveFromList();
+        break;
+      }
     }
     return response;
   }

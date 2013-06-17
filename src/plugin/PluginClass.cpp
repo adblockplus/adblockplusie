@@ -1398,10 +1398,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
         }
       }
       s_criticalSectionLocal.Unlock();
-
-#ifdef SUPPORT_WHITELIST
-      client->ClearWhiteListCache();
-#endif
     }
     break;
 #ifndef ENTERPRISE
