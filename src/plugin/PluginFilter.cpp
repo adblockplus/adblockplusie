@@ -18,8 +18,7 @@
 
 // The filters are described at http://adblockplus.org/en/filters
 
-CComAutoCriticalSection CPluginFilter::s_criticalSectionFilterMap;
-
+static CriticalSection s_criticalSectionFilterMap;
 
 // ============================================================================
 // CFilterElementHideAttrSelector
@@ -446,7 +445,7 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
 
   DEBUG_FILTER("Input: " + filterText + " filterFile" + filterFile);
 
-  s_criticalSectionFilterMap.Lock();    
+  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
   {
 
     CString filterString  = filterText;
@@ -504,7 +503,6 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
       }
     } while (separatorChar != '\0');
   }
-  s_criticalSectionFilterMap.Unlock();    
 
   return true;
 }
@@ -525,7 +523,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
     classNames = bstrClassNames;
   }
 
-  s_criticalSectionFilterMap.Lock();
+  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
   {
     CString domainTest = domain;
 
@@ -542,7 +540,6 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
           DEBUG_HIDE_EL(indent + "HideEl::Found (tag/id) filter:" + idIt->second.m_filterText)
             CPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText);
 #endif
-          s_criticalSectionFilterMap.Unlock();
           return true;
         }
       }
@@ -557,7 +554,6 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
           DEBUG_HIDE_EL(indent + "HideEl::Found (?/id) filter:" + idIt->second.m_filterText)
             CPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText);
 #endif
-          s_criticalSectionFilterMap.Unlock();
           return true;
         }
       }
@@ -581,7 +577,6 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
             DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
               CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
 #endif
-            s_criticalSectionFilterMap.Unlock();
             return true;
           }
         }
@@ -596,7 +591,6 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
             DEBUG_HIDE_EL(indent + "HideEl::Found (?/class) filter:" + classIt->second.m_filterText)
               CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
 #endif
-            s_criticalSectionFilterMap.Unlock();
             return true;
           }
         }
@@ -617,12 +611,10 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
         DEBUG_HIDE_EL(indent + "HideEl::Found (tag) filter:" + tagIt->second.m_filterText)
           CPluginDebug::DebugResultHiding(tag, "-", tagIt->second.m_filterText);
 #endif
-        s_criticalSectionFilterMap.Unlock();
         return true;
       }
     }
   }
-  s_criticalSectionFilterMap.Unlock();
 
   return false;
 }
@@ -641,7 +633,7 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::string> filters)
   // Parse hide string
   int pos = 0;
 
-  s_criticalSectionFilterMap.Lock();
+  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
   {
     for (std::vector<std::string>::iterator it = filters.begin(); it < filters.end(); ++it)
     {
@@ -666,7 +658,6 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::string> filters)
       }
     }
   }
-  s_criticalSectionFilterMap.Unlock();
 
   return isRead;
 }
@@ -674,7 +665,7 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::string> filters)
 void CPluginFilter::ClearFilters()
 {
   // Clear filter maps
-  s_criticalSectionFilterMap.Lock();    
+  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
   {
     for (int i = 0; i < 2; i++)
     {
@@ -689,7 +680,6 @@ void CPluginFilter::ClearFilters()
     m_elementHideTagsId.clear();
     m_elementHideTagsClass.clear();
   }
-  s_criticalSectionFilterMap.Unlock();
 }
 
 
