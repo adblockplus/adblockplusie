@@ -94,8 +94,7 @@
     -->
     <Feature Id="ProductFeature"
       Title="!(loc.Title)" Description="!(loc.UI_Description)"
-      Display="hidden"
-      ConfigurableDirectory="INSTALLFOLDER">
+      Display="hidden">
       <ComponentGroupRef Id="Installation_Folders"/>
       <ComponentGroupRef Id="Binaries"/>
       <ComponentGroupRef Id="HTML_Tree"/>
