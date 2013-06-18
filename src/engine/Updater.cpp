@@ -123,7 +123,8 @@ namespace
 
     std::wstring params = L"/i " + EscapeCommandLineArg(path) + L" /qb";
 
-    HINSTANCE instance = ShellExecuteW(NULL, L"runas", msiexec.c_str(), params.c_str(), NULL, SW_HIDE);
+    LPCWSTR operation = IsWindowsVistaOrLater() ? L"runas" : 0;
+    HINSTANCE instance = ShellExecuteW(NULL, operation, msiexec.c_str(), params.c_str(), NULL, SW_HIDE);
     if (reinterpret_cast<int>(instance) <= 32)
       return false;
 
