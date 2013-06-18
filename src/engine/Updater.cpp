@@ -121,9 +121,7 @@ namespace
 
     std::wstring msiexec = std::wstring(sysDir, sysDirLen) + L"\\msiexec.exe";
 
-    std::wstring params = L"/i " + EscapeCommandLineArg(path)
-        + L" ACTION=INSTALL INSTALLUILEVEL=2 REINSTALL=ALL"
-          L" REINSTALLMODE=vomus MSIENFORCEUPGRADECOMPONENTRULES=1";
+    std::wstring params = L"/i " + EscapeCommandLineArg(path) + L" /qb";
 
     HINSTANCE instance = ShellExecuteW(NULL, L"runas", msiexec.c_str(), params.c_str(), NULL, SW_HIDE);
     if (reinterpret_cast<int>(instance) <= 32)
