@@ -29,8 +29,6 @@
   <?error "Configuration" parameter is required ?>
 <?endif?>
 
-<?define Product_ID="3caab5a9-43a7-4a57-8373-b7d0952b709c" ?>
-
 <!--
   sys.BUILDARCH is set by the command line argument '-arch'.
   The default value to "x86"
@@ -53,10 +51,10 @@
     Manufacturer="Eyeo GmbH"
     Version="$(var.Product_Version)"
     Language="!(loc.LANG)" Codepage="1252"
-    Id="$(var.Product_ID)"
+    Id="*"
     UpgradeCode="3a8e3ab4-762d-4641-806e-2dccb953d73f">
 
-    <Package Id="*"
+    <Package
       Keywords="!(loc.Keywords)"
       Description="!(loc.Description)"
       Comments="!(loc.Comments)"
