@@ -69,6 +69,6 @@ for arch in ("ia32", "x64"):
 
 installerParams = os.environ.copy()
 installerParams["VERSION"] = version
-subprocess.call(["nmake", "/A"], env=installerParams, cwd=os.path.join(basedir, "WixInstaller"))
+subprocess.call(["nmake", "/A"], env=installerParams, cwd=os.path.join(basedir, "installer"))
 sign(os.path.join(basedir, "build", "ia32", "adblockplusie-%s-en-us-ia32.msi" % version),
     os.path.join(basedir, "build", "x64", "adblockplusie-%s-en-us-x64.msi" % version))
