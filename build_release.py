@@ -34,38 +34,17 @@ while version.count(".") < 1:
   version += ".0"
 version += ".%s" % buildnum
 
-subprocess.call([os.path.join(basedir, "libadblockplus", "createsolution.bat")])
-
-preprocessorDefinitions = [
-  "IEPLUGIN_VERSION=L\"%s\"" % version,
-  "VERSIONINFO_VERSION=%s" % (version.replace(".", ",") + ",0"),
-
-  # This macro will be passed to the resource compiler and VS doesn't escape
-  # quotation marks there automatically despite claiming to do so.
-  "VERSIONINFO_VERSION_STR=\\\"%s\\\"" % (version + ".0"),
-]
-buildParams = os.environ.copy()
-buildParams["ExternalPreprocessorDefinitions"] = ";".join(preprocessorDefinitions)
+subprocess.call([os.path.join(basedir, "createsolution.bat"), version, "devbuild"])
 
 for arch in ("ia32", "x64"):
-  platform = "/p:Platform=%s" % {"ia32": "Win32", "x64": "x64"}[arch]
   subprocess.call([
     "msbuild",
-    os.path.join(basedir, "libadblockplus", "build", arch, "libadblockplus.sln"),
-    "/p:Configuration=Release",
-    platform
-  ], env=buildParams)
+    os.path.join(basedir, "build", arch, "adblockplus.sln"),
+    "/p:Configuration=Release", "/target:AdblockPlus;AdblockPlusEngine",
+  ])
 
-  subprocess.call([
-    "msbuild",
-    os.path.join(basedir, "AdblockPlus.sln"),
-    "/p:Configuration=Release Test",
-    platform
-  ], env=buildParams)
-
-  plugin = {"ia32": "AdblockPlus.dll", "x64": "AdblockPlusx64.dll"}[arch]
-  sign(os.path.join(basedir, "build", arch, "Release Test", plugin),
-      os.path.join(basedir, "build", arch, "Release Test", "AdblockPlusEngine.exe"))
+  sign(os.path.join(basedir, "build", arch, "Release", "AdblockPlus.dll"),
+      os.path.join(basedir, "build", arch, "Release", "AdblockPlusEngine.exe"))
 
 installerParams = os.environ.copy()
 installerParams["VERSION"] = version

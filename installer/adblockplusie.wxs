@@ -214,7 +214,7 @@
         We need an explicit value for attribute @Win64 so that the ARCH argument does not override its implicit value.
       -->
       <Component Id="AdblockPlus32.dll" Guid="d9a35780-d712-11e2-8b8b-0800200c9a66" Win64="no">
-        <File Id="AdblockPlus32.dll" Source="..\build\ia32\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
+        <File Id="AdblockPlus32.dll" Name="AdblockPlus32.dll" Source="..\build\ia32\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
           <?include dll_class.wxi ?>
         </File>
         <?include bho_registry_value.wxi ?>
@@ -235,7 +235,7 @@
       -->
       <?if $(sys.BUILDARCH)="x64"?>
         <Component Id="AdblockPlus64.dll" Guid="ed77a2c0-d712-11e2-8b8b-0800200c9a66" Win64="yes">
-          <File Id="AdblockPlus64.dll" Source="..\build\x64\$(var.Configuration)\AdblockPlusx64.dll" KeyPath="yes" Checksum="yes">
+          <File Id="AdblockPlus64.dll" Name="AdblockPlus64.dll" Source="..\build\x64\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
             <?include dll_class.wxi ?>
           </File>
           <?include bho_registry_value.wxi ?>
@@ -282,7 +282,7 @@
     </ComponentGroup>
 
     <DirectoryRef Id="HTML_Folder">
-      <Directory Id="html" FileSource="SourceDir\..\html">
+      <Directory Id="html" FileSource="..\html">
         <Directory Name="static" Id="html_static">
           <Directory Name="css" Id="html_static_css">
             <Component Id="html_static_css_settings.css" Guid="07173c90-d713-11e2-8b8b-0800200c9a66">
@@ -363,7 +363,7 @@
       <ComponentRef Id="locales_ru.ini"/>
     </ComponentGroup>
     <DirectoryRef Id="Locales_Folder">
-      <Directory Id="locales" FileSource="SourceDir\..\locales">
+      <Directory Id="locales" FileSource="..\locales">
         <Component Id="locales_en.ini" Guid="c5622430-d713-11e2-8b8b-0800200c9a66">
           <File Name="en.ini"/>
         </Component>
@@ -387,7 +387,7 @@
       <ComponentRef Id="ini_settings.ini"/>
     </ComponentGroup>
     <DirectoryRef Id="ABP_APPDATA_FOLDER">
-      <Directory Id="ini" FileSource="SourceDir\..\files">
+      <Directory Id="ini" FileSource="..\files">
         <Component Id="ini_settings.ini" Guid="dc30c3b0-d713-11e2-8b8b-0800200c9a66">
           <File Name="settings.ini"/>
         </Component>

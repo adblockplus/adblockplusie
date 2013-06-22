@@ -100,8 +100,11 @@ END
 //
 // Generated from the TEXTINCLUDE 3 resource.
 //
-1 TYPELIB "..\\..\\build\\AdblockPlus.tlb"
+#ifdef _WIN64
+1 TYPELIB "../../build/x64/AdblockPlus.tlb"
+#else
+1 TYPELIB "../../build/ia32/AdblockPlus.tlb"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
