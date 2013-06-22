@@ -16,7 +16,7 @@ Build_Dir_ia32 = ..\build\ia32\ # comment prevents newline
 Build_Dir_x64  = ..\build\x64\ #
 
 !ifndef Configuration
-Configuration = Release Test
+Configuration = Release
 !endif
 
 !ifndef VERSION
@@ -82,7 +82,7 @@ Light = light -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension
 $(Installer_ia32): $(objects_ia32) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll"
     $(Light) $(objects_ia32) $(objects_common)
 
-$(Installer_x64): $(objects_x64) $(objects_common) "..\build\x64\$(Configuration)\AdblockPlusx64.dll"
+$(Installer_x64): $(objects_x64) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll" "..\build\x64\$(Configuration)\AdblockPlus.dll"
     $(Light) $(objects_x64) $(objects_common)
 
 #---------------------

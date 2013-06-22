@@ -1,7 +1,11 @@
 #include "PluginStdAfx.h"
 
 #include "Plugin.h"
-#include "../../build/AdblockPlus_i.c"
+#ifdef _WIN64
+#include "../../build/x64/AdblockPlus_i.c"
+#else
+#include "../../build/ia32/AdblockPlus_i.c"
+#endif
 
 #include "PluginClass.h"
 #include "PluginClient.h"
