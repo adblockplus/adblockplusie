@@ -4,13 +4,16 @@
 #include <Windows.h>
 
 #include "../shared/Utils.h"
+#include "../shared/CriticalSection.h"
 
 #include "Debug.h"
 
 #ifdef _DEBUG
 
-CriticalSection debugLock;
-
+namespace
+{
+  CriticalSection debugLock;
+};
 void Debug(const std::string& text)
 {
   SYSTEMTIME st;

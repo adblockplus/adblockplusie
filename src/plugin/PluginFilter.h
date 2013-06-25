@@ -4,7 +4,6 @@
 
 #include "PluginTypedef.h"
 #include <memory>
-#include "..\shared\Utils.h"
 
 enum CFilterElementHideAttrPos
 {

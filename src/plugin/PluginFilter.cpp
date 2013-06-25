@@ -15,6 +15,8 @@
 #include "PluginClass.h"
 #include "mlang.h"
 
+#include "..\shared\CriticalSection.h"
+
 
 // The filters are described at http://adblockplus.org/en/filters
 
