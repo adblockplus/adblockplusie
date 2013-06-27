@@ -67,12 +67,7 @@ public:
 
   static void SetLocalization();
 
-#ifdef SUPPORT_WHITELIST
-  bool IsUrlWhiteListed(const CString& url);
-#endif // SUPPORT_WHITELIST
-
   static bool IsValidDomain(const CString& domain);
-  static CString ExtractDomain(const CString& url);
   static CString& UnescapeUrl(CString& url);
 
   static void LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description="", bool isAsync=false, DWORD dwProcessId=0, DWORD dwThreadId=0);

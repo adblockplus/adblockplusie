@@ -52,18 +52,6 @@ bool CPluginClientBase::IsValidDomain(const CString& domain)
 }
 
 
-CString CPluginClientBase::ExtractDomain(const CString& url)
-{
-  int pos = 0;
-  CString http = url.Find('/',pos) >= 0 ? url.Tokenize(L"/", pos) : L"";
-  CString domain = url.Tokenize(L"/", pos);
-
-  domain.MakeLower();
-
-  return domain;
-}
-
-
 CString& CPluginClientBase::UnescapeUrl(CString& url)
 {
   CString unescapedUrl;
@@ -155,32 +143,3 @@ bool CPluginClientBase::PopFirstPluginError(CPluginError& pluginError)
 
   return hasError;
 }
-
-// ============================================================================
-// Whitelisting
-// ============================================================================
-
-#ifdef SUPPORT_WHITELIST
-
-bool CPluginClientBase::IsUrlWhiteListed(const CString& url)
-{
-  if (url.IsEmpty())
-  {
-    return false;
-  }
-
-  int pos = 0;
-  CString scheme = url.Find('/',pos) >= 0 ? url.Tokenize(L"/", pos) : L"";
-  CString domain = ExtractDomain(url);
-  if (scheme == L"res:" || scheme == L"file:")
-  {
-    return true;
-  }
-
-  // TODO: Caching whitelist entries in PluginSettings is redundant and wasteful. We should have an engine call for IsWhitelistedDomain.
-  CPluginSettings* pluginSettings = CPluginSettings::GetInstance();
-  pluginSettings->RefreshWhitelist();
-  return pluginSettings->IsWhiteListedDomain(domain);
-}
-
-#endif // SUPPORT_WHITELIST

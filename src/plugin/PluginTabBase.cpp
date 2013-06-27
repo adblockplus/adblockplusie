@@ -25,6 +25,18 @@ int CPluginTabBase::s_whitelistVersion = 0;
 int CPluginTabBase::s_configVersion = 0;
 #endif
 
+namespace
+{
+  CString ExtractDomain(const CString& url)
+  {
+    int pos = 0;
+    if (url.Find('/', pos) >= 0)
+      url.Tokenize(L"/", pos);
+    CString domain = url.Tokenize(L"/", pos);
+    domain.MakeLower();
+    return domain;
+  }
+}
 
 CPluginTabBase::CPluginTabBase(CPluginClass* plugin) : m_plugin(plugin), m_isActivated(false)
 {
@@ -256,14 +268,10 @@ CString CPluginTabBase::GetDocumentDomain()
 
 void CPluginTabBase::SetDocumentUrl(const CString& url)
 {
-  CString domain;
-
   m_criticalSection.Lock();
   {
     m_documentUrl = url;
-    m_documentDomain = CPluginClient::ExtractDomain(url);
-
-    domain = m_documentDomain;
+    m_documentDomain = ExtractDomain(url);
   }
   m_criticalSection.Unlock();
 }

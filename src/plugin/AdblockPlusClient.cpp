@@ -96,6 +96,20 @@ namespace
     }
     return result;
   }
+
+  Communication::InputBuffer CallAdblockPlusEngineProcedure(Communication::OutputBuffer& message)
+  {
+    std::auto_ptr<Communication::Pipe> pipe = OpenAdblockPlusEnginePipe();
+    pipe->WriteMessage(message);
+    return pipe->ReadMessage();
+  }
+
+  Communication::InputBuffer CallAdblockPlusEngineProcedure(Communication::ProcType proc)
+  {
+    Communication::OutputBuffer message;
+    message << proc;
+    return CallAdblockPlusEngineProcedure(message);
+  }
 }
 
 CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
@@ -187,19 +201,24 @@ bool CAdblockPlusClient::IsElementHidden(const CString& tag, IHTMLElement* pEl, 
   return isHidden;
 }
 
-bool CAdblockPlusClient::IsUrlWhiteListed(const CString& url)
+bool CAdblockPlusClient::IsWhitelistedUrl(const std::string& url)
 {
-  bool isWhitelisted = CPluginClientBase::IsUrlWhiteListed(url);
-  if (isWhitelisted == false && !url.IsEmpty())
-  {
-    m_criticalSectionFilter.Lock();
-    {
-      isWhitelisted = m_filter.get() && m_filter->ShouldWhiteList(url);
-    }
-    m_criticalSectionFilter.Unlock();
-  }
+  Communication::OutputBuffer request;
+  request << Communication::PROC_IS_WHITELISTED_URL << url;
 
-  return isWhitelisted;
+  try
+  {
+    Communication::InputBuffer response = CallAdblockPlusEngineProcedure(request);
+
+    bool isWhitelisted;
+    response >> isWhitelisted;
+    return isWhitelisted;
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+    return false;
+  }
 }
 
 int CAdblockPlusClient::GetIEVersion()
@@ -221,20 +240,6 @@ int CAdblockPlusClient::GetIEVersion()
   }
   RegCloseKey(hKey);
   return (int)(version[0] - 48);
-}
-
-Communication::InputBuffer CallAdblockPlusEngineProcedure(Communication::OutputBuffer& message)
-{
-  std::auto_ptr<Communication::Pipe> pipe = OpenAdblockPlusEnginePipe();
-  pipe->WriteMessage(message);
-  return pipe->ReadMessage();
-}
-
-Communication::InputBuffer CallAdblockPlusEngineProcedure(Communication::ProcType proc)
-{
-  Communication::OutputBuffer message;
-  message << proc;
-  return CallAdblockPlusEngineProcedure(message);
 }
 
 bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)

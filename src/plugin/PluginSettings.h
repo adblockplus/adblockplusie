@@ -208,7 +208,6 @@ private:
 public:
   void AddWhiteListedDomain(const CString& domain);
   void RemoveWhiteListedDomain(const CString& domain);
-  bool IsWhiteListedDomain(const CString& domain) const;
   int GetWhiteListedDomainCount() const;
   std::vector<std::string> GetWhiteListedDomainList();
 #endif //SUPPORT_WHITELIST

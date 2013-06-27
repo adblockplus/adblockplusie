@@ -112,7 +112,7 @@ bool CPluginDomTraverser::IsEnabled()
 { 
   CPluginClient* client = CPluginClient::GetInstance();
 
-  return client && CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsUrlWhiteListed(m_domain);
+  return client && CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(ToUtf8String(std::wstring(m_domain)));
 }
 
 

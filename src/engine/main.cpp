@@ -120,6 +120,14 @@ namespace
         WriteStrings(response, domains);
         break;
       }
+      case Communication::PROC_IS_WHITELISTED_URL:
+      {
+        std::string url;
+        request >> url;
+        AdblockPlus::FilterPtr match = filterEngine->Matches(url, "DOCUMENT", url);
+        response << (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION);
+        break;
+      }
       case Communication::PROC_ADD_FILTER:
       {
         std::string text;
