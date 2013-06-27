@@ -181,7 +181,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     {
       // fall through
     }
-    else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsUrlWhiteListed(documentUrl))
+    else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(ToUtf8String(std::wstring(documentUrl))))
     {
       CString domain = tab->GetDocumentDomain();
 

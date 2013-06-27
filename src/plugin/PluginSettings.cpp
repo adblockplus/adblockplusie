@@ -1286,19 +1286,6 @@ void CPluginSettings::RemoveWhiteListedDomain(const CString& domain)
   CPluginClient::GetInstance()->RemoveFilter(CreateDomainWhitelistingFilter(domain));
 }
 
-bool CPluginSettings::IsWhiteListedDomain(const CString& domain) const
-{
-  bool bIsWhiteListed;
-
-  s_criticalSectionLocal.Lock();
-  {
-    bIsWhiteListed = std::find(m_whitelistedDomains.begin(), m_whitelistedDomains.end(), std::string(CW2A(domain, CP_UTF8))) != m_whitelistedDomains.end();
-  }
-  s_criticalSectionLocal.Unlock();
-
-  return bIsWhiteListed;
-}
-
 int CPluginSettings::GetWhiteListedDomainCount() const
 {
   int count = 0;

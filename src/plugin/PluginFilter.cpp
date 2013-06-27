@@ -684,21 +684,6 @@ void CPluginFilter::ClearFilters()
   }
 }
 
-
-bool CPluginFilter::ShouldWhiteList(CString src) const
-{
-  // We should not block the empty string, so all filtering does not make sense
-  // Therefore we just return
-  if (src.Trim().IsEmpty())
-  {
-    return false;
-  }
-
-  //TODO: Implement whitelisting check from libadblockplus here. Probably not needed anymore
-  return false;
-}
-
-
 bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug) const
 {
   // We should not block the empty string, so all filtering does not make sense

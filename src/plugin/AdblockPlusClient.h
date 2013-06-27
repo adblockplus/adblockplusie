@@ -45,7 +45,7 @@ public:
   bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false);
 
   bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent, CPluginFilter* filter);
-  bool IsUrlWhiteListed(const CString& url);
+  bool IsWhitelistedUrl(const std::string& url);
 
   int GetIEVersion();
 

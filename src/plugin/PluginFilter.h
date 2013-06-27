@@ -171,7 +171,6 @@ public:
 
 
   bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false) const;
-  bool ShouldWhiteList(CString url) const;
 };
 
 
