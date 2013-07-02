@@ -1772,7 +1772,7 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
     {
     }
 #ifdef SUPPORT_WHITELIST
-    else if (client->IsWhitelistedUrl(ToUtf8String(std::wstring(url))))
+    else if (client->IsWhitelistedUrl(std::wstring(url)))
     {
       hIcon = GetIcon(ICON_PLUGIN_DISABLED);
     }

@@ -200,7 +200,7 @@ public:
 #ifdef SUPPORT_WHITELIST
 
 private:
-  std::vector<std::string> m_whitelistedDomains;
+  std::vector<std::wstring> m_whitelistedDomains;
 
   void ClearWhitelist();
   bool ReadWhitelist(bool bDebug=true);
@@ -209,14 +209,13 @@ public:
   void AddWhiteListedDomain(const CString& domain);
   void RemoveWhiteListedDomain(const CString& domain);
   int GetWhiteListedDomainCount() const;
-  std::vector<std::string> GetWhiteListedDomainList();
+  std::vector<std::wstring> GetWhiteListedDomainList();
 #endif //SUPPORT_WHITELIST
 
   bool RefreshWhitelist();
   DWORD GetWindowsBuildNumber();
 
-  void SetSubscription(BSTR language);
-  void SetSubscription(std::string language);
+  void SetSubscription(const std::wstring& url);
   void SetDefaultSubscription();
   CString GetSubscription();
   void RefreshFilterlist();

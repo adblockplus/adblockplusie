@@ -621,7 +621,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
   return false;
 }
 
-bool CPluginFilter::LoadHideFilters(std::vector<std::string> filters)
+bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
 {
 
   ClearFilters();
@@ -637,7 +637,7 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::string> filters)
 
   CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
   {
-    for (std::vector<std::string>::iterator it = filters.begin(); it < filters.end(); ++it)
+    for (std::vector<std::wstring>::iterator it = filters.begin(); it < filters.end(); ++it)
     {
       CString filter((*it).c_str());
       // If the line is not commented out
@@ -708,15 +708,7 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
   }
 
   CPluginClient* client = CPluginClient::GetInstance();
-
-  std::string contentTypeString = CT2A(type, CP_UTF8);
-
-  CT2CA srcMb(src, CP_UTF8);
-  std::string url(srcMb);
-
-  std::string domainMb = CT2CA(domain);
-
-  if (client->Matches(url, contentTypeString, domainMb))
+  if (client->Matches(std::wstring(src), std::wstring(type), std::wstring(domain)))
   {
     if (addDebug)
     {
