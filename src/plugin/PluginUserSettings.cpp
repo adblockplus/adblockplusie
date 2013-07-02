@@ -275,7 +275,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
     if (pVarResult)
     {
-      std::vector<std::string> whiteList = settings->GetWhiteListedDomainList();
+      std::vector<std::wstring> whiteList = settings->GetWhiteListedDomainList();
       CString sWhiteList;
       for (size_t i = 0; i < whiteList.size(); i++)
       {
@@ -283,7 +283,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         {
           sWhiteList += ',';
         }
-        sWhiteList += CString(CA2W(whiteList[i].c_str(), CP_UTF8));
+        sWhiteList += CString(whiteList[i].c_str());
       }
 
       pVarResult->vt = VT_BSTR;

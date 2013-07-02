@@ -10,9 +10,9 @@ class CPluginFilter;
 
 struct SubscriptionDescription
 {
-  std::string url;
-  std::string title;
-  std::string specialization;
+  std::wstring url;
+  std::wstring title;
+  std::wstring specialization;
   bool listed;
 };
 
@@ -45,19 +45,19 @@ public:
   bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false);
 
   bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent, CPluginFilter* filter);
-  bool IsWhitelistedUrl(const std::string& url);
+  bool IsWhitelistedUrl(const std::wstring& url);
 
   int GetIEVersion();
 
-  bool Matches(const std::string& url, const std::string& contentType, const std::string& domain);
-  std::vector<std::string> GetElementHidingSelectors(const std::string& domain);
+  bool Matches(const std::wstring& url, const std::wstring& contentType, const std::wstring& domain);
+  std::vector<std::wstring> GetElementHidingSelectors(const std::wstring& domain);
   std::vector<SubscriptionDescription> FetchAvailableSubscriptions();
   std::vector<SubscriptionDescription> GetListedSubscriptions();
-  void SetSubscription(std::string url);
+  void SetSubscription(const std::wstring& url);
   void UpdateAllSubscriptions();
-  std::vector<std::string> GetExceptionDomains();
-  void AddFilter(const std::string& text);
-  void RemoveFilter(const std::string& text);
+  std::vector<std::wstring> GetExceptionDomains();
+  void AddFilter(const std::wstring& text);
+  void RemoveFilter(const std::wstring& text);
 };
 
 #endif // _ADBLOCK_PLUS_CLIENT_H_

@@ -162,7 +162,7 @@ public:
 
   CPluginFilter(const CString& dataPath = "");
 
-  bool LoadHideFilters(std::vector<std::string> filters);
+  bool LoadHideFilters(std::vector<std::wstring> filters);
 
   bool AddFilterElementHide(CString filter);
 

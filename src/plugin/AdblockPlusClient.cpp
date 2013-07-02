@@ -66,17 +66,17 @@ namespace
     }
   }
 
-  std::vector<std::string> ReadStrings(Communication::InputBuffer& message)
+  std::vector<std::wstring> ReadStrings(Communication::InputBuffer& message)
   {
     int32_t count;
     message >> count;
 
-    std::vector<std::string> result;
+    std::vector<std::wstring> result;
     for (int32_t i = 0; i < count; i++)
     {
       std::string str;
       message >> str;
-      result.push_back(str);
+      result.push_back(ToUtf16String(str));
     }
     return result;
   }
@@ -90,8 +90,16 @@ namespace
     for (int32_t i = 0; i < count; i++)
     {
       SubscriptionDescription description;
-      message >> description.url >> description.title
-              >> description.specialization >> description.listed;
+      std::string url;
+      message >> url;
+      description.url = ToUtf16String(url);
+      std::string title;
+      message >> title;
+      description.title = ToUtf16String(title);
+      std::string specialization;
+      message >> specialization;
+      description.specialization = ToUtf16String(specialization);
+      message >> description.listed;
       result.push_back(description);
     }
     return result;
@@ -201,10 +209,10 @@ bool CAdblockPlusClient::IsElementHidden(const CString& tag, IHTMLElement* pEl, 
   return isHidden;
 }
 
-bool CAdblockPlusClient::IsWhitelistedUrl(const std::string& url)
+bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_IS_WHITELISTED_URL << url;
+  request << Communication::PROC_IS_WHITELISTED_URL << ToUtf8String(url);
 
   try
   {
@@ -242,10 +250,10 @@ int CAdblockPlusClient::GetIEVersion()
   return (int)(version[0] - 48);
 }
 
-bool CAdblockPlusClient::Matches(const std::string& url, const std::string& contentType, const std::string& domain)
+bool CAdblockPlusClient::Matches(const std::wstring& url, const std::wstring& contentType, const std::wstring& domain)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_MATCHES << url << contentType << domain;
+  request << Communication::PROC_MATCHES << ToUtf8String(url) << ToUtf8String(contentType) << ToUtf8String(domain);
 
   try
   {
@@ -262,10 +270,10 @@ bool CAdblockPlusClient::Matches(const std::string& url, const std::string& cont
   }
 }
 
-std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(const std::string& domain)
+std::vector<std::wstring> CAdblockPlusClient::GetElementHidingSelectors(const std::wstring& domain)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_GET_ELEMHIDE_SELECTORS << domain;
+  request << Communication::PROC_GET_ELEMHIDE_SELECTORS << ToUtf8String(domain);
 
   try
   {
@@ -275,7 +283,7 @@ std::vector<std::string> CAdblockPlusClient::GetElementHidingSelectors(const std
   catch (const std::exception& e)
   {
     DEBUG_GENERAL(e.what());
-    return std::vector<std::string>();
+    return std::vector<std::wstring>();
   }
 }
 
@@ -307,10 +315,10 @@ std::vector<SubscriptionDescription> CAdblockPlusClient::GetListedSubscriptions(
   }
 }
 
-void CAdblockPlusClient::SetSubscription(std::string url)
+void CAdblockPlusClient::SetSubscription(const std::wstring& url)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_SET_SUBSCRIPTION << url;
+  request << Communication::PROC_SET_SUBSCRIPTION << ToUtf8String(url);
 
   try
   {
@@ -334,7 +342,7 @@ void CAdblockPlusClient::UpdateAllSubscriptions()
   }
 }
 
-std::vector<std::string> CAdblockPlusClient::GetExceptionDomains()
+std::vector<std::wstring> CAdblockPlusClient::GetExceptionDomains()
 {
   try
   {
@@ -344,14 +352,14 @@ std::vector<std::string> CAdblockPlusClient::GetExceptionDomains()
   catch (const std::exception& e)
   {
     DEBUG_GENERAL(e.what());
-    return std::vector<std::string>();
+    return std::vector<std::wstring>();
   }
 }
 
-void CAdblockPlusClient::AddFilter(const std::string& text)
+void CAdblockPlusClient::AddFilter(const std::wstring& text)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_ADD_FILTER << text;
+  request << Communication::PROC_ADD_FILTER << ToUtf8String(text);
 
   try
   {
@@ -363,10 +371,10 @@ void CAdblockPlusClient::AddFilter(const std::string& text)
   }
 }
 
-void CAdblockPlusClient::RemoveFilter(const std::string& text)
+void CAdblockPlusClient::RemoveFilter(const std::wstring& text)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_REMOVE_FILTER << text;
+  request << Communication::PROC_REMOVE_FILTER << ToUtf8String(text);
 
   try
   {

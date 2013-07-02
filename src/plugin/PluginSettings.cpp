@@ -24,9 +24,9 @@
 
 namespace
 {
-  std::string CreateDomainWhitelistingFilter(CString domain)
+  std::wstring CreateDomainWhitelistingFilter(CString domain)
   {
-    return std::string("@@||").append(CW2A(domain)).append("^$document");
+    return L"@@||" + domain + L"^$document";
   }
 }
 
@@ -522,7 +522,7 @@ std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
   for (size_t i = 0; i < m_subscriptions.size(); i ++)
   {
     SubscriptionDescription it = m_subscriptions[i];
-    filterList.insert(std::make_pair(CString(CA2T(it.url.c_str(), CP_UTF8)), CString(CA2T(it.title.c_str(), CP_UTF8))));
+    filterList.insert(std::make_pair(CString(it.url.c_str()), CString(it.title.c_str())));
   }
   return filterList;
 }
@@ -1300,7 +1300,7 @@ int CPluginSettings::GetWhiteListedDomainCount() const
 }
 
 
-std::vector<std::string> CPluginSettings::GetWhiteListedDomainList()
+std::vector<std::wstring> CPluginSettings::GetWhiteListedDomainList()
 {
   bool r = ReadWhitelist(false);
   return m_whitelistedDomains;
@@ -1338,35 +1338,18 @@ DWORD CPluginSettings::GetWindowsBuildNumber()
   return m_WindowsBuildNumber;
 }
 
-void CPluginSettings::SetSubscription(BSTR url)
-{
-  std::string urlConverted = CT2A(url, CP_UTF8);
-  SetSubscription(urlConverted);
-}
-
-void CPluginSettings::SetSubscription(std::string url)
+void CPluginSettings::SetSubscription(const std::wstring& url)
 {
   CPluginClient::GetInstance()->SetSubscription(url);
   RefreshFilterlist();
   RefreshWhitelist();
 }
 
-std::vector<std::string> split(const std::string& s, char delim) {
-    std::vector<std::string> retTokens;
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        retTokens.push_back(item);
-    }
-    return retTokens;
-}
-
-
 CString CPluginSettings::GetSubscription()
 {
   std::vector<SubscriptionDescription> subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
   if (subscriptions.size() > 0)
-    return CString(CA2T(subscriptions.front().url.c_str(), CP_UTF8));
+    return CString(subscriptions.front().url.c_str());
   else
     return CString(L"");
 }
