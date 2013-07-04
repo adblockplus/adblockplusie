@@ -10,7 +10,7 @@ basedir = os.path.dirname(os.path.abspath(sys.argv[0]))
 key = sys.argv[1]
 
 def sign(*argv):
-  subprocess.call([
+  subprocess.check_call([
     "signtool",
     "sign", "/v",
     "/d", "Adblock Plus",
@@ -28,16 +28,16 @@ def read_macro_value(file, macro):
   raise Exception("Macro %s not found in file %s" % (macro, file))
 
 version = read_macro_value(os.path.join(basedir, "src", "shared", "Version.h"), "IEPLUGIN_VERSION");
-buildnum, dummy = subprocess.Popen(['hg', 'id', '-R', basedir, '-n'], stdout=subprocess.PIPE).communicate()
+buildnum = subprocess.check_output(['hg', 'id', '-R', basedir, '-n'])
 buildnum = re.sub(r'\D', '', buildnum)
 while version.count(".") < 1:
   version += ".0"
 version += ".%s" % buildnum
 
-subprocess.call([os.path.join(basedir, "createsolution.bat"), version, "devbuild"])
+subprocess.check_call([os.path.join(basedir, "createsolution.bat"), version, "devbuild"])
 
 for arch in ("ia32", "x64"):
-  subprocess.call([
+  subprocess.check_call([
     "msbuild",
     os.path.join(basedir, "build", arch, "adblockplus.sln"),
     "/p:Configuration=Release", "/target:AdblockPlus;AdblockPlusEngine",
@@ -48,6 +48,6 @@ for arch in ("ia32", "x64"):
 
 installerParams = os.environ.copy()
 installerParams["VERSION"] = version
-subprocess.call(["nmake", "/A"], env=installerParams, cwd=os.path.join(basedir, "installer"))
+subprocess.check_call(["nmake", "/A"], env=installerParams, cwd=os.path.join(basedir, "installer"))
 sign(os.path.join(basedir, "build", "ia32", "adblockplusie-%s-en-us-ia32.msi" % version),
     os.path.join(basedir, "build", "x64", "adblockplusie-%s-en-us-x64.msi" % version))
