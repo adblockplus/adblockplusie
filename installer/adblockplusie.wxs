@@ -271,6 +271,7 @@
       <ComponentRef Id="html_static_img_bb_enable_active.png"/>
       <ComponentRef Id="html_static_img_features_language.png"/>
       <ComponentRef Id="html_static_img_features_whitelist.png"/>
+      <ComponentRef Id="html_static_img_features_adblocking.png"/>
       <ComponentRef Id="html_static_img_social_facebook.png"/>
       <ComponentRef Id="html_static_img_social_gplus.png"/>
       <ComponentRef Id="html_static_img_social_twitter.png"/>
@@ -316,6 +317,9 @@
               </Component>
               <Component Id="html_static_img_features_whitelist.png" Guid="7cc37170-d713-11e2-8b8b-0800200c9a66">
                 <File Name="whitelist.png"/>
+              </Component>
+              <Component Id="html_static_img_features_adblocking.png" Guid="7dd12150-d713-11e2-8b8b-0800200c9a66">
+                <File Name="adblocking.png"/>
               </Component>
             </Directory>
             <Directory Name="social" Id="html_static_img_social">
