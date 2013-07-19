@@ -1,0 +1,169 @@
+body
+{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.1em;
+  text-align: center;
+  background-image: url(../img/background.png);
+  margin: auto;
+  line-height: 1.5;
+}
+
+#wrapper,
+#logo,
+.share-image,
+#share-images2,
+#share-donate
+{
+  display: inline-block;
+  /* IE6 inline-block fix */
+  *display: inline;
+  *zoom: 1;
+}
+
+#wrapper
+{
+  max-width: 800px;
+  text-align: left;
+}
+
+header
+{
+  padding: 20px 0px;
+  vertical-align: middle;
+}
+
+#logo
+{
+  background-image: url(../img/abp-128.png);
+  width: 128px;
+  height: 128px;
+}
+
+#title-main
+{
+  display: inline;
+  position: relative;
+  top: -40px;
+  font-weight: normal;
+  font-size: 40px;
+  margin: 0px 10px;
+  vertical-align: bottom;
+}
+
+#features
+{
+  margin: 10px 0px 40px 0px;
+}
+
+#features li
+{
+  margin-left: 50px;
+  list-style-image: url(../img/checkmark.png);
+}
+
+#share1,
+#share2
+{
+  display: none;
+  font-size: 120%;
+  margin-top: 40px;
+}
+
+html.share-variant-1 #share1,
+html.share-variant-2 #share2
+{
+  display: block;
+}
+
+.share-image
+{
+  width: 64px;
+  height: 64px;
+}
+
+#share-images2
+{
+  box-shadow: 0 0 4px 3px #EEEEEE;
+  border-radius: 5px;
+  background: #FFFFFF;
+  padding: 10px 40px;
+  margin-bottom: 30px;
+}
+
+#share-images2 *
+{
+  vertical-align: middle;
+}
+
+#share-donate
+{
+  font-style: italic;
+  font-weight: bold;
+  font-size: 12px;
+  text-decoration: none;
+  color: #003366;
+  border: 1px solid #FF9933;
+  border-radius: 10px;
+  padding: 2px 10px;
+  background-image: url(../img/button-background/donate.png);
+  background-repeat: repeat-x;
+}
+
+#share2-connection
+{
+  margin: 0px 20px;
+}
+
+.share-facebook
+{
+  background-image: url(../img/social/facebook-old.png);
+}
+
+.share-twitter
+{
+  background-image: url(../img/social/twitter-old.png);
+}
+
+.share-gplus
+{
+  background-image: url(../img/social/gplus-old.png);
+}
+
+#glass-pane, #share-popup
+{
+  visibility: hidden;
+  opacity: 0;
+  -ms-transition-property: opacity, visibility;
+  transition-property: opacity, visibility;
+}
+
+#glass-pane
+{
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.5) url(../img/ajax-loader.gif) no-repeat 50% 50%;
+  -ms-transition-duration: 0.2s;
+  transition-duration: 0.2s;
+}
+
+#share-popup
+{
+  border: none;
+  -ms-transition-delay: 0.1s;
+  transition-delay: 0.1s;
+}
+
+#glass-pane.visible, #share-popup.visible
+{
+  visibility: visible;
+  opacity: 1;
+}
+
+#share-popup.visible
+{
+  -ms-transition-duration: 0.15s;
+  transition-duration: 0.15s;
+}
