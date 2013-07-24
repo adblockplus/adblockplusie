@@ -142,8 +142,13 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     {
       mimeType.SetString(mime);
     }
+    LPOLESTR bindToObject = 0;
+    hr = pOIBindInfo->GetBindString(BINDSTRING_FLAG_BIND_TO_OBJECT, &bindToObject, 1, &resLen);
     LPOLESTR domainRetrieved = 0;
-    hr = pOIBindInfo->GetBindString(BINDSTRING_XDR_ORIGIN, &domainRetrieved, 1, &resLen);
+    if (resLen == 0 || wcscmp(bindToObject, L"FALSE") == 0)
+    {   
+      hr = pOIBindInfo->GetBindString(BINDSTRING_XDR_ORIGIN, &domainRetrieved, 1, &resLen);
+    }
     if ((hr == S_OK) && domainRetrieved && (resLen > 0))
     {
       boundDomain.SetString(domainRetrieved);
