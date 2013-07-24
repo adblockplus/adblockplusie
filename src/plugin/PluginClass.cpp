@@ -223,10 +223,6 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
     ((CPluginClass*)thisPtr)->Unadvice();
   }
 
-  if ((((CPluginClass*)thisPtr)->m_hPaneWnd == NULL) || (!((CPluginClass*)thisPtr)->IsStatusBarEnabled()))
-  {
-    ((CPluginClass*)thisPtr)->ShowStatusBar();
-  }
   return 0;
 }
 
@@ -427,7 +423,6 @@ void CPluginClass::ShowStatusBar()
 {
   VARIANT_BOOL isVisible;
 
-  CPluginSettings* settings = CPluginSettings::GetInstance();
 
   CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
   if (browser)
@@ -438,70 +433,65 @@ void CPluginClass::ShowStatusBar()
     {
       if (!isVisible)
       {
-        if (!settings->GetStatusBarAsked())
+        SHANDLE_PTR pBrowserHWnd;
+        browser->get_HWND((SHANDLE_PTR*)&pBrowserHWnd);
+        Dictionary* dictionary = Dictionary::GetInstance();
+
+        HKEY pHkey;
+        HKEY pHkeySub;
+        LSTATUS regRes = 0;
+        regRes = RegOpenCurrentUser(KEY_WRITE, &pHkey);
+
+        // Do we have enough rights to enable a status bar?
+        if (regRes != 0)
         {
-          SHANDLE_PTR pBrowserHWnd;
-          browser->get_HWND((SHANDLE_PTR*)&pBrowserHWnd);
-          Dictionary* dictionary = Dictionary::GetInstance();
-          settings->SetStatusBarAsked();
-
-          HKEY pHkey;
-          HKEY pHkeySub;
-          LSTATUS regRes = 0;
-          regRes = RegOpenCurrentUser(KEY_WRITE, &pHkey);
-
-          // Do we have enough rights to enable a status bar?
-          if (regRes != 0)
-          {
-            // We use the tab window here and in the next few calls, since the browser window may still not be available
-            LRESULT res = MessageBox((HWND)m_hTabWnd,
-                dictionary->Lookup("status-bar", "error-text").c_str(),
-                dictionary->Lookup("status-bar", "error-title").c_str(),
-                MB_OK);
-            return;
-          }
-          // Ask if a user wants to enable a status bar automatically
+          // We use the tab window here and in the next few calls, since the browser window may still not be available
           LRESULT res = MessageBox((HWND)m_hTabWnd,
-              dictionary->Lookup("status-bar", "question").c_str(),
-              dictionary->Lookup("status-bar", "title").c_str(),
-              MB_YESNO);
-          if (res == IDYES)
+              dictionary->Lookup("status-bar", "error-text").c_str(),
+              dictionary->Lookup("status-bar", "error-title").c_str(),
+              MB_OK);
+          return;
+        }
+        // Ask if a user wants to enable a status bar automatically
+        LRESULT res = MessageBox((HWND)m_hTabWnd,
+            dictionary->Lookup("status-bar", "question").c_str(),
+            dictionary->Lookup("status-bar", "title").c_str(),
+            MB_YESNO);
+        if (res == IDYES)
+        {
+          DWORD trueth = 1;
+          regRes = RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkeySub);
+          regRes = RegSetValueEx(pHkeySub, L"ShowStatusBar", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
+          regRes = RegCloseKey(pHkeySub);
+          regRes = RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\Main", &pHkeySub);
+          regRes = RegSetValueEx(pHkeySub, L"StatusBarWeb", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
+          regRes = RegCloseKey(pHkeySub);
+          hr = browser->put_StatusBar(TRUE);
+          if (FAILED(hr))
           {
-            DWORD trueth = 1;
-            regRes = RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkeySub);
-            regRes = RegSetValueEx(pHkeySub, L"ShowStatusBar", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
-            regRes = RegCloseKey(pHkeySub);
-            regRes = RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\Main", &pHkeySub);
-            regRes = RegSetValueEx(pHkeySub, L"StatusBarWeb", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
-            regRes = RegCloseKey(pHkeySub);
-            hr = browser->put_StatusBar(TRUE);
-            if (FAILED(hr))
-            {
-              DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_PUT_STATUSBAR, "Class::Enable statusbar");
-            }
-            CreateStatusBarPane();
-
-            // We need to restart the tab now, to enable the status bar properly
-            VARIANT vFlags;
-            vFlags.vt = VT_I4;
-            vFlags.intVal = navOpenInNewTab;
-
-            CComBSTR curLoc;
-            browser->get_LocationURL(&curLoc);
-            HRESULT hr = browser->Navigate(curLoc, &vFlags, NULL, NULL, NULL);
-            if (FAILED(hr))
-            {
-              vFlags.intVal = navOpenInNewWindow;
-
-              hr = browser->Navigate(CComBSTR(curLoc), &vFlags, NULL, NULL, NULL);
-              if (FAILED(hr))
-              {
-                DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION, "Navigation::Failed")
-              }
-            }
-            browser->Quit();
-
+            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_PUT_STATUSBAR, "Class::Enable statusbar");
           }
+          CreateStatusBarPane();
+
+          // We need to restart the tab now, to enable the status bar properly
+          VARIANT vFlags;
+          vFlags.vt = VT_I4;
+          vFlags.intVal = navOpenInNewTab;
+
+          CComBSTR curLoc;
+          browser->get_LocationURL(&curLoc);
+          HRESULT hr = browser->Navigate(curLoc, &vFlags, NULL, NULL, NULL);
+          if (FAILED(hr))
+          {
+            vFlags.intVal = navOpenInNewWindow;
+
+            hr = browser->Navigate(CComBSTR(curLoc), &vFlags, NULL, NULL, NULL);
+            if (FAILED(hr))
+            {
+              DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION, "Navigation::Failed")
+            }
+          }
+          browser->Quit();
         }
       }
     }
@@ -822,6 +812,16 @@ bool CPluginClass::InitObject(bool bBHO)
     }
   }
 
+  if (CPluginClient::GetInstance()->IsFirstRun())
+  {   
+    CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)CPluginClass::FirstRunThread, NULL, NULL, NULL);
+    if ((m_hPaneWnd == NULL) || (!IsStatusBarEnabled()))
+    {
+      ShowStatusBar();
+    }
+
+  }
+
   CPluginSettings* settings = CPluginSettings::GetInstance();
   return true;
 }
@@ -998,9 +998,35 @@ bool CPluginClass::CreateStatusBarPane()
   HDC hdc = GetWindowDC(m_hStatusBarWnd);
   SendMessage(m_hStatusBarWnd, WM_PAINT, (WPARAM)hdc, 0);
   ReleaseDC(m_hStatusBarWnd, hdc);
+
   return true;
 }
 
+void CPluginClass::FirstRunThread()
+{
+  CoInitialize(NULL);
+  VARIANT vFlags;
+  vFlags.vt = VT_I4;
+  vFlags.intVal = navOpenInNewTab;
+
+  CComBSTR bTest = CComBSTR(UserSettingsFirstRunPageUrl().c_str());
+  
+  //Try 10 times, or until successful
+  int numberOfAttempts = 0;
+  HRESULT hr = S_FALSE;
+  hr = GetAsyncBrowser()->Navigate(bTest, &vFlags, NULL, NULL, NULL);
+  if (FAILED(hr))
+  {
+    vFlags.intVal = navOpenInNewWindow;
+    hr = GetAsyncBrowser()->Navigate(bTest, &vFlags, NULL, NULL, NULL);
+  }
+
+
+  if (FAILED(hr))
+  {
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_WELCOME, "Navigation::Welcome page failed")
+  }
+}
 void CPluginClass::CloseTheme()
 {
   if (m_hTheme)
@@ -1731,88 +1757,6 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 #endif
     }
     break;
-
-
-    // First run page 
-    case WM_LAUNCH_INFO:
-    {
-      // Set the status bar visible, if it isn't
-      // Otherwise the user won't see the icon the first time
-
-      if (wParam == 1)
-      {
-        // Redirect to welcome page
-        VARIANT_BOOL isVisible;
-        CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
-        if (browser)
-        {
-          HRESULT hr = S_OK;
-
-          hr = browser->get_StatusBar(&isVisible);
-          if (SUCCEEDED(hr))
-          {
-            if (!isVisible)
-            {
-              Dictionary* dictionary = Dictionary::GetInstance();
-
-              LRESULT res = MessageBox(NULL,
-                  dictionary->Lookup("status-bar", "question").c_str(),
-                  dictionary->Lookup("status-bar", "title").c_str(),
-                  MB_YESNO);
-              if (res == IDYES)
-              {
-                hr = browser->put_StatusBar(TRUE);
-                if (FAILED(hr))
-                {
-                  DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_PUT_STATUSBAR, "Class::Enable statusbar");
-                }
-              }
-            }
-          }
-          else
-          {
-            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_STATUSBAR, "Class::Get statusbar state");
-          }
-
-          CPluginSettings* settings = CPluginSettings::GetInstance();
-
-          //TODO: Navigate to first run page here
-/*        hr = browser->Navigate(CComBSTR("FIRST_RUN_PAGE_URL"), NULL, NULL, NULL, NULL);
-          if (FAILED(hr))
-          {
-            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_WELCOME, "Navigation::Welcome page failed")
-          }
-          */
-        }
-      }
-      else
-      {
-        // Redirect to info page
-        CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
-        if (browser)
-        {
-          VARIANT vFlags;
-          vFlags.vt = VT_I4;
-          vFlags.intVal = navOpenInNewTab;
-
-          // TODO: Navigate to info page here or remove this clause
-/*          HRESULT hr = browser->Navigate(CComBSTR(INFO_PAGE_URL), &vFlags, NULL, NULL, NULL);
-          if (FAILED(hr))
-          {
-            vFlags.intVal = navOpenInNewWindow;
-
-            hr = browser->Navigate(CComBSTR(httpRequest.GetUrl()), &vFlags, NULL, NULL, NULL);
-            if (FAILED(hr))
-            {
-              DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_INFO, "Navigation::Info page failed")
-            }
-          }
-          */
-        }
-      }
-    }
-    break;
-
   case WM_DESTROY:
     break;
   case SC_CLOSE:

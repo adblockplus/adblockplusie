@@ -57,8 +57,6 @@ public:
 
 private:
 
-  bool m_isFirstRun;
-
   DWORD m_dwWorkingThreadId;
 
   static CComAutoCriticalSection s_criticalSectionLocal;
@@ -85,9 +83,6 @@ public:
   void SetWorkingThreadId();
   void SetWorkingThreadId(DWORD id);
   bool IsWorkingThread(DWORD dwThread=0) const;
-
-  void SetFirstRun();
-  bool IsFirstRun() const;
 
   static CString GetSystemLanguage();
   DWORD m_WindowsBuildNumber;
@@ -127,9 +122,6 @@ public:
   void SetSubscription(const std::wstring& url);
   void SetDefaultSubscription();
   CString GetSubscription();
-
-  bool GetStatusBarAsked();
-  void SetStatusBarAsked();
   std::vector<SubscriptionDescription> m_subscriptions;
 };
 

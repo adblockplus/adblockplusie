@@ -97,16 +97,16 @@ static CString sGetLanguage()
 }
 
 
-CStringW sGetMessage(const CString& key)
+CStringW sGetMessage(const CString& section, const CString& key)
 {
   Dictionary* dictionary = Dictionary::GetInstance();
-  return CString(dictionary->Lookup("settings", std::string(CW2A(key))).c_str());
+  return CStringW(dictionary->Lookup(std::string(CW2A(section)), std::string(CW2A(key))).c_str());
 }
 
-std::wstring sGetMessage(const std::string& key)
+std::wstring sGetMessage(const std::string& section, const std::string& key)
 {
   Dictionary* dictionary = Dictionary::GetInstance();
-  return dictionary->Lookup("settings", key);
+  return dictionary->Lookup(section, key);
 }
 
 
@@ -131,7 +131,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
   if (s_GetMessage == method)
   {
-    if (1 != pDispparams->cArgs)
+    if (2 != pDispparams->cArgs)
       return DISP_E_BADPARAMCOUNT;
 
     if (VT_BSTR != pDispparams->rgvarg[0].vt)
@@ -140,7 +140,8 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     if (pVarResult)
     {
       CComBSTR key = pDispparams->rgvarg[0].bstrVal;
-      CStringW message = sGetMessage((BSTR)key);
+      CComBSTR section = pDispparams->rgvarg[1].bstrVal;
+      CStringW message = sGetMessage((BSTR)section, (BSTR)key);
 
       pVarResult->vt = VT_BSTR;
       pVarResult->bstrVal = SysAllocString(message);

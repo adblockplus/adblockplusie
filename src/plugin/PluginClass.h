@@ -119,7 +119,7 @@ private:
   static CPluginClass* FindInstance(HWND hStatusBarWnd);
   static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
   static LRESULT CALLBACK PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
+  static void FirstRunThread();
   void BeforeNavigate2(DISPPARAMS* pDispParams);
 
   void Unadvice();

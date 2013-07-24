@@ -14,4 +14,5 @@ private:
 };
 
 std::wstring UserSettingsFileUrl();
+std::wstring UserSettingsFirstRunPageUrl();
 std::wstring FileUrl(const std::wstring& url);
