@@ -8,7 +8,6 @@
 
 #include "PluginSettings.h"
 #include "PluginSystem.h"
-#include "PluginHttpRequest.h"
 #include "PluginMutex.h"
 #include "PluginClass.h"
 
@@ -43,9 +42,7 @@ CPluginClientBase::~CPluginClientBase()
 
 bool CPluginClientBase::IsValidDomain(const CString& domain)
 {
-  return domain != ABPDOMAIN &&
-    domain != USERS_HOST &&
-    domain != L"about:blank" &&
+  return domain != L"about:blank" &&
     domain != L"about:tabs" &&
     domain.Find(L"javascript:") != 0 &&
     !domain.IsEmpty();
@@ -67,21 +64,6 @@ CString& CPluginClientBase::UnescapeUrl(CString& url)
   }
 
   return url;
-}
-
-
-void CPluginClientBase::SetLocalization()
-{
-  CPluginSystem* system = CPluginSystem::GetInstance();
-  CString browserLanguage = system->GetBrowserLanguage();
-
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-  if (settings->IsMainProcess() && settings->IsMainThread() && !settings->Has(SETTING_LANGUAGE))
-  {
-    // TODO: We might want to set this to "en" if browserLanguage is not in filterLanguagesList
-    settings->SetString(SETTING_LANGUAGE, browserLanguage);
-    settings->Write();
-  }
 }
 
 

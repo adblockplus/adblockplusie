@@ -8,7 +8,6 @@
 
 #include "PluginSystem.h"
 #include "PluginClient.h"
-#include "PluginSha1.h"
 #include "PluginSettings.h"
 
 

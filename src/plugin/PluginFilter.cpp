@@ -9,7 +9,6 @@
 #endif
 
 #include "PluginMutex.h"
-#include "PluginHttpRequest.h"
 #include "PluginSettings.h"
 #include "PluginSystem.h"
 #include "PluginClass.h"

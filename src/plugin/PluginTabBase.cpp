@@ -95,47 +95,6 @@ void CPluginTabBase::OnUpdate()
 }
 
 
-bool CPluginTabBase::OnUpdateSettings(bool forceUpdate)
-{
-  bool isUpdated = false;
-
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  int newSettingsVersion = settings->GetTabVersion(SETTING_TAB_SETTINGS_VERSION);
-  if ((s_settingsVersion != newSettingsVersion) || (forceUpdate))
-  {
-    s_settingsVersion = newSettingsVersion;
-    if (!settings->IsMainProcess())
-    {
-      settings->Read();
-
-      isUpdated = true;
-    }
-  }
-
-  return isUpdated;
-}
-
-bool CPluginTabBase::OnUpdateConfig()
-{
-  bool isUpdated = false;
-
-#ifdef SUPPORT_CONFIG
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  int newConfigVersion = settings->GetTabVersion(SETTING_TAB_CONFIG_VERSION);
-  if (s_configVersion != newConfigVersion)
-  {
-    s_configVersion = newConfigVersion;
-    isUpdated = true;
-  }
-
-#endif // SUPPORT_CONFIG
-
-  return isUpdated;
-}
-
-
 void CPluginTabBase::OnNavigate(const CString& url)
 {
   SetDocumentUrl(url);
@@ -354,17 +313,6 @@ DWORD WINAPI CPluginTabBase::ThreadProc(LPVOID pParam)
 
   DEBUG_GENERAL(debugText)
 
-  CPluginClient* client = CPluginClient::GetInstance();
-
-  client->SetLocalization();
-
-  // Force loading/creation of config
-#ifdef SUPPORT_CONFIG
-  CPluginConfig* config = CPluginConfig::GetInstance();
-
-
-#endif // SUPPORT_CONFIG
-
   // --------------------------------------------------------------------
   // Tab loop
   // --------------------------------------------------------------------
@@ -382,43 +330,10 @@ DWORD WINAPI CPluginTabBase::ThreadProc(LPVOID pParam)
       DEBUG_THREAD("Loop iteration " + sTabLoopIteration);
     DEBUG_THREAD("--------------------------------------------------------------------------------")
 #endif
-      // Update settings from file
       if (tab->m_isActivated)
       {
         bool isChanged = false;
 
-        settings->RefreshTab();
-
-        tab->OnUpdateSettings(false);
-
-        int newDictionaryVersion = settings->GetTabVersion(SETTING_TAB_DICTIONARY_VERSION);
-        if (s_dictionaryVersion != newDictionaryVersion)
-        {
-          s_dictionaryVersion = newDictionaryVersion;
-          client->SetLocalization();
-          isChanged = true;
-        }
-
-        isChanged = tab->OnUpdateConfig() ? true : isChanged;
-
-#ifdef SUPPORT_WHITELIST
-        int newWhitelistVersion = settings->GetTabVersion(SETTING_TAB_WHITELIST_VERSION);
-        if (s_whitelistVersion != newWhitelistVersion)
-        {
-          s_whitelistVersion = newWhitelistVersion;
-          settings->RefreshWhitelist();
-          isChanged = true;
-        }
-#endif // SUPPORT_WHITELIST
-
-#ifdef SUPPORT_FILTER
-        int newFilterVersion = settings->GetTabVersion(SETTING_TAB_FILTER_VERSION);
-        if (s_filterVersion != newFilterVersion)
-        {
-          s_filterVersion = newFilterVersion;
-          isChanged = true;
-        }
-#endif
         if (isChanged)
         {
           tab->m_plugin->UpdateStatusBar();

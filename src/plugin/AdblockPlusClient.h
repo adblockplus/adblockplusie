@@ -4,6 +4,7 @@
 
 #include "PluginTypedef.h"
 #include "PluginClientBase.h"
+#include "../shared/Communication.h"
 
 
 class CPluginFilter;
@@ -32,6 +33,7 @@ private:
   // Private constructor used by the singleton pattern
   CAdblockPlusClient();
 
+  void PostRequest(Communication::OutputBuffer request);
 public:
 
   static CAdblockPlusClient* s_instance;
@@ -58,6 +60,13 @@ public:
   std::vector<std::wstring> GetExceptionDomains();
   void AddFilter(const std::wstring& text);
   void RemoveFilter(const std::wstring& text);
+  void SetPref(const std::wstring& name, const std::wstring& value);
+  void SetPref(const std::wstring& name, const int64_t& value);
+  void SetPref(const std::wstring& name, bool value);
+  std::wstring GetPref(const std::wstring& name, const std::wstring& defaultValue = L"");
+  std::wstring GetPref(const std::wstring& name, const wchar_t* defaultValue);
+  bool GetPref(const std::wstring& name, bool defaultValue = false);
+  int64_t GetPref(const std::wstring& name, int64_t defaultValue = 0);
 };
 
 #endif // _ADBLOCK_PLUS_CLIENT_H_
