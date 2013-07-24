@@ -27,6 +27,11 @@ std::wstring UserSettingsFileUrl()
   return FileUrl(GetDllDir() + L"html\\templates\\index.html");
 }
 
+std::wstring UserSettingsFirstRunPageUrl()
+{
+  return FileUrl(GetDllDir() + L"html\\templates\\firstRun.html");
+}
+
 std::wstring FileUrl(const std::wstring& path)
 {
   std::wstring url = path;

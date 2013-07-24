@@ -313,6 +313,14 @@ std::vector<std::wstring> CAdblockPlusClient::GetExceptionDomains()
   return ReadStrings(response);
 }
 
+bool CAdblockPlusClient::IsFirstRun()
+{
+  Communication::InputBuffer response;
+  if (!CallEngine(Communication::PROC_IS_FIRST_RUN_ACTION_NEEDED, &response)) return false;
+  bool res;
+  response >> res;
+  return res;
+}
 void CAdblockPlusClient::AddFilter(const std::wstring& text)
 {
   Communication::OutputBuffer request;

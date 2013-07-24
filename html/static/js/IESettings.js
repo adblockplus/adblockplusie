@@ -17,7 +17,7 @@ function setElementText(id, key)
   var el = document.getElementById(id);
   if (el)
   {
-    var text = UserSettings().GetMessage(key);
+    var text = UserSettings().GetMessage("settings", key);
     if (text)
     {
       el.innerText = text; 
@@ -27,7 +27,7 @@ function setElementText(id, key)
 
 function initLanguageSettings()
 {
-  setElementText("title", "settings-heading");
+  setElementText("title", "settings-title");
 
   setElementText("localeLanguageLabel", "settings-language-label");
   setElementText("localeLanguageDescription", "settings-language-description");

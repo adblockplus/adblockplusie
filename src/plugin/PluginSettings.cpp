@@ -187,16 +187,6 @@ void CPluginSettings::SetWorkingThreadId(DWORD id)
   m_dwWorkingThreadId = id;
 }
 
-void CPluginSettings::SetFirstRun()
-{
-  m_isFirstRun = true;
-}
-
-bool CPluginSettings::IsFirstRun() const
-{
-  return m_isFirstRun;
-}
-
 void CPluginSettings::TogglePluginEnabled()
 {
   CPluginSettingsTabLock lock;
@@ -241,16 +231,6 @@ bool CPluginSettings::GetPluginEnabled() const
 {
   //TODO: Query AdblockPlusEngine
   return m_isPluginEnabledTab;
-}
-
-bool CPluginSettings::GetStatusBarAsked()
-{
-  return CPluginClient::GetInstance()->GetPref(L"statusbarasked", false);
-}
-
-void CPluginSettings::SetStatusBarAsked()
-{
-  CPluginClient::GetInstance()->SetPref(L"statusbarasked", true);
 }
 
 

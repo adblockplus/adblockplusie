@@ -8,6 +8,7 @@
 #include "../shared/Dictionary.h"
 #include "../shared/Utils.h"
 #include "../shared/Version.h"
+#include "../shared/CriticalSection.h"
 #include "Debug.h"
 #include "Updater.h"
 
@@ -38,6 +39,9 @@ namespace
                << subscription->IsListed();
     }
   }
+  
+  CriticalSection firstRunLock;
+  bool firstRunActionTaken = false;
 
   Communication::OutputBuffer HandleRequest(Communication::InputBuffer& request)
   {
@@ -211,6 +215,20 @@ namespace
         else if (valuePtr->IsString())
         {
           response << valuePtr->AsString();
+        }
+        break;
+      }
+      case Communication::PROC_IS_FIRST_RUN_ACTION_NEEDED:
+      {
+        CriticalSection::Lock lock(firstRunLock);
+        if (!firstRunActionTaken && filterEngine->IsFirstRun())
+        {
+          response << true;
+          firstRunActionTaken = true;
+        }
+        else
+        {
+          response << false;
         }
         break;
       }
