@@ -3,7 +3,7 @@
 #include <algorithm>
 #include "PluginSettings.h"
 #include "PluginClient.h"
-#include "PluginIniFileW.h"
+#include "../shared/Dictionary.h"
 
 static const CString s_GetMessage = L"GetMessage";
 static const CString s_GetLanguageCount = L"GetLanguageCount";
@@ -93,34 +93,20 @@ STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames
 static CString sGetLanguage()
 {
   CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  return settings->GetString(SETTING_LANGUAGE);
-}
-
-
-static bool sReadSettingsPageFile(CPluginIniFileW& iniFile)
-{
-  return iniFile.HasSection(sGetLanguage());
-}
-
-
-static CPluginIniFileW& sReadSettingsPageFile(bool& readOK)
-{
-  static CPluginIniFileW iniFile(CPluginSettings::GetDataPath(SETTING_PAGE_INI_FILE));
-  static bool s_readOK = iniFile.Read();
-
-  readOK = s_readOK;
-
-  return iniFile;
+  return settings->GetSubscription();
 }
 
 
 CStringW sGetMessage(const CString& key)
 {
-  bool readOK = false;
-  CPluginIniFileW& iniFile = sReadSettingsPageFile(readOK);
+  Dictionary* dictionary = Dictionary::GetInstance();
+  return CString(dictionary->Lookup("settings", std::string(CW2A(key))).c_str());
+}
 
-  return iniFile.GetValue(sGetLanguage(), key);
+std::wstring sGetMessage(const std::string& key)
+{
+  Dictionary* dictionary = Dictionary::GetInstance();
+  return dictionary->Lookup("settings", key);
 }
 
 

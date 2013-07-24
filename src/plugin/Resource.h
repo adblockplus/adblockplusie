@@ -24,13 +24,8 @@
 #define IDI_ICON_ENABLED                301
 #define IDI_ICON_DISABLED               302
 
-#define ID_ABOUT                        35001
-#define ID_INVITEFRIENDS                35002
 #define ID_SETTINGS                     35003
 #define ID_PLUGIN_ENABLE                35004
-#define ID_FAQ                          35007
-#define ID_PLUGIN_UPDATE                35008
-#define ID_FEEDBACK                     35013
 #define ID_WHITELISTDOMAIN              35014
 #define ID_BLACKLISTDOMAIN              35015
 #define ID_WHITELISTDOMAIN_ERROR        35016

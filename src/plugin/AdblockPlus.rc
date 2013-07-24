@@ -71,13 +71,6 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "Popup"
     BEGIN
-        MENUITEM "Update Adblock Plus",       ID_PLUGIN_UPDATE
-        MENUITEM "About Adblock Plus",        ID_ABOUT
-        MENUITEM SEPARATOR
-        MENUITEM "FAQ",                         ID_FAQ
-        MENUITEM "Feedback",                    ID_FEEDBACK
-        MENUITEM "Invite friends",              ID_INVITEFRIENDS
-        MENUITEM SEPARATOR
         MENUITEM "Settings",                    ID_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Enable plugin",               ID_PLUGIN_ENABLE

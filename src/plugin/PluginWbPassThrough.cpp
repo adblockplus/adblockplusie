@@ -8,7 +8,6 @@
 #endif
 #include "PluginSettings.h"
 #include "PluginClass.h"
-#include "PluginHttpRequest.h"
 #include "PluginSystem.h"
 
 #include "wtypes.h"

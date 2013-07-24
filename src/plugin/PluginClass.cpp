@@ -9,9 +9,7 @@
 #include "PluginMimeFilterClient.h"
 #include "PluginClient.h"
 #include "PluginClientFactory.h"
-#include "PluginHttpRequest.h"
 #include "PluginMutex.h"
-#include "DownloadSource.h"
 #include "sddl.h"
 #include "PluginUtil.h"
 #include "PluginUserSettings.h"
@@ -72,68 +70,18 @@ CPluginClass::CPluginClass()
 
   m_tab = new CPluginTab(this);
 
-  // Load / create settings
+  // Load settings (fetch the available subscriptions, if still not fetched)
   CPluginSettings* settings = CPluginSettings::GetInstance();
 
   CPluginSystem* system = CPluginSystem::GetInstance();
 
   std::wstring locale((LPCWSTR)system->GetBrowserLanguage());
   Dictionary::Create(locale);
-
-  bool isMainTab = settings->IncrementTabCount();
-
-  if (isMainTab)
-  {
-    // Prepare settings
-    settings->SetMainProcessId();
-    settings->SetMainUiThreadId();
-
-    // Ensure plugin version
-    if (!settings->Has(SETTING_PLUGIN_VERSION))
-    {
-      settings->SetString(SETTING_PLUGIN_VERSION, IEPLUGIN_VERSION);
-      settings->SetFirstRunUpdate();
-    }
-
-    // First run or deleted settings file (dictionary version = 1)
-    if (settings->GetString(SETTING_DICTIONARY_VERSION, L"1").Compare(L"1") == 0)
-    {
-      settings->SetFirstRun();
-    }
-
-    // Update?
-    CString oldVersion = settings->GetString(SETTING_PLUGIN_VERSION);
-    if (settings->IsFirstRunUpdate() || settings->GetString(SETTING_PLUGIN_UPDATE_VERSION) == IEPLUGIN_VERSION || oldVersion != IEPLUGIN_VERSION)
-    {
-      settings->SetString(SETTING_PLUGIN_VERSION, IEPLUGIN_VERSION);
-
-      settings->SetFirstRunUpdate();
-    }
-
-    int info = settings->GetValue(SETTING_PLUGIN_INFO_PANEL, 0);
-
-#ifdef ENABLE_DEBUG_RESULT
-    CPluginDebug::DebugResultClear();
-#endif
-
-#ifdef ENABLE_DEBUG_INFO
-    if (info == 0 || info > 2)
-    {
-      CPluginDebug::DebugClear();
-    }
-#endif // ENABLE_DEBUG_INFO
-
-    settings->Write(false);
-  }
 }
 
 CPluginClass::~CPluginClass()
 {
   delete m_tab;
-
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  settings->DecrementTabCount();
 }
 
 
@@ -266,41 +214,6 @@ CString CPluginClass::GetBrowserUrl() const
   return url;
 }
 
-void CPluginClass::LaunchUpdater(const CString& strPath)
-{
-  PROCESS_INFORMATION pi;
-  ::ZeroMemory(&pi, sizeof(pi));
-
-  STARTUPINFO si;
-  ::ZeroMemory(&si, sizeof(si));
-  si.cb = sizeof(si);
-  si.wShowWindow = FALSE;
-  CString cpath;
-  if (strPath.Find(L".exe") == strPath.GetLength() - 4)
-  {
-    cpath = strPath;
-  }
-  else
-  {
-    cpath = _T("\"msiexec.exe\" /i \"") + strPath + _T("\" UPDATEPLUGIN=\"True\"");
-  }
-
-  if (!::CreateProcess(NULL, cpath.GetBuffer(), NULL, NULL, FALSE, CREATE_BREAKAWAY_FROM_JOB, NULL, NULL, &si, &pi))
-  {
-    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UPDATER, PLUGIN_ERROR_UPDATER_CREATE_PROCESS, "Class::Updater - Failed to start process");
-    return;
-  }
-#ifndef AUTOMATIC_SHUTDOWN
-  else
-  {
-    ::WaitForSingleObject(pi.hProcess, INFINITE);
-  }
-#endif // not AUTOMATIC_SHUTDOWN
-
-  ::CloseHandle(pi.hProcess);
-  ::CloseHandle(pi.hThread);
-}
-
 DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 {
   if (thisPtr == NULL)
@@ -333,14 +246,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
   if (unknownSite)
   {
-    if (settings->IsMainProcess() && settings->IsMainUiThread())
-    {
-      DEBUG_GENERAL(L"================================================================================\nMAIN TAB UI\n================================================================================")
-    }
-    else
-    {
-      DEBUG_GENERAL(L"================================================================================\nNEW TAB UI\n================================================================================")
-    }
+    DEBUG_GENERAL(L"================================================================================\nNEW TAB UI\n================================================================================")
 
     HRESULT hr = ::CoInitialize(NULL);
     if (FAILED(hr))
@@ -465,15 +371,6 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     {
       s_instances.Remove(this);
 
-      if (s_instances.GetSize() == 0)
-      {
-        if (settings->IsMainProcess() && settings->IsMainUiThread())
-        {
-          hMainThread = s_hMainThread;
-          s_hMainThread = NULL;
-        }
-      }
-
       std::map<DWORD,CPluginClass*>::iterator it = s_threadInstances.find(::GetCurrentThreadId());
       if (it != s_threadInstances.end())
       {
@@ -486,14 +383,6 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     }
     s_criticalSectionLocal.Unlock();
 
-    if (hMainThread != NULL)
-    {
-      s_isMainThreadDone = true;
-
-      ::WaitForSingleObject(hMainThread, INFINITE);
-      ::CloseHandle(hMainThread);
-    }
-
     // Release browser interface
     s_criticalSectionBrowser.Lock();
     {
@@ -501,14 +390,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     }
     s_criticalSectionBrowser.Unlock();
 
-    if (settings->IsMainProcess() && settings->IsMainUiThread())
-    {
-      DEBUG_GENERAL("================================================================================\nMAIN TAB UI - END\n================================================================================")
-    }
-    else
-    {
-      DEBUG_GENERAL("================================================================================\nNEW TAB UI - END\n================================================================================")
-    }
+    DEBUG_GENERAL("================================================================================\nNEW TAB UI - END\n================================================================================")
 
     ::CoUninitialize();
   }
@@ -556,13 +438,12 @@ void CPluginClass::ShowStatusBar()
     {
       if (!isVisible)
       {
-        if (!settings->GetBool("statusbarasked", false))
+        if (!settings->GetStatusBarAsked())
         {
           SHANDLE_PTR pBrowserHWnd;
           browser->get_HWND((SHANDLE_PTR*)&pBrowserHWnd);
           Dictionary* dictionary = Dictionary::GetInstance();
-          settings->SetBool("statusbarasked", true);
-          settings->Write();
+          settings->SetStatusBarAsked();
 
           HKEY pHkey;
           HKEY pHkeySub;
@@ -942,22 +823,6 @@ bool CPluginClass::InitObject(bool bBHO)
   }
 
   CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  // Create main thread
-  if (GetMainThreadHandle() == NULL && settings->IsMainProcess() && settings->IsMainUiThread())
-  {
-    DWORD id;
-    HANDLE handle = ::CreateThread(NULL, 0, MainThreadProc, (LPVOID)m_tab, CREATE_SUSPENDED, &id);
-    if (handle == NULL)
-    {
-      DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, "Class::Thread - Failed to create main thread");
-    }
-
-    s_hMainThread = handle;
-
-    ::ResumeThread(handle);
-  }
-
   return true;
 }
 
@@ -1134,8 +999,7 @@ bool CPluginClass::CreateStatusBarPane()
   SendMessage(m_hStatusBarWnd, WM_PAINT, (WPARAM)hdc, 0);
   ReleaseDC(m_hStatusBarWnd, hdc);
   return true;
-}/////////////////////////////////////////////////////////////////////////////
-// Implementation
+}
 
 void CPluginClass::CloseTheme()
 {
@@ -1400,49 +1264,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
       s_criticalSectionLocal.Unlock();
     }
     break;
-#ifndef ENTERPRISE
-  case ID_SETTINGS:
-    {
-      url = CString(UserSettingsFileUrl().c_str());
-    }
-    break;
-#endif
-  case ID_INVITEFRIENDS:
-    {
-      url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_INVITATION);
-      navigationErrorId = PLUGIN_ERROR_NAVIGATION_INVITATION;
-    }
-    break;
-
-  case ID_FAQ:
-    {
-      url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_FAQ);
-      navigationErrorId = PLUGIN_ERROR_NAVIGATION_FAQ;
-    }
-    break;
-
-  case ID_FEEDBACK:
-    {
-      CPluginHttpRequest httpRequest(USERS_SCRIPT_FEEDBACK);
-
-      httpRequest.AddPluginId();
-      httpRequest.Add("reason", 0);
-      httpRequest.Add(L"url", m_tab->GetDocumentUrl(), false);
-
-      url = httpRequest.GetUrl();
-      navigationErrorId = PLUGIN_ERROR_NAVIGATION_FEEDBACK;
-    }
-    break;
-
-  case ID_ABOUT:
-    {
-      url = CPluginHttpRequest::GetStandardUrl(USERS_SCRIPT_ABOUT);
-      navigationErrorId = PLUGIN_ERROR_NAVIGATION_ABOUT;
-    }
-    break;
-
   default:
-
     break;
   }
 
@@ -1505,11 +1327,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 
   CPluginSettings* settings = CPluginSettings::GetInstance();
 
-  settings->RefreshTab();
-
-  // Update settings
-  m_tab->OnUpdateSettings(false);
-
 #ifdef SUPPORT_WHITELIST
   {
     // White list domain
@@ -1529,38 +1346,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   }
 #endif // SUPPORT_WHITELIST
 
-  // Invite friends
-  ctext = dictionary->Lookup("menu", "invite");
-  fmii.fMask  = MIIM_STATE | MIIM_STRING;
-  fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-  fmii.cch = ctext.size();
-  ::SetMenuItemInfoW(hMenu, ID_INVITEFRIENDS, FALSE, &fmii);
-
-  // FAQ
-  ctext = dictionary->Lookup("menu", "faq");
-  fmii.fMask  = MIIM_STATE | MIIM_STRING;
-  fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-  fmii.cch = ctext.size();
-  ::SetMenuItemInfoW(hMenu, ID_FAQ, FALSE, &fmii);
-
-  // About
-  ctext = dictionary->Lookup("menu", "about");
-  fmii.fMask = MIIM_STATE | MIIM_STRING;
-  fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-  fmii.cch = ctext.size();
-  ::SetMenuItemInfoW(hMenu, ID_ABOUT, FALSE, &fmii);
-
-  // Feedback
-  ctext = dictionary->Lookup("menu", "feedback");
-  fmii.fMask = MIIM_STATE | MIIM_STRING;
-  fmii.fState = MFS_ENABLED;
-  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-  fmii.cch = ctext.size();
-  ::SetMenuItemInfoW(hMenu, ID_FEEDBACK, FALSE, &fmii);
-
   // Plugin enable
   if (settings->GetPluginEnabled())
   {
@@ -1577,17 +1362,12 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   ::SetMenuItemInfoW(hMenu, ID_PLUGIN_ENABLE, FALSE, &fmii);
 
   // Settings
-#ifndef ENTERPRISE
   ctext = dictionary->Lookup("menu", "settings");
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.fState = MFS_ENABLED;
   fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
   fmii.cch = ctext.size();
   ::SetMenuItemInfoW(hMenu, ID_SETTINGS, FALSE, &fmii);
-#else
-  RemoveMenu(hMenu, ID_SETTINGS, MF_BYCOMMAND);
-  RemoveMenu(hMenu, 5, MF_BYPOSITION);
-#endif
 
   return true;
 }
@@ -1952,9 +1732,9 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
     }
     break;
 
-#ifndef ENTERPRISE
 
-  case WM_LAUNCH_INFO:
+    // First run page 
+    case WM_LAUNCH_INFO:
     {
       // Set the status bar visible, if it isn't
       // Otherwise the user won't see the icon the first time
@@ -1996,19 +1776,13 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 
           CPluginSettings* settings = CPluginSettings::GetInstance();
 
-          CPluginHttpRequest httpRequest(USERS_SCRIPT_WELCOME);
-
-          httpRequest.Add("errors", settings->GetErrorList());
-
-
-          hr = browser->Navigate(CComBSTR(httpRequest.GetUrl() + "&src=" + DOWNLOAD_SOURCE), NULL, NULL, NULL, NULL);
+          //TODO: Navigate to first run page here
+/*        hr = browser->Navigate(CComBSTR("FIRST_RUN_PAGE_URL"), NULL, NULL, NULL, NULL);
           if (FAILED(hr))
           {
             DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_WELCOME, "Navigation::Welcome page failed")
           }
-
-          // Update settings server side on next IE start, as they have possibly changed
-          settings->ForceConfigurationUpdateOnStart();
+          */
         }
       }
       else
@@ -2017,15 +1791,12 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
         if (browser)
         {
-          CPluginHttpRequest httpRequest(USERS_SCRIPT_INFO);
-
-          httpRequest.Add("info", wParam);
-
           VARIANT vFlags;
           vFlags.vt = VT_I4;
           vFlags.intVal = navOpenInNewTab;
 
-          HRESULT hr = browser->Navigate(CComBSTR(httpRequest.GetUrl()), &vFlags, NULL, NULL, NULL);
+          // TODO: Navigate to info page here or remove this clause
+/*          HRESULT hr = browser->Navigate(CComBSTR(INFO_PAGE_URL), &vFlags, NULL, NULL, NULL);
           if (FAILED(hr))
           {
             vFlags.intVal = navOpenInNewWindow;
@@ -2036,11 +1807,11 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
               DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_INFO, "Navigation::Info page failed")
             }
           }
+          */
         }
       }
     }
     break;
-#endif
 
   case WM_DESTROY:
     break;

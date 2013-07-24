@@ -112,15 +112,6 @@ void InitPlugin(bool isInstall)
 
   CPluginSettings* settings = CPluginSettings::GetInstance();
 
-  settings->SetMainProcessId();
-  settings->EraseTab();
-
-  settings->Remove(SETTING_PLUGIN_SELFTEST);
-  settings->SetValue(SETTING_PLUGIN_INFO_PANEL, isInstall ? 1 : 2);
-
-
-  settings->Write();
-
   if (isInstall)
   {
     DEBUG_GENERAL(
@@ -132,27 +123,9 @@ void InitPlugin(bool isInstall)
   {
     DEBUG_GENERAL(
       L"================================================================================\nUPDATER " +
-      CString(IEPLUGIN_VERSION) + L" (UPDATED FROM " + settings->GetString(SETTING_PLUGIN_VERSION) + L")"
+      CString(IEPLUGIN_VERSION) +
       L"\n================================================================================")
   }
-
-  // Create default filters
-#ifdef SUPPORT_FILTER
-  //    DEBUG_GENERAL(L"*** Generating default filters")
-  //    CPluginFilter::CreateFilters();
-#endif
-
-  // Force creation of default config file
-#ifdef SUPPORT_CONFIG
-  DEBUG_GENERAL("*** Generating config file")
-    CPluginConfig* config = CPluginConfig::GetInstance();
-  config->Create(true);
-#endif
-
-  HKEY hKey = NULL;
-  DWORD dwDisposition = 0;
-
-  DWORD dwResult = NULL;
 
   // Post async plugin error
   CPluginError pluginError;

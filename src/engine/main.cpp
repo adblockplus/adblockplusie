@@ -143,6 +143,78 @@ namespace
         filterEngine->GetFilter(text)->RemoveFromList();
         break;
       }
+      case Communication::PROC_SET_PREF:
+      {
+        std::string prefName;
+        request >> prefName;
+
+        Communication::ValueType valueType = request.GetType();
+        switch (valueType)
+        {
+        case Communication::TYPE_STRING:
+          {
+            std::string prefValue;
+            request >> prefValue;
+            filterEngine->SetPref(prefName, filterEngine->GetJsEngine()->NewValue(prefValue));
+            break;
+          }
+        case Communication::TYPE_INT64:
+          {
+            int64_t prefValue;
+            request >> prefValue;
+            filterEngine->SetPref(prefName, filterEngine->GetJsEngine()->NewValue(prefValue));
+            break;
+          }
+        case Communication::TYPE_INT32:
+          {
+            int prefValue;
+            request >> prefValue;
+            filterEngine->SetPref(prefName, filterEngine->GetJsEngine()->NewValue(prefValue));
+            break;
+          }
+        case Communication::TYPE_BOOL:
+          {
+            bool prefValue;
+            request >> prefValue;
+            filterEngine->SetPref(prefName, filterEngine->GetJsEngine()->NewValue(prefValue));
+            break;
+          }
+        default:
+          break;
+        }
+        break;
+      }
+      case Communication::PROC_GET_PREF:
+      {
+        std::string name;
+        request >> name;
+
+        AdblockPlus::JsValuePtr valuePtr = filterEngine->GetPref(name);
+        if (valuePtr->IsNull() || valuePtr->IsUndefined())
+        {
+          // Report no success
+          response << false;
+          break;
+        }
+
+        // Report success
+        response << true;
+        
+        if (valuePtr->IsBool())
+        {
+          response << valuePtr->AsBool();
+        }
+        else if (valuePtr->IsNumber())
+        {
+          response << valuePtr->AsInt();
+        }
+        else if (valuePtr->IsString())
+        {
+          response << valuePtr->AsString();
+        }
+        break;
+      }
+
     }
     return response;
   }

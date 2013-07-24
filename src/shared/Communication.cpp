@@ -44,6 +44,15 @@ void Communication::InputBuffer::CheckType(Communication::ValueType expectedType
     hasType = false;
 }
 
+Communication::ValueType Communication::InputBuffer::GetType()
+{
+  if (!hasType)
+    ReadBinary(currentType);
+
+  hasType = true;
+  return currentType;
+}
+
 Communication::PipeConnectionError::PipeConnectionError()
     : std::runtime_error(AppendErrorCode("Unable to connect to a named pipe"))
 {

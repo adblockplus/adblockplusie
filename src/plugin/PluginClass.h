@@ -23,12 +23,6 @@
 
 #ifdef SUPPORT_WHITELIST
 #define WM_WHITELIST_DOMAIN		        (WM_LAUNCH_INFO + 1)
-#define WM_WHITELIST_DOMAIN_MAX	        (WM_WHITELIST_DOMAIN + DOMAIN_HISTORY_MAX_COUNT + 1)
-#define WM_WHITELIST_DOMAIN_SUPPORT		(WM_WHITELIST_DOMAIN_MAX + 1)
-#define WM_WHITELIST_DOMAIN_SUPPORT_MAX	(WM_WHITELIST_DOMAIN_SUPPORT + DOMAIN_HISTORY_MAX_COUNT + 1)
-#define WM_WHITELIST_DOMAIN_ERROR		    (WM_WHITELIST_DOMAIN_SUPPORT_MAX + 1)
-#define WM_WHITELIST_DOMAIN_ERROR_MAX	    (WM_WHITELIST_DOMAIN_ERROR + DOMAIN_HISTORY_MAX_COUNT + 1)
-#define WM_GROUP2_START                    (WM_WHITELIST_DOMAIN_ERROR_MAX + 1)
 #else
 #define WM_GROUP2_START                    (WM_LAUNCH_INFO + 1)
 #endif
@@ -122,7 +116,6 @@ private:
   void UpdateTheme();
 
   static HICON GetStatusBarIcon(const CString& url);
-  static void LaunchUpdater(const CString& path);
   static CPluginClass* FindInstance(HWND hStatusBarWnd);
   static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
   static LRESULT CALLBACK PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

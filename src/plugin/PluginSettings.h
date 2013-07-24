@@ -58,29 +58,10 @@ public:
 private:
 
   bool m_isFirstRun;
-  bool m_isFirstRunUpdate;
 
-  DWORD m_dwMainProcessId;
-  DWORD m_dwMainThreadId;
-  DWORD m_dwMainUiThreadId;
   DWORD m_dwWorkingThreadId;
 
-  CString m_tabNumber;
-
-  CPluginSettings::TProperties m_properties;
-
-  bool m_isDirty;
-
-  CString m_settingsVersion;
-  std::auto_ptr<CPluginIniFileW> m_settingsFile;
-
-
   static CComAutoCriticalSection s_criticalSectionLocal;
-#ifdef SUPPORT_WHITELIST
-  static CComAutoCriticalSection s_criticalSectionDomainHistory;
-#endif
-
-  bool m_isPluginSelftestEnabled;
 
   void Clear();
 
@@ -92,52 +73,14 @@ public:
 
   static CPluginSettings* s_instance;
 
-  static bool s_isLightOnly;
   static bool HasInstance();
   static CPluginSettings* GetInstance();
 
-  bool Read(bool bDebug=true);
-  bool Write(bool bDebug=true);
-
   static CString GetDataPath(const CString& filename=L"");
-
-  static CString GetTempPath(const CString& filename=L"");
-  static CString GetTempFile(const CString& prefix, const CString& extension=L"");
-
-  bool Has(const CString& key) const;
-  void Remove(const CString& key);
-
-  CString GetPluginId();
-
-  CString GetString(const CString& key, const CString& defaultValue=L"") const;
-  void SetString(const CString& key, const CString& value);
-
-  int GetValue(const CString& key, int defaultValue=0) const;
-  void SetValue(const CString& key, int value);
-
-  bool GetBool(const CString& key, bool defaultValue) const;
-  void SetBool(const CString& key, bool value);
 
   bool IsPluginEnabled() const;
 
-  bool IsPluginSelftestEnabled();
-
-  bool FilterlistExpired(CString filterlist) const;
-  bool SetFilterRefreshDate(CString filterlist, time_t refreshtime);
-
   std::map<CString, CString> GetFilterLanguageTitleList() const;
-
-  void SetMainProcessId();
-  void SetMainProcessId(DWORD id);
-  bool IsMainProcess(DWORD dwProcessId=0) const;
-
-  void SetMainUiThreadId();
-  void SetMainUiThreadId(DWORD id);
-  bool IsMainUiThread(DWORD dwThread=0) const;
-
-  void SetMainThreadId();
-  void SetMainThreadId(DWORD id);
-  bool IsMainThread(DWORD dwThread=0) const;
 
   void SetWorkingThreadId();
   void SetWorkingThreadId(DWORD id);
@@ -146,37 +89,14 @@ public:
   void SetFirstRun();
   bool IsFirstRun() const;
 
-  void SetFirstRunUpdate();
-  bool IsFirstRunUpdate() const;
-
-  bool IsFirstRunAny() const;
-
   static CString GetSystemLanguage();
   DWORD m_WindowsBuildNumber;
 
 private:
 
-  bool m_isDirtyTab;
   bool m_isPluginEnabledTab;
 
-  CPluginSettings::TProperties m_propertiesTab;
-  CPluginSettings::TProperties m_errorsTab;
-
-  std::auto_ptr<CPluginIniFileW> m_settingsFileTab;
-
-  void ClearTab();
-
-  bool ReadTab(bool bDebug=true);
-  bool WriteTab(bool bDebug=true);
-
 public:
-
-  void EraseTab();
-
-  CString GetTabNumber() const;
-
-  bool IncrementTabCount();
-  bool DecrementTabCount();
 
   void TogglePluginEnabled();
   void SetPluginDisabled();
@@ -184,17 +104,6 @@ public:
   bool GetPluginEnabled() const;
 
   void AddError(const CString& error, const CString& errorCode);
-  CString GetErrorList() const;
-  void RemoveErrors();
-
-  bool GetForceConfigurationUpdateOnStart() const;
-  void ForceConfigurationUpdateOnStart(bool isUpdating=true);
-  void RemoveForceConfigurationUpdateOnStart();
-
-  void RefreshTab();
-
-  int GetTabVersion(const CString& key) const;
-  void IncrementTabVersion(const CString& key);
 
   // Settings whitelist
 #ifdef SUPPORT_WHITELIST
@@ -218,8 +127,9 @@ public:
   void SetSubscription(const std::wstring& url);
   void SetDefaultSubscription();
   CString GetSubscription();
-  void RefreshFilterlist();
 
+  bool GetStatusBarAsked();
+  void SetStatusBarAsked();
   std::vector<SubscriptionDescription> m_subscriptions;
 };
 

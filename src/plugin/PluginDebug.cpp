@@ -44,22 +44,12 @@ void CPluginDebug::Debug(const CString& text, DWORD dwProcessId, DWORD dwThreadI
     bool isWorkingThread = settings->IsWorkingThread(dwThreadId);
 
     CString processor;
-    if (settings->IsMainProcess(dwProcessId) && settings->IsMainThread(dwThreadId))
-    {
-      processor = L"main_thread";
-    }
-    else if (settings->IsMainProcess(dwProcessId) && settings->IsMainUiThread(dwThreadId))
-    {
-      processor = L"main_ui";
-    }
-    else if (isWorkingThread)
-    {
-      processor = L"tab" + settings->GetTabNumber() + L"_thread";
-    }
+    wchar_t tmp[10];
+    _itow_s(::GetCurrentProcessId(), tmp, 10);
+    if (isWorkingThread)
+      processor = L"tab" + CString(tmp) + L"_thread";
     else
-    {
-      processor = L"tab" + settings->GetTabNumber() + L"_ui";
-    }
+      processor = L"tab" + CString(tmp) + L"_ui";
 #else
     if (dwProcessId == 0)
     {
