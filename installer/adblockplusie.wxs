@@ -262,23 +262,31 @@
       Also, ComponentGroup is not a valid child of ComponentGroup, so subdirectories are linked by reference.
     -->
     <ComponentGroup Id="HTML_Tree">
+      <ComponentRef Id="html_static_css_firstRun.css"/>
       <ComponentRef Id="html_static_css_settings.css"/>
       <ComponentRef Id="html_static_img_abp.128.png"/>
+      <ComponentRef Id="html_static_img_ajax_loader.gif"/>
       <ComponentRef Id="html_static_img_background.png"/>
       <ComponentRef Id="html_static_img_bb_disable.png"/>
       <ComponentRef Id="html_static_img_bb_disable_active.png"/>
+      <ComponentRef Id="html_static_img_bb_donate.png"/>
       <ComponentRef Id="html_static_img_bb_enable.png"/>
       <ComponentRef Id="html_static_img_bb_enable_active.png"/>
+      <ComponentRef Id="html_static_img_checkmark.png"/>
       <ComponentRef Id="html_static_img_features_language.png"/>
-      <ComponentRef Id="html_static_img_features_whitelist.png"/>
       <ComponentRef Id="html_static_img_features_adblocking.png"/>
       <ComponentRef Id="html_static_img_social_facebook.png"/>
+      <ComponentRef Id="html_static_img_social_facebook_old.png"/>
       <ComponentRef Id="html_static_img_social_gplus.png"/>
+      <ComponentRef Id="html_static_img_social_gplus_old.png"/>
       <ComponentRef Id="html_static_img_social_twitter.png"/>
+      <ComponentRef Id="html_static_img_social_twitter_old.png"/>
+      <ComponentRef Id="html_static_js_firstRun.js"/>
       <ComponentRef Id="html_static_js_IESettings.js"/>
       <ComponentRef Id="html_static_js_settings.js"/>
       <ComponentRef Id="html_static_js_vendor_DD.belatedPNG.js"/>
       <ComponentRef Id="html_static_js_vendor_html5shiv.js"/>
+      <ComponentRef Id="html_templates_firstRun.html"/>
       <ComponentRef Id="html_templates_index.html"/>
     </ComponentGroup>
 
@@ -286,6 +294,9 @@
       <Directory Id="html" FileSource="..\html">
         <Directory Name="static" Id="html_static">
           <Directory Name="css" Id="html_static_css">
+            <Component Id="html_static_css_firstRun.css" Guid="facb02d0-f073-11e2-b778-0800200c9a66">
+              <File Name="firstRun.css"/>
+            </Component>
             <Component Id="html_static_css_settings.css" Guid="07173c90-d713-11e2-8b8b-0800200c9a66">
               <File Name="settings.css"/>
             </Component>
@@ -293,6 +304,9 @@
           <Directory Name="img" Id="html_static_img">
             <Component Id="html_static_img_abp.128.png" Guid="0d86ba60-d713-11e2-8b8b-0800200c9a66">
               <File Name="abp-128.png"/>
+            </Component>
+            <Component Id="html_static_img_ajax_loader.gif" Guid="10cdc6d0-f074-11e2-b778-0800200c9a66">
+              <File Name="ajax-loader.gif"/>
             </Component>
             <Component Id="html_static_img_background.png" Guid="407e5db0-d713-11e2-8b8b-0800200c9a66">
               <File Name="background.png"/>
@@ -304,6 +318,9 @@
               <Component Id="html_static_img_bb_disable_active.png" Guid="5c0db990-d713-11e2-8b8b-0800200c9a66">
                 <File Name="disable_active.png"/>
               </Component>
+              <Component Id="html_static_img_bb_donate.png" Guid="16c8ff00-f074-11e2-b778-0800200c9a66">
+                <File Name="donate.png"/>
+              </Component>
               <Component Id="html_static_img_bb_enable.png" Guid="5fab52b0-d713-11e2-8b8b-0800200c9a66">
                 <File Name="enable.png"/>
               </Component>
@@ -311,12 +328,12 @@
                 <File Name="enable_active.png"/>
               </Component>
             </Directory>
+            <Component Id="html_static_img_checkmark.png" Guid="210c1a10-f074-11e2-b778-0800200c9a66">
+              <File Name="checkmark.png"/>
+            </Component>
             <Directory Name="features" Id="html_static_img_features">
               <Component Id="html_static_img_features_language.png" Guid="72b8cb80-d713-11e2-8b8b-0800200c9a66">
                 <File Name="language.png"/>
-              </Component>
-              <Component Id="html_static_img_features_whitelist.png" Guid="7cc37170-d713-11e2-8b8b-0800200c9a66">
-                <File Name="whitelist.png"/>
               </Component>
               <Component Id="html_static_img_features_adblocking.png" Guid="7dd12150-d713-11e2-8b8b-0800200c9a66">
                 <File Name="adblocking.png"/>
@@ -326,15 +343,27 @@
               <Component Id="html_static_img_social_facebook.png" Guid="862e7c00-d713-11e2-8b8b-0800200c9a66">
                 <File Name="facebook.png"/>
               </Component>
+              <Component Id="html_static_img_social_facebook_old.png" Guid="26386980-f074-11e2-b778-0800200c9a66">
+                <File Name="facebook_old.png"/>
+              </Component>
               <Component Id="html_static_img_social_gplus.png" Guid="8de48390-d713-11e2-8b8b-0800200c9a66">
                 <File Name="gplus.png"/>
+              </Component>
+              <Component Id="html_static_img_social_gplus_old.png" Guid="2c0035a0-f074-11e2-b778-0800200c9a66">
+                <File Name="gplus_old.png"/>
               </Component>
               <Component Id="html_static_img_social_twitter.png" Guid="948152f0-d713-11e2-8b8b-0800200c9a66">
                 <File Name="twitter.png"/>
               </Component>
+              <Component Id="html_static_img_social_twitter_old.png" Guid="2c0035a1-f074-11e2-b778-0800200c9a66">
+                <File Name="twitter_old.png"/>
+              </Component>
             </Directory>
           </Directory>
           <Directory Name="js" Id="html_static_js">
+            <Component Id="html_static_js_firstRun.js" Guid="2c0035a2-f074-11e2-b778-0800200c9a66">
+              <File Name="firstRun.js"/>
+            </Component>
             <Component Id="html_static_js_IESettings.js" Guid="9e851b10-d713-11e2-8b8b-0800200c9a66">
               <File Name="IESettings.js"/>
             </Component>
@@ -352,6 +381,9 @@
           </Directory>
         </Directory>
         <Directory Name="templates" Id="html_templates">
+          <Component Id="html_templates_firstRun.html" Guid="3d423d40-f074-11e2-b778-0800200c9a66">
+            <File Name="firstRun.html"/>
+          </Component>
           <Component Id="html_templates_index.html" Guid="ba2259a0-d713-11e2-8b8b-0800200c9a66">
             <File Name="index.html"/>
           </Component>
