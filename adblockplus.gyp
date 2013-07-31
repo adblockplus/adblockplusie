@@ -45,6 +45,7 @@
     'sources': [
       'src/engine/main.cpp',
       'src/engine/Debug.cpp',
+      'src/engine/UpdateInstallDialog.cpp',
       'src/engine/Updater.cpp',
       'src/engine/engine.rc',
       '<@(shared_files)',

@@ -12,72 +12,14 @@
 #include "../shared/Utils.h"
 #include "Debug.h"
 #include "Resource.h"
+#include "UpdateInstallDialog.h"
 #include "Updater.h"
 
 namespace
 {
   typedef std::function<void()> ThreadCallbackType;
-  typedef std::function<void(HWND)> DialogCallbackType;
 
   const int DOWNLOAD_FAILED = 101;
-
-  LRESULT CALLBACK UpdateDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-  {
-    switch (msg)
-    {
-      case WM_INITDIALOG:
-      {
-        Dictionary* dict = Dictionary::GetInstance();
-        SetWindowTextW(hWnd, dict->Lookup("updater", "update-title").c_str());
-        SetDlgItemTextW(hWnd, IDC_UPDATETEXT, dict->Lookup("updater", "update-text").c_str());
-        SetDlgItemTextW(hWnd, IDC_DOYOU, dict->Lookup("updater", "update-question").c_str());
-        SetDlgItemTextW(hWnd, IDOK, dict->Lookup("general", "button-yes").c_str());
-        SetDlgItemTextW(hWnd, IDCANCEL, dict->Lookup("general", "button-no").c_str());
-        return TRUE;
-      }
-      case WM_COMMAND:
-      {
-        if (wParam == IDOK || wParam == IDCANCEL)
-        {
-          EndDialog(hWnd, wParam);
-          return TRUE;
-        }
-        break;
-      }
-    }
-
-    return FALSE;
-  }
-
-  LRESULT CALLBACK DownloadDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-  {
-    // TODO: Indicate progress
-
-    switch (msg)
-    {
-      case WM_INITDIALOG:
-      {
-        Dictionary* dict = Dictionary::GetInstance();
-        SetWindowTextW(hWnd, dict->Lookup("updater", "download-title").c_str());
-        SetDlgItemTextW(hWnd, IDC_INSTALLMSG, dict->Lookup("updater", "download-progress-text").c_str());
-        SetDlgItemTextW(hWnd, IDCANCEL, dict->Lookup("general", "button-cancel").c_str());
-
-        std::auto_ptr<DialogCallbackType> callback(reinterpret_cast<DialogCallbackType*>(lParam));
-        (*callback)(hWnd);
-        return TRUE;
-      }
-      case WM_COMMAND:
-      {
-        if (wParam == IDCANCEL)
-        {
-          EndDialog(hWnd, wParam);
-          return TRUE;
-        }
-        break;
-      }
-    }
-    return FALSE;
-  }
 
   DWORD RunThread(LPVOID param)
   {
@@ -141,51 +83,12 @@ Updater::Updater(AdblockPlus::JsEnginePtr jsEngine, const std::string& url)
 
 void Updater::Update()
 {
-  Debug("Update available: " + url);
-
-  if (DialogBox(NULL, MAKEINTRESOURCE(IDD_UPDATEDIALOG), GetDesktopWindow(),
-      reinterpret_cast<DLGPROC>(&UpdateDlgProc)) == IDOK)
-  {
-    Debug("User accepted update");
-
-    DialogCallbackType* callback = new DialogCallbackType(std::bind(&Updater::StartDownload,
-        this, std::placeholders::_1));
-    int result = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DOWNLOADDIALOG), GetDesktopWindow(),
-        reinterpret_cast<DLGPROC>(&DownloadDlgProc),
-        reinterpret_cast<LPARAM>(callback));
-    if (result == DOWNLOAD_FAILED)
-    {
-      Dictionary* dict = Dictionary::GetInstance();
-      MessageBoxW(NULL,
-          dict->Lookup("updater", "download-error-neterror").c_str(),
-          dict->Lookup("updater", "download-error-title").c_str(),
-          0);
-    }
-    if (result != IDOK)
-      return;
-
-    if (!InstallUpdate(tempFile))
-    {
-      DebugLastError("Running updater failed");
-
-      Dictionary* dict = Dictionary::GetInstance();
-      MessageBoxW(NULL,
-          dict->Lookup("updater", "download-error-runerror").c_str(),
-          dict->Lookup("updater", "download-error-title").c_str(),
-          0);
-    }
-  }
+  Debug("Downloading update: " + url);
+  ThreadCallbackType* callback = new ThreadCallbackType(std::bind(&Updater::Download, this));
+  ::CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(&RunThread), callback, 0, NULL);
 }
 
-void Updater::StartDownload(HWND dialog)
-{
-  this->dialog = dialog;
-  ThreadCallbackType* callback = new ThreadCallbackType(std::bind(&Updater::RunDownload, this));
-  ::CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(&RunThread),
-      callback, 0, NULL);
-}
-
-void Updater::RunDownload()
+void Updater::Download()
 {
   AdblockPlus::ServerResponse response = jsEngine->GetWebRequest()->GET(url, AdblockPlus::HeaderList());
   if (response.status != AdblockPlus::WebRequest::NS_OK ||
@@ -195,8 +98,6 @@ void Updater::RunDownload()
     ss << "Update download failed (status: " << response.status << ", ";
     ss << "response: " << response.responseStatus << ")";
     Debug(ss.str());
-
-    EndDialog(dialog, DOWNLOAD_FAILED);
     return;
   }
 
@@ -219,9 +120,26 @@ void Updater::RunDownload()
   catch (const std::exception& e)
   {
     DebugException(e);
-    EndDialog(dialog, DOWNLOAD_FAILED);
     return;
   }
 
-  EndDialog(dialog, IDOK);
+  OnDownloadSuccess();
+}
+
+void Updater::OnDownloadSuccess()
+{
+  UpdateInstallDialog dialog;
+  bool shouldInstall = dialog.Show();
+  if (shouldInstall)
+  {
+    if (!InstallUpdate(tempFile))
+    {
+      DebugLastError("Failed to install update");
+      Dictionary* dictionary = Dictionary::GetInstance();
+      MessageBoxW(
+        0, dictionary->Lookup("updater", "install-error-text").c_str(),
+        dictionary->Lookup("updater", "install-error-title").c_str(),
+        MB_OK | MB_ICONEXCLAMATION);
+    }
+  }
 }

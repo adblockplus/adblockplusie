@@ -16,8 +16,8 @@ private:
   std::wstring tempFile;
   HWND dialog;
 
-  void StartDownload(HWND dialog);
-  void RunDownload();
+  void Download();
+  void OnDownloadSuccess();
 };
 
 #endif // UPDATER_H
