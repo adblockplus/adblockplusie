@@ -61,7 +61,7 @@ namespace
     return alphabetRect.right / alphabet.length();
   }
 
-  HWND CreateText(HWND parent)
+  HWND CreateStaticText(HWND parent)
   {
     Dictionary* dictionary = Dictionary::GetInstance();
     std::wstring text = dictionary->Lookup("updater", "install-question-text");
@@ -165,9 +165,9 @@ namespace
 UpdateInstallDialog::UpdateInstallDialog()
 {
   window = CreateDialogWindow();
-  HWND text = CreateText(window);
+  HWND staticText = CreateStaticText(window);
   HWND buttons = CreateButtons(window);
-  UpdateSizes(window, text, buttons);
+  UpdateSizes(window, staticText, buttons);
 }
 
 UpdateInstallDialog::~UpdateInstallDialog()
