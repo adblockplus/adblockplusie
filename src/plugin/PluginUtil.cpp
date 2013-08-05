@@ -44,3 +44,21 @@ std::wstring FileUrl(const std::wstring& path)
   return L"file:///" + url;
 }
 
+CString ExtractDomain(const CString& url)
+{
+  int pos = 0;
+  if (url.Find('/', pos) >= 0)
+    url.Tokenize(L"/", pos);
+  CString domain = url.Tokenize(L"/", pos);
+  domain.MakeLower();
+  return domain;
+}
+
+void ReplaceString(std::wstring& input, const std::wstring placeholder, const std::wstring replacement)
+{
+  size_t replaceStart = input.find(placeholder);
+  if (replaceStart != std::string::npos)
+  {
+    input.replace(replaceStart, placeholder.length(), replacement);
+  }
+}

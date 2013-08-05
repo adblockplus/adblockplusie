@@ -1229,9 +1229,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
   CPluginSystem* system = CPluginSystem::GetInstance();
 
-  CString url;
-  int navigationErrorId = 0;
-
   // Create menu parent window
   HWND hMenuWnd = ::CreateWindowEx(
     NULL,
@@ -1260,7 +1257,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
   switch (nCommand)
   {
-  case ID_PLUGIN_ENABLE:
+  case ID_MENU_DISABLE:
     {
       CPluginSettings* settings = CPluginSettings::GetInstance();
 
@@ -1283,32 +1280,50 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
       s_criticalSectionLocal.Unlock();
     }
     break;
+  case ID_MENU_SETTINGS:
+    {
+      CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
+      if (browser)
+      {
+        VARIANT vFlags;
+        vFlags.vt = VT_I4;
+        vFlags.intVal = navOpenInNewTab;
+
+        BSTR urlToNavigate = BString(UserSettingsFileUrl());
+        HRESULT hr = browser->Navigate(urlToNavigate, &vFlags, NULL, NULL, NULL);
+        if (FAILED(hr))
+        {
+          vFlags.intVal = navOpenInNewWindow;
+
+          hr = browser->Navigate(urlToNavigate, &vFlags, NULL, NULL, NULL);
+          if (FAILED(hr))
+          {
+            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_SETTINGS, "Navigation::Failed")
+          }
+        }
+      }
+      break;
+    }
+  case ID_MENU_DISABLE_ON_SITE:
+    {
+      CPluginSettings* settings = CPluginSettings::GetInstance();
+      CString urlString = GetTab()->GetDocumentUrl();
+      if (client->IsWhitelistedUrl(std::wstring(urlString)))
+      {
+        settings->RemoveWhiteListedDomain(ExtractDomain(urlString));
+      }
+      else
+      {
+        settings->AddWhiteListedDomain(ExtractDomain(urlString));
+      }
+      GetBrowser()->Refresh();
+    }
   default:
     break;
   }
 
   // Invalidate and redraw the control
   UpdateStatusBar();
-
-  CComQIPtr<IWebBrowser2> browser = GetBrowser();
-  if (!url.IsEmpty() && browser)
-  {
-    VARIANT vFlags;
-    vFlags.vt = VT_I4;
-    vFlags.intVal = navOpenInNewTab;
-
-    HRESULT hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
-    if (FAILED(hr))
-    {
-      vFlags.intVal = navOpenInNewWindow;
-
-      hr = browser->Navigate(CComBSTR(url), &vFlags, NULL, NULL, NULL);
-      if (FAILED(hr))
-      {
-        DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, navigationErrorId, "Navigation::Failed")
-      }
-    }
-  }
 }
 
 
@@ -1348,45 +1363,51 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 
 #ifdef SUPPORT_WHITELIST
   {
-    // White list domain
-    ctext = dictionary->Lookup("menu", "disable-on-site");
+    ctext = dictionary->Lookup("menu", "menu-disable-on-site");
+    // Is domain in white list?
+    ReplaceString(ctext, L"?1?", ExtractDomain(url).GetString());
+    if (client->IsWhitelistedUrl(std::wstring(GetTab()->GetDocumentUrl())))
+    {
+      fmii.fState = MFS_CHECKED | MFS_ENABLED;
+    }
+    else
+    {
+      fmii.fState = MFS_UNCHECKED | MFS_ENABLED;
+    }
     fmii.fMask = MIIM_STRING | MIIM_STATE;
-    fmii.fState = MFS_DISABLED;
     fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
     fmii.cch = ctext.size();
 
-    UINT index = WM_WHITELIST_DOMAIN;
-
-    ::SetMenuItemInfoW(hMenu, ID_WHITELISTDOMAIN, FALSE, &fmii);
+    ::SetMenuItemInfoW(hMenu, ID_MENU_DISABLE_ON_SITE, FALSE, &fmii);
   }
 #else
   {
-    ::DeleteMenu(hMenu, ID_WHITELISTDOMAIN, FALSE);
+    ::DeleteMenu(hMenu, ID_MENU_DISABLE_ON_SITE, FALSE);
   }
 #endif // SUPPORT_WHITELIST
 
   // Plugin enable
+  ctext = dictionary->Lookup("menu", "menu-disable");
   if (settings->GetPluginEnabled())
   {
-    ctext = dictionary->Lookup("menu", "disable");
+    fmii.fState = MFS_UNCHECKED | MFS_ENABLED;
   }
   else
   {
-    ctext = dictionary->Lookup("menu", "enable");
+    fmii.fState = MFS_CHECKED | MFS_ENABLED;
   }
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
-  fmii.fState = client ? MFS_ENABLED : MFS_DISABLED;
   fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
   fmii.cch = ctext.size();
-  ::SetMenuItemInfoW(hMenu, ID_PLUGIN_ENABLE, FALSE, &fmii);
+  ::SetMenuItemInfoW(hMenu, ID_MENU_DISABLE, FALSE, &fmii);
 
   // Settings
-  ctext = dictionary->Lookup("menu", "settings");
+  ctext = dictionary->Lookup("menu", "menu-settings");
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.fState = MFS_ENABLED;
   fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
   fmii.cch = ctext.size();
-  ::SetMenuItemInfoW(hMenu, ID_SETTINGS, FALSE, &fmii);
+  ::SetMenuItemInfoW(hMenu, ID_MENU_SETTINGS, FALSE, &fmii);
 
   return true;
 }
@@ -1578,12 +1599,7 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
 #endif // SUPPORT_WHITELIST
     else
     {
-      //Deativate adblock icon if adblock limit reached
       CPluginSettings* settings = CPluginSettings::GetInstance();
-      if (!settings->GetPluginEnabled()) {
-        hIcon = GetIcon(ICON_PLUGIN_DEACTIVATED);
-        return hIcon;
-      }
       hIcon = GetIcon(ICON_PLUGIN_ENABLED);
     }
 
@@ -1705,7 +1721,6 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         pClass->GetTab()->SetDocumentUrl(strURL);
       }
 
-#ifdef SUPPORT_SHOW_PLUGIN_MENU
       // Create menu
       HMENU hMenu = pClass->CreatePluginMenu(strURL);
       if (!hMenu)
@@ -1727,27 +1742,6 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
       }
 
       pClass->DisplayPluginMenu(hMenu, -1, pt, TPM_LEFTALIGN|TPM_BOTTOMALIGN);
-#else
-      CComQIPtr<IWebBrowser2> browser = GetAsyncBrowser();
-      if (browser)
-      {
-        VARIANT vFlags;
-        vFlags.vt = VT_I4;
-        vFlags.intVal = navOpenInNewTab;
-
-        HRESULT hr = browser->Navigate(BString(UserSettingsFileUrl()), &vFlags, NULL, NULL, NULL);
-        if (FAILED(hr))
-        {
-          vFlags.intVal = navOpenInNewWindow;
-
-          hr = browser->Navigate(BString(UserSettingsFileUrl()), &vFlags, NULL, NULL, NULL);
-          if (FAILED(hr))
-          {
-            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_NAVIGATION, PLUGIN_ERROR_NAVIGATION_SETTINGS, "Navigation::Failed")
-          }
-        }
-      }
-#endif
     }
     break;
   case WM_DESTROY:
