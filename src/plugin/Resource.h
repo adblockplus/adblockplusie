@@ -24,12 +24,9 @@
 #define IDI_ICON_ENABLED                301
 #define IDI_ICON_DISABLED               302
 
-#define ID_SETTINGS                     35003
-#define ID_PLUGIN_ENABLE                35004
-#define ID_WHITELISTDOMAIN              35014
-#define ID_BLACKLISTDOMAIN              35015
-#define ID_WHITELISTDOMAIN_ERROR        35016
-#define ID_WHITELISTDOMAIN_SUPPORT      35017
+#define ID_MENU_SETTINGS                35003
+#define ID_MENU_DISABLE                 35004
+#define ID_MENU_DISABLE_ON_SITE         35014
 
 #define IDT_TIMER                       35100
 

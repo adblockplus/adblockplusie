@@ -25,18 +25,6 @@ int CPluginTabBase::s_whitelistVersion = 0;
 int CPluginTabBase::s_configVersion = 0;
 #endif
 
-namespace
-{
-  CString ExtractDomain(const CString& url)
-  {
-    int pos = 0;
-    if (url.Find('/', pos) >= 0)
-      url.Tokenize(L"/", pos);
-    CString domain = url.Tokenize(L"/", pos);
-    domain.MakeLower();
-    return domain;
-  }
-}
 
 CPluginTabBase::CPluginTabBase(CPluginClass* plugin) : m_plugin(plugin), m_isActivated(false)
 {
@@ -115,7 +103,10 @@ void CPluginTabBase::OnNavigate(const CString& url)
 void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
 {
 #ifdef SUPPORT_DOM_TRAVERSER
-  m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
+  if (!CPluginClient::GetInstance()->IsWhitelistedUrl(std::wstring(GetDocumentUrl())))
+  {
+    m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
+  }
 #endif // SUPPORT_DOM_TRAVERSER
 }
 

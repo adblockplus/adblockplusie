@@ -307,7 +307,7 @@ void CAdblockPlusClient::UpdateAllSubscriptions()
 std::vector<std::wstring> CAdblockPlusClient::GetExceptionDomains()
 {
   Communication::InputBuffer response;
-  if (!CallEngine(Communication::PROC_GET_EXCEPTION_DOMAINS)) 
+  if (!CallEngine(Communication::PROC_GET_EXCEPTION_DOMAINS, response)) 
     return std::vector<std::wstring>();
   return ReadStrings(response);
 }
@@ -315,7 +315,7 @@ std::vector<std::wstring> CAdblockPlusClient::GetExceptionDomains()
 bool CAdblockPlusClient::IsFirstRun()
 {
   Communication::InputBuffer response;
-  if (!CallEngine(Communication::PROC_IS_FIRST_RUN_ACTION_NEEDED, &response)) return false;
+  if (!CallEngine(Communication::PROC_IS_FIRST_RUN_ACTION_NEEDED, response)) return false;
   bool res;
   response >> res;
   return res;

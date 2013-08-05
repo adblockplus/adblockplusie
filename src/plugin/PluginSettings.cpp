@@ -216,21 +216,11 @@ void CPluginSettings::SetPluginDisabled()
 }
 void CPluginSettings::SetPluginEnabled()
 {
-  CPluginSettingsTabLock lock;
-  if (lock.IsLocked())
-  {
-    s_criticalSectionLocal.Lock();
-    {
-      m_isPluginEnabledTab = true;
-      //TODO: Set plugin enabled in AdblockPlusEngine
-    }
-    s_criticalSectionLocal.Unlock();
-  }
+  CPluginClient::GetInstance()->SetPref(L"enabled", true);
 }
 bool CPluginSettings::GetPluginEnabled() const
 {
-  //TODO: Query AdblockPlusEngine
-  return m_isPluginEnabledTab;
+  return CPluginClient::GetInstance()->GetPref(L"enabled", true);
 }
 
 
