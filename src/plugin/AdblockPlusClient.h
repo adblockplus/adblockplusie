@@ -32,8 +32,6 @@ private:
 
   // Private constructor used by the singleton pattern
   CAdblockPlusClient();
-
-  void PostRequest(Communication::OutputBuffer request);
 public:
 
   static CAdblockPlusClient* s_instance;
