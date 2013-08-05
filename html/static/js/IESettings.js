@@ -38,6 +38,8 @@ function initLanguageSettings()
   setElementText("manageExceptions", "settings-exceptions-manage-label");
   setElementText("addDomain", "settings-exceptions-add-label");
   setElementText("removeDomains", "settings-exceptions-remove-label");
+
+  setElementText("localeWorthSharing", "settings-share-label");
    
   var optionsLanguage = document.getElementById("language");
 
