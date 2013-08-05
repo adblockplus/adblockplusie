@@ -1006,18 +1006,14 @@ void CPluginClass::FirstRunThread()
   vFlags.vt = VT_I4;
   vFlags.intVal = navOpenInNewTab;
 
-  CComBSTR bTest = CComBSTR(UserSettingsFirstRunPageUrl().c_str());
+  CComBSTR navigatePath = CComBSTR(FirstRunPageFileUrl().c_str());
   
-  //Try 10 times, or until successful
-  int numberOfAttempts = 0;
-  HRESULT hr = S_FALSE;
-  hr = GetAsyncBrowser()->Navigate(bTest, &vFlags, NULL, NULL, NULL);
+  HRESULT hr = GetAsyncBrowser()->Navigate(navigatePath, &vFlags, NULL, NULL, NULL);
   if (FAILED(hr))
   {
     vFlags.intVal = navOpenInNewWindow;
-    hr = GetAsyncBrowser()->Navigate(bTest, &vFlags, NULL, NULL, NULL);
+    hr = GetAsyncBrowser()->Navigate(navigatePath, &vFlags, NULL, NULL, NULL);
   }
-
 
   if (FAILED(hr))
   {

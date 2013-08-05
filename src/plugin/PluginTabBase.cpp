@@ -135,7 +135,7 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
     log.Format(L"Current URL: %s, settings URL: %s", url, UserSettingsFileUrl().c_str());
     DEBUG_GENERAL(log);
     if (0 == url.CompareNoCase(CString(UserSettingsFileUrl().c_str())) ||
-        0 == url.CompareNoCase(CString(UserSettingsFirstRunPageUrl().c_str())) )
+        0 == url.CompareNoCase(CString(FirstRunPageFileUrl().c_str())) )
     {
       CComPtr<IDispatch> pDocDispatch;
       browser->get_Document(&pDocDispatch);

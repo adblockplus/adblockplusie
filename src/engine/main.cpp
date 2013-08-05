@@ -41,7 +41,7 @@ namespace
   }
   
   CriticalSection firstRunLock;
-  bool firstRunActionTaken = false;
+  bool firstRunActionExecuted = false;
 
   Communication::OutputBuffer HandleRequest(Communication::InputBuffer& request)
   {
@@ -227,10 +227,10 @@ namespace
       case Communication::PROC_IS_FIRST_RUN_ACTION_NEEDED:
       {
         CriticalSection::Lock lock(firstRunLock);
-        if (!firstRunActionTaken && filterEngine->IsFirstRun())
+        if (!firstRunActionExecuted && filterEngine->IsFirstRun())
         {
           response << true;
-          firstRunActionTaken = true;
+          firstRunActionExecuted = true;
         }
         else
         {
