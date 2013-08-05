@@ -40,9 +40,31 @@ namespace
     }
   }
   
+  bool updateAvailable;
+  void UpdateCallback(const std::string res)
+  {
+    if (updateAvailable)
+      return;
+    Dictionary* dictionary = Dictionary::GetInstance();
+    if (res.length() == 0)
+    {
+      std::wstring upToDateText = dictionary->Lookup("updater", "update-already-up-to-date-text");
+      std::wstring upToDateTitle = dictionary->Lookup("updater", "update-already-up-to-date-title");
+      MessageBox(NULL, upToDateText.c_str(), upToDateTitle.c_str(), MB_OK);
+    }
+    else
+    {
+      std::wstring errorText = dictionary->Lookup("updater", "update-error-text");
+      std::wstring errorTitle = dictionary->Lookup("updater", "update-error-title");
+      ReplaceString(errorText, L"?1?", ToUtf16String(res));
+      MessageBox(NULL, errorText.c_str(), errorTitle.c_str(), MB_OK);
+    }
+    return;
+  }
+
+
   CriticalSection firstRunLock;
   bool firstRunActionExecuted = false;
-
   Communication::OutputBuffer HandleRequest(Communication::InputBuffer& request)
   {
     Communication::OutputBuffer response;
@@ -224,6 +246,12 @@ namespace
         }
         break;
       }
+      case Communication::PROC_CHECK_FOR_UPDATES:
+      {
+        updateAvailable = false;
+        filterEngine->ForceUpdateCheck(UpdateCallback);
+        break;
+      }
       case Communication::PROC_IS_FIRST_RUN_ACTION_NEEDED:
       {
         CriticalSection::Lock lock(firstRunLock);
@@ -236,6 +264,11 @@ namespace
         {
           response << false;
         }
+        break;
+      }
+      case Communication::PROC_GET_DOCUMENTATION_LINK:
+      {
+        response << ToUtf16String(filterEngine->GetPref("documentation_link")->AsString());
         break;
       }
 
@@ -265,6 +298,7 @@ namespace
 
   void OnUpdateAvailable(AdblockPlus::JsEnginePtr jsEngine, AdblockPlus::JsValueList& params)
   {
+    updateAvailable = true;
     if (params.size() < 1)
     {
       Debug("updateAvailable event missing URL");

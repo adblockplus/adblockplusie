@@ -136,11 +136,11 @@ function initTranslations()
     "share2-connection": "first-run-share2-or"
   };
 
-  document.title = AdblockPlus.getMessage("first-run-title-install");
+  document.title = AdblockPlus.getMessage("first-run", "first-run-title-install");
   for (var i in mapping)
   {
     var element = document.getElementById(i);
-    element.innerText = AdblockPlus.getMessage(mapping[i]);
+    element.innerText = AdblockPlus.getMessage("first-run", mapping[i]);
   }
 }
 

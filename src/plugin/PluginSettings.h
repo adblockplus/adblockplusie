@@ -122,6 +122,8 @@ public:
   void SetSubscription(const std::wstring& url);
   void SetDefaultSubscription();
   CString GetSubscription();
+  CString GetAppLocale();
+  CString GetDocumentationLink();
   std::vector<SubscriptionDescription> m_subscriptions;
 };
 

@@ -71,6 +71,7 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "Popup"
     BEGIN
+        MENUITEM "Check for updates",           ID_MENU_UPDATE
         MENUITEM "Settings",                    ID_MENU_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Disable everywhere",          ID_MENU_DISABLE

@@ -110,3 +110,12 @@ std::wstring GetAppDataPath()
   }
   return appDataPath;
 }
+
+void ReplaceString(std::wstring& input, const std::wstring placeholder, const std::wstring replacement)
+{
+  size_t replaceStart = input.find(placeholder);
+  if (replaceStart != std::string::npos)
+  {
+    input.replace(replaceStart, placeholder.length(), replacement);
+  }
+}
