@@ -13,6 +13,7 @@ private:
   BString& operator=(const BString&);
 };
 
+std::wstring HtmlFolderPath();
 std::wstring UserSettingsFileUrl();
-std::wstring UserSettingsFirstRunPageUrl();
+std::wstring FirstRunPageFileUrl();
 std::wstring FileUrl(const std::wstring& url);

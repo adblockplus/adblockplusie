@@ -22,14 +22,19 @@ BString::operator BSTR()
   return value;
 }
 
-std::wstring UserSettingsFileUrl()
+std::wstring HtmlFolderPath()
 {
-  return FileUrl(GetDllDir() + L"html\\templates\\index.html");
+  return GetDllDir() + L"html\\templates\\";
 }
 
-std::wstring UserSettingsFirstRunPageUrl()
+std::wstring UserSettingsFileUrl()
 {
-  return FileUrl(GetDllDir() + L"html\\templates\\firstRun.html");
+  return FileUrl(HtmlFolderPath() + L"index.html");
+}
+
+std::wstring FirstRunPageFileUrl()
+{
+  return FileUrl(HtmlFolderPath() + L"firstRun.html");
 }
 
 std::wstring FileUrl(const std::wstring& path)
