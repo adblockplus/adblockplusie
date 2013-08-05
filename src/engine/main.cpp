@@ -214,15 +214,6 @@ namespace
       {
         std::string name;
         request >> name;
-
-        AdblockPlus::JsValuePtr valuePtr = filterEngine->GetPref(name);
-        if (valuePtr->IsNull() || valuePtr->IsUndefined())
-        {
-          // Report no success
-          response << false;
-          break;
-        }
-
         
         if (valuePtr->IsBool())
         {
