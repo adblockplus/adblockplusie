@@ -38,15 +38,25 @@ namespace Communication
   public:
     InputBuffer() : buffer(), hasType(false) {}
     InputBuffer(const std::string& data) : buffer(data), hasType(false) {}
-    InputBuffer(const InputBuffer& copy) { hasType = copy.hasType; buffer = std::istringstream(copy.buffer.str()); currentType = copy.currentType; }
+    InputBuffer(const InputBuffer& copy) 
+    { 
+      hasType = copy.hasType; 
+      buffer = std::istringstream(copy.buffer.str()); 
+      currentType = copy.currentType; 
+    }
     InputBuffer& operator>>(ProcType& value) { return Read(value, TYPE_PROC); }
     InputBuffer& operator>>(std::string& value) { return ReadString(value, TYPE_STRING); }
     InputBuffer& operator>>(std::wstring& value) { return ReadString(value, TYPE_WSTRING); }
     InputBuffer& operator>>(int64_t& value) { return Read(value, TYPE_INT64); }
     InputBuffer& operator>>(int32_t& value) { return Read(value, TYPE_INT32); }
     InputBuffer& operator>>(bool& value) { return Read(value, TYPE_BOOL); }
-    InputBuffer& operator=(const InputBuffer& copy) { hasType = copy.hasType; buffer = std::istringstream(copy.buffer.str()); 
-                                                      currentType = copy.currentType; return *this; }
+    InputBuffer& operator=(const InputBuffer& copy) 
+    { 
+      hasType = copy.hasType; 
+      buffer = std::istringstream(copy.buffer.str()); 
+      currentType = copy.currentType; 
+      return *this; 
+    }
     ValueType GetType();
   private:
     std::istringstream buffer;

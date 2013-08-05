@@ -103,20 +103,13 @@ namespace
     return result;
   }
 
-  bool CallEngine(Communication::OutputBuffer& message, Communication::InputBuffer* inputBuffer = NULL)
+  bool CallEngine(Communication::OutputBuffer& message, Communication::InputBuffer& inputBuffer = Communication::InputBuffer())
   {
     try
     {
       std::auto_ptr<Communication::Pipe> pipe = OpenAdblockPlusEnginePipe();
       pipe->WriteMessage(message);
-      if (inputBuffer != NULL)
-      {
-        *inputBuffer = pipe->ReadMessage();
-      }
-      else
-      {
-        pipe->ReadMessage();
-      }
+      inputBuffer = pipe->ReadMessage();
     }
     catch (const std::exception& e)
     {
@@ -126,7 +119,7 @@ namespace
     return true;
   }
 
-  bool CallEngine(Communication::ProcType proc, Communication::InputBuffer* inputBuffer = NULL)
+  bool CallEngine(Communication::ProcType proc, Communication::InputBuffer& inputBuffer = Communication::InputBuffer())
   {
     Communication::OutputBuffer message;
     message << proc;
@@ -229,7 +222,8 @@ bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url)
   request << Communication::PROC_IS_WHITELISTED_URL << ToUtf8String(url);
 
   Communication::InputBuffer response;
-  if (!CallEngine(request, &response)) return false;;
+  if (!CallEngine(request, response)) 
+    return false;
 
   bool isWhitelisted;
   response >> isWhitelisted;
@@ -263,7 +257,8 @@ bool CAdblockPlusClient::Matches(const std::wstring& url, const std::wstring& co
   request << Communication::PROC_MATCHES << ToUtf8String(url) << ToUtf8String(contentType) << ToUtf8String(domain);
 
   Communication::InputBuffer response;
-  if (!CallEngine(request, &response)) return false;;
+  if (!CallEngine(request, response)) 
+    return false;
 
   bool match;
   response >> match;
@@ -276,21 +271,24 @@ std::vector<std::wstring> CAdblockPlusClient::GetElementHidingSelectors(const st
   request << Communication::PROC_GET_ELEMHIDE_SELECTORS << ToUtf8String(domain);
 
   Communication::InputBuffer response;
-  if (!CallEngine(request, &response)) return std::vector<std::wstring>();
+  if (!CallEngine(request, response)) 
+    return std::vector<std::wstring>();
   return ReadStrings(response);
 }
 
 std::vector<SubscriptionDescription> CAdblockPlusClient::FetchAvailableSubscriptions()
 {
   Communication::InputBuffer response;
-  if (!CallEngine(Communication::PROC_AVAILABLE_SUBSCRIPTIONS, &response)) return std::vector<SubscriptionDescription>();
+  if (!CallEngine(Communication::PROC_AVAILABLE_SUBSCRIPTIONS, response)) 
+    return std::vector<SubscriptionDescription>();
   return ReadSubscriptions(response);
 }
 
 std::vector<SubscriptionDescription> CAdblockPlusClient::GetListedSubscriptions()
 {
   Communication::InputBuffer response;
-  if (!CallEngine(Communication::PROC_LISTED_SUBSCRIPTIONS, &response)) return std::vector<SubscriptionDescription>();
+  if (!CallEngine(Communication::PROC_LISTED_SUBSCRIPTIONS, response)) 
+    return std::vector<SubscriptionDescription>();
   return ReadSubscriptions(response);
 }
 
@@ -309,7 +307,8 @@ void CAdblockPlusClient::UpdateAllSubscriptions()
 std::vector<std::wstring> CAdblockPlusClient::GetExceptionDomains()
 {
   Communication::InputBuffer response;
-  if (!CallEngine(Communication::PROC_GET_EXCEPTION_DOMAINS)) return std::vector<std::wstring>();
+  if (!CallEngine(Communication::PROC_GET_EXCEPTION_DOMAINS)) 
+    return std::vector<std::wstring>();
   return ReadStrings(response);
 }
 
@@ -366,7 +365,8 @@ std::wstring CAdblockPlusClient::GetPref(const std::wstring& name, const std::ws
   request << Communication::PROC_GET_PREF << ToUtf8String(name);
 
   Communication::InputBuffer response;
-  if (!CallEngine(request, &response)) return defaultValue;
+  if (!CallEngine(request, response)) 
+    return defaultValue;
   bool success;
   response >> success;
   if (success)
@@ -385,7 +385,8 @@ bool CAdblockPlusClient::GetPref(const std::wstring& name, bool defaultValue)
   request << Communication::PROC_GET_PREF << ToUtf8String(name);
 
   Communication::InputBuffer response;
-  if (!CallEngine(request, &response)) return defaultValue;
+  if (!CallEngine(request, response)) 
+    return defaultValue;
   bool success;
   response >> success;
   if (success)
@@ -403,8 +404,9 @@ int64_t CAdblockPlusClient::GetPref(const std::wstring& name, int64_t defaultVal
   request << Communication::PROC_GET_PREF << ToUtf8String(name);
 
   Communication::InputBuffer response;
-  if (!CallEngine(request, &response)) return defaultValue;
-    bool success;
+  if (!CallEngine(request, response)) 
+    return defaultValue;
+  bool success;
   response >> success;
   if (success)
   {

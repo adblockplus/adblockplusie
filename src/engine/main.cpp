@@ -201,20 +201,26 @@ namespace
           break;
         }
 
-        // Report success
-        response << true;
         
         if (valuePtr->IsBool())
         {
+          response << true;
           response << valuePtr->AsBool();
         }
         else if (valuePtr->IsNumber())
         {
+          response << true;
           response << valuePtr->AsInt();
         }
         else if (valuePtr->IsString())
         {
+          response << true;
           response << valuePtr->AsString();
+        }
+        else
+        {
+          // Report failure
+          response << false;
         }
         break;
       }

@@ -71,6 +71,7 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "Popup"
     BEGIN
+        MENUITEM "Update Adblock Plus",         ID_PLUGIN_UPDATE
         MENUITEM "Settings",                    ID_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "Enable plugin",               ID_PLUGIN_ENABLE

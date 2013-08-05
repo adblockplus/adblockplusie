@@ -70,9 +70,6 @@ CPluginClass::CPluginClass()
 
   m_tab = new CPluginTab(this);
 
-  // Load settings (fetch the available subscriptions, if still not fetched)
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-
   CPluginSystem* system = CPluginSystem::GetInstance();
 
   std::wstring locale((LPCWSTR)system->GetBrowserLanguage());

@@ -9,7 +9,6 @@ class CPluginTab : public CPluginTabBase
 {
 
 public:
-  void OnNavigate(const CString& url);
   CPluginTab(CPluginClass* plugin);
   ~CPluginTab();
 };

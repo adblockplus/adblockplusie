@@ -15,9 +15,3 @@ CPluginTab::CPluginTab(CPluginClass* plugin) : CPluginTabBase(plugin)
 CPluginTab::~CPluginTab()
 {
 }
-
-
-void CPluginTab::OnNavigate(const CString& url)
-{
-  CPluginTabBase::OnNavigate(url);
-}
