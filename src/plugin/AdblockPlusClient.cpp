@@ -417,3 +417,18 @@ int64_t CAdblockPlusClient::GetPref(const std::wstring& name, int64_t defaultVal
   else
     return defaultValue;
 }
+
+void CAdblockPlusClient::CheckForUpdates()
+{
+  CallEngine(Communication::PROC_CHECK_FOR_UPDATES);
+}
+
+std::wstring CAdblockPlusClient::GetDocumentationLink()
+{
+  Communication::InputBuffer response;
+  if (!CallEngine(Communication::PROC_GET_DOCUMENTATION_LINK, response)) 
+    return L"";
+  std::wstring docLink;
+  response >> docLink;
+  return docLink;
+}

@@ -354,6 +354,16 @@ CString CPluginSettings::GetSubscription()
     return CString(L"");
 }
 
+CString CPluginSettings::GetAppLocale()
+{
+  return CPluginSystem::GetInstance()->GetBrowserLanguage();
+}
+
+CString CPluginSettings::GetDocumentationLink()
+{
+  return CString(CPluginClient::GetInstance()->GetDocumentationLink().c_str());
+}
+
 
 
 #endif // SUPPORT_WHITELIST

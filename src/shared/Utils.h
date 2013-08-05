@@ -13,6 +13,7 @@ std::string ToUtf8String(const std::wstring& str);
 std::wstring ToUtf16String(const std::string& str);
 std::wstring GetDllDir();
 std::wstring GetAppDataPath();
+void ReplaceString(std::wstring& input, const std::wstring placeholder, const std::wstring replacement);
 
 template<class T>
 T TrimString(T text)

@@ -14,8 +14,10 @@ static const CString s_GetLanguage = L"GetLanguage";
 static const CString s_GetWhitelistDomains = L"GetWhitelistDomains";
 static const CString s_AddWhitelistDomain = L"AddWhitelistDomain";
 static const CString s_RemoveWhitelistDomain = L"RemoveWhitelistDomain";
+static const CString s_GetAppLocale = L"GetAppLocale";
+static const CString s_GetDocumentationLink = L"GetDocumentationLink";
 
-static const CString s_Methods[] = {s_GetMessage, s_GetLanguageCount, s_GetLanguageByIndex, s_GetLanguageTitleByIndex, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain};
+static const CString s_Methods[] = {s_GetMessage, s_GetLanguageCount, s_GetLanguageByIndex, s_GetLanguageTitleByIndex, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain, s_GetAppLocale, s_GetDocumentationLink};
 
 CPluginUserSettings::CPluginUserSettings()
 {
@@ -304,6 +306,22 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     {
       settings->RemoveWhiteListedDomain((BSTR)domain);
     }
+  }
+  else if (s_GetAppLocale == method)
+  {
+    if (0 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    pVarResult->vt = VT_BSTR;
+    pVarResult->bstrVal = SysAllocString(settings->GetAppLocale());
+  }
+  else if (s_GetDocumentationLink == method)
+  {
+    if (0 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    pVarResult->vt = VT_BSTR;
+    pVarResult->bstrVal = SysAllocString(settings->GetDocumentationLink());
   }
   else
     return DISP_E_MEMBERNOTFOUND;

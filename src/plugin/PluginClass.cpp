@@ -1257,6 +1257,12 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
   switch (nCommand)
   {
+  case ID_MENU_UPDATE:
+    {
+      CPluginClient* client = CPluginClient::GetInstance();
+      client->CheckForUpdates();
+    }
+    break;
   case ID_MENU_DISABLE:
     {
       CPluginSettings* settings = CPluginSettings::GetInstance();
@@ -1385,6 +1391,15 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     ::DeleteMenu(hMenu, ID_MENU_DISABLE_ON_SITE, FALSE);
   }
 #endif // SUPPORT_WHITELIST
+
+  // Plugin update
+  ctext = dictionary->Lookup("menu", "menu-update");
+  fmii.fMask  = MIIM_STATE | MIIM_STRING;
+  fmii.fState = client ? MFS_ENABLED : MFS_DISABLED;
+  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
+  fmii.cch = ctext.size();
+  ::SetMenuItemInfoW(hMenu, ID_MENU_UPDATE, FALSE, &fmii);
+
 
   // Plugin enable
   ctext = dictionary->Lookup("menu", "menu-disable");
