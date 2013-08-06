@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!--
+    This version check is less extensive than the one than in the MSI source code.
+    We partly rely on that it's already set up correctly for building the MSI files correctly.
+-->
+<?ifndef Version ?>
+    <?error No definition for WiX variable "Version" ?>
+<?endif?>
+
+<Wix
+    xmlns="http://schemas.microsoft.com/wix/2006/wi"
+    xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
+>
+    <!--
+        'burn' requires its own UpgradeCode, as if it supports its own MajorUpgrade.
+        No good documentation for what it does, though. 
+    -->
+    <Bundle
+        Version="$(var.Version)"
+        UpgradeCode="{17B47941-606A-456C-A225-FB597B05DA77}"
+    >
+        <!--
+            This is a reference to the standard UI library.
+            When we replace the UI, we should be sure to change this symbol in both places to avoid inadvertently linking to the wrong object. 
+        -->
+        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
+            <!--
+                The way to suppress the license in the UI sequence is to set the URL attribute to an empty string 
+                    and to leave out the file attribute entirely.
+                Not exactly a very expressive way of getting this result.
+            -->
+            <bal:WixStandardBootstrapperApplication
+                LicenseUrl=""
+            />
+        </BootstrapperApplicationRef>
+        <Chain>
+            <!--
+                Note that use have DisplayInternalUI turned on.
+                This avoids much (but not all) of the need to deal with the undocumented 'burn' UI facility.
+             -->
+            <MsiPackage
+                DisplayName="Adblock Plus for IE (ia32)"
+                DisplayInternalUI="yes"
+                Visible="yes"
+                SourceFile="..\build\ia32\adblockplusie-$(var.Version)-en-us-ia32.msi"
+                InstallCondition="Not VersionNT64"
+            />
+            <MsiPackage
+                DisplayName="Adblock Plus for IE (x64)"
+                DisplayInternalUI="yes"
+                Visible="yes"
+                SourceFile="..\build\x64\adblockplusie-$(var.Version)-en-us-x64.msi"
+                InstallCondition="VersionNT64"
+            />
+        </Chain>
+    </Bundle>
+</Wix>
