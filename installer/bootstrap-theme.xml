@@ -6,13 +6,14 @@
   <Font Id="2" Height="-19" Weight="500" Foreground="666666">Segoe UI</Font>
   <Font Id="3" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
   <Font Id="4" Height="-12" Weight="500" Foreground="ff0000" Background="FFFFFF" Underline="yes">Segoe UI</Font>
+  <Font Id="5" Height="-10" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
 
   <Image X="11" Y="11" Width="64" Height="64" ImageFile="abp-64.png" Visible="yes"/>
   <Text X="85" Y="11" Width="-11" Height="64" FontId="1" Visible="yes" DisablePrefix="yes">#(loc.Title)</Text>
 
   <Page Name="Help">
     <Text X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.HelpHeader)</Text>
-    <Text X="11" Y="121" Width="-11" Height="-52" FontId="3" DisablePrefix="yes">#(loc.HelpText)</Text>
+    <Text X="11" Y="121" Width="-11" Height="-52" FontId="5" DisablePrefix="yes">#(loc.HelpText)</Text>
     <Button Name="HelpCancelButton" X="-11" Y="-11" Width="110" Height="23" TabStop="yes" FontId="0">#(loc.HelpCloseButton)</Button>
   </Page>
 

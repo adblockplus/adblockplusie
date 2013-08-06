@@ -35,7 +35,7 @@
                 LicenseUrl=""
             />
             <!--
-              Localization payloads. See http://stackoverflow.com/a/11402260/1794538 for it's done this way.
+              Localization payloads. See http://stackoverflow.com/a/11402260/1794538 for why it's done this way.
             -->
             <Payload Name="1031\bootstrap-theme.wxl" SourceFile="1031\bootstrap-theme.wxl" />
         </BootstrapperApplicationRef>
