@@ -43,7 +43,7 @@
       'libadblockplus/libadblockplus.gyp:libadblockplus',
     ],
     'sources': [
-      'src/engine/main.cpp',
+      'src/engine/Main.cpp',
       'src/engine/Debug.cpp',
       'src/engine/UpdateInstallDialog.cpp',
       'src/engine/Updater.cpp',
