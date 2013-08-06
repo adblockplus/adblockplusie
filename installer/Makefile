@@ -77,20 +77,20 @@ $(object_setup): setup.wxs
 # light .wixobj --> .msi
 #---------------------
 
-Light = light -notidy -nologo -cultures:en-us -loc en-us.wxl -ext WixUIExtension -out $@
+Light = light -notidy -nologo -cultures:en-us -ext WixUIExtension -out $@
 
 $(Installer_ia32): $(objects_ia32) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll"
-    $(Light) $(objects_ia32) $(objects_common)
+    $(Light) $(objects_ia32) $(objects_common) -loc en-us.wxl 
 
 $(Installer_x64): $(objects_x64) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll" "..\build\x64\$(Configuration)\AdblockPlus.dll"
-    $(Light) $(objects_x64) $(objects_common)
+    $(Light) $(objects_x64) $(objects_common) -loc en-us.wxl
 
 #---------------------
 # light .wixobj --> .exe
 #---------------------
 
-$(Setup): $(object_setup)
-    $(Light) $(object_setup) -ext WixBalExtension
+$(Setup): $(object_setup) bootstrap-theme.xml bootstrap-theme.wxl
+    $(Light) $(object_setup) -ext WixBalExtension -loc bootstrap-theme.wxl
 
 #---------------------
 # msiexec .msi --> installed --> uninstalled
@@ -114,7 +114,7 @@ uninstall:
     msiexec /x {4f27c814-5ee0-4b25-b3ab-3ad565551918}
 
 install-setup: $(Setup)
-    $(Setup)
+    $(Setup) -log ..\build\setup.log 
 
 #---------------------
 # Miscellaneous
