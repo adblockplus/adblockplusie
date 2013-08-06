@@ -214,7 +214,8 @@ namespace
       {
         std::string name;
         request >> name;
-        
+
+        AdblockPlus::JsValuePtr valuePtr = filterEngine->GetPref(name);
         if (valuePtr->IsBool())
         {
           response << true;
