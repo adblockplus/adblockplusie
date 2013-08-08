@@ -15,6 +15,7 @@
 namespace
 {
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
+  std::auto_ptr<Updater> updater;
 
   void WriteStrings(Communication::OutputBuffer& response,
       const std::vector<std::string>& strings)
@@ -288,7 +289,7 @@ namespace
     return 0;
   }
 
-  void OnUpdateAvailable(AdblockPlus::JsEnginePtr jsEngine, AdblockPlus::JsValueList& params)
+  void OnUpdateAvailable(AdblockPlus::JsValueList& params)
   {
     updateAvailable = true;
     if (params.size() < 1)
@@ -297,8 +298,8 @@ namespace
       return;
     }
 
-    Updater updater(jsEngine, params[0]->AsString());
-    updater.Update();
+    updater->SetUrl(params[0]->AsString());
+    updater->Update();
   }
 }
 
@@ -320,8 +321,7 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
 #endif
 
   AdblockPlus::JsEnginePtr jsEngine = AdblockPlus::JsEngine::New(appInfo);
-  jsEngine->SetEventCallback("updateAvailable",
-      std::bind(&OnUpdateAvailable, jsEngine, std::placeholders::_1));
+  jsEngine->SetEventCallback("updateAvailable", &OnUpdateAvailable);
 
   std::string dataPath = ToUtf8String(GetAppDataPath());
   dynamic_cast<AdblockPlus::DefaultFileSystem*>(jsEngine->GetFileSystem().get())->SetBasePath(dataPath);
@@ -350,6 +350,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   LocalFree(argv);
   Dictionary::Create(locale);
   filterEngine = CreateFilterEngine(locale);
+  updater.reset(new Updater(filterEngine->GetJsEngine()));
 
   for (;;)
   {
