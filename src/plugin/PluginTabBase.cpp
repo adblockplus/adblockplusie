@@ -29,6 +29,7 @@ int CPluginTabBase::s_configVersion = 0;
 CPluginTabBase::CPluginTabBase(CPluginClass* plugin) : m_plugin(plugin), m_isActivated(false)
 {
   m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
+  m_filter->hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
 
   CPluginClient* client = CPluginClient::GetInstance();
   if (client->GetIEVersion() < 10)
@@ -82,6 +83,13 @@ void CPluginTabBase::OnUpdate()
   m_isActivated = true;
 }
 
+DWORD WINAPI FilterLoader(void* thisPtrVoid)
+{
+  CPluginTabBase* thisPtr = (CPluginTabBase*)thisPtrVoid;
+  thisPtr->m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(thisPtr->GetDocumentDomain().GetString()));
+  SetEvent(thisPtr->m_filter->hideFiltersLoadedEvent);
+  return 0;
+}
 
 void CPluginTabBase::OnNavigate(const CString& url)
 {
@@ -93,7 +101,8 @@ void CPluginTabBase::OnNavigate(const CString& url)
 #endif
 
   std::wstring domainString = GetDocumentDomain();
-  m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(domainString));
+  ResetEvent(m_filter->hideFiltersLoadedEvent);
+  CreateThread(NULL, NULL, &FilterLoader, this, NULL, NULL);
 
 #ifdef SUPPORT_DOM_TRAVERSER
   m_traverser->ClearCache();

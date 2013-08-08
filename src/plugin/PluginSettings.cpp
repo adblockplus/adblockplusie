@@ -93,10 +93,6 @@ CPluginSettings* CPluginSettings::GetInstance()
     if (!s_instance)
     {
       s_instance = new CPluginSettings();
-#ifdef USE_CONSOLE
-      CONSOLE("Fetching Available Subscription\n");
-#endif
-      CPluginSettings::GetInstance()->m_subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
     }
 
     instance = s_instance;
@@ -157,8 +153,10 @@ bool CPluginSettings::IsPluginEnabled() const
 }
 
 
-std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
+std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList()
 {
+  m_subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
+
   std::map<CString, CString> filterList;
   for (size_t i = 0; i < m_subscriptions.size(); i ++)
   {

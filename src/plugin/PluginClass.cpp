@@ -259,11 +259,8 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
     s_criticalSectionLocal.Lock();
     {
-      if (settings->GetPluginEnabled())
-      {
-        s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
-      }
-
+      // Always register on startup, then check if we need to unregister in a separate thread
+      s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
       s_asyncWebBrowser2 = unknownSite;
       s_instances.Add(this);
     }
@@ -732,9 +729,14 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
 
 bool CPluginClass::InitObject(bool bBHO)
 {
+  CPluginSettings* settings = CPluginSettings::GetInstance();
+
+  if (!settings->GetPluginEnabled())
+  {
+    s_mimeFilter->Unregister();
+  }
+
   // Load theme module
-
-
   s_criticalSectionLocal.Lock();
   {
     if (!s_hUxtheme)
@@ -818,8 +820,6 @@ bool CPluginClass::InitObject(bool bBHO)
     }
 
   }
-
-  CPluginSettings* settings = CPluginSettings::GetInstance();
   return true;
 }
 

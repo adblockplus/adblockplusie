@@ -115,6 +115,7 @@ bool CPluginDomTraverserBase<T>::IsEnabled()
 template <class T>
 void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool isMainDoc, CString indent)
 {
+  DWORD res = WaitForSingleObject(m_tab->m_filter->hideFiltersLoadedEvent, ENGINE_STARTUP_TIMEOUT);
   if (!IsEnabled()) return;
 
   VARIANT_BOOL isBusy;    

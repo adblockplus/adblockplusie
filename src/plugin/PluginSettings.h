@@ -78,7 +78,7 @@ public:
 
   bool IsPluginEnabled() const;
 
-  std::map<CString, CString> GetFilterLanguageTitleList() const;
+  std::map<CString, CString> GetFilterLanguageTitleList();
 
   void SetWorkingThreadId();
   void SetWorkingThreadId(DWORD id);
