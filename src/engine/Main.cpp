@@ -16,6 +16,8 @@ namespace
 {
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
   std::auto_ptr<Updater> updater;
+  int activeConnections = 0;
+  CriticalSection activeConnectionsLock;
 
   void WriteStrings(Communication::OutputBuffer& response,
       const std::vector<std::string>& strings)
@@ -273,18 +275,48 @@ namespace
   {
     std::auto_ptr<Communication::Pipe> pipe(static_cast<Communication::Pipe*>(param));
 
-    try
+    std::stringstream stream;
+    stream << GetCurrentThreadId();
+    std::string threadId = stream.str();
+    std::string threadString = "(Thread ID: " + threadId + ")";
+    Debug("Client connected " + threadString);
+
     {
-      Communication::InputBuffer message = pipe->ReadMessage();
-      Communication::OutputBuffer response = HandleRequest(message);
-      pipe->WriteMessage(response);
-    }
-    catch (const std::exception& e)
-    {
-      DebugException(e);
+      CriticalSection::Lock lock(activeConnectionsLock);
+      activeConnections++;
     }
 
-    // TODO: Keep the pipe open until the client disconnects
+    for (;;)
+    {
+      try
+      {
+        Communication::InputBuffer message = pipe->ReadMessage();
+        Communication::OutputBuffer response = HandleRequest(message);
+        pipe->WriteMessage(response);
+      }
+      catch (const Communication::PipeDisconnectedError&)
+      {
+        break;
+      }
+      catch (const std::exception& e)
+      {
+        DebugException(e);
+        break;
+      }
+    }
+
+    Debug("Client disconnected " + threadString);
+
+    {
+      CriticalSection::Lock lock(activeConnectionsLock);
+      activeConnections--;
+      if (activeConnections < 1)
+      {
+        Debug("No connections left, shutting down the engine");
+        activeConnections = 0;
+        exit(0);
+      }
+    }
 
     return 0;
   }
@@ -359,7 +391,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       Communication::Pipe* pipe = new Communication::Pipe(Communication::pipeName,
             Communication::Pipe::MODE_CREATE);
 
-      // TODO: Count established connections, kill the engine when none are left
       AutoHandle thread(CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0));
       if (!thread)
       {

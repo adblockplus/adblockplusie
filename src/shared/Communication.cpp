@@ -63,6 +63,11 @@ Communication::PipeBusyError::PipeBusyError()
 {
 }
 
+Communication::PipeDisconnectedError::PipeDisconnectedError()
+  : std::runtime_error("Pipe disconnected")
+{
+}
+
 Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mode mode)
 {
   pipe = INVALID_HANDLE_VALUE;
@@ -128,11 +133,20 @@ Communication::InputBuffer Communication::Pipe::ReadMessage()
     DWORD bytesRead;
     if (ReadFile(pipe, buffer.get(), bufferSize * sizeof(char), &bytesRead, 0))
       doneReading = true;
-    else if (GetLastError() != ERROR_MORE_DATA)
+    else
     {
-      std::stringstream stream;
-      stream << "Error reading from pipe: " << GetLastError();
-      throw std::runtime_error(stream.str());
+      DWORD lastError = GetLastError();
+      switch (lastError)
+      {
+      case ERROR_MORE_DATA:
+        break;
+      case ERROR_BROKEN_PIPE:
+        throw PipeDisconnectedError();
+      default:
+        std::stringstream stream;
+        stream << "Error reading from pipe: " << lastError;
+        throw std::runtime_error(stream.str());
+      }
     }
     stream << std::string(buffer.get(), bytesRead);
   }
