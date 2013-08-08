@@ -171,6 +171,8 @@ public:
 
 
   bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false) const;
+
+  HANDLE hideFiltersLoadedEvent;
 };
 
 

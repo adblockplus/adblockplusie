@@ -149,6 +149,8 @@
 #define STATUSBAR_PANE_NUMBER 2
 #endif
 
+#define ENGINE_STARTUP_TIMEOUT 10000
+
 
 
 #endif // _CONFIG_H

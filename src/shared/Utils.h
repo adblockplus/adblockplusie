@@ -6,7 +6,6 @@
 #include <functional>
 #include <string>
 
-
 bool IsWindowsVistaOrLater();
 
 std::string ToUtf8String(const std::wstring& str);
