@@ -8,7 +8,8 @@
 class Updater
 {
 public:
-  Updater(AdblockPlus::JsEnginePtr jsEngine, const std::string& url);
+  Updater(AdblockPlus::JsEnginePtr jsEngine);
+  void SetUrl(const std::string& url);
   void Update();
 private:
   AdblockPlus::JsEnginePtr jsEngine;

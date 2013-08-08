@@ -76,9 +76,14 @@ namespace
   }
 }
 
-Updater::Updater(AdblockPlus::JsEnginePtr jsEngine, const std::string& url)
-    : jsEngine(jsEngine), url(url), tempFile(GetAppDataPath() + L"\\update.msi")
+Updater::Updater(AdblockPlus::JsEnginePtr jsEngine)
+    : jsEngine(jsEngine), tempFile(GetAppDataPath() + L"\\update.msi")
 {
+}
+
+void Updater::SetUrl(const std::string& url)
+{
+  this->url = url;
 }
 
 void Updater::Update()
