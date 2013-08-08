@@ -38,11 +38,11 @@ namespace
     CloseHandle(processInformation.hThread);
   }
 
-  std::auto_ptr<Communication::Pipe> OpenAdblockPlusEnginePipe()
+  Communication::Pipe* OpenEnginePipe()
   {
     try
     {
-      return std::auto_ptr<Communication::Pipe>(new Communication::Pipe(Communication::pipeName, Communication::Pipe::MODE_CONNECT));
+      return new Communication::Pipe(Communication::pipeName, Communication::Pipe::MODE_CONNECT);
     }
     catch (Communication::PipeConnectionError e)
     {
@@ -54,7 +54,7 @@ namespace
         Sleep(step);
         try
         {
-          return std::auto_ptr<Communication::Pipe>(new Communication::Pipe(Communication::pipeName, Communication::Pipe::MODE_CONNECT));
+          return new Communication::Pipe(Communication::pipeName, Communication::Pipe::MODE_CONNECT);
         }
         catch (Communication::PipeConnectionError e)
         {
@@ -102,29 +102,6 @@ namespace
     }
     return result;
   }
-
-  bool CallEngine(Communication::OutputBuffer& message, Communication::InputBuffer& inputBuffer = Communication::InputBuffer())
-  {
-    try
-    {
-      std::auto_ptr<Communication::Pipe> pipe = OpenAdblockPlusEnginePipe();
-      pipe->WriteMessage(message);
-      inputBuffer = pipe->ReadMessage();
-    }
-    catch (const std::exception& e)
-    {
-      DEBUG_GENERAL(e.what());
-      return false;
-    }
-    return true;
-  }
-
-  bool CallEngine(Communication::ProcType proc, Communication::InputBuffer& inputBuffer = Communication::InputBuffer())
-  {
-    Communication::OutputBuffer message;
-    message << proc;
-    return CallEngine(message, inputBuffer);
-  }
 }
 
 CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
@@ -132,6 +109,31 @@ CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
 CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 {
   m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
+}
+
+bool CAdblockPlusClient::CallEngine(Communication::OutputBuffer& message, Communication::InputBuffer& inputBuffer)
+{
+  CriticalSection::Lock lock(enginePipeLock);
+  try
+  {
+    if (!enginePipe)
+      enginePipe.reset(OpenEnginePipe());
+    enginePipe->WriteMessage(message);
+    inputBuffer = enginePipe->ReadMessage();
+  }
+  catch (const std::exception& e)
+  {
+    DEBUG_GENERAL(e.what());
+    return false;
+  }
+  return true;
+}
+
+bool CAdblockPlusClient::CallEngine(Communication::ProcType proc, Communication::InputBuffer& inputBuffer)
+{
+  Communication::OutputBuffer message;
+  message << proc;
+  return CallEngine(message, inputBuffer);
 }
 
 CAdblockPlusClient::~CAdblockPlusClient()

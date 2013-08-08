@@ -5,6 +5,7 @@
 #include "PluginTypedef.h"
 #include "PluginClientBase.h"
 #include "../shared/Communication.h"
+#include "../shared/CriticalSection.h"
 
 
 class CPluginFilter;
@@ -29,9 +30,15 @@ private:
 
   std::map<CString,bool> m_cacheBlockedSources;
 
+  std::shared_ptr<Communication::Pipe> enginePipe;
+  CriticalSection enginePipeLock;
+
 
   // Private constructor used by the singleton pattern
   CAdblockPlusClient();
+
+  bool CallEngine(Communication::OutputBuffer& message, Communication::InputBuffer& inputBuffer = Communication::InputBuffer());
+  bool CallEngine(Communication::ProcType proc, Communication::InputBuffer& inputBuffer = Communication::InputBuffer());
 public:
 
   static CAdblockPlusClient* s_instance;
