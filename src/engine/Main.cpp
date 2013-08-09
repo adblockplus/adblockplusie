@@ -323,12 +323,12 @@ namespace
 
   void OnUpdateAvailable(AdblockPlus::JsValueList& params)
   {
-    updateAvailable = true;
     if (params.size() < 1)
     {
       Debug("updateAvailable event missing URL");
       return;
     }
+    updateAvailable = true;
 
     updater->SetUrl(params[0]->AsString());
     updater->Update();
