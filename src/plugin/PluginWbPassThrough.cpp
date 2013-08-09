@@ -137,32 +137,32 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   {
     ULONG resLen = 0;
     LPOLESTR mime = 0;
-    HRESULT hr = pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, &mime, 1, &resLen);
+    pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, &mime, 1, &resLen);
     if (mime && resLen > 0)
     {
       mimeType.SetString(mime);
     }
     LPOLESTR bindToObject = 0;
-    hr = pOIBindInfo->GetBindString(BINDSTRING_FLAG_BIND_TO_OBJECT, &bindToObject, 1, &resLen);
+    pOIBindInfo->GetBindString(BINDSTRING_FLAG_BIND_TO_OBJECT, &bindToObject, 1, &resLen);
     LPOLESTR domainRetrieved = 0;
     if (resLen == 0 || wcscmp(bindToObject, L"FALSE") == 0)
     {   
-      hr = pOIBindInfo->GetBindString(BINDSTRING_XDR_ORIGIN, &domainRetrieved, 1, &resLen);
-    }
-    if ((hr == S_OK) && domainRetrieved && (resLen > 0))
-    {
-      boundDomain.SetString(domainRetrieved);
-      // Remove protocol
-      int pos = boundDomain.Find(L"://");
-      if (pos > 0)
+      HRESULT hr = pOIBindInfo->GetBindString(BINDSTRING_XDR_ORIGIN, &domainRetrieved, 1, &resLen);
+      if ((hr == S_OK) && domainRetrieved && (resLen > 0))
       {
-        boundDomain = boundDomain.Mid(pos + 3);
-      }
-      // Remove port
-      pos = boundDomain.Find(L":");
-      if (pos > 0)
-      {
-        boundDomain.Left(pos);
+        boundDomain.SetString(domainRetrieved);
+        // Remove protocol
+        int pos = boundDomain.Find(L"://");
+        if (pos > 0)
+        {
+          boundDomain = boundDomain.Mid(pos + 3);
+        }
+        // Remove port
+        pos = boundDomain.Find(L":");
+        if (pos > 0)
+        {
+          boundDomain.Left(pos);
+        }
       }
     }
   }
