@@ -365,7 +365,7 @@
             <Component Id="html_static_js_firstRun.js" Guid="2c0035a2-f074-11e2-b778-0800200c9a66">
               <File Name="firstRun.js"/>
             </Component>
-            <Component Id="html_static_js_ieFirstRun.js" Guid="9e851b10-d713-11e2-8b8b-0800200c9a66">
+            <Component Id="html_static_js_ieFirstRun.js" Guid="f2a86685-d713-11e2-8b8b-0800200c9a66">
               <File Name="ieFirstRun.js"/>
             </Component>
             <Component Id="html_static_js_IESettings.js" Guid="9e851b10-d713-11e2-8b8b-0800200c9a66">
