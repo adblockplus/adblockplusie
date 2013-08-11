@@ -14,6 +14,7 @@ public:
 
   CComPtr<IClassFactory> m_classFactory;
   CComPtr<IClassFactory> m_spCFHTTP;
+  CComPtr<IClassFactory> m_spCFHTTPS;
 };
 
 
