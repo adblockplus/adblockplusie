@@ -146,6 +146,7 @@ function initTranslations()
 
 function init()
 {
+  initWrappers();
   // Choose a share text variant randomly
   var variant = Math.floor(Math.random() * 2) + 1;
   var classList = document.documentElement.className.split(" ");
