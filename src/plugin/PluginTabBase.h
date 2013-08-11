@@ -60,7 +60,7 @@ private:
 #endif
 
   void SetDocumentUrl(const CString& url);
-
+  void InjectABP(IWebBrowser2* browser);
 public:
 
   CPluginTabBase(CPluginClass* plugin);
