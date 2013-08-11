@@ -8,13 +8,12 @@
 typedef PassthroughAPP::CMetaFactory<PassthroughAPP::CComClassFactoryProtocol,WBPassthru> MetaFactory;
 
 
-CPluginMimeFilterClient::CPluginMimeFilterClient() : m_classFactory(NULL), m_spCFHTTP(NULL)
+CPluginMimeFilterClient::CPluginMimeFilterClient() : m_classFactory(NULL), m_spCFHTTP(NULL),  m_spCFHTTPS(NULL)
 {
   // Should only be called once
   // We register mime filters here
   // Register asynchronous protocol
   CComPtr<IInternetSession> spSession;
-  m_spCFHTTP = NULL;
   HRESULT hr = ::CoInternetGetSession(0, &spSession, 0);
   if (FAILED(hr) || !spSession)
   {
@@ -35,6 +34,21 @@ CPluginMimeFilterClient::CPluginMimeFilterClient() : m_classFactory(NULL), m_spC
     DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_REGISTER_HTTP_NAMESPACE, "MimeClient::RegisterNameSpace failed");
     return;
   }
+
+  hr = MetaFactory::CreateInstance(CLSID_HttpSProtocol, &m_spCFHTTPS);
+  if (FAILED(hr) || !m_spCFHTTPS)
+  {
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_CREATE_HTTPS_INSTANCE, "MimeClient::CreateInstance failed");
+    return;
+  }
+
+  hr = spSession->RegisterNameSpace(m_spCFHTTPS, CLSID_HttpSProtocol, L"https", 0, 0, 0);
+  if (FAILED(hr))
+  {
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SESSION, PLUGIN_ERROR_SESSION_REGISTER_HTTPS_NAMESPACE, "MimeClient::RegisterNameSpace failed");
+    return;
+  }
+
 }
 
 
@@ -51,6 +65,13 @@ CPluginMimeFilterClient::~CPluginMimeFilterClient()
       m_spCFHTTP.Release();
       m_spCFHTTP = NULL;
     }
+    spSession->UnregisterNameSpace(m_spCFHTTPS, L"https");
+    if (m_spCFHTTPS != NULL)
+    {
+      m_spCFHTTPS.Release();
+      m_spCFHTTPS = NULL;
+    }
+
   }
 }
 
@@ -62,5 +83,6 @@ void CPluginMimeFilterClient::Unregister()
   if (spSession)
   {
     spSession->UnregisterNameSpace(m_spCFHTTP, L"http");
+    spSession->UnregisterNameSpace(m_spCFHTTPS, L"https");
   }
 }
