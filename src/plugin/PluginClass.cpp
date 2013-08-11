@@ -813,7 +813,15 @@ bool CPluginClass::InitObject(bool bBHO)
 
   if (CPluginClient::GetInstance()->IsFirstRun())
   {   
-    CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)CPluginClass::FirstRunThread, NULL, NULL, NULL);
+    // IE6 can't be accessed from another thread, execute in current thread
+    if (CPluginClient::GetInstance()->GetIEVersion() < 7)
+    {
+      FirstRunThread();
+    }
+    else
+    {
+      CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)CPluginClass::FirstRunThread, NULL, NULL, NULL);
+    }
     if ((m_hPaneWnd == NULL) || (!IsStatusBarEnabled()))
     {
       ShowStatusBar();
