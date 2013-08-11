@@ -109,6 +109,61 @@ void CPluginTabBase::OnNavigate(const CString& url)
 #endif
 }
 
+void CPluginTabBase::InjectABP(IWebBrowser2* browser)
+{
+  CString url = GetDocumentUrl();
+  CString log;
+  log.Format(L"Current URL: %s, settings URL: %s", url, UserSettingsFileUrl().c_str());
+  DEBUG_GENERAL(log);
+  if (!(0 == url.CompareNoCase(CString(UserSettingsFileUrl().c_str())) ||
+      0 == url.CompareNoCase(CString(FirstRunPageFileUrl().c_str()))))
+  {
+    return;
+  }
+  CComPtr<IDispatch> pDocDispatch;
+  browser->get_Document(&pDocDispatch);
+  CComQIPtr<IHTMLDocument2> pDoc2 = pDocDispatch;
+  if (!pDoc2)
+  {
+    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to QI document");
+    return;
+  }
+  CComPtr<IHTMLWindow2> pWnd2;
+  pDoc2->get_parentWindow(&pWnd2);
+  if (!pWnd2)
+  {
+    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to get parent window");
+    return;
+  }
+  CComQIPtr<IDispatchEx> pWndEx = pWnd2;
+  if (!pWndEx)
+  {
+    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to QI dispatch");
+    return;
+  }
+  // Create "Settings" object in JavaScript.
+  // A method call of "Settings" in JavaScript, transfered to "Invoke" of m_pluginUserSettings
+  DISPID dispid;
+  HRESULT hr = pWndEx->GetDispID(L"Settings", fdexNameEnsure, &dispid);
+  if (FAILED(hr))
+  {
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to get dispatch");
+    return;
+  }
+  CComVariant var((IDispatch*)&m_pluginUserSettings);
+
+  DISPPARAMS params;
+  params.cArgs = 1;
+  params.cNamedArgs = 0;
+  params.rgvarg = &var;
+  params.rgdispidNamedArgs = 0;
+  hr = pWndEx->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYPUT | DISPATCH_PROPERTYPUTREF, &params, 0, 0, 0);
+  if (FAILED(hr))
+  {
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to create Settings in JavaScript");
+  }
+}
+
 void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
 {
 #ifdef SUPPORT_DOM_TRAVERSER
@@ -117,8 +172,9 @@ void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
     m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
   }
 #endif // SUPPORT_DOM_TRAVERSER
-}
 
+  InjectABP(browser);
+}
 
 void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& url, bool isDocumentBrowser)
 {
@@ -130,48 +186,7 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
     {
       SetDocumentUrl(url);
     }
-
-    CString log;
-    log.Format(L"Current URL: %s, settings URL: %s", url, UserSettingsFileUrl().c_str());
-    DEBUG_GENERAL(log);
-    if (0 == url.CompareNoCase(CString(UserSettingsFileUrl().c_str())) ||
-        0 == url.CompareNoCase(CString(FirstRunPageFileUrl().c_str())) )
-    {
-      CComPtr<IDispatch> pDocDispatch;
-      browser->get_Document(&pDocDispatch);
-      CComQIPtr<IHTMLDocument2> pDoc2 = pDocDispatch;
-      if (pDoc2)
-      {
-        CComPtr<IHTMLWindow2> pWnd2;
-        pDoc2->get_parentWindow(&pWnd2);
-        if (pWnd2)
-        {
-          CComQIPtr<IDispatchEx> pWndEx = pWnd2;
-          if (pWndEx)
-          {
-            // Create "Settings" object in JavaScript.
-            // A method call of "Settings" in JavaScript, transfered to "Invoke" of m_pluginUserSettings
-            DISPID dispid;
-            HRESULT hr = pWndEx->GetDispID(L"Settings", fdexNameEnsure, &dispid);
-            if (SUCCEEDED(hr))
-            {
-              CComVariant var((IDispatch*)&m_pluginUserSettings);
-
-              DISPPARAMS params;
-              params.cArgs = 1;
-              params.cNamedArgs = 0;
-              params.rgvarg = &var;
-              params.rgdispidNamedArgs = 0;
-              hr = pWndEx->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYPUT | DISPATCH_PROPERTYPUTREF, &params, 0, 0, 0);
-              if (FAILED(hr))
-              {
-                DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::OnDocumentComplete - Failed to create Settings in JavaScript");
-              }
-            }
-          }
-        }
-      }
-    }
+    InjectABP(browser);
   }
 
 #ifdef SUPPORT_DOM_TRAVERSER
