@@ -399,16 +399,324 @@
       Locale files
     -->
     <ComponentGroup Id="Locale_Files">
-      <ComponentRef Id="locales_en.ini"/>
-      <ComponentRef Id="locales_ru.ini"/>
+        <ComponentRef Id="locales_af.ini"/>
+        <ComponentRef Id="locales_am.ini"/>
+        <ComponentRef Id="locales_ar.ini"/>
+        <ComponentRef Id="locales_as.ini"/>
+        <ComponentRef Id="locales_az.ini"/>
+        <ComponentRef Id="locales_bg.ini"/>
+        <ComponentRef Id="locales_bn_IN.ini"/>
+        <ComponentRef Id="locales_bs.ini"/>
+        <ComponentRef Id="locales_ca.ini"/>
+        <ComponentRef Id="locales_cs.ini"/>
+        <ComponentRef Id="locales_cy.ini"/>
+        <ComponentRef Id="locales_da.ini"/>
+        <ComponentRef Id="locales_de.ini"/>
+        <ComponentRef Id="locales_el.ini"/>
+        <ComponentRef Id="locales_en.ini"/>
+        <ComponentRef Id="locales_es_ES.ini"/>
+        <ComponentRef Id="locales_et.ini"/>
+        <ComponentRef Id="locales_eu.ini"/>
+        <ComponentRef Id="locales_fa.ini"/>
+        <ComponentRef Id="locales_fi.ini"/>
+        <ComponentRef Id="locales_fil.ini"/>
+        <ComponentRef Id="locales_fr.ini"/>
+        <ComponentRef Id="locales_ga_IE.ini"/>
+        <ComponentRef Id="locales_gl.ini"/>
+        <ComponentRef Id="locales_gu_IN.ini"/>
+        <ComponentRef Id="locales_he.ini"/>
+        <ComponentRef Id="locales_hi.ini"/>
+        <ComponentRef Id="locales_hr.ini"/>
+        <ComponentRef Id="locales_hu.ini"/>
+        <ComponentRef Id="locales_hy_AM.ini"/>
+        <ComponentRef Id="locales_is.ini"/>
+        <ComponentRef Id="locales_it.ini"/>
+        <ComponentRef Id="locales_ja.ini"/>
+        <ComponentRef Id="locales_ka.ini"/>
+        <ComponentRef Id="locales_kk.ini"/>
+        <ComponentRef Id="locales_km.ini"/>
+        <ComponentRef Id="locales_kn.ini"/>
+        <ComponentRef Id="locales_ko.ini"/>
+        <ComponentRef Id="locales_lb.ini"/>
+        <ComponentRef Id="locales_lt.ini"/>
+        <ComponentRef Id="locales_lv.ini"/>
+        <ComponentRef Id="locales_mi.ini"/>
+        <ComponentRef Id="locales_mk.ini"/>
+        <ComponentRef Id="locales_ml_IN.ini"/>
+        <ComponentRef Id="locales_mr.ini"/>
+        <ComponentRef Id="locales_ms.ini"/>
+        <ComponentRef Id="locales_mt.ini"/>
+        <ComponentRef Id="locales_nb.ini"/>
+        <ComponentRef Id="locales_ne_NP.ini"/>
+        <ComponentRef Id="locales_nl.ini"/>
+        <ComponentRef Id="locales_nn_NO.ini"/>
+        <ComponentRef Id="locales_or.ini"/>
+        <ComponentRef Id="locales_pa_IN.ini"/>
+        <ComponentRef Id="locales_pl.ini"/>
+        <ComponentRef Id="locales_pt_BR.ini"/>
+        <ComponentRef Id="locales_pt_PT.ini"/>
+        <ComponentRef Id="locales_ro.ini"/>
+        <ComponentRef Id="locales_ru.ini"/>
+        <ComponentRef Id="locales_si_LK.ini"/>
+        <ComponentRef Id="locales_sk.ini"/>
+        <ComponentRef Id="locales_sl.ini"/>
+        <ComponentRef Id="locales_sq.ini"/>
+        <ComponentRef Id="locales_sr_CS.ini"/>
+        <ComponentRef Id="locales_sr.ini"/>
+        <ComponentRef Id="locales_sv_SE.ini"/>
+        <ComponentRef Id="locales_ta.ini"/>
+        <ComponentRef Id="locales_te.ini"/>
+        <ComponentRef Id="locales_th.ini"/>
+        <ComponentRef Id="locales_tr.ini"/>
+        <ComponentRef Id="locales_tt_RU.ini"/>
+        <ComponentRef Id="locales_uk.ini"/>
+        <ComponentRef Id="locales_ur_PK.ini"/>
+        <ComponentRef Id="locales_uz.ini"/>
+        <ComponentRef Id="locales_vi.ini"/>
+        <ComponentRef Id="locales_xh.ini"/>
+        <ComponentRef Id="locales_zh_CN.ini"/>
+        <ComponentRef Id="locales_zh_HK.ini"/>
+        <ComponentRef Id="locales_zh_TW.ini"/>
+        <ComponentRef Id="locales_zu.ini"/>
     </ComponentGroup>
     <DirectoryRef Id="Locales_Folder">
       <Directory Id="locales" FileSource="..\locales">
+        <Component Id="locales_af.ini" Guid="0311a948-3e76-45e8-83c0-8455fa9083b7">
+          <File Name="af.ini"/>
+        </Component>
+        <Component Id="locales_am.ini" Guid="cca25e4e-9b74-4e99-a592-c54a310fe806">
+          <File Name="am.ini"/>
+        </Component>
+        <Component Id="locales_ar.ini" Guid="2e25459f-e7e0-40bf-b9d2-05a60be967f9">
+          <File Name="ar.ini"/>
+        </Component>
+        <Component Id="locales_as.ini" Guid="871517f1-be55-4b8c-83b9-5da89230de6b">
+          <File Name="as.ini"/>
+        </Component>
+        <Component Id="locales_az.ini" Guid="7039faf6-5ff6-441d-aad0-b009588f29fd">
+          <File Name="az.ini"/>
+        </Component>
+        <Component Id="locales_bg.ini" Guid="97abd38d-969c-48d8-9a18-ccfd340c2f3f">
+          <File Name="bg.ini"/>
+        </Component>
+        <Component Id="locales_bn_IN.ini" Guid="cc42ac9c-c697-4eb2-8023-d37ebc1bac28">
+          <File Name="bn-IN.ini"/>
+        </Component>
+        <Component Id="locales_bs.ini" Guid="16f317bb-2c93-40bc-af30-ff608738718b">
+          <File Name="bs.ini"/>
+        </Component>
+        <Component Id="locales_ca.ini" Guid="cc6fd89b-34f4-45c6-86c5-65ed05ddeb96">
+          <File Name="ca.ini"/>
+        </Component>
+        <Component Id="locales_cs.ini" Guid="ff15fbec-647b-4c4e-aa8d-f6315ae59cc2">
+          <File Name="cs.ini"/>
+        </Component>
+        <Component Id="locales_cy.ini" Guid="3d524ffb-1314-4ffb-81be-bb119856d5f4">
+          <File Name="cy.ini"/>
+        </Component>
+        <Component Id="locales_da.ini" Guid="d02413b6-ab8c-4b71-9ca2-74c978175eaf">
+          <File Name="da.ini"/>
+        </Component>
+        <Component Id="locales_de.ini" Guid="30ba6ff3-a270-4128-b879-808cea4af421">
+          <File Name="de.ini"/>
+        </Component>
+        <Component Id="locales_el.ini" Guid="b970189c-2ad8-4615-b32a-b8cdd73f3ce7">
+          <File Name="el.ini"/>
+        </Component>
         <Component Id="locales_en.ini" Guid="c5622430-d713-11e2-8b8b-0800200c9a66">
           <File Name="en.ini"/>
         </Component>
+        <Component Id="locales_es_ES.ini" Guid="2acf58cf-7e1e-4f42-89c6-7018d4b92527">
+          <File Name="es-ES.ini"/>
+        </Component>
+        <Component Id="locales_et.ini" Guid="11f6ea6b-e4ac-49fa-a41d-756df8fa2c48">
+          <File Name="et.ini"/>
+        </Component>
+        <Component Id="locales_eu.ini" Guid="179abc5f-e70b-4a58-9881-7ca27bf6da47">
+          <File Name="eu.ini"/>
+        </Component>
+        <Component Id="locales_fa.ini" Guid="fb358e71-8843-452b-98b4-af8bb618c45b">
+          <File Name="fa.ini"/>
+        </Component>
+        <Component Id="locales_fi.ini" Guid="4af580a0-7c3c-4552-8cf0-7c1a65f22438">
+          <File Name="fi.ini"/>
+        </Component>
+        <Component Id="locales_fil.ini" Guid="aeece306-318f-48a1-a0ac-b94f022d3d60">
+          <File Name="fil.ini"/>
+        </Component>
+        <Component Id="locales_fr.ini" Guid="543f944a-e20b-42fc-931d-875f399fb82a">
+          <File Name="fr.ini"/>
+        </Component>
+        <Component Id="locales_ga_IE.ini" Guid="f87a10c0-4692-4a82-bdff-0d00f385dfbc">
+          <File Name="ga-IE.ini"/>
+        </Component>
+        <Component Id="locales_gl.ini" Guid="cdbfdfd9-310b-4e5f-b00d-d462fa560bb3">
+          <File Name="gl.ini"/>
+        </Component>
+        <Component Id="locales_gu_IN.ini" Guid="d50bc57b-a02a-4a62-b066-2ff224cf4c9c">
+          <File Name="gu-IN.ini"/>
+        </Component>
+        <Component Id="locales_he.ini" Guid="691a5871-71ca-48cc-9869-ec1acacda7f2">
+          <File Name="he.ini"/>
+        </Component>
+        <Component Id="locales_hi.ini" Guid="d1e62141-1c1a-45ff-9c5f-f4c11d0b04e6">
+          <File Name="hi.ini"/>
+        </Component>
+        <Component Id="locales_hr.ini" Guid="e285c729-215e-4a9c-85c5-6a45cafc850a">
+          <File Name="hr.ini"/>
+        </Component>
+        <Component Id="locales_hu.ini" Guid="7f84c5b5-b292-4444-a73a-14c86ee1e0ed">
+          <File Name="hu.ini"/>
+        </Component>
+        <Component Id="locales_hy_AM.ini" Guid="302e915a-2f2a-4492-a3d5-cdc5074d9f4b">
+          <File Name="hy-AM.ini"/>
+        </Component>
+        <Component Id="locales_is.ini" Guid="1b44e363-ebc3-4dc0-85ff-bdd9a7e97d89">
+          <File Name="is.ini"/>
+        </Component>
+        <Component Id="locales_it.ini" Guid="49843985-89c8-4aff-bd8e-fb5445d9b9bc">
+          <File Name="it.ini"/>
+        </Component>
+        <Component Id="locales_ja.ini" Guid="292edd8f-0f9e-4c83-8583-d6f1642e561f">
+          <File Name="ja.ini"/>
+        </Component>
+        <Component Id="locales_ka.ini" Guid="c919ef5f-d2e2-495b-a1c5-82efd67546c8">
+          <File Name="ka.ini"/>
+        </Component>
+        <Component Id="locales_kk.ini" Guid="c104d59d-5c7c-4375-bbd6-124a3902ce50">
+          <File Name="kk.ini"/>
+        </Component>
+        <Component Id="locales_km.ini" Guid="a03ba982-79ce-4da8-ab44-12a1ccf22905">
+          <File Name="km.ini"/>
+        </Component>
+        <Component Id="locales_kn.ini" Guid="1cfb9189-fb89-4cf8-b97a-65273f2c0541">
+          <File Name="kn.ini"/>
+        </Component>
+        <Component Id="locales_ko.ini" Guid="ac35398c-b8dc-41ac-943e-28fcea7ca6f9">
+          <File Name="ko.ini"/>
+        </Component>
+        <Component Id="locales_lb.ini" Guid="8ef2495b-b20b-425f-b8f4-222fb168659a">
+          <File Name="lb.ini"/>
+        </Component>
+        <Component Id="locales_lt.ini" Guid="f72ecd23-6cd4-40cb-b068-24a4de7b4302">
+          <File Name="lt.ini"/>
+        </Component>
+        <Component Id="locales_lv.ini" Guid="adb820be-e1a6-416c-acc8-a6bb31c80d7a">
+          <File Name="lv.ini"/>
+        </Component>
+        <Component Id="locales_mi.ini" Guid="62dd48e6-cd00-4c98-9930-e260c2cc0601">
+          <File Name="mi.ini"/>
+        </Component>
+        <Component Id="locales_mk.ini" Guid="42b16da9-af05-4423-8a72-8492a777c63e">
+          <File Name="mk.ini"/>
+        </Component>
+        <Component Id="locales_ml_IN.ini" Guid="8766521a-fee3-4404-831e-c4bb44eb5e4f">
+          <File Name="ml-IN.ini"/>
+        </Component>
+        <Component Id="locales_mr.ini" Guid="e7351e07-87fe-4185-8def-c32086a15145">
+          <File Name="mr.ini"/>
+        </Component>
+        <Component Id="locales_ms.ini" Guid="bd858ff5-269d-42d1-a482-767177097a92">
+          <File Name="ms.ini"/>
+        </Component>
+        <Component Id="locales_mt.ini" Guid="546032e9-3ffc-4e33-82ef-0d9799f10ee7">
+          <File Name="mt.ini"/>
+        </Component>
+        <Component Id="locales_nb.ini" Guid="1217b6c4-69c9-43aa-8949-62c4d4fcd02f">
+          <File Name="nb.ini"/>
+        </Component>
+        <Component Id="locales_ne_NP.ini" Guid="0a388fba-c446-4276-b944-a99e53e25b3b">
+          <File Name="ne-NP.ini"/>
+        </Component>
+        <Component Id="locales_nl.ini" Guid="ef0d8100-2d49-4309-a653-a13785d9311d">
+          <File Name="nl.ini"/>
+        </Component>
+        <Component Id="locales_nn_NO.ini" Guid="08b05411-a908-4dd6-8691-13fedae92ffc">
+          <File Name="nn-NO.ini"/>
+        </Component>
+        <Component Id="locales_or.ini" Guid="b1c8d9f1-eabe-4d78-bee5-186f5ae54955">
+          <File Name="or.ini"/>
+        </Component>
+        <Component Id="locales_pa_IN.ini" Guid="9ff0faa2-963d-4bcd-ab59-f6144cc5a465">
+          <File Name="pa-IN.ini"/>
+        </Component>
+        <Component Id="locales_pl.ini" Guid="2b13846c-2b81-464b-995e-83df9623205b">
+          <File Name="pl.ini"/>
+        </Component>
+        <Component Id="locales_pt_BR.ini" Guid="a72846c2-e263-42a9-80bc-dc8e4a0ead76">
+          <File Name="pt-BR.ini"/>
+        </Component>
+        <Component Id="locales_pt_PT.ini" Guid="bd0e8723-772c-4d66-8afc-30cff3ba904a">
+          <File Name="pt-PT.ini"/>
+        </Component>
+        <Component Id="locales_ro.ini" Guid="83cd96c0-4edc-4fa9-9145-4c88875772ad">
+          <File Name="ro.ini"/>
+        </Component>
         <Component Id="locales_ru.ini" Guid="d06e3490-d713-11e2-8b8b-0800200c9a66">
           <File Name="ru.ini"/>
+        </Component>
+        <Component Id="locales_si_LK.ini" Guid="dbb7c66c-e21e-402a-9ee2-90adb51da7e8">
+          <File Name="si-LK.ini"/>
+        </Component>
+        <Component Id="locales_sk.ini" Guid="8edf0206-ccc2-4f7c-a6e8-a494646e46a9">
+          <File Name="sk.ini"/>
+        </Component>
+        <Component Id="locales_sl.ini" Guid="160bea38-36fc-4278-a5f6-5d781879b929">
+          <File Name="sl.ini"/>
+        </Component>
+        <Component Id="locales_sq.ini" Guid="aab46279-3ab7-4836-ba97-4e84a106b131">
+          <File Name="sq.ini"/>
+        </Component>
+        <Component Id="locales_sr_CS.ini" Guid="a65d66e2-68cf-4384-a306-94ed58781ac0">
+          <File Name="sr-CS.ini"/>
+        </Component>
+        <Component Id="locales_sr.ini" Guid="4bd35f58-16bd-408c-b0d2-1e2e202e94a9">
+          <File Name="sr.ini"/>
+        </Component>
+        <Component Id="locales_sv_SE.ini" Guid="7f0766a9-73ce-440d-88ef-33363390e21c">
+          <File Name="sv-SE.ini"/>
+        </Component>
+        <Component Id="locales_ta.ini" Guid="b0193bef-0202-4058-9216-6e6691e7d6af">
+          <File Name="ta.ini"/>
+        </Component>
+        <Component Id="locales_te.ini" Guid="880aa83f-e3a4-48ea-8398-30c8a77ead6e">
+          <File Name="te.ini"/>
+        </Component>
+        <Component Id="locales_th.ini" Guid="0fe17e7e-99a1-4355-a3eb-11cc94d2319a">
+          <File Name="th.ini"/>
+        </Component>
+        <Component Id="locales_tr.ini" Guid="5dc19107-7843-46fb-abf0-f3933e710822">
+          <File Name="tr.ini"/>
+        </Component>
+        <Component Id="locales_tt_RU.ini" Guid="6d0d3a08-fbc3-43ce-a419-1f808047ff27">
+          <File Name="tt-RU.ini"/>
+        </Component>
+        <Component Id="locales_uk.ini" Guid="7ceda30d-cb1b-4b6c-b34d-2034b8d14229">
+          <File Name="uk.ini"/>
+        </Component>
+        <Component Id="locales_ur_PK.ini" Guid="cb57112a-200b-4789-8077-0e939924853a">
+          <File Name="ur-PK.ini"/>
+        </Component>
+        <Component Id="locales_uz.ini" Guid="e5962669-0154-48d9-bd73-de03e8b55ed4">
+          <File Name="uz.ini"/>
+        </Component>
+        <Component Id="locales_vi.ini" Guid="028a2383-8e89-4300-a022-9568ed914d42">
+          <File Name="vi.ini"/>
+        </Component>
+        <Component Id="locales_xh.ini" Guid="b7b53a80-5364-40b5-a011-fa363d446102">
+          <File Name="xh.ini"/>
+        </Component>
+        <Component Id="locales_zh_CN.ini" Guid="c02225f8-9b2c-4388-a977-df6cda67d836">
+          <File Name="zh-CN.ini"/>
+        </Component>
+        <Component Id="locales_zh_HK.ini" Guid="3c8050f9-fbc8-48e1-844a-46ae997da276">
+          <File Name="zh-HK.ini"/>
+        </Component>
+        <Component Id="locales_zh_TW.ini" Guid="9281de74-822c-493c-8122-9a786a099ace">
+          <File Name="zh-TW.ini"/>
+        </Component>
+        <Component Id="locales_zu.ini" Guid="6958c098-99df-4ced-96fa-6436f934981d">
+          <File Name="zu.ini"/>
         </Component>
       </Directory>
     </DirectoryRef>
