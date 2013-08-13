@@ -31,7 +31,7 @@ VERSION = 99.9
 
 Installer_ia32 = $(Build_Dir_ia32)adblockplusie-$(VERSION)-en-us-ia32.msi
 Installer_x64  = $(Build_Dir_x64)adblockplusie-$(VERSION)-en-us-x64.msi
-Setup = $(Build_Dir_common)setup-$(VERSION).exe
+Setup = $(Build_Dir_common)adblockplusie-$(VERSION).exe
 
 !ifndef ARCH
 default: $(Installer_ia32) $(Installer_x64)
@@ -80,10 +80,11 @@ $(object_setup): setup.wxs
 Light = light -notidy -nologo -cultures:en-us -ext WixUIExtension -out $@
 
 $(Installer_ia32): $(objects_ia32) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll"
-    $(Light) $(objects_ia32) $(objects_common) -loc en-us.wxl 
+    $(Light) $(objects_ia32) $(objects_common) -loc en-us.wxl
 
+# TODO: Don't ignore errors here (fix install paths)
 $(Installer_x64): $(objects_x64) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll" "..\build\x64\$(Configuration)\AdblockPlus.dll"
-    $(Light) $(objects_x64) $(objects_common) -loc en-us.wxl
+    -$(Light) $(objects_x64) $(objects_common) -loc en-us.wxl
 
 #---------------------
 # light .wixobj --> .exe
@@ -114,7 +115,7 @@ uninstall:
     msiexec /x {4f27c814-5ee0-4b25-b3ab-3ad565551918}
 
 install-setup: $(Setup)
-    $(Setup) -log ..\build\setup.log 
+    $(Setup) -log ..\build\setup.log
 
 #---------------------
 # Miscellaneous
