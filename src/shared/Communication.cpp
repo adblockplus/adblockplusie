@@ -157,8 +157,6 @@ void Communication::Pipe::WriteMessage(Communication::OutputBuffer& message)
 {
   DWORD bytesWritten;
   std::string data = message.Get();
-  if (!data.length())
-    return;
   if (!WriteFile(pipe, data.c_str(), data.length(), &bytesWritten, 0))
     throw std::runtime_error("Failed to write to pipe");
 }
