@@ -42,7 +42,7 @@ namespace
                << subscription->IsListed();
     }
   }
-  
+
   bool updateAvailable;
   void UpdateCallback(const std::string res)
   {
@@ -341,10 +341,11 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
   appInfo.version = ToUtf8String(IEPLUGIN_VERSION);
   appInfo.name = "adblockplusie";
 #ifdef _WIN64
-  appInfo.platform = "msie64";
+  appInfo.application = "msie64";
 #else
-  appInfo.platform = "msie32";
+  appInfo.application = "msie32";
 #endif
+  // TODO: Set applicationVersion parameter
   appInfo.locale = ToUtf8String(locale);
 #ifdef ADBLOCK_PLUS_TEST_MODE
   appInfo.developmentBuild = true;
