@@ -2,12 +2,21 @@
 
 import sys, os, re, subprocess
 
-if len(sys.argv) < 2:
-  print >>sys.stderr, "Please add a command line parameter with the path of the signing key file"
+def print_usage():
+  print >>sys.stderr, "Usage: %s release|devbuild SIGNING_KEY_FILE" % (os.path.basename(sys.argv[0]))
+
+if len(sys.argv) < 3:
+  print_usage()
   sys.exit(1)
 
 basedir = os.path.dirname(os.path.abspath(sys.argv[0]))
-key = sys.argv[1]
+build_type = sys.argv[1]
+
+if not build_type in ["release", "devbuild"]:
+  print_usage()
+  sys.exit(2)
+
+key = sys.argv[2]
 
 def sign(*argv):
   subprocess.check_call([
@@ -28,13 +37,15 @@ def read_macro_value(file, macro):
   raise Exception("Macro %s not found in file %s" % (macro, file))
 
 version = read_macro_value(os.path.join(basedir, "src", "shared", "Version.h"), "IEPLUGIN_VERSION");
-buildnum = subprocess.check_output(['hg', 'id', '-R', basedir, '-n'])
-buildnum = re.sub(r'\D', '', buildnum)
-while version.count(".") < 1:
-  version += ".0"
-version += ".%s" % buildnum
 
-subprocess.check_call([os.path.join(basedir, "createsolution.bat"), version, "devbuild"])
+if build_type == "devbuild":
+  while version.count(".") < 1:
+    version += ".0"
+  buildnum = subprocess.check_output(['hg', 'id', '-R', basedir, '-n'])
+  buildnum = re.sub(r'\D', '', buildnum)
+  version += ".%s" % buildnum
+
+subprocess.check_call([os.path.join(basedir, "createsolution.bat"), version, build_type])
 
 for arch in ("ia32", "x64"):
   subprocess.check_call([
