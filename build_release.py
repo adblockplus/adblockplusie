@@ -53,4 +53,11 @@ sign(os.path.join(basedir, "build", "ia32", "adblockplusie-%s-en-us-ia32.msi" % 
     os.path.join(basedir, "build", "x64", "adblockplusie-%s-en-us-x64.msi" % version))
 
 subprocess.check_call(["nmake", "/A", "setup"], env=installerParams, cwd=os.path.join(basedir, "installer"))
-sign(os.path.join(basedir, "build", "adblockplusie-%s.exe" % version))
+
+# Do the signing dance described on http://wix.sourceforge.net/manual-wix3/insignia.htm
+bundle = os.path.join(basedir, "build", "adblockplusie-%s.exe" % version)
+engine = os.path.join(basedir, "build", "engine-%s.exe" % version)
+subprocess.check_call(["insignia", "-ib", bundle, "-o", engine])
+sign(engine)
+subprocess.check_call(["insignia", "-ab", engine, bundle, "-o", bundle])
+sign(bundle)
