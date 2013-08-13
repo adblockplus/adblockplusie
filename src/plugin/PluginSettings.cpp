@@ -66,7 +66,7 @@ CPluginSettings* CPluginSettings::s_instance = NULL;
 CComAutoCriticalSection CPluginSettings::s_criticalSectionLocal;
 
 
-CPluginSettings::CPluginSettings() : m_dwWorkingThreadId(0), m_isPluginEnabledTab(true)
+CPluginSettings::CPluginSettings() : m_dwWorkingThreadId(0)
 {
   s_instance = NULL;
 
@@ -149,7 +149,7 @@ CString CPluginSettings::GetSystemLanguage()
 
 bool CPluginSettings::IsPluginEnabled() const
 {
-  return m_isPluginEnabledTab;
+  return GetPluginEnabled();
 }
 
 
@@ -187,30 +187,11 @@ void CPluginSettings::SetWorkingThreadId(DWORD id)
 
 void CPluginSettings::TogglePluginEnabled()
 {
-  CPluginSettingsTabLock lock;
-  if (lock.IsLocked())
-  {
-    s_criticalSectionLocal.Lock();
-    {
-      //TODO: Query if plugin is enabled from the AdblockPlusEngine
-      m_isPluginEnabledTab = m_isPluginEnabledTab ? false : true;
-      //TODO: Set plugin enabled/disabled in AdblockPlusEngine
-    }
-    s_criticalSectionLocal.Unlock();
-  }
+  GetPluginEnabled() ? SetPluginDisabled() : SetPluginEnabled();   
 }
 void CPluginSettings::SetPluginDisabled()
 {
-  CPluginSettingsTabLock lock;
-  if (lock.IsLocked())
-  {
-    s_criticalSectionLocal.Lock();
-    {
-      m_isPluginEnabledTab = false;
-      //TODO: Set plugin disabled in AdblockPlusEngine
-    }
-    s_criticalSectionLocal.Unlock();
-  }
+  CPluginClient::GetInstance()->SetPref(L"enabled", false);  
 }
 void CPluginSettings::SetPluginEnabled()
 {

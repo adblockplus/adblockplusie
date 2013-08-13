@@ -87,10 +87,6 @@ public:
   static CString GetSystemLanguage();
   DWORD m_WindowsBuildNumber;
 
-private:
-
-  bool m_isPluginEnabledTab;
-
 public:
 
   void TogglePluginEnabled();
