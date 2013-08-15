@@ -81,13 +81,9 @@ Updater::Updater(AdblockPlus::JsEnginePtr jsEngine)
 {
 }
 
-void Updater::SetUrl(const std::string& url)
+void Updater::Update(const std::string& url)
 {
   this->url = url;
-}
-
-void Updater::Update()
-{
   Debug("Downloading update: " + url);
   ThreadCallbackType* callback = new ThreadCallbackType(std::bind(&Updater::Download, this));
   ::CreateThread(NULL, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(&RunThread), callback, 0, NULL);
