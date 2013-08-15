@@ -330,8 +330,7 @@ namespace
     }
     updateAvailable = true;
 
-    updater->SetUrl(params[0]->AsString());
-    updater->Update();
+    updater->Update(params[0]->AsString());
   }
 }
 
