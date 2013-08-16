@@ -22,7 +22,7 @@ namespace
   void WriteStrings(Communication::OutputBuffer& response,
       const std::vector<std::string>& strings)
   {
-    int32_t count = strings.size();
+    int32_t count = static_cast<int32_t>(strings.size());
     response << count;
     for (int32_t i = 0; i < count; i++)
       response << strings[i];
@@ -31,7 +31,7 @@ namespace
   void WriteSubscriptions(Communication::OutputBuffer& response,
       const std::vector<AdblockPlus::SubscriptionPtr>& subscriptions)
   {
-    int32_t count = subscriptions.size();
+    int32_t count = static_cast<int32_t>(subscriptions.size());
     response << count;
     for (int32_t i = 0; i < count; i++)
     {
@@ -136,8 +136,8 @@ namespace
             //@@||example.com^$document
             const char prefix[] = "@@||";
             const char suffix[] = "^$document";
-            const int prefixLen = strlen(prefix);
-            const int suffixLen = strlen(suffix);
+            const size_t prefixLen = strlen(prefix);
+            const size_t suffixLen = strlen(suffix);
             if (!text.compare(0, prefixLen, prefix) &&
                 !text.compare(text.size() - suffixLen, suffixLen, suffix))
             {

@@ -27,11 +27,11 @@ bool IsWindowsVistaOrLater()
 
 std::string ToUtf8String(const std::wstring& str)
 {
-  size_t length = str.size();
+  int length = static_cast<int>(str.size());
   if (length == 0)
     return std::string();
 
-  DWORD utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, 0, 0, 0, 0);
+  int utf8StringLength = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), length, 0, 0, 0, 0);
   if (utf8StringLength == 0)
     throw std::runtime_error("Failed to determine the required buffer size");
 
@@ -42,11 +42,11 @@ std::string ToUtf8String(const std::wstring& str)
 
 std::wstring ToUtf16String(const std::string& str)
 {
-  size_t length = str.size();
+  int length = static_cast<int>(str.size());
   if (length == 0)
     return std::wstring();
 
-  DWORD utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, NULL, 0);
+  int utf16StringLength = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), length, NULL, 0);
   if (utf16StringLength == 0)
     throw std::runtime_error("ToUTF16String failed. Can't determine the length of the buffer needed.");
 
@@ -58,13 +58,13 @@ std::wstring ToUtf16String(const std::string& str)
 std::wstring GetDllDir()
 {
   std::vector<WCHAR> path(MAX_PATH);
-  DWORD length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], path.size());
+  int length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], static_cast<DWORD>(path.size()));
 
   while (length == path.size())
   {
     // Buffer too small, double buffer size
     path.resize(path.size() * 2);
-    length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], path.size());
+    length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], static_cast<DWORD>(path.size()));
   }
 
   try
