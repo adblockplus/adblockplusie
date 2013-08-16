@@ -86,7 +86,7 @@ STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames
   if (indxMethod == countof(s_Methods))
     return DISP_E_MEMBERNOTFOUND;
 
-  *rgdispid = indxMethod;
+  *rgdispid = static_cast<DISPID>(indxMethod);
 
   return S_OK;
 }
@@ -159,7 +159,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       std::map<CString, CString> languageList = settings->GetFilterLanguageTitleList();
 
       pVarResult->vt = VT_I4;
-      pVarResult->lVal = languageList.size();
+      pVarResult->lVal = static_cast<LONG>(languageList.size());
     }
   }
   else if (s_GetLanguageByIndex == method)

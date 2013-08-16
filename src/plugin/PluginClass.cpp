@@ -989,7 +989,7 @@ bool CPluginClass::CreateStatusBarPane()
   m_pWndProcStatus = (WNDPROC)SetWindowLongPtr(hWndStatusBar, GWLP_WNDPROC, (LPARAM)(WNDPROC)NewStatusProc);
 
   // Adjust pane
-  UINT nPartCount = ::SendMessage(m_hStatusBarWnd, SB_GETPARTS, 0, 0);
+  LRESULT nPartCount = ::SendMessage(m_hStatusBarWnd, SB_GETPARTS, 0, 0);
 
   if (nPartCount > 1)
   {
@@ -1390,7 +1390,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
     }
     fmii.fMask = MIIM_STRING | MIIM_STATE;
     fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-    fmii.cch = ctext.size();
+    fmii.cch = static_cast<UINT>(ctext.size());
 
     ::SetMenuItemInfoW(hMenu, ID_MENU_DISABLE_ON_SITE, FALSE, &fmii);
   }
@@ -1405,7 +1405,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.fState = client ? MFS_ENABLED : MFS_DISABLED;
   fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-  fmii.cch = ctext.size();
+  fmii.cch = static_cast<UINT>(ctext.size());
   ::SetMenuItemInfoW(hMenu, ID_MENU_UPDATE, FALSE, &fmii);
 
 
@@ -1421,7 +1421,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   }
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-  fmii.cch = ctext.size();
+  fmii.cch = static_cast<UINT>(ctext.size());
   ::SetMenuItemInfoW(hMenu, ID_MENU_DISABLE, FALSE, &fmii);
 
   // Settings
@@ -1429,7 +1429,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   fmii.fMask  = MIIM_STATE | MIIM_STRING;
   fmii.fState = MFS_ENABLED;
   fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-  fmii.cch = ctext.size();
+  fmii.cch = static_cast<UINT>(ctext.size());
   ::SetMenuItemInfoW(hMenu, ID_MENU_SETTINGS, FALSE, &fmii);
 
   return true;
@@ -1552,7 +1552,7 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
         return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
       }
 
-      int nParts = wParam;
+      int nParts = static_cast<int>(wParam);
       if (STATUSBAR_PANE_NUMBER >= nParts)
       {
         return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);

@@ -58,7 +58,7 @@ namespace
     RECT alphabetRect = {};
     DrawTextW(deviceContext, alphabet.c_str(), -1, &alphabetRect,
               DT_CALCRECT | DT_NOPREFIX);
-    return alphabetRect.right / alphabet.length();
+    return alphabetRect.right / static_cast<int>(alphabet.length());
   }
 
   HWND CreateStaticText(HWND parent)

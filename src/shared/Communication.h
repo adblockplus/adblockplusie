@@ -132,7 +132,7 @@ namespace Communication
     {
       WriteBinary(type);
 
-      SizeType length = value.size();
+      SizeType length = static_cast<SizeType>(value.size());
       WriteBinary(length);
 
       buffer.write(reinterpret_cast<const char*>(value.c_str()), sizeof(T::value_type) * length);
