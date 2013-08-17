@@ -1552,7 +1552,7 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
         return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
       }
 
-      int nParts = static_cast<int>(wParam);
+      WPARAM nParts = wParam;
       if (STATUSBAR_PANE_NUMBER >= nParts)
       {
         return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
