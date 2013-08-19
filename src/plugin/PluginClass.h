@@ -139,6 +139,8 @@ private:
   int m_nPaneWidth;
   HANDLE m_hTheme;
 
+  CriticalSection m_csStatusBar;
+
   bool m_isAdviced;
   bool m_isInitializedOk;
 

@@ -113,6 +113,7 @@ CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
 
 bool CAdblockPlusClient::CallEngine(Communication::OutputBuffer& message, Communication::InputBuffer& inputBuffer)
 {
+  DEBUG_GENERAL("CallEngine start");
   CriticalSection::Lock lock(enginePipeLock);
   try
   {
@@ -126,6 +127,7 @@ bool CAdblockPlusClient::CallEngine(Communication::OutputBuffer& message, Commun
     DEBUG_GENERAL(e.what());
     return false;
   }
+  DEBUG_GENERAL("CallEngine end");
   return true;
 }
 
@@ -220,6 +222,7 @@ bool CAdblockPlusClient::IsElementHidden(const CString& tag, IHTMLElement* pEl, 
 
 bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url)
 {
+  DEBUG_GENERAL((L"IsWhitelistedUrl: " + url + L" start").c_str());
   Communication::OutputBuffer request;
   request << Communication::PROC_IS_WHITELISTED_URL << ToUtf8String(url);
 
@@ -229,6 +232,8 @@ bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url)
 
   bool isWhitelisted;
   response >> isWhitelisted;
+
+  DEBUG_GENERAL((L"IsWhitelistedUrl: " + url + L" end").c_str());
   return isWhitelisted;
 }
 
@@ -316,6 +321,7 @@ std::vector<std::wstring> CAdblockPlusClient::GetExceptionDomains()
 
 bool CAdblockPlusClient::IsFirstRun()
 {
+  DEBUG_GENERAL("IsFirstRun");
   Communication::InputBuffer response;
   if (!CallEngine(Communication::PROC_IS_FIRST_RUN_ACTION_NEEDED, response)) return false;
   bool res;
@@ -363,6 +369,7 @@ std::wstring CAdblockPlusClient::GetPref(const std::wstring& name, const wchar_t
 }
 std::wstring CAdblockPlusClient::GetPref(const std::wstring& name, const std::wstring& defaultValue)
 {
+  DEBUG_GENERAL((L"GetPref: " + name + L" start").c_str());
   Communication::OutputBuffer request;
   request << Communication::PROC_GET_PREF << ToUtf8String(name);
 
@@ -375,14 +382,19 @@ std::wstring CAdblockPlusClient::GetPref(const std::wstring& name, const std::ws
   {
     std::string value;
     response >> value;
+    DEBUG_GENERAL((L"GetPref: " + name + L" end").c_str());
     return ToUtf16String(value);
   }
   else
+  {
+    DEBUG_GENERAL((L"GetPref: " + name + L" end").c_str());
     return defaultValue;
+  }
 }
 
 bool CAdblockPlusClient::GetPref(const std::wstring& name, bool defaultValue)
 {
+  DEBUG_GENERAL((L"GetPref: " + name + L" start").c_str());
   Communication::OutputBuffer request;
   request << Communication::PROC_GET_PREF << ToUtf8String(name);
 
@@ -395,13 +407,18 @@ bool CAdblockPlusClient::GetPref(const std::wstring& name, bool defaultValue)
   {
     bool value;
     response >> value;
+    DEBUG_GENERAL((L"GetPref: " + name + L" end").c_str());
     return value;
   }
   else
+  {
+    DEBUG_GENERAL((L"GetPref: " + name + L" end").c_str());
     return defaultValue;
+  }
 }
 int64_t CAdblockPlusClient::GetPref(const std::wstring& name, int64_t defaultValue)
 {
+  DEBUG_GENERAL((L"GetPref: " + name + L" start").c_str());
   Communication::OutputBuffer request;
   request << Communication::PROC_GET_PREF << ToUtf8String(name);
 
@@ -414,10 +431,14 @@ int64_t CAdblockPlusClient::GetPref(const std::wstring& name, int64_t defaultVal
   {
     int64_t value;
     response >> value;
+    DEBUG_GENERAL((L"GetPref: " + name + L" end").c_str());
     return value;
   }
   else
+  {
+    DEBUG_GENERAL((L"GetPref: " + name + L" end").c_str());
     return defaultValue;
+  }
 }
 
 void CAdblockPlusClient::CheckForUpdates()
@@ -427,6 +448,7 @@ void CAdblockPlusClient::CheckForUpdates()
 
 std::wstring CAdblockPlusClient::GetDocumentationLink()
 {
+  DEBUG_GENERAL("GetDocumentationLink");
   Communication::InputBuffer response;
   if (!CallEngine(Communication::PROC_GET_DOCUMENTATION_LINK, response)) 
     return L"";

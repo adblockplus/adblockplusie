@@ -111,15 +111,18 @@ void CPluginTabBase::OnNavigate(const CString& url)
 
 void CPluginTabBase::InjectABP(IWebBrowser2* browser)
 {
+  CriticalSection::Lock lock(m_csInject);
   CString url = GetDocumentUrl();
   CString log;
-  log.Format(L"Current URL: %s, settings URL: %s", url, UserSettingsFileUrl().c_str());
+  log.Format(L"InjectABP. Current URL: %s, settings URL: %s", url, UserSettingsFileUrl().c_str());
   DEBUG_GENERAL(log);
   if (!(0 == url.CompareNoCase(CString(UserSettingsFileUrl().c_str())) ||
       0 == url.CompareNoCase(CString(FirstRunPageFileUrl().c_str()))))
   {
+    DEBUG_GENERAL(L"Not injecting");
     return;
   }
+  DEBUG_GENERAL(L"Going to inject");
   CComPtr<IDispatch> pDocDispatch;
   browser->get_Document(&pDocDispatch);
   CComQIPtr<IHTMLDocument2> pDoc2 = pDocDispatch;
@@ -152,12 +155,15 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
   }
   CComVariant var((IDispatch*)&m_pluginUserSettings);
 
+  DEBUG_GENERAL("Injecting");
+
   DISPPARAMS params;
   params.cArgs = 1;
   params.cNamedArgs = 0;
   params.rgvarg = &var;
   params.rgdispidNamedArgs = 0;
   hr = pWndEx->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYPUT | DISPATCH_PROPERTYPUTREF, &params, 0, 0, 0);
+  DEBUG_GENERAL("Invoke");
   if (FAILED(hr))
   {
     DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to create Settings in JavaScript");

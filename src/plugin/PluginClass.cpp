@@ -271,6 +271,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       // Check if loaded as BHO
       if (GetBrowser())
       {
+        DEBUG_GENERAL("Loaded as BHO");
         CComPtr<IConnectionPoint> pPoint = GetConnectionPoint();
         if (pPoint)
         {
@@ -295,6 +296,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       }
       else // Check if loaded as toolbar handler
       {
+        DEBUG_GENERAL("Loaded as toolbar handler");
         CComPtr<IServiceProvider> pServiceProvider;
 
         HRESULT hr = unknownSite->QueryInterface(&pServiceProvider);
@@ -328,6 +330,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     }
     catch (std::runtime_error e)
     {
+      DEBUG_ERROR(e.what());
       Unadvice();
     }
   }
@@ -390,6 +393,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
 bool CPluginClass::IsStatusBarEnabled()
 {
+  DEBUG_GENERAL("IsStatusBarEnabled start");
   HKEY pHkey;
   HKEY pHkeySub;
   RegOpenCurrentUser(KEY_QUERY_VALUE, &pHkey);
@@ -410,11 +414,14 @@ bool CPluginClass::IsStatusBarEnabled()
       }
     }
   }
+  DEBUG_GENERAL("IsStatusBarEnabled end");
   return trueth == 1;
 }
 
 void CPluginClass::ShowStatusBar()
 {
+  DEBUG_GENERAL("ShowStatusBar start");
+
   VARIANT_BOOL isVisible;
 
 
@@ -494,6 +501,7 @@ void CPluginClass::ShowStatusBar()
       DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_STATUSBAR, "Class::Get statusbar state");
     }
   }
+  DEBUG_GENERAL("ShowStatusBar end");
 }
 
 void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
@@ -566,6 +574,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 }
 STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
 {
+  DEBUG_GENERAL("Tab changed");
   bool newtabshown = pDispParams->rgvarg[1].intVal==3;
   if (newtabshown)
   {
@@ -586,6 +595,7 @@ STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
       }
     }
   }
+  DEBUG_GENERAL("Tab change end");
   return VARIANT_TRUE;
 }
 
@@ -646,12 +656,15 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
     }
     else
     {
-      RECT rect;
-      BOOL rectRes = GetClientRect(m_hStatusBarWnd, &rect);
-      if (rectRes == TRUE)
+      if (CPluginClient::GetInstance()->GetIEVersion() > 6)
       {
-        MoveWindow(m_hPaneWnd, rect.right - 200, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
-      }
+        RECT rect;
+        BOOL rectRes = GetClientRect(m_hStatusBarWnd, &rect);
+        if (rectRes == TRUE)
+        {
+          MoveWindow(m_hPaneWnd, rect.right - 200, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
+        }
+      }      
     }
     break;
   case DISPID_STATUSTEXTCHANGE:
@@ -729,6 +742,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
 
 bool CPluginClass::InitObject(bool bBHO)
 {
+  DEBUG_GENERAL("InitObject");
   CPluginSettings* settings = CPluginSettings::GetInstance();
 
   if (!settings->GetPluginEnabled())
@@ -802,19 +816,17 @@ bool CPluginClass::InitObject(bool bBHO)
   }
 
 
+  int ieVersion = CPluginClient::GetInstance()->GetIEVersion();
   // Create status pane
-  if (bBHO)
+  if (bBHO && ieVersion > 6 && !CreateStatusBarPane())
   {
-    if (!CreateStatusBarPane())
-    {
-      return false;
-    }
+    return false;
   }
-
+  
   if (CPluginClient::GetInstance()->IsFirstRun())
   {   
     // IE6 can't be accessed from another thread, execute in current thread
-    if (CPluginClient::GetInstance()->GetIEVersion() < 7)
+    if (ieVersion < 7)
     {
       FirstRunThread();
     }
@@ -833,31 +845,22 @@ bool CPluginClass::InitObject(bool bBHO)
 
 bool CPluginClass::CreateStatusBarPane()
 {
-  DEBUG_GENERAL(L"Getting client");
+  CriticalSection::Lock lock(m_csStatusBar);
 
   CPluginClient* client = CPluginClient::GetInstance();
 
-  DEBUG_GENERAL(L"Getting ieversion");
-
-  if (client->GetIEVersion()< 7)
-
-    return true;
-
   TCHAR szClassName[MAX_PATH];
-  DEBUG_GENERAL(L"Getting browser wnd");
   // Get browser window and url
   HWND hBrowserWnd = GetBrowserHWND();
   if (!hBrowserWnd)
   {
     DEBUG_ERROR_LOG(0, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_NO_STATUSBAR_BROWSER, "Class::CreateStatusBarPane - No status bar")
-      return false;
+    return false;
   }
 
   // Looking for a TabWindowClass window in IE7
   // the last one should be parent for statusbar
   HWND hWndStatusBar = NULL;
-
-  DEBUG_GENERAL(L"Locating status bar window");
 
   HWND hTabWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
   UINT amoundOfNewTabs = 0;
@@ -916,8 +919,6 @@ bool CPluginClass::CreateStatusBarPane()
     hTabWnd = ::GetWindow(hTabWnd, GW_HWNDNEXT);
   }
 
-  DEBUG_GENERAL(L"status bar window located");
-
   HWND hWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
   while (hWnd)
   {
@@ -933,12 +934,10 @@ bool CPluginClass::CreateStatusBarPane()
     hWnd = ::GetWindow(hWnd, GW_HWNDNEXT);
   }
 
-  DEBUG_GENERAL(L"Status bar located 2");
-
   if (!hWndStatusBar)
   {
     DEBUG_ERROR_LOG(0, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_NO_STATUSBAR_WIN, "Class::CreateStatusBarPane - No status bar")
-      return true;
+    return true;
   }
 
   // Calculate pane height
@@ -976,9 +975,10 @@ bool CPluginClass::CreateStatusBarPane()
   if (!hWndNewPane)
   {
     DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_CREATE_STATUSBAR_PANE, "Class::CreateStatusBarPane - CreateWindowEx")
-      return false;
+    return false;
   }
 
+  DEBUG_GENERAL("ABP window created");
   m_hTabWnd = hTabWnd;
   m_hStatusBarWnd = hWndStatusBar;
   m_hPaneWnd = hWndNewPane;
@@ -998,12 +998,13 @@ bool CPluginClass::CreateStatusBarPane()
     ::SendMessage(m_hStatusBarWnd, SB_GETPARTS, nPartCount, (LPARAM)pData);
     ::SendMessage(m_hStatusBarWnd, SB_SETPARTS, nPartCount, (LPARAM)pData);
 
-    delete[] pData;
+    delete []pData;
   }
+    
   HDC hdc = GetWindowDC(m_hStatusBarWnd);
   SendMessage(m_hStatusBarWnd, WM_PAINT, (WPARAM)hdc, 0);
   ReleaseDC(m_hStatusBarWnd, hdc);
-
+  
   return true;
 }
 
@@ -1110,6 +1111,7 @@ STDMETHODIMP CPluginClass::QueryStatus(const GUID* pguidCmdGroup, ULONG cCmds, O
 
 HMENU CPluginClass::CreatePluginMenu(const CString& url)
 {
+  DEBUG_GENERAL("CreatePluginMenu");
   HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
 
   HMENU hMenu = ::LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MENU1));
@@ -1343,6 +1345,8 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 
 bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 {
+  DEBUG_GENERAL("SetMenuBar");
+
   std::wstring ctext;
 
   s_criticalSectionLocal.Lock();
@@ -1353,11 +1357,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   }
   s_criticalSectionLocal.Unlock();
 
-  CPluginTab* tab = GetTab(::GetCurrentThreadId());
-  if (!tab)
-  {
-    return false;
-  }
 
   Dictionary* dictionary = Dictionary::GetInstance();
 
@@ -1790,18 +1789,14 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 void CPluginClass::UpdateStatusBar()
 {
   DEBUG_GENERAL("*** Updating statusbar")
-
-    if (m_hPaneWnd == NULL)
-    {
-      CreateStatusBarPane();
-    }
-    if (m_hPaneWnd != NULL)
-    {
-      if (!::InvalidateRect(m_hPaneWnd, NULL, FALSE))
-      {
-        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_INVALIDATE_STATUSBAR, "Class::Invalidate statusbar");
-      }
-    }
+  if (m_hPaneWnd == NULL)
+  {
+    CreateStatusBarPane();
+  }
+  if ((m_hPaneWnd != NULL) && !::InvalidateRect(m_hPaneWnd, NULL, FALSE))
+  {
+      DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_INVALIDATE_STATUSBAR, "Class::Invalidate statusbar");
+  }
 }
 
 
