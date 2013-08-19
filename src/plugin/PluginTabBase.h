@@ -8,6 +8,7 @@ class CPluginDomTraverser;
 
 #include "PluginUserSettings.h"
 #include "PluginFilter.h"
+#include "../shared/CriticalSection.h"
 
 class CPluginClass;
 
@@ -20,6 +21,7 @@ class CPluginTabBase
 protected:
 
   CComAutoCriticalSection m_criticalSection;
+  CriticalSection m_csInject;
 
   CString m_documentDomain;
   CString m_documentUrl;
