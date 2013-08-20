@@ -90,8 +90,6 @@ public:
 public:
 
   void TogglePluginEnabled();
-  void SetPluginDisabled();
-  void SetPluginEnabled();
   bool GetPluginEnabled() const;
 
   void AddError(const CString& error, const CString& errorCode);

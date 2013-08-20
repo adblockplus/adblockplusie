@@ -456,3 +456,14 @@ std::wstring CAdblockPlusClient::GetDocumentationLink()
   response >> docLink;
   return docLink;
 }
+
+bool CAdblockPlusClient::TogglePluginEnabled()
+{
+  DEBUG_GENERAL("TogglePluginEnabled");
+  Communication::InputBuffer response;
+  if (!CallEngine(Communication::PROC_TOGGLE_PLUGIN_ENABLED, response)) 
+    return false;
+  bool currentEnabledState;
+  response >> currentEnabledState;
+  return currentEnabledState;
+}

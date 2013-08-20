@@ -75,6 +75,7 @@ public:
   void CheckForUpdates();
   std::wstring GetAppLocale();
   std::wstring GetDocumentationLink();
+  bool TogglePluginEnabled();
 
   bool IsFirstRun();
 };

@@ -187,15 +187,7 @@ void CPluginSettings::SetWorkingThreadId(DWORD id)
 
 void CPluginSettings::TogglePluginEnabled()
 {
-  GetPluginEnabled() ? SetPluginDisabled() : SetPluginEnabled();   
-}
-void CPluginSettings::SetPluginDisabled()
-{
-  CPluginClient::GetInstance()->SetPref(L"enabled", false);  
-}
-void CPluginSettings::SetPluginEnabled()
-{
-  CPluginClient::GetInstance()->SetPref(L"enabled", true);
+  CPluginClient::GetInstance()->TogglePluginEnabled();  
 }
 bool CPluginSettings::GetPluginEnabled() const
 {
