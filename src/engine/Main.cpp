@@ -266,7 +266,12 @@ namespace
         response << ToUtf16String(filterEngine->GetPref("documentation_link")->AsString());
         break;
       }
-
+      case Communication::PROC_TOGGLE_PLUGIN_ENABLED:
+      {
+        filterEngine->SetPref("enabled", filterEngine->GetJsEngine()->NewValue(!filterEngine->GetPref("enabled")->AsBool()));
+        response << filterEngine->GetPref("enabled")->AsBool();
+        break;
+      }
     }
     return response;
   }
