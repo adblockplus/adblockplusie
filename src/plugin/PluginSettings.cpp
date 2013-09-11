@@ -153,14 +153,14 @@ bool CPluginSettings::IsPluginEnabled() const
 }
 
 
-std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList()
+std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
 {
-  m_subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
+  std::vector<SubscriptionDescription> subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
 
   std::map<CString, CString> filterList;
-  for (size_t i = 0; i < m_subscriptions.size(); i ++)
+  for (size_t i = 0; i < subscriptions.size(); i ++)
   {
-    SubscriptionDescription it = m_subscriptions[i];
+    SubscriptionDescription it = subscriptions[i];
     filterList.insert(std::make_pair(CString(it.url.c_str()), CString(it.title.c_str())));
   }
   return filterList;

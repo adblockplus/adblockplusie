@@ -53,14 +53,14 @@ namespace
     {
       std::wstring upToDateText = dictionary->Lookup("updater", "update-already-up-to-date-text");
       std::wstring upToDateTitle = dictionary->Lookup("updater", "update-already-up-to-date-title");
-      MessageBox(NULL, upToDateText.c_str(), upToDateTitle.c_str(), MB_OK);
+      MessageBoxW(NULL, upToDateText.c_str(), upToDateTitle.c_str(), MB_OK);
     }
     else
     {
       std::wstring errorText = dictionary->Lookup("updater", "update-error-text");
       std::wstring errorTitle = dictionary->Lookup("updater", "update-error-title");
       ReplaceString(errorText, L"?1?", ToUtf16String(res));
-      MessageBox(NULL, errorText.c_str(), errorTitle.c_str(), MB_OK);
+      MessageBoxW(NULL, errorText.c_str(), errorTitle.c_str(), MB_OK);
     }
     return;
   }

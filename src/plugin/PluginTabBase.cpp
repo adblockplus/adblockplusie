@@ -83,11 +83,11 @@ void CPluginTabBase::OnUpdate()
   m_isActivated = true;
 }
 
-DWORD WINAPI FilterLoader(void* thisPtrVoid)
+DWORD WINAPI FilterLoader(LPVOID threadParam)
 {
-  CPluginTabBase* thisPtr = (CPluginTabBase*)thisPtrVoid;
-  thisPtr->m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(thisPtr->GetDocumentDomain().GetString()));
-  SetEvent(thisPtr->m_filter->hideFiltersLoadedEvent);
+  CPluginTabBase* tabBase = (CPluginTabBase*)threadParam;
+  tabBase->m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(tabBase->GetDocumentDomain().GetString()));
+  SetEvent(tabBase->m_filter->hideFiltersLoadedEvent);
   return 0;
 }
 

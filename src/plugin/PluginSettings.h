@@ -78,7 +78,7 @@ public:
 
   bool IsPluginEnabled() const;
 
-  std::map<CString, CString> GetFilterLanguageTitleList();
+  std::map<CString, CString> GetFilterLanguageTitleList() const;
 
   void SetWorkingThreadId();
   void SetWorkingThreadId(DWORD id);
@@ -118,7 +118,6 @@ public:
   CString GetSubscription();
   CString GetAppLocale();
   CString GetDocumentationLink();
-  std::vector<SubscriptionDescription> m_subscriptions;
 };
 
 
