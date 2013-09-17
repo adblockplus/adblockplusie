@@ -1,58 +1,58 @@
 HKCR
 {
-	AdblockPlus.AdblockPlus.1 = s 'AdblockPlus Class'
-	{
-		CLSID = s '{FFCB3198-32F3-4E8B-9539-4324694ED664}'
-	}
-	AdblockPlus.AdblockPlus = s 'AdblockPlus Class'
-	{
-		CLSID = s '{FFCB3198-32F3-4E8B-9539-4324694ED664}'
-		CurVer = s 'AdblockPlus.AdblockPlus.1'
-	}
-	NoRemove CLSID
-	{
-		ForceRemove {FFCB3198-32F3-4E8B-9539-4324694ED664} = s 'AdblockPlus Class'
-		{
-			ProgID = s 'AdblockPlus.AdblockPlus.1'
-			VersionIndependentProgID = s 'AdblockPlus.AdblockPlus'
-			ForceRemove 'Programmable'
-			InprocServer32 = s '%MODULE%'
-			{
-				val ThreadingModel = s 'Both'
-			}
-			'TypeLib' = s '{7cd37f36-0bef-11dc-8314-0800200c9a67}'
-			'Implemented Categories' = s ''
-			{
-				{59fb2056-d625-48d0-a944-1a85b5ab2640} = s ''   
-				{
-				}
-			}
-		}
-	}
+  AdblockPlus.AdblockPlus.1 = s 'AdblockPlus Class'
+    {
+        CLSID = s '{FFCB3198-32F3-4E8B-9539-4324694ED664}'
+    }
+    AdblockPlus.AdblockPlus = s 'AdblockPlus Class'
+    {
+        CLSID = s '{FFCB3198-32F3-4E8B-9539-4324694ED664}'
+        CurVer = s 'AdblockPlus.AdblockPlus.1'
+    }
+    NoRemove CLSID
+    {
+        ForceRemove {FFCB3198-32F3-4E8B-9539-4324694ED664} = s 'AdblockPlus Class'
+        {
+            ProgID = s 'AdblockPlus.AdblockPlus.1'
+            VersionIndependentProgID = s 'AdblockPlus.AdblockPlus'
+            ForceRemove 'Programmable'
+            InprocServer32 = s '%MODULE%'
+            {
+                val ThreadingModel = s 'Both'
+            }
+            'TypeLib' = s '{7cd37f36-0bef-11dc-8314-0800200c9a67}'
+            'Implemented Categories' = s ''
+            {
+                {59fb2056-d625-48d0-a944-1a85b5ab2640} = s ''   
+                {
+                }
+            }
+        }
+    }
 }
 
 HKLM
 {
-	SOFTWARE
-	{
-		Microsoft
-		{
-			Windows
-			{
-				CurrentVersion
-				{
-					Explorer
-					{
-						'Browser Helper Objects'
-						{
-							{FFCB3198-32F3-4E8B-9539-4324694ED664}
-							{
-								val 'NoExplorer' = d '1'
-							}
-						}
-					}
-				}
-			}
+    SOFTWARE
+    {
+        Microsoft
+        {
+            Windows
+            {
+                CurrentVersion
+                {
+                    Explorer
+                    {
+                        'Browser Helper Objects'
+                        {
+                            {FFCB3198-32F3-4E8B-9539-4324694ED664}
+                            {
+                                val 'NoExplorer' = d '1'
+                            }
+                        }
+                    }
+                }
+            }
       'Internet Explorer'
       {
         'Low Rights'
@@ -68,7 +68,7 @@ HKLM
           }
         }
       }
-		}
-	}
+        }
+    }
 }
 
