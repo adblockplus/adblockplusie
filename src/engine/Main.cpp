@@ -18,6 +18,7 @@ namespace
   std::auto_ptr<Updater> updater;
   int activeConnections = 0;
   CriticalSection activeConnectionsLock;
+  HWND callbackWindow;
 
   void WriteStrings(Communication::OutputBuffer& response,
       const std::vector<std::string>& strings)
@@ -44,29 +45,34 @@ namespace
   }
 
   bool updateAvailable;
+  bool checkingForUpdate = false;
   void UpdateCallback(const std::string res)
   {
+    UINT message;
     if (updateAvailable)
-      return;
-    Dictionary* dictionary = Dictionary::GetInstance();
-    if (res.length() == 0)
     {
-      std::wstring upToDateText = dictionary->Lookup("updater", "update-already-up-to-date-text");
-      std::wstring upToDateTitle = dictionary->Lookup("updater", "update-already-up-to-date-title");
-      MessageBoxW(NULL, upToDateText.c_str(), upToDateTitle.c_str(), MB_OK);
+      message = WM_DOWNLOADING_UPDATE;
     }
-    else
+    else if (res.length() == 0)
     {
-      std::wstring errorText = dictionary->Lookup("updater", "update-error-text");
-      std::wstring errorTitle = dictionary->Lookup("updater", "update-error-title");
-      ReplaceString(errorText, L"?1?", ToUtf16String(res));
-      MessageBoxW(NULL, errorText.c_str(), errorTitle.c_str(), MB_OK);
+      message = WM_ALREADY_UP_TO_DATE;
+    }
+    else 
+    {
+      message = WM_UPDATE_CHECK_ERROR;
+    }
+    if (callbackWindow)
+    {
+      SendMessage(callbackWindow, message, 0, 0);
+      checkingForUpdate = false;
+      callbackWindow = 0;
     }
     return;
   }
 
 
   CriticalSection firstRunLock;
+  CriticalSection updateCheckLock;
   bool firstRunActionExecuted = false;
   Communication::OutputBuffer HandleRequest(Communication::InputBuffer& request)
   {
@@ -243,8 +249,14 @@ namespace
       }
       case Communication::PROC_CHECK_FOR_UPDATES:
       {
-        updateAvailable = false;
-        filterEngine->ForceUpdateCheck(UpdateCallback);
+        request >> (int32_t&)callbackWindow;
+        CriticalSection::Lock lock(updateCheckLock);
+        if (!checkingForUpdate)
+        {
+          updateAvailable = false;
+          checkingForUpdate = true;
+          filterEngine->ForceUpdateCheck(UpdateCallback);
+        }
         break;
       }
       case Communication::PROC_IS_FIRST_RUN_ACTION_NEEDED:

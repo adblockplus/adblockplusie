@@ -13,7 +13,7 @@
 #include "sddl.h"
 #include "PluginUtil.h"
 #include "PluginUserSettings.h"
-
+#include "../shared/Utils.h"
 #include "../shared/Dictionary.h"
 
 #ifdef DEBUG_HIDE_EL
@@ -23,7 +23,6 @@ DWORD profileTime = 0;
 typedef HANDLE (WINAPI *OPENTHEMEDATA)(HWND, LPCWSTR);
 typedef HRESULT (WINAPI *DRAWTHEMEBACKGROUND)(HANDLE, HDC, INT, INT, LPRECT, LPRECT);
 typedef HRESULT (WINAPI *CLOSETHEMEDATA)(HANDLE);
-
 
 HICON CPluginClass::s_hIcons[ICON_MAX] = { NULL, NULL, NULL };
 DWORD CPluginClass::s_hIconTypes[ICON_MAX] = { IDI_ICON_DISABLED, IDI_ICON_ENABLED, IDI_ICON_DEACTIVATED };
@@ -594,6 +593,10 @@ STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
         UpdateStatusBar();
       }
     }
+  }
+  if (notificationMessage.IsVisible())
+  {
+    notificationMessage.Hide();
   }
   DEBUG_GENERAL("Tab change end");
   return VARIANT_TRUE;
@@ -1270,7 +1273,12 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
   case ID_MENU_UPDATE:
     {
       CPluginClient* client = CPluginClient::GetInstance();
-      client->CheckForUpdates();
+      notificationMessage.SetParent(m_hPaneWnd);
+      Dictionary* dictionary = Dictionary::GetInstance();
+      std::wstring checkingText = dictionary->Lookup("updater", "checking-for-updates-text");
+      std::wstring checkingTitle = dictionary->Lookup("updater", "checking-for-updates-title");
+      notificationMessage.Show(checkingText, checkingTitle, TTI_INFO);
+      client->CheckForUpdates(m_hPaneWnd);
     }
     break;
   case ID_MENU_DISABLE:
@@ -1777,7 +1785,48 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
       if (tab)
       {
         tab->OnActivate();
+        RECT rect;
+        GetWindowRect(pClass->m_hPaneWnd, &rect);
+        pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2); 
       }
+      if (LOWORD(wParam) == UIS_CLEAR)
+      {
+        pClass->notificationMessage.Hide();
+      }
+    }
+    break;
+  case WM_WINDOWPOSCHANGING:
+    {
+      RECT rect;
+      GetWindowRect(pClass->m_hPaneWnd, &rect);
+      if (pClass->notificationMessage.IsVisible())
+      {
+        pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2); 
+      }
+    }
+    break;
+  case WM_ALREADY_UP_TO_DATE:
+    {
+      Dictionary* dictionary = Dictionary::GetInstance();
+      std::wstring upToDateText = dictionary->Lookup("updater", "update-already-up-to-date-text");
+      std::wstring upToDateTitle = dictionary->Lookup("updater", "update-already-up-to-date-title");
+      pClass->notificationMessage.SetTextAndIcon(upToDateText, upToDateTitle, TTI_INFO);
+    }
+    break;
+  case WM_UPDATE_CHECK_ERROR:
+    {
+      Dictionary* dictionary = Dictionary::GetInstance();
+      std::wstring errorText = dictionary->Lookup("updater", "update-error-text");
+      std::wstring errorTitle = dictionary->Lookup("updater", "update-error-title");
+      pClass->notificationMessage.SetTextAndIcon(errorText, errorText, TTI_ERROR);
+    }
+    break;
+  case WM_DOWNLOADING_UPDATE:
+    {
+      Dictionary* dictionary = Dictionary::GetInstance();
+      std::wstring downloadingText = dictionary->Lookup("updater", "downloading-update-text");
+      std::wstring downloadingTitle = dictionary->Lookup("updater", "downloading-update-title");
+      pClass->notificationMessage.SetTextAndIcon(downloadingText, downloadingTitle, TTI_ERROR);
     }
     break;
   }

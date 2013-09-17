@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <crtdbg.h>
 
+#include "NotificationMessage.h"
 
 #define ICON_PLUGIN_DISABLED 0
 #define ICON_PLUGIN_ENABLED 1
@@ -135,11 +136,14 @@ private:
   HWND m_hTabWnd;
   HWND m_hStatusBarWnd;
   HWND m_hPaneWnd;
+  
   WNDPROC m_pWndProcStatus;
   int m_nPaneWidth;
   HANDLE m_hTheme;
 
   CriticalSection m_csStatusBar;
+
+  NotificationMessage notificationMessage;
 
   bool m_isAdviced;
   bool m_isInitializedOk;

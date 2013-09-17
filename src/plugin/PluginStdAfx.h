@@ -5,6 +5,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+// Embed manifest as a resource, to enable common controls
+// see http://msdn.microsoft.com/en-us/library/windows/desktop/bb773175(v=vs.85).aspx#using_manifests
+#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 
 //#define STRICT
