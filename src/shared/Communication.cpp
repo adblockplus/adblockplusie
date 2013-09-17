@@ -35,7 +35,7 @@ namespace
   }
 
   // See http://msdn.microsoft.com/en-us/library/windows/desktop/hh448493(v=vs.85).aspx
-  bool GetLogonSid (HANDLE hToken, PSID *ppsid) 
+  bool GetLogonSid(HANDLE hToken, PSID *ppsid) 
   {
     if (ppsid == NULL)
       return false;
@@ -186,7 +186,7 @@ Communication::ValueType Communication::InputBuffer::GetType()
 }
 
 Communication::PipeConnectionError::PipeConnectionError()
-    : std::runtime_error(AppendErrorCode("Unable to connect to a named pipe"))
+  : std::runtime_error(AppendErrorCode("Unable to connect to a named pipe"))
 {
 }
 
@@ -199,6 +199,7 @@ Communication::PipeDisconnectedError::PipeDisconnectedError()
   : std::runtime_error("Pipe disconnected")
 {
 }
+
 Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mode mode)
 {
   pipe = INVALID_HANDLE_VALUE;
@@ -227,16 +228,16 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     {
       PSID pLogonSid = NULL;
       //Allowing LogonSid and IE's appcontainer. 
+      sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+      sa.bInheritHandle = TRUE;
       if (GetLogonSid(hToken, &pLogonSid) && CreateObjectSecurityDescriptor(pLogonSid, &securitydescriptor) )
       {
-        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-        sa.bInheritHandle = TRUE;
         sa.lpSecurityDescriptor = securitydescriptor;                            
       }
     }
-    pipe = CreateNamedPipe(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                              PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
-   }
+    pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+      PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
+  }
   else
   {
     pipe = CreateFileW(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);

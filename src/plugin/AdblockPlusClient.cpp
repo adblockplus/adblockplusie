@@ -23,16 +23,16 @@ namespace
     HANDLE token;
     OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT | TOKEN_QUERY | TOKEN_ASSIGN_PRIMARY, &token);
 
-    TOKEN_APPCONTAINER_INFORMATION *acSid = NULL;
+    TOKEN_APPCONTAINER_INFORMATION *acs = NULL;
     DWORD length = 0;
 
     // Get AppContainer SID
-    if (!GetTokenInformation(token, TokenAppContainerSid, acSid, 0, &length) && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+    if (!GetTokenInformation(token, TokenAppContainerSid, acs, 0, &length) && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
     {
-        acSid = (TOKEN_APPCONTAINER_INFORMATION*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, length);
-        if (acSid != NULL)
+        acs = (TOKEN_APPCONTAINER_INFORMATION*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, length);
+        if (acs != NULL)
         {
-          GetTokenInformation(token, TokenAppContainerSid, acSid, length, &length);
+          GetTokenInformation(token, TokenAppContainerSid, acs, length, &length);
         }
         else
         {
@@ -42,12 +42,12 @@ namespace
 
     BOOL createProcRes = 0;
     // Running inside AppContainer?
-    if (acSid != NULL && acSid->TokenAppContainer != NULL)
+    if (acs != NULL && acs->TokenAppContainer != NULL)
     {
       // Launch with default security. Registry entry will eat the user prompt
       // See http://msdn.microsoft.com/en-us/library/bb250462(v=vs.85).aspx#wpm_elebp
       LPWSTR stringSid;
-      ConvertSidToStringSidW(acSid->TokenAppContainer, &stringSid);
+      ConvertSidToStringSidW(acs->TokenAppContainer, &stringSid);
       params.Append(L" ");
       params.Append(stringSid);
       LocalFree(stringSid);
@@ -60,7 +60,7 @@ namespace
       HANDLE newToken;
       DuplicateTokenEx(token, 0, 0, SecurityImpersonation, TokenPrimary, &newToken);
 
-      createProcRes = CreateProcessAsUser(newToken, engineExecutablePath.c_str(), params.GetBuffer(params.GetLength() + 1),
+      createProcRes = CreateProcessAsUserW(newToken, engineExecutablePath.c_str(), params.GetBuffer(params.GetLength() + 1),
                               0, 0, false, 0, 0, 0, (STARTUPINFOW*)&startupInfo, &processInformation);
     }
 
