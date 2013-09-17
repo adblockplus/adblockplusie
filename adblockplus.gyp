@@ -131,19 +131,18 @@
         'conditions': [[
           'target_arch=="ia32"', {
             'AdditionalLibraryDirectories': [
+              '$(VCInstallDir)atlmfc/lib',
               '$(WindowsSDK_LibraryPath_x86)',
               '$(WINDDKDIR)/lib/ATL/i386',
             ],
           }, {
             'AdditionalLibraryDirectories': [
+              '$(VCInstallDir)atlmfc/lib/amd64',
               '$(WindowsSDK_LibraryPath_x64)',
               '$(WINDDKDIR)/lib/ATL/amd64',
             ],
           }
         ]],
-        'AdditionalLibraryDirectories': [
-          '$(VCInstallDir)atlmfc/lib',
-        ],
         'DelayLoadDLLs': ['Shell32.dll'],
       },
     },
