@@ -8,4 +8,28 @@
             Name="NoExplorer" 
             Value="1" Type="integer"/>
     </RegistryKey>
+    <RegistryKey
+        Root="HKLM" 
+        Key="Software\Microsoft\Internet Explorer\Low Rights\ElevationPolicy">
+        <RegistryValue 
+            Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
+            Name="Policy" 
+            Value="3" Type="integer"/>
+        <RegistryValue 
+            Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
+            Name="AppName" 
+            Value="AdblockPlusEngine.exe" Type="string"/>
+        <RegistryValue 
+            Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}" 
+            Name="AppPath" 
+            Value="[INSTALLFOLDER]" Type="string"/>
+    </RegistryKey>
+    
+    <!--
+    TODO: Figure out how to write this key 
+    -->
+    <RegistryKey
+        Root="HKCR"
+        Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}\Implemented Categories\{59fb2056-d625-48d0-a944-1a85b5ab2640}">
+    </RegistryKey>
 </Include>

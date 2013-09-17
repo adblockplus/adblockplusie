@@ -396,6 +396,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   int argc;
   LPWSTR* argv = CommandLineToArgvW(GetCommandLineW(), &argc);
   std::wstring locale(argc >= 2 ? argv[1] : L"");
+  Communication::browserSID = argc >= 3 ? argv[2] : L"";
   LocalFree(argv);
   Dictionary::Create(locale);
   filterEngine = CreateFilterEngine(locale);

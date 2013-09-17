@@ -12,6 +12,7 @@
 namespace Communication
 {
   extern const std::wstring pipeName;
+  extern std::wstring browserSID;
 
   enum ProcType : uint32_t {
     PROC_MATCHES,
@@ -190,6 +191,7 @@ namespace Communication
 
   protected:
     HANDLE pipe;
+    PSECURITY_DESCRIPTOR securitydescriptor;
   };
 }
 

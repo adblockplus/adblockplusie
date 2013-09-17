@@ -49,6 +49,9 @@ extern CComModule _Module;
 #include <shlguid.h>
 #include <shlobj.h>
 #include <iepmapi.h>
+#include <Windows.h>
+#include <Sddl.h>
+
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

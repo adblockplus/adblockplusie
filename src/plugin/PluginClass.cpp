@@ -238,6 +238,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
   if (unknownSite)
   {
+
     DEBUG_GENERAL(L"================================================================================\nNEW TAB UI\n================================================================================")
 
     HRESULT hr = ::CoInitialize(NULL);
