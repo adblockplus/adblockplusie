@@ -72,7 +72,7 @@ public:
   std::wstring GetPref(const std::wstring& name, const wchar_t* defaultValue);
   bool GetPref(const std::wstring& name, bool defaultValue = false);
   int64_t GetPref(const std::wstring& name, int64_t defaultValue = 0);
-  void CheckForUpdates();
+  void CheckForUpdates(HWND callbackWindow);
   std::wstring GetAppLocale();
   std::wstring GetDocumentationLink();
   bool TogglePluginEnabled();

@@ -6,6 +6,10 @@
 #include <functional>
 #include <string>
 
+#define WM_ALREADY_UP_TO_DATE WM_APP+1
+#define WM_UPDATE_CHECK_ERROR WM_APP+2
+#define WM_DOWNLOADING_UPDATE WM_APP+3
+
 bool IsWindowsVistaOrLater();
 
 std::string ToUtf8String(const std::wstring& str);
