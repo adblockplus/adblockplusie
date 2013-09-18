@@ -25,11 +25,9 @@
             Value="[INSTALLFOLDER]" Type="string"/>
     </RegistryKey>
     
-    <!--
-    TODO: Figure out how to write this key 
-    -->
     <RegistryKey
-        Root="HKCR"
-        Key="{FFCB3198-32F3-4E8B-9539-4324694ED664}\Implemented Categories\{59fb2056-d625-48d0-a944-1a85b5ab2640}">
+        Root="HKLM"
+        Key="Software\Classes\CLSID\{FFCB3198-32F3-4E8B-9539-4324694ED664}\Implemented Categories\{59fb2056-d625-48d0-a944-1a85b5ab2640}"
+        ForceCreateOnInstall="yes">
     </RegistryKey>
 </Include>
