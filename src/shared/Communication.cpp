@@ -218,8 +218,7 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
       {
         // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
         LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
-        ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1, &securitydescriptor, 0);
-        sa.lpSecurityDescriptor = securitydescriptor;
+        ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1, &sa.lpSecurityDescriptor, 0);
       }
 
       sa.bInheritHandle = TRUE;
@@ -230,13 +229,13 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
       //Allowing LogonSid and IE's appcontainer. 
       sa.nLength = sizeof(SECURITY_ATTRIBUTES);
       sa.bInheritHandle = TRUE;
-      if (GetLogonSid(hToken, &pLogonSid) && CreateObjectSecurityDescriptor(pLogonSid, &securitydescriptor) )
-      {
-        sa.lpSecurityDescriptor = securitydescriptor;                            
-      }
+      if (GetLogonSid(hToken, &pLogonSid))
+        CreateObjectSecurityDescriptor(pLogonSid, &sa.lpSecurityDescriptor);
     }
     pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
       PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
+    if (sa.lpSecurityDescriptor)
+      LocalFree(sa.lpSecurityDescriptor);
   }
   else
   {
@@ -264,9 +263,6 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
 Communication::Pipe::~Pipe()
 {
   CloseHandle(pipe);
-  if (securitydescriptor)
-    LocalFree(securitydescriptor);
-
 }
 
 Communication::InputBuffer Communication::Pipe::ReadMessage()
