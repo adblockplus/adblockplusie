@@ -209,9 +209,6 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 
-    HANDLE hToken = NULL;
-    OpenProcessToken(GetCurrentProcess(), TOKEN_READ, &hToken); 
-
     if (browserSID.empty())
     {
       if (IsWindowsVistaOrLater())
@@ -225,12 +222,15 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     }
     else  // IE is in AppContainer
     {
+      HANDLE hToken = NULL;
+      OpenProcessToken(GetCurrentProcess(), TOKEN_READ, &hToken); 
       PSID pLogonSid = NULL;
       //Allowing LogonSid and IE's appcontainer. 
       sa.nLength = sizeof(SECURITY_ATTRIBUTES);
       sa.bInheritHandle = TRUE;
       if (GetLogonSid(hToken, &pLogonSid))
         CreateObjectSecurityDescriptor(pLogonSid, &sa.lpSecurityDescriptor);
+      CloseHandle(hToken);
     }
     pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
       PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
