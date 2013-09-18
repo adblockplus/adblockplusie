@@ -191,7 +191,6 @@ namespace Communication
 
   protected:
     HANDLE pipe;
-    PSECURITY_DESCRIPTOR securitydescriptor;
   };
 }
 
