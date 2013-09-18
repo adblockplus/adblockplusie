@@ -205,37 +205,34 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
   pipe = INVALID_HANDLE_VALUE;
   if (mode == MODE_CREATE)
   {
-    SECURITY_ATTRIBUTES sa;
-    memset(&sa, 0, sizeof(SECURITY_ATTRIBUTES));
-    sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    SECURITY_ATTRIBUTES securityAttributes = {};
+    securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
+    securityAttributes.bInheritHandle = TRUE;
 
-    if (browserSID.empty())
+    const bool inAppContainer = browserSID.empty();
+    if (!inAppContainer)
     {
       if (IsWindowsVistaOrLater())
       {
         // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
         LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
-        ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1, &sa.lpSecurityDescriptor, 0);
+        ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1,
+          &securityAttributes.lpSecurityDescriptor, 0);
       }
-
-      sa.bInheritHandle = TRUE;
     }
-    else  // IE is in AppContainer
+    else
     {
-      HANDLE hToken = NULL;
-      OpenProcessToken(GetCurrentProcess(), TOKEN_READ, &hToken); 
-      PSID pLogonSid = NULL;
-      //Allowing LogonSid and IE's appcontainer. 
-      sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-      sa.bInheritHandle = TRUE;
-      if (GetLogonSid(hToken, &pLogonSid))
-        CreateObjectSecurityDescriptor(pLogonSid, &sa.lpSecurityDescriptor);
-      CloseHandle(hToken);
+      HANDLE token = NULL;
+      OpenProcessToken(GetCurrentProcess(), TOKEN_READ, &token);
+      PSID logonSid = NULL;
+      if (GetLogonSid(token, &logonSid))
+        CreateObjectSecurityDescriptor(logonSid, &securityAttributes.lpSecurityDescriptor);
+      CloseHandle(token);
     }
     pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-      PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &sa);
-    if (sa.lpSecurityDescriptor)
-      LocalFree(sa.lpSecurityDescriptor);
+      PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
+    if (securityAttributes.lpSecurityDescriptor)
+      LocalFree(securityAttributes.lpSecurityDescriptor);
   }
   else
   {
