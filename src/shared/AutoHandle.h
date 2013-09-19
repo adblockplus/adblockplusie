@@ -6,10 +6,11 @@
 class AutoHandle
 {
 public:
-  AutoHandle();
-  explicit AutoHandle(HANDLE handle);
+  explicit AutoHandle(HANDLE handle = 0);
   ~AutoHandle();
   operator HANDLE();
+  operator PHANDLE();
+  operator bool();
 
 private:
   HANDLE handle;

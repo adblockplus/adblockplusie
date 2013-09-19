@@ -4,6 +4,7 @@
 #include <aclapi.h>
 #include <strsafe.h>
 
+#include "AutoHandle.h"
 #include "Communication.h"
 #include "Utils.h"
 
@@ -212,12 +213,11 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     const bool inAppContainer = browserSID.empty();
     if (inAppContainer)
     {
-      HANDLE token = NULL;
-      OpenProcessToken(GetCurrentProcess(), TOKEN_READ, &token);
+      AutoHandle token;
+      OpenProcessToken(GetCurrentProcess(), TOKEN_READ, token);
       PSID logonSid = NULL;
       if (GetLogonSid(token, &logonSid))
         CreateObjectSecurityDescriptor(logonSid, &securityAttributes.lpSecurityDescriptor);
-      CloseHandle(token);
     }
     else if (IsWindowsVistaOrLater())
     {
