@@ -1,9 +1,5 @@
 #include "AutoHandle.h"
 
-AutoHandle::AutoHandle()
-{
-}
-
 AutoHandle::AutoHandle(HANDLE handle) : handle(handle)
 {
 }
@@ -16,4 +12,14 @@ AutoHandle::~AutoHandle()
 AutoHandle::operator HANDLE()
 {
   return handle;
+}
+
+AutoHandle::operator PHANDLE()
+{
+  return &handle;
+}
+
+AutoHandle::operator bool()
+{
+  return handle != 0;
 }
