@@ -35,50 +35,25 @@ namespace
     return std::wstring(buffer.get(), length);
   }
 
-  // See http://msdn.microsoft.com/en-us/library/windows/desktop/hh448493(v=vs.85).aspx
-  bool GetLogonSid(HANDLE hToken, PSID *ppsid) 
+  std::auto_ptr<SID> GetLogonSid(HANDLE token) 
   {
-    if (ppsid == NULL)
-      return false;
+    DWORD tokenGroupsLength = 0;
+    if (GetTokenInformation(token, TokenLogonSid, 0, 0, &tokenGroupsLength))
+      throw std::runtime_error("Unexpected result from GetTokenInformation");
+    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+      throw std::runtime_error("Unexpected error from GetTokenInformation");
 
-    // Get required buffer size and allocate the TOKEN_GROUPS buffer.
-    DWORD dwLength = 0;
-    PTOKEN_GROUPS ptg = NULL;
-    if (!GetTokenInformation(hToken, TokenLogonSid, ptg, 0, &dwLength)) 
-    {
-      if (GetLastError() != ERROR_INSUFFICIENT_BUFFER) 
-        return false;
+    std::auto_ptr<TOKEN_GROUPS> tokenGroups(new TOKEN_GROUPS[tokenGroupsLength]);
+    if (!GetTokenInformation(token, TokenLogonSid, tokenGroups.get(), tokenGroupsLength, &tokenGroupsLength))
+      throw std::runtime_error("GetTokenInformation failed");
+    if (tokenGroups->GroupCount != 1) 
+      throw std::runtime_error("Unexpected group count");
 
-      ptg = (PTOKEN_GROUPS) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwLength);
-
-      if (ptg == NULL)
-        return false;
-    }
-
-    // Get the token group information from the access token.
-    if (!GetTokenInformation(hToken, TokenLogonSid, ptg, dwLength, &dwLength) || ptg->GroupCount != 1) 
-    {
-      HeapFree(GetProcessHeap(), 0, ptg);
-      return false;
-    }
-
-    // Found the logon SID; make a copy of it.
-    dwLength = GetLengthSid(ptg->Groups[0].Sid);
-    *ppsid = (PSID) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwLength);
-    if (*ppsid == NULL)
-    {
-      HeapFree(GetProcessHeap(), 0, ptg);
-      return false;
-    }
-    if (!CopySid(dwLength, *ppsid, ptg->Groups[0].Sid)) 
-    {
-      HeapFree(GetProcessHeap(), 0, ptg);
-      HeapFree(GetProcessHeap(), 0, *ppsid);
-      return false;
-    }
-
-    HeapFree(GetProcessHeap(), 0, ptg);
-    return true;
+    DWORD sidLength = GetLengthSid(tokenGroups->Groups[0].Sid);
+    std::auto_ptr<SID> sid(new SID[sidLength]);
+    if (!CopySid(sidLength, sid.get(), tokenGroups->Groups[0].Sid)) 
+      throw std::runtime_error("CopySid failed");
+    return sid;
   }
 
   bool CreateObjectSecurityDescriptor(PSID pLogonSid, PSECURITY_DESCRIPTOR* ppSD)
@@ -215,9 +190,8 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     {
       AutoHandle token;
       OpenProcessToken(GetCurrentProcess(), TOKEN_READ, token);
-      PSID logonSid = NULL;
-      if (GetLogonSid(token, &logonSid))
-        CreateObjectSecurityDescriptor(logonSid, &securityAttributes.lpSecurityDescriptor);
+      std::auto_ptr<SID> logonSid = GetLogonSid(token);
+      CreateObjectSecurityDescriptor(logonSid.get(), &securityAttributes.lpSecurityDescriptor);
     }
     else if (IsWindowsVistaOrLater())
     {
