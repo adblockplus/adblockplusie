@@ -56,83 +56,42 @@ namespace
     return sid;
   }
 
-  bool CreateObjectSecurityDescriptor(PSID pLogonSid, PSECURITY_DESCRIPTOR* ppSD)
+  std::auto_ptr<SECURITY_DESCRIPTOR> CreateObjectSecurityDescriptor(PSID logonSid)
   {
-    BOOL bSuccess = FALSE;
-    DWORD dwRes;
-    PSID pBrowserSID = NULL;
-    PACL pACL = NULL;
-    PSECURITY_DESCRIPTOR pSD = NULL;
-    EXPLICIT_ACCESS ea[2];
-    SID_IDENTIFIER_AUTHORITY ApplicationAuthority = SECURITY_APP_PACKAGE_AUTHORITY;
+    PSID browserSid = 0;
+    std::tr1::shared_ptr<SID> sharedBrowserSid(reinterpret_cast<SID*>(browserSid), FreeSid); // Just to simplify cleanup
+    ConvertStringSidToSid(Communication::browserSID.c_str(), &browserSid);
 
-    ConvertStringSidToSid(Communication::browserSID.c_str(), &pBrowserSID);
+    EXPLICIT_ACCESSW explicitAccess[2] = {};
 
-    // Initialize an EXPLICIT_ACCESS structure for an ACE.
-    // The ACE will allow LogonSid generic all access
-    ZeroMemory(&ea, 2 * sizeof(EXPLICIT_ACCESS));
-    ea[0].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
-    ea[0].grfAccessMode = SET_ACCESS;
-    ea[0].grfInheritance= NO_INHERITANCE;
-    ea[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
-    ea[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
-    ea[0].Trustee.ptstrName  = (LPTSTR) pLogonSid;
+    explicitAccess[0].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
+    explicitAccess[0].grfAccessMode = SET_ACCESS;
+    explicitAccess[0].grfInheritance= NO_INHERITANCE;
+    explicitAccess[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+    explicitAccess[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
+    explicitAccess[0].Trustee.ptstrName  = static_cast<LPWSTR>(logonSid);
 
-    // Initialize an EXPLICIT_ACCESS structure for an ACE.
-    // The ACE will give the browser SID all permissions
-    ea[1].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
-    ea[1].grfAccessMode = SET_ACCESS;
-    ea[1].grfInheritance= NO_INHERITANCE;
-    ea[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
-    ea[1].Trustee.TrusteeType = TRUSTEE_IS_GROUP;
-    ea[1].Trustee.ptstrName  = (LPTSTR) pBrowserSID;
+    explicitAccess[1].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
+    explicitAccess[1].grfAccessMode = SET_ACCESS;
+    explicitAccess[1].grfInheritance= NO_INHERITANCE;
+    explicitAccess[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+    explicitAccess[1].Trustee.TrusteeType = TRUSTEE_IS_GROUP;
+    explicitAccess[1].Trustee.ptstrName = static_cast<LPWSTR>(browserSid);
 
-    // Create a new ACL that contains the new ACEs.
-    dwRes = SetEntriesInAcl(2, ea, NULL, &pACL);
-    if (ERROR_SUCCESS != dwRes) 
-    {
-      FreeSid(pBrowserSID);
-      return false;
-    }
+    PACL acl = 0;
+    std::tr1::shared_ptr<ACL> sharedAcl(acl, FreeSid); // Just to simplify cleanup
+    if (SetEntriesInAcl(2, explicitAccess, 0, &acl) != ERROR_SUCCESS)
+      return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
 
-    // Initialize a security descriptor.  
-    pSD = (PSECURITY_DESCRIPTOR) LocalAlloc(LPTR, SECURITY_DESCRIPTOR_MIN_LENGTH); 
-    if (NULL == pSD) 
-    { 
-      FreeSid(pBrowserSID);
-      LocalFree(pACL);
-      return false;; 
-    } 
+    std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor(new SECURITY_DESCRIPTOR[SECURITY_DESCRIPTOR_MIN_LENGTH]);
+    if (!InitializeSecurityDescriptor(securityDescriptor.get(), SECURITY_DESCRIPTOR_REVISION)) 
+      return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
 
-    if (!InitializeSecurityDescriptor(pSD, SECURITY_DESCRIPTOR_REVISION)) 
-    {  
-      FreeSid(pBrowserSID);
-      LocalFree(pACL);
-      LocalFree((LPVOID)pSD);
-      return false;
-    } 
+    if (!SetSecurityDescriptorDacl(securityDescriptor.get(), TRUE, acl, FALSE))
+      return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
 
-    // Add the ACL to the security descriptor. 
-    if (!SetSecurityDescriptorDacl(pSD, TRUE, pACL, FALSE))   // not a default DACL 
-    {  
-      FreeSid(pBrowserSID);
-      LocalFree(pACL);
-      LocalFree((LPVOID)pSD);
-      return false;
-    } 
-
-    *ppSD = pSD;
-    pSD = NULL;
-
-    if (pBrowserSID) 
-      FreeSid(pBrowserSID);
-    if (pACL) 
-      LocalFree(pACL);
-
-    return true;
+    return securityDescriptor;
   }
-
-
 }
 
 const std::wstring Communication::pipeName = L"\\\\.\\pipe\\adblockplusengine_" + GetUserName();
@@ -185,13 +144,17 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
     securityAttributes.bInheritHandle = TRUE;
 
+    std::tr1::shared_ptr<SECURITY_DESCRIPTOR> sharedSecurityDescriptor; // Just to simplify cleanup
+
     const bool inAppContainer = browserSID.empty();
     if (inAppContainer)
     {
       AutoHandle token;
       OpenProcessToken(GetCurrentProcess(), TOKEN_READ, token);
       std::auto_ptr<SID> logonSid = GetLogonSid(token);
-      CreateObjectSecurityDescriptor(logonSid.get(), &securityAttributes.lpSecurityDescriptor);
+      std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor = CreateObjectSecurityDescriptor(logonSid.get());
+      securityAttributes.lpSecurityDescriptor = securityDescriptor.release();
+      sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor));
     }
     else if (IsWindowsVistaOrLater())
     {
@@ -199,11 +162,11 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
       LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
       ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1,
         &securityAttributes.lpSecurityDescriptor, 0);
+      sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor), LocalFree);
     }
+
     pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
       PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
-    if (securityAttributes.lpSecurityDescriptor)
-      LocalFree(securityAttributes.lpSecurityDescriptor);
   }
   else
   {
