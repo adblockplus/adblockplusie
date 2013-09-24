@@ -146,7 +146,7 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
 
     std::tr1::shared_ptr<SECURITY_DESCRIPTOR> sharedSecurityDescriptor; // Just to simplify cleanup
 
-    const bool inAppContainer = browserSID.empty();
+    const bool inAppContainer = !browserSID.empty();
     if (inAppContainer)
     {
       AutoHandle token;
