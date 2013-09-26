@@ -479,7 +479,7 @@ int64_t CAdblockPlusClient::GetPref(const std::wstring& name, int64_t defaultVal
 void CAdblockPlusClient::CheckForUpdates(HWND callbackWindow)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_CHECK_FOR_UPDATES << (int32_t)(callbackWindow);
+  request << Communication::PROC_CHECK_FOR_UPDATES << reinterpret_cast<int32_t>(callbackWindow);
   CallEngine(request);
 }
 

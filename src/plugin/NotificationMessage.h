@@ -6,11 +6,10 @@
 class NotificationMessage
 {
 public:
-  NotificationMessage();
-  NotificationMessage(HWND parent);
+  NotificationMessage(HWND parent = 0);
   ~NotificationMessage(){};
   bool Show(std::wstring message, std::wstring title, int icon);
-  bool Hide();
+  void Hide();
   void Move(short x, short y);
   bool SetTextAndIcon(std::wstring text, std::wstring title, int icon);
   void SetParent(HWND parent);
@@ -19,7 +18,7 @@ private:
   HWND parentWindow;
   HWND toolTipWindow;
   static bool commonControlsInitialized;
-  static void CommonControlsInitialize();
+  static void InitializeCommonControls();
 };
 
 #endif
