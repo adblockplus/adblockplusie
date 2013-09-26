@@ -595,10 +595,7 @@ STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
       }
     }
   }
-  if (notificationMessage.IsVisible())
-  {
-    notificationMessage.Hide();
-  }
+  notificationMessage.Hide();
   DEBUG_GENERAL("Tab change end");
   return VARIANT_TRUE;
 }
@@ -1803,6 +1800,15 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
       if (pClass->notificationMessage.IsVisible())
       {
         pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2); 
+      }
+    }
+    break;
+  case WM_WINDOWPOSCHANGED:
+    {
+      WINDOWPOS* wndPos = reinterpret_cast<WINDOWPOS*>(lParam);
+      if (wndPos->flags & SWP_HIDEWINDOW)
+      {
+        pClass->notificationMessage.Hide();
       }
     }
     break;
