@@ -387,19 +387,20 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
       break;
     case ETraverserComplexType::TRAVERSER_TYPE_IMMEDIATE:
       hr = S_FALSE;
-      CComQIPtr<IHTMLDOMNode> pDomNode = pEl;
-      if (pDomNode)
+      CComQIPtr<IHTMLDOMNode> pPrevSiblingNode = pEl;
+      if (pPrevSiblingNode)
       {
-        CComPtr<IHTMLDOMNode> pPrevSiblingNode = pDomNode;
         long type;
         do
         {
-          pPrevSiblingNode->get_previousSibling(&pPrevSiblingNode);
+          IHTMLDOMNode* tmpNode;
+          pPrevSiblingNode->get_previousSibling(&tmpNode);
+          pPrevSiblingNode.Attach(tmpNode);
           if (pPrevSiblingNode)
           {
             hr = pPrevSiblingNode->get_nodeType(&type);
             if (hr != S_OK)
-              pPrevSiblingNode = NULL;
+              pPrevSiblingNode.Release();
           }
         } while (pPrevSiblingNode && type != 1);
 
