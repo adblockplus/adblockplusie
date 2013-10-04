@@ -472,9 +472,8 @@ namespace PassthroughAPP
     // This method should only be called once, and be the only source
     // of target interface pointers.
     ATLASSERT(m_spInternetProtocolSink == 0);
-    ATLASSERT(m_spInternetBindInfo == 0);
     ATLASSERT(m_spTargetProtocol == 0);
-    if (m_spInternetProtocolSink || m_spInternetBindInfo || m_spTargetProtocol)
+    if (m_spInternetProtocolSink || m_spTargetProtocol)
     {
       return E_UNEXPECTED;
     }
@@ -482,7 +481,6 @@ namespace PassthroughAPP
     ATLASSERT(m_spServiceProvider == 0);
 
     m_spInternetProtocolSink = pOIProtSink;
-    m_spInternetBindInfo = pOIBindInfo;
     m_spTargetProtocol = pTargetProtocol;
     return S_OK;
   }
@@ -491,7 +489,6 @@ namespace PassthroughAPP
   {
     m_spInternetProtocolSink.Release();
     m_spServiceProvider.Release();
-    m_spInternetBindInfo.Release();
     m_spTargetProtocol.Release();
   }
 
@@ -584,30 +581,6 @@ namespace PassthroughAPP
     return m_spServiceProvider ?
       m_spServiceProvider->QueryService(guidService, riid, ppvObject) :
       E_UNEXPECTED;
-  }
-
-  // IInternetBindInfo
-  inline STDMETHODIMP IInternetProtocolSinkImpl::GetBindInfo(
-    /* [out] */ DWORD *grfBINDF,
-    /* [in, out] */ BINDINFO *pbindinfo)
-  {
-    ATLASSERT(m_spInternetBindInfo != 0);
-    return m_spInternetBindInfo ?
-      m_spInternetBindInfo->GetBindInfo(grfBINDF, pbindinfo) :
-      E_UNEXPECTED;
-  }
-
-  inline STDMETHODIMP IInternetProtocolSinkImpl::GetBindString(
-    /* [in] */ ULONG ulStringType,
-    /* [in, out] */ LPOLESTR *ppwzStr,
-    /* [in] */ ULONG cEl,
-    /* [in, out] */ ULONG *pcElFetched)
-  {
-    ATLASSERT(m_spInternetBindInfo != 0);
-    return m_spInternetBindInfo ?
-      m_spInternetBindInfo->GetBindString(ulStringType, ppwzStr, cEl,
-      pcElFetched) :
-    E_UNEXPECTED;
   }
 
   // ===== CInternetProtocolSinkWithSP =====
@@ -731,7 +704,6 @@ namespace PassthroughAPP
       return S_OK;
     }
     CComPtr<IInternetProtocolSink> spSink;
-    CComPtr<IInternetBindInfo> spBindInfo;
     if (SUCCEEDED(hr))
     {
       hr = m_internetSink.QueryInterface(&spSink);
@@ -739,17 +711,7 @@ namespace PassthroughAPP
     }
     if (SUCCEEDED(hr))
     {
-      hr = m_internetSink.QueryInterface(&spBindInfo);
-      ATLASSERT(SUCCEEDED(hr) && spBindInfo != 0);
-    }
-    if (SUCCEEDED(hr))
-    {
-      hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI,
-        dwReserved);
-    } 
-    else
-    {
-
+      hr = pTargetProtocol->Start(szUrl, spSink, pOIBindInfo, grfPI, dwReserved);
     }
     return hr;
   }
