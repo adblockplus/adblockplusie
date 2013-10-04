@@ -249,8 +249,7 @@ namespace PassthroughAPP
 
   class ATL_NO_VTABLE IInternetProtocolSinkImpl :
     public IInternetProtocolSink,
-    public IServiceProvider,
-    public IInternetBindInfo
+    public IServiceProvider
   {
   public:
     HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
@@ -301,21 +300,9 @@ namespace PassthroughAPP
       /* [in] */ REFIID riid,
       /* [out] */ void** ppvObject);
 
-    // IInternetBindInfo
-    STDMETHODIMP GetBindInfo(
-      /* [out] */ DWORD *grfBINDF,
-      /* [in, out] */ BINDINFO *pbindinfo);
-
-    STDMETHODIMP GetBindString(
-      /* [in] */ ULONG ulStringType,
-      /* [in, out] */ LPOLESTR *ppwzStr,
-      /* [in] */ ULONG cEl,
-      /* [in, out] */ ULONG *pcElFetched);
   public:
     CComPtr<IInternetProtocolSink> m_spInternetProtocolSink;
     CComPtr<IServiceProvider> m_spServiceProvider;
-    CComPtr<IInternetBindInfo> m_spInternetBindInfo;
-
     CComPtr<IInternetProtocol> m_spTargetProtocol;
   };
 
@@ -329,7 +316,6 @@ namespace PassthroughAPP
       COM_INTERFACE_ENTRY(IInternetProtocolSink)
       COM_INTERFACE_ENTRY_PASSTHROUGH(IServiceProvider,
       m_spServiceProvider.p)
-      COM_INTERFACE_ENTRY(IInternetBindInfo)
       COM_INTERFACE_ENTRY_PASSTHROUGH_DEBUG()
     END_COM_MAP()
   };
