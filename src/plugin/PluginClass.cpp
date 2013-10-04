@@ -1833,7 +1833,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
       Dictionary* dictionary = Dictionary::GetInstance();
       std::wstring downloadingText = dictionary->Lookup("updater", "downloading-update-text");
       std::wstring downloadingTitle = dictionary->Lookup("updater", "downloading-update-title");
-      pClass->notificationMessage.SetTextAndIcon(downloadingText, downloadingTitle, TTI_ERROR);
+      pClass->notificationMessage.SetTextAndIcon(downloadingText, downloadingTitle, TTI_INFO);
     }
     break;
   }
