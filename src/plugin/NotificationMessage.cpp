@@ -3,9 +3,8 @@
 
 #include "NotificationMessage.h"
 
-NotificationMessage::NotificationMessage(HWND parent)
+NotificationMessage::NotificationMessage(HWND parent): parentWindow(parent)
 { 
-  parentWindow = parent;
   toolTipWindow = 0;
   InitializeCommonControls();
 };
@@ -39,13 +38,13 @@ bool NotificationMessage::Show(std::wstring message, std::wstring title, int ico
 
   SetWindowPos(toolTipWindow, HWND_TOPMOST,0, 0, 0, 0,
           SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-  TOOLINFOW ti;
+  TOOLINFOW ti = {};
   ti.cbSize = sizeof(TOOLINFOW);
   ti.uFlags = TTF_IDISHWND | TTF_TRACK | TTF_TRANSPARENT;
   ti.hwnd = toolTipWindow;
   ti.hinst = NULL;
   ti.uId = (UINT_PTR)parentWindow;
-  ti.lpszText = const_cast<LPWSTR>(message.c_str());    
+  ti.lpszText = const_cast<LPWSTR>(message.c_str());
   GetClientRect(parentWindow, &ti.rect);
 
   LRESULT res = ::SendMessage(toolTipWindow, TTM_ADDTOOL, 0, (LPARAM)&ti);
@@ -77,8 +76,7 @@ void NotificationMessage::Move(short x, short y)
 
 bool NotificationMessage::SetTextAndIcon(std::wstring text, std::wstring title, int icon)
 {
-  TOOLINFOW ti;
-  memset(&ti, 0, sizeof(TOOLINFOW));
+  TOOLINFOW ti = {};
   ti.cbSize = sizeof(TOOLINFOW);
   ti.hwnd = toolTipWindow; 
   ti.hinst = NULL;
