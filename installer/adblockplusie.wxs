@@ -482,28 +482,28 @@
     <DirectoryRef Id="Locales_Folder">
       <Directory Id="locales" FileSource="..\locales">
         <Component Id="locales_af.ini" Guid="0311a948-3e76-45e8-83c0-8455fa9083b7">
-          <File Name="af.ini"/>
+          <RemoveFile Id="af.ini" Name="af.ini" On="install"/>
         </Component>
         <Component Id="locales_am.ini" Guid="cca25e4e-9b74-4e99-a592-c54a310fe806">
-          <File Name="am.ini"/>
+          <RemoveFile Id="am.ini" Name="am.ini" On="install"/>
         </Component>
         <Component Id="locales_ar.ini" Guid="2e25459f-e7e0-40bf-b9d2-05a60be967f9">
           <File Name="ar.ini"/>
         </Component>
         <Component Id="locales_as.ini" Guid="871517f1-be55-4b8c-83b9-5da89230de6b">
-          <File Name="as.ini"/>
+          <RemoveFile Id="as.ini" Name="as.ini" On="install"/>
         </Component>
         <Component Id="locales_az.ini" Guid="7039faf6-5ff6-441d-aad0-b009588f29fd">
-          <File Name="az.ini"/>
+          <RemoveFile Id="az.ini" Name="az.ini" On="install"/>
         </Component>
         <Component Id="locales_bg.ini" Guid="97abd38d-969c-48d8-9a18-ccfd340c2f3f">
           <File Name="bg.ini"/>
         </Component>
         <Component Id="locales_bn_IN.ini" Guid="cc42ac9c-c697-4eb2-8023-d37ebc1bac28">
-          <File Name="bn-IN.ini"/>
+          <RemoveFile Id="bn_IN.ini" Name="bn-IN.ini" On="install"/>
         </Component>
         <Component Id="locales_bs.ini" Guid="16f317bb-2c93-40bc-af30-ff608738718b">
-          <File Name="bs.ini"/>
+          <RemoveFile Id="bs.ini" Name="bs.ini" On="install"/>
         </Component>
         <Component Id="locales_ca.ini" Guid="cc6fd89b-34f4-45c6-86c5-65ed05ddeb96">
           <File Name="ca.ini"/>
@@ -512,7 +512,7 @@
           <File Name="cs.ini"/>
         </Component>
         <Component Id="locales_cy.ini" Guid="3d524ffb-1314-4ffb-81be-bb119856d5f4">
-          <File Name="cy.ini"/>
+          <RemoveFile Id="cy.ini" Name="cy.ini" On="install"/>
         </Component>
         <Component Id="locales_da.ini" Guid="d02413b6-ab8c-4b71-9ca2-74c978175eaf">
           <File Name="da.ini"/>
@@ -533,10 +533,10 @@
           <File Name="et.ini"/>
         </Component>
         <Component Id="locales_eu.ini" Guid="179abc5f-e70b-4a58-9881-7ca27bf6da47">
-          <File Name="eu.ini"/>
+          <RemoveFile Id="eu.ini" Name="eu.ini" On="install"/>
         </Component>
         <Component Id="locales_fa.ini" Guid="fb358e71-8843-452b-98b4-af8bb618c45b">
-          <File Name="fa.ini"/>
+          <RemoveFile Id="fa.ini" Name="fa.ini" On="install"/>
         </Component>
         <Component Id="locales_fi.ini" Guid="4af580a0-7c3c-4552-8cf0-7c1a65f22438">
           <File Name="fi.ini"/>
@@ -548,13 +548,13 @@
           <File Name="fr.ini"/>
         </Component>
         <Component Id="locales_ga_IE.ini" Guid="f87a10c0-4692-4a82-bdff-0d00f385dfbc">
-          <File Name="ga-IE.ini"/>
+          <RemoveFile Id="ga_IE.ini" Name="ga-IE.ini" On="install"/>
         </Component>
         <Component Id="locales_gl.ini" Guid="cdbfdfd9-310b-4e5f-b00d-d462fa560bb3">
-          <File Name="gl.ini"/>
+          <RemoveFile Id="gl.ini" Name="gl.ini" On="install"/>
         </Component>
         <Component Id="locales_gu_IN.ini" Guid="d50bc57b-a02a-4a62-b066-2ff224cf4c9c">
-          <File Name="gu-IN.ini"/>
+          <RemoveFile Id="gu_IN.ini" Name="gu-IN.ini" On="install"/>
         </Component>
         <Component Id="locales_he.ini" Guid="691a5871-71ca-48cc-9869-ec1acacda7f2">
           <File Name="he.ini"/>
@@ -569,10 +569,10 @@
           <File Name="hu.ini"/>
         </Component>
         <Component Id="locales_hy_AM.ini" Guid="302e915a-2f2a-4492-a3d5-cdc5074d9f4b">
-          <File Name="hy-AM.ini"/>
+          <RemoveFile Id="hy_AM.ini" Name="hy-AM.ini" On="install"/>
         </Component>
         <Component Id="locales_is.ini" Guid="1b44e363-ebc3-4dc0-85ff-bdd9a7e97d89">
-          <File Name="is.ini"/>
+          <RemoveFile Id="is.ini" Name="is.ini" On="install"/>
         </Component>
         <Component Id="locales_it.ini" Guid="49843985-89c8-4aff-bd8e-fb5445d9b9bc">
           <File Name="it.ini"/>
@@ -581,37 +581,37 @@
           <File Name="ja.ini"/>
         </Component>
         <Component Id="locales_ka.ini" Guid="c919ef5f-d2e2-495b-a1c5-82efd67546c8">
-          <File Name="ka.ini"/>
+          <RemoveFile Id="ka.ini" Name="ka.ini" On="install"/>
         </Component>
         <Component Id="locales_kk.ini" Guid="c104d59d-5c7c-4375-bbd6-124a3902ce50">
-          <File Name="kk.ini"/>
+          <RemoveFile Id="kk.ini" Name="kk.ini" On="install"/>
         </Component>
         <Component Id="locales_km.ini" Guid="a03ba982-79ce-4da8-ab44-12a1ccf22905">
-          <File Name="km.ini"/>
+          <RemoveFile Id="km.ini" Name="km.ini" On="install"/>
         </Component>
         <Component Id="locales_kn.ini" Guid="1cfb9189-fb89-4cf8-b97a-65273f2c0541">
           <File Name="kn.ini"/>
         </Component>
         <Component Id="locales_ko.ini" Guid="ac35398c-b8dc-41ac-943e-28fcea7ca6f9">
-          <File Name="ko.ini"/>
+          <RemoveFile Id="ko.ini" Name="ko.ini" On="install"/>
         </Component>
         <Component Id="locales_lb.ini" Guid="8ef2495b-b20b-425f-b8f4-222fb168659a">
-          <File Name="lb.ini"/>
+          <RemoveFile Id="lb.ini" Name="lb.ini" On="install"/>
         </Component>
         <Component Id="locales_lt.ini" Guid="f72ecd23-6cd4-40cb-b068-24a4de7b4302">
-          <File Name="lt.ini"/>
+          <RemoveFile Id="lt.ini" Name="lt.ini" On="install"/>
         </Component>
         <Component Id="locales_lv.ini" Guid="adb820be-e1a6-416c-acc8-a6bb31c80d7a">
-          <File Name="lv.ini"/>
+          <RemoveFile Id="lv.ini" Name="lv.ini" On="install"/>
         </Component>
         <Component Id="locales_mi.ini" Guid="62dd48e6-cd00-4c98-9930-e260c2cc0601">
-          <File Name="mi.ini"/>
+          <RemoveFile Id="mi.ini" Name="mi.ini" On="install"/>
         </Component>
         <Component Id="locales_mk.ini" Guid="42b16da9-af05-4423-8a72-8492a777c63e">
-          <File Name="mk.ini"/>
+          <RemoveFile Id="mk.ini" Name="mk.ini" On="install"/>
         </Component>
         <Component Id="locales_ml_IN.ini" Guid="8766521a-fee3-4404-831e-c4bb44eb5e4f">
-          <File Name="ml-IN.ini"/>
+          <RemoveFile Id="ml_IN.ini" Name="ml-IN.ini" On="install"/>
         </Component>
         <Component Id="locales_mr.ini" Guid="e7351e07-87fe-4185-8def-c32086a15145">
           <File Name="mr.ini"/>
@@ -620,13 +620,13 @@
           <File Name="ms.ini"/>
         </Component>
         <Component Id="locales_mt.ini" Guid="546032e9-3ffc-4e33-82ef-0d9799f10ee7">
-          <File Name="mt.ini"/>
+          <RemoveFile Id="mt.ini" Name="mt.ini" On="install"/>
         </Component>
         <Component Id="locales_nb.ini" Guid="1217b6c4-69c9-43aa-8949-62c4d4fcd02f">
           <File Name="nb.ini"/>
         </Component>
         <Component Id="locales_ne_NP.ini" Guid="0a388fba-c446-4276-b944-a99e53e25b3b">
-          <File Name="ne-NP.ini"/>
+          <RemoveFile Id="ne_NP.ini" Name="ne-NP.ini" On="install"/>
         </Component>
         <Component Id="locales_nl.ini" Guid="ef0d8100-2d49-4309-a653-a13785d9311d">
           <File Name="nl.ini"/>
@@ -635,10 +635,10 @@
           <File Name="nn-NO.ini"/>
         </Component>
         <Component Id="locales_or.ini" Guid="b1c8d9f1-eabe-4d78-bee5-186f5ae54955">
-          <File Name="or.ini"/>
+          <RemoveFile Id="or.ini" Name="or.ini" On="install"/>
         </Component>
         <Component Id="locales_pa_IN.ini" Guid="9ff0faa2-963d-4bcd-ab59-f6144cc5a465">
-          <File Name="pa-IN.ini"/>
+          <RemoveFile Id="pa_IN.ini" Name="pa-IN.ini" On="install"/>
         </Component>
         <Component Id="locales_pl.ini" Guid="2b13846c-2b81-464b-995e-83df9623205b">
           <File Name="pl.ini"/>
@@ -656,31 +656,31 @@
           <File Name="ru.ini"/>
         </Component>
         <Component Id="locales_si_LK.ini" Guid="dbb7c66c-e21e-402a-9ee2-90adb51da7e8">
-          <File Name="si-LK.ini"/>
+          <RemoveFile Id="si_LK.ini" Name="si-LK.ini" On="install"/>
         </Component>
         <Component Id="locales_sk.ini" Guid="8edf0206-ccc2-4f7c-a6e8-a494646e46a9">
           <File Name="sk.ini"/>
         </Component>
         <Component Id="locales_sl.ini" Guid="160bea38-36fc-4278-a5f6-5d781879b929">
-          <File Name="sl.ini"/>
+          <RemoveFile Id="sl.ini" Name="sl.ini" On="install"/>
         </Component>
         <Component Id="locales_sq.ini" Guid="aab46279-3ab7-4836-ba97-4e84a106b131">
-          <File Name="sq.ini"/>
+          <RemoveFile Id="sq.ini" Name="sq.ini" On="install"/>
         </Component>
         <Component Id="locales_sr_CS.ini" Guid="a65d66e2-68cf-4384-a306-94ed58781ac0">
-          <File Name="sr-CS.ini"/>
+          <RemoveFile Id="sr_CS.ini" Name="sr-CS.ini" On="install"/>
         </Component>
         <Component Id="locales_sr.ini" Guid="4bd35f58-16bd-408c-b0d2-1e2e202e94a9">
-          <File Name="sr.ini"/>
+          <RemoveFile Id="sr.ini" Name="sr.ini" On="install"/>
         </Component>
         <Component Id="locales_sv_SE.ini" Guid="7f0766a9-73ce-440d-88ef-33363390e21c">
           <File Name="sv-SE.ini"/>
         </Component>
         <Component Id="locales_ta.ini" Guid="b0193bef-0202-4058-9216-6e6691e7d6af">
-          <File Name="ta.ini"/>
+          <RemoveFile Id="ta.ini" Name="ta.ini" On="install"/>
         </Component>
         <Component Id="locales_te.ini" Guid="880aa83f-e3a4-48ea-8398-30c8a77ead6e">
-          <File Name="te.ini"/>
+          <RemoveFile Id="te.ini" Name="te.ini" On="install"/>
         </Component>
         <Component Id="locales_th.ini" Guid="0fe17e7e-99a1-4355-a3eb-11cc94d2319a">
           <File Name="th.ini"/>
@@ -689,7 +689,7 @@
           <File Name="tr.ini"/>
         </Component>
         <Component Id="locales_tt_RU.ini" Guid="6d0d3a08-fbc3-43ce-a419-1f808047ff27">
-          <File Name="tt-RU.ini"/>
+          <RemoveFile Id="tt_RU.ini" Name="tt-RU.ini" On="install"/>
         </Component>
         <Component Id="locales_uk.ini" Guid="7ceda30d-cb1b-4b6c-b34d-2034b8d14229">
           <File Name="uk.ini"/>
@@ -698,25 +698,25 @@
           <File Name="ur-PK.ini"/>
         </Component>
         <Component Id="locales_uz.ini" Guid="e5962669-0154-48d9-bd73-de03e8b55ed4">
-          <File Name="uz.ini"/>
+          <RemoveFile Id="uz.ini" Name="uz.ini" On="install"/>
         </Component>
         <Component Id="locales_vi.ini" Guid="028a2383-8e89-4300-a022-9568ed914d42">
-          <File Name="vi.ini"/>
+          <RemoveFile Id="vi.ini" Name="vi.ini" On="install"/>
         </Component>
         <Component Id="locales_xh.ini" Guid="b7b53a80-5364-40b5-a011-fa363d446102">
-          <File Name="xh.ini"/>
+          <RemoveFile Id="xh.ini" Name="xh.ini" On="install"/>
         </Component>
         <Component Id="locales_zh_CN.ini" Guid="c02225f8-9b2c-4388-a977-df6cda67d836">
           <File Name="zh-CN.ini"/>
         </Component>
         <Component Id="locales_zh_HK.ini" Guid="3c8050f9-fbc8-48e1-844a-46ae997da276">
-          <File Name="zh-HK.ini"/>
+          <RemoveFile Id="zh_HK.ini" Name="zh-HK.ini" On="install"/>
         </Component>
         <Component Id="locales_zh_TW.ini" Guid="9281de74-822c-493c-8122-9a786a099ace">
           <File Name="zh-TW.ini"/>
         </Component>
         <Component Id="locales_zu.ini" Guid="6958c098-99df-4ced-96fa-6436f934981d">
-          <File Name="zu.ini"/>
+          <RemoveFile Id="zu.ini" Name="zu.ini" On="install"/>
         </Component>
       </Directory>
     </DirectoryRef>
