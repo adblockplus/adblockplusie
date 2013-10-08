@@ -4,7 +4,7 @@
 #include "NotificationMessage.h"
 
 NotificationMessage::NotificationMessage(HWND parent): parentWindow(parent)
-{ 
+{
   toolTipWindow = 0;
   InitializeCommonControls();
 };
@@ -41,7 +41,7 @@ bool NotificationMessage::Show(std::wstring message, std::wstring title, int ico
   TOOLINFOW ti = {};
   ti.cbSize = sizeof(TOOLINFOW);
   ti.uFlags = TTF_IDISHWND | TTF_TRACK | TTF_TRANSPARENT;
-  ti.hwnd = toolTipWindow;
+  ti.hwnd = parentWindow;
   ti.hinst = NULL;
   ti.uId = (UINT_PTR)parentWindow;
   ti.lpszText = const_cast<LPWSTR>(message.c_str());
@@ -51,7 +51,7 @@ bool NotificationMessage::Show(std::wstring message, std::wstring title, int ico
 
   RECT rect;
   GetWindowRect(parentWindow, &rect);
-  Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2); 
+  Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2);
 
   SetTextAndIcon(message, title, icon);
   res = ::SendMessage(toolTipWindow, TTM_TRACKACTIVATE, TRUE, (LPARAM)&ti);
@@ -78,10 +78,10 @@ bool NotificationMessage::SetTextAndIcon(std::wstring text, std::wstring title, 
 {
   TOOLINFOW ti = {};
   ti.cbSize = sizeof(TOOLINFOW);
-  ti.hwnd = toolTipWindow; 
+  ti.hwnd = parentWindow;
   ti.hinst = NULL;
   ti.uId = (UINT_PTR)parentWindow;
-  ti.lpszText = const_cast<LPWSTR>(text.c_str());   
+  ti.lpszText = const_cast<LPWSTR>(text.c_str());
   LRESULT res = ::SendMessage(toolTipWindow, TTM_SETTITLE, icon, (LPARAM)title.c_str());
   res = ::SendMessage(toolTipWindow, TTM_UPDATETIPTEXT, 0, (LPARAM)&ti);
   return res == TRUE;
