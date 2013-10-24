@@ -43,6 +43,14 @@ default: $(Installer_x64)
 !error Unknown variable ARCH=$(ARCH)
 !endif
 
+default:
+    @echo Available targets
+    @echo - ia32
+    @echo - x64
+    @echo - setup
+    @echo - install-ia32
+    @echo - install-x64 
+
 all: ia32 x64 setup
 
 ia32: $(Installer_ia32)
@@ -79,8 +87,8 @@ $(object_setup): setup.wxs
 
 Light = light -notidy -nologo -cultures:en-us -ext WixUIExtension -out $@
 
-$(Installer_ia32): $(objects_ia32) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll"
-    $(Light) $(objects_ia32) $(objects_common) -loc en-us.wxl
+$(Installer_ia32): $(objects_ia32) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll" "build\ia32\Debug\installer-ca.dll"
+    $(Light) $(objects_ia32) $(objects_common) -loc en-us.wxl -sval
 
 # TODO: Don't ignore errors here (fix install paths)
 $(Installer_x64): $(objects_x64) $(objects_common) "..\build\ia32\$(Configuration)\AdblockPlus.dll" "..\build\x64\$(Configuration)\AdblockPlus.dll"

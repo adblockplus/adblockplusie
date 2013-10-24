@@ -1,0 +1,9 @@
+/*!
+
+\mainpage Installer for ABP-IE Documentation
+
+\par Entry Points for Custom Action library
+- DllMain()
+- abp_close_applications()
+
+*/
