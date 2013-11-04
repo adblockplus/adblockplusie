@@ -30,6 +30,17 @@
 <?endif?>
 
 <!--
+  CA_Configuration is the Visual Studio configuration for the Custom Action library.
+  It's set to "Debug" while the installer with a CA is in development.
+  TODO. 
+    First, set this variable based on the configuration in the VS solution.
+    Second, change the default to "Release" (or perhaps an error).
+-->
+<?ifndef CA_Configuration?>
+  <?define CA_Configuration="Debug" ?>
+<?endif?>
+
+<!--
   sys.BUILDARCH is set by the command line argument '-arch'.
   The default value to "x86"
 -->
@@ -94,8 +105,7 @@
       The "CustomAction" tag defines the tag itself, but doesn't sequence it;
         it defines an entry in the "CustomAction" table.
       The "Binary" tag describe an asset that's incorporated into the MSI but that is not an installed component.
-      The "Custom" tag defines the sequencing of an action;
-        it defines an entry in one of the sequence tables (there are six).
+      The "Custom" tag defines when the action executes by defining an entry in one of the sequence tables.
       
       Attribute "Return" sets the "Custom Action Return Processing Options" to zero,
         which indicates to block the installer until the action completes
@@ -107,7 +117,10 @@
         DllEntry="abp_close_applications"
         Return="check"
     />
-    <Binary Id="installer_ca" SourceFile="build\ia32\Debug\installer-ca.dll"/>    
+    <!--
+      Note that we're using a 32-bit custom action library for both 32- and 64-bit installers. 
+    -->
+    <Binary Id="installer_ca" SourceFile="build\ia32\$(var.CA_Configuration)\installer-ca.dll"/>    
     <InstallUISequence>
       <!--
         The LaunchConditions action occurs near the beginning, before any of the expensive operations.
