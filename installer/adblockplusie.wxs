@@ -8,7 +8,9 @@
   Certain WiX elements are implemented by MSI custom actions,
     which means this source implicitly declares some insofar as the Windows Installer sees it.
   These errors are benign and can be avoided by some fiddling with the registry on the development machine.
-  See http://wix.sourceforge.net/faq.html#Error217
+  See http://blogs.msdn.com/b/heaths/archive/2007/05/31/windows-installer-errors-2738-and-2739-with-script-custom-actions.aspx
+    and http://blogs.msdn.com/b/astebner/archive/2007/06/07/3151752.aspx,
+    both taken from (must use the Wayback Machine) http://wix.sourceforge.net/faq.html#Error217 
 -->
 <!--
   These definitions enable compiling multiple versions & Product ID's from the same file.
@@ -65,12 +67,24 @@
     Id="*"
     UpgradeCode="3a8e3ab4-762d-4641-806e-2dccb953d73f">
 
+    <!--
+      Attribute @Languages
+        This attribute appears in the MSI as the second part of the "Template Summary" property in the Summary Information Stream.
+        It contains a list of LCID (Language Code Identifier or Locale Identifier).
+        The list contains all the languages supported within the MSI, all but the first as embedded transforms.
+        See http://www.installsite.org/pages/en/msi/articles/embeddedlang/.
+        
+        Template Summary property http://msdn.microsoft.com/en-us/library/windows/desktop/aa372070%28v=vs.85%29.aspx
+          Quote: "Merge Modules are the only packages that may have multiple languages."
+          Contrary to this quotation, MSI files are also allowed to have multiple languages, although such support is undocumented.       
+    -->
     <Package
       Keywords="!(loc.Keywords)"
       Description="!(loc.Description)"
       Comments="!(loc.Comments)"
       InstallerVersion="$(var.Minimum_Version)"
-      Languages="!(loc.LANG)" SummaryCodepage="!(loc.CODEPAGE)"
+      Languages="7,1033"
+      SummaryCodepage="!(loc.CODEPAGE)"
       Compressed="yes"
       InstallScope="perMachine" InstallPrivileges="elevated"
     />
@@ -79,7 +93,6 @@
       version number and the one installed. The attribute Disallow="no" is
       implied and allows major upgrades to be performed. Downgrades aren't
       allowed by default.
-
 
       The @Schedule attribute looks a little opaque.
       Suffice it to say that it's the only option for scheduling where uninstallation of the previous version
