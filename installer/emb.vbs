@@ -1,11 +1,14 @@
-'Emb.vbs. Argument(0) is the original database. Argument(1) is the
-'    path to the transform file. Argument(2) is the name of the storage.
-'
+' Emb.vbs. 
+'   Argument(0) is the name of the storage.
+'   Argument(1) is the original database. 
+'   Argument(2) is the path to the transform file. 
+' This was changed from the original to work around a gyp defect involved that rewrites whole command lines rather than just path-containing variables.
+
 Option Explicit
 
 ' Check arguments
 If WScript.Arguments.Count < 2 Then
- WScript.Echo "Usage is emb.vbs [original database] [transform] [storage name]"
+ WScript.Echo "Usage is emb.vbs [storage name] [original database] [transform]"
  WScript.Quit(1)
 End If
 
@@ -15,9 +18,9 @@ Dim installer : Set installer = Nothing
 Set installer = Wscript.CreateObject("WindowsInstaller.Installer")
  
 ' Evaluate command-line arguments and set open and update modes
-Dim databasePath: databasePath = Wscript.Arguments(0)
-Dim importPath  : importPath = Wscript.Arguments(1)
-Dim storageName : storageName = Wscript.Arguments(2)
+Dim databasePath: databasePath = Wscript.Arguments(1)
+Dim importPath  : importPath = Wscript.Arguments(2)
+Dim storageName : storageName = Wscript.Arguments(0)
  
 ' Open database and create a view on the _Storages table
 Dim sqlQuery : sqlQuery = "SELECT `Name`,`Data` FROM _Storages"
