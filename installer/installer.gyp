@@ -67,6 +67,8 @@
   'target_defaults':
   {
     'msvs_cygwin_shell': 0,
+
+
   },
 
   'targets': 
@@ -163,6 +165,18 @@
   #############
   # T1. MSI 01. en-us
   #############
+  #
+  # Inputs:
+  #   - Name of target (project file)
+  #   - Name of previous target in the embed chain
+  #   - Locality file (.wxl). Link argument to create locale-specific MSI.
+  #   - Locale ID.
+  # Intermediates:
+  #   - MSI for locale.
+  #   - MST for locale against base
+  # Outputs:
+  #   - MSI with embedded intermediate MST
+  #
   {
     'target_name': 'MSI 01. en',
     'type': 'none',
@@ -172,14 +186,14 @@
 	  'emb.vbs',
 	  'en-us.wxl',
 	],
-	'actions':
+	'original_actions':
 	[ {
       'action_name': 'WiX Link',
       'message': 'Linking en-us MSI',
       'inputs': 
 	  [
 	    'en-us.wxl',
-        '<(payloads)'
+        '<@(payloads)'
       ],
       'outputs':
       [
@@ -198,7 +212,39 @@
 	  'inputs': [ '<(build_dir_arch)/adblockplusie-en-us-<(target_arch).mst' ],
 	  'outputs': [ '<(interim_msi)' ],
 	  'action': [ 'cscript ..\..\emb.vbs 1033', '<(interim_msi)', '<(_inputs)' ]
-	} ]
+	} ],
+	'variables': {
+	  'locale_id': '1033'
+	},
+    'rules': 
+	[ {
+	  #
+	  # Rule to build a single-language MSI as part of a chain to create a multiple-language MSI
+	  # The rule runs a  .cmd file to execute the commands; this chose arises from gyp limitations and defects.
+	  #
+	  # gyp can only handle a single rule per extension.
+	  # Since we have only one ".wxl" file, we need to run all the operations (link MSI, diff to MST, embed MST into MSI) with a single action.
+	  # gyp does not have syntax for multi-line actions.
+	  # Including a newline as a token doesn't work because of the way gyp "fixes" path names; it treats the newline as a path, prefixes it, and quotes it all.
+	  #
+	  # Furthermore, there's the issue of overriding the rule for the first MSI, the one that generates the BASE against which transforms are generated.
+	  # In order to override the rule, we'd need to duplicate most of this one, particularly all the file name expressions, violating the write-once principle.
+	  #
+	  'rule_name': 'MSI Build',
+	  'extension': 'wxl',
+      'message': 'Generating embedded transform for "<(RULE_INPUT_ROOT)"',
+	  'inputs': [ '<(base_msi)', '<@(payloads)' ],
+	  'outputs': [ '<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).msi', '<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).mst' ],
+      'action': 
+	  [
+	    '..\..\msibuild.cmd additional <(locale_id)', '<(RULE_INPUT_PATH)', 
+		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).msi',
+		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).mst',
+		'<(build_dir_arch)/adblockplusie-BASE-<(target_arch).msi',
+		'<(build_dir_arch)/adblockplusie-INTERIM-<(target_arch).msi',
+		'<(installer_object_file)', '<(common_object_file)',
+	  ]
+	} ],
   },
 
   #############
