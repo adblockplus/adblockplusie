@@ -15,8 +15,8 @@
     #
     # Build directories, both common and architecture-specific
     # 
-    'build_dir_arch': './build/<(target_arch)',
-    'build_dir_common': './build/common', 
+    'build_dir_arch': 'build/<(target_arch)',
+    'build_dir_common': 'build/common', 
     
     #
     # MSI file names.
@@ -67,154 +67,19 @@
   'target_defaults':
   {
     'msvs_cygwin_shell': 0,
-
-
-  },
-
-  'targets': 
-  [
-  #############
-  # Compile common WiX source.
-  #     All the WiX-linked sources that depend neither on architecture nor configuration.
-  #     Principally for user interface.
-  #############
-  {
-    'target_name': 'WiX common',
-    'type': 'none',
-    'actions': 
-    [ {
-      'action_name': 'WiX compile common',
-      'message': 'Compiling common WiX sources',
-      'inputs': 
-      [
-        '<@(common_source_files)'
-      ],
-      'outputs':
-      [
-        # List must contain only a single element so that "-out" argument works correctly.
-        '<(common_object_file)'
-      ], 
-      'action':
-        [ 'candle -nologo -dNoDefault ', '-out', '<@(_outputs)', '<@(_inputs)' ]
-    } ]    
-  },
-    
-  #############
-  # Compile installer WiX source.
-  #     Platform-specific.
-  #############
-  {
-    'target_name': 'WiX installer',
-    'type': 'none',
-    'actions':
-    [ {
-      'action_name': 'Compile WiX installer',
-      'message': 'Compilings installer WiX sources',
-      'inputs':
-      [
-        '<@(installer_source_files)'
-      ],
-      'outputs':
-      [
-        # List must contain only a single element so that "-out" argument works correctly.
-        '<(installer_object_file)'
-      ],
-      'action':
-        [ 'candle -nologo -dNoDefault -dVersion=91.0 -dConfiguration=Release ', '-out', '<@(_outputs)', '<(installer_source_top_file)' ]
-    } ]
-  },
-  
-  #############
-  # Link WiX objects and payloads, creating base MSI.
-  #     Platform-specific.
-  #     Generates the reference MSI upon which all transforms are based.
-  #############
-  {
-    'target_name': 'MSI 00. Base',
-    'type': 'none',
-    'dependencies' : 
-    [
-      'WiX installer',
-      'WiX common',
-      'installer-ca'
-    ],
-    'actions':
-    [ {
-      'action_name': 'WiX Link',
-      'message': 'Linking base MSI',
-      'inputs': 
-	  [
-	    'src\msi\locale\de.wxl',
-        '<(payloads)'
-      ],
-      'outputs':
-      [
-        '<(base_msi)'
-      ],
-      'action':
-        [ 'light -notidy -nologo -ext WixUIExtension -sval', '-out', '<(base_msi)', '-loc', 'src\msi\locale\de.wxl', '<(installer_object_file)', '<(common_object_file)' ]
-    }, {
-	  'action_name': 'Copy to interim',
-	  'message': 'Copying base MSI to initial version of interim MSI',
-	  'inputs': [ '<(base_msi)' ],
-	  'outputs': [ '<(interim_msi)' ],
-	  'action': [ 'copy', '<(base_msi)', '<(interim_msi)' ]
-	} ],
-  },
-
-  #############
-  # T1. MSI 01. en-us
-  #############
-  #
-  # Inputs:
-  #   - Name of target (project file)
-  #   - Name of previous target in the embed chain
-  #   - Locality file (.wxl). Link argument to create locale-specific MSI.
-  #   - Locale ID.
-  # Intermediates:
-  #   - MSI for locale.
-  #   - MST for locale against base
-  # Outputs:
-  #   - MSI with embedded intermediate MST
-  #
-  {
-    'target_name': 'MSI 01. en',
-    'type': 'none',
-    'dependencies' : [ 'MSI 00. Base' ],
-	'sources':
-	[
-	  'emb.vbs',
-	  'en-us.wxl',
-	],
-	'original_actions':
-	[ {
-      'action_name': 'WiX Link',
-      'message': 'Linking en-us MSI',
-      'inputs': 
-	  [
-	    'en-us.wxl',
-        '<@(payloads)'
-      ],
-      'outputs':
-      [
-        '<(build_dir_arch)/adblockplusie-en-us-<(target_arch).msi'
-      ],
-      'action': [ 'light -notidy -nologo -ext WixUIExtension -sval', '-out', '<@(_outputs)', '-loc', 'en-us.wxl', '<(installer_object_file)', '<(common_object_file)' ]
-	}, {
-	  'action_name': 'Generate',
-	  'message': 'Generating en-us transform',
-	  'inputs': [ '<(base_msi)', '<(build_dir_arch)/adblockplusie-en-us-<(target_arch).msi' ],
-	  'outputs': [ '<(build_dir_arch)/adblockplusie-en-us-<(target_arch).mst' ],
-	  'action': [ 'msitran -g', '<@(_inputs)', '<(_outputs)' ]
-	}, {
-	  'action_name': 'Embed',
-	  'message': 'Embedding en-us MST into interim MSI',
-	  'inputs': [ '<(build_dir_arch)/adblockplusie-en-us-<(target_arch).mst' ],
-	  'outputs': [ '<(interim_msi)' ],
-	  'action': [ 'cscript ..\..\emb.vbs 1033', '<(interim_msi)', '<(_inputs)' ]
-	} ],
 	'variables': {
-	  'locale_id': '1033'
+	  # 
+	  # We don't really want a default 'locale_id', but we need one to avoid an "undefined variable" error when the ".wxl" rule is invoked.
+	  # Note that the action in the rule uses later-phase substitution with ">", which occurs after the rule is merged with the target.
+	  # Apparently, though, it's also being evaluated earlier, before 'locale_id' is defined in the target.
+	  # Therefore, count this as a workaround for a gyp defect.
+	  #
+	  'locale_id%': '0',
+
+	  #
+	  # We do want a default 'msi_build_phase', because in all but the first MSI build we want the flag "additional"
+	  #
+	  'msi_build_phase%': 'additional',
 	},
     'rules': 
 	[ {
@@ -233,11 +98,11 @@
 	  'rule_name': 'MSI Build',
 	  'extension': 'wxl',
       'message': 'Generating embedded transform for "<(RULE_INPUT_ROOT)"',
-	  'inputs': [ '<(base_msi)', '<@(payloads)' ],
+	  'inputs': [ 'emb.vbs', '<(base_msi)', '<@(payloads)' ],
 	  'outputs': [ '<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).msi', '<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).mst' ],
       'action': 
 	  [
-	    '..\..\msibuild.cmd additional <(locale_id)', '<(RULE_INPUT_PATH)', 
+	    '..\..\msibuild.cmd >(msi_build_phase) >(locale_id)', '<(RULE_INPUT_PATH)', 
 		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).msi',
 		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).mst',
 		'<(build_dir_arch)/adblockplusie-BASE-<(target_arch).msi',
@@ -245,6 +110,91 @@
 		'<(installer_object_file)', '<(common_object_file)',
 	  ]
 	} ],
+  },
+
+  'targets': 
+  [
+  #############
+  # Compile common WiX source.
+  #     All the WiX-linked sources that depend neither on architecture nor configuration.
+  #     Principally for user interface.
+  #############
+  {
+    'target_name': 'Installer, common WiX',
+    'type': 'none',
+    'actions': 
+    [ {
+      'action_name': 'WiX compile common',
+      'message': 'Compiling common WiX sources',
+      'inputs': 
+      [
+        '<@(common_source_files)'
+      ],
+      'outputs':
+      [
+        # List must contain only a single element so that "-out" argument works correctly.
+        '<(common_object_file)'
+      ], 
+      'action':
+        [ 'candle -nologo -dNoDefault ', '-out', '<@(_outputs)', '<@(_inputs)' ]
+    } ]    
+  },
+
+  #############
+  # Compile installer WiX source.
+  #     Platform-specific.
+  #############
+  {
+    'target_name': 'Installer, architecture-specific WiX',
+    'type': 'none',
+    'actions':
+    [ {
+      'action_name': 'Compile WiX installer',
+      'message': 'Compilings installer WiX sources',
+      'inputs':
+      [
+        '<@(installer_source_files)'
+      ],
+      'outputs':
+      [
+        # List must contain only a single element so that "-out" argument works correctly.
+        '<(installer_object_file)'
+      ],
+      'action':
+        [ 'candle -nologo -dNoDefault -dVersion=91.0 -dConfiguration=Release ', '-out', '<@(_outputs)', '<(installer_source_top_file)' ]
+    } ]
+  },
+
+  #############
+  # Link WiX objects and payloads, creating base MSI.
+  #     Platform-specific.
+  #     Generates the reference MSI upon which all transforms are based.
+  #############
+  {
+    'target_name': 'MSI 0000. de (BASE)',
+    'type': 'none',
+    'dependencies' : 
+    [
+      'Installer, architecture-specific WiX',
+      'Installer, common WiX',
+      'installer-ca'
+    ],
+	'variables': {
+	  'msi_build_phase': 'initial',
+	  'locale_id': '7',
+	},
+	'sources': [ 'src\msi\locale\de.wxl' ],
+  },
+
+  #############
+  # T1. MSI 1033. en-us
+  #############
+  {
+    'target_name': 'MSI 1033. en-us',
+    'type': 'none',
+    'dependencies' : [ 'MSI 0000. de (BASE)' ],
+	'variables': { 'locale_id': '1033' },
+	'sources': [ 'en-us.wxl' ],
   },
 
   #############
