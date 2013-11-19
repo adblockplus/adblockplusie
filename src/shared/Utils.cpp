@@ -25,6 +25,29 @@ bool IsWindowsVistaOrLater()
   return osvi.dwMajorVersion >= 6;
 }
 
+bool IsAppContainersSupported()
+{
+  //Try to allocate SID of AppContainer and see if it's succesful
+  PSID allAppContainersSid = 0;
+  SID_IDENTIFIER_AUTHORITY applicationAuthority = SECURITY_APP_PACKAGE_AUTHORITY;
+  BOOL res = AllocateAndInitializeSid(&applicationAuthority, 
+          SECURITY_BUILTIN_APP_PACKAGE_RID_COUNT,
+          SECURITY_APP_PACKAGE_BASE_RID,
+          SECURITY_BUILTIN_PACKAGE_ANY_PACKAGE,
+          0, 0, 0, 0, 0, 0,
+          &allAppContainersSid);
+
+  if (res == FALSE)
+  {
+    return false;
+  }
+  else
+  {
+    FreeSid(allAppContainersSid);
+    return true;
+  }
+}
+
 std::string ToUtf8String(const std::wstring& str)
 {
   int length = static_cast<int>(str.size());
