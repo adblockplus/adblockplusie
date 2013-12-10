@@ -1,0 +1,110 @@
+/*!
+
+\page build_process Build Process
+
+## Tools
+
+\par WiX
+
+- WiX
+  [WiX Toolset] (http://wixtoolset.org/)
+  Home page.
+- Wix
+  [WiX Toolset Manual Table of Contents] (http://wixtoolset.org/documentation/manual/v3/)
+  Where you usually need to go first.
+- WiX
+  [Compiler] (http://wixtoolset.org/documentation/manual/v3/overview/candle.html)
+  A scandalously defective page about the compiler, called `candle`.
+  You'll need to run `candle.exe -h` to see anything about its command line options.
+- WiX
+  [Linker (light)] (http://wixtoolset.org/documentation/manual/v3/overview/light.html)
+
+
+\par Windows Installer Development Tools
+
+The Windows Installer Development Tools are a set of tools for manipulating MSI and other Windows Installer files.
+Microsoft has delivered these tools in different ways in past.
+Now they're included in the Microsoft Windows SDK, which the plugin already uses for ATL.
+
+We require the tool `Msitran.exe` for the build.
+The tool `Msiinfo.exe` displays the Summary Information of an installer file, 
+  which is useful for auditing the build process.
+It can also be used to set properties in the Summary Information,
+  but we're not using that feature. 
+
+- MSDN
+  [Windows Installer Development Tools] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa372834%28v=vs.85%29.aspx)
+- MSDN
+  [Windows SDK Components for Windows Installer Developers] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa370834%28v=vs.85%29.aspx)
+
+
+\par Windows Installer Examples
+
+The MSDN pages for the Windows Installer include a section of scripting examples.
+We're using the script `emb.vbs` from this section to embed transforms.
+
+- MSDN
+  [Windows Installer Examples] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa372837%28v=vs.85%29.aspx)
+
+
+## Building the Base Installer
+
+_To write_
+
+## Building the Localized Installer
+
+Understanding \ref localization is necessary for this section to make sense.
+
+
+
+- installsite.org
+  [Multi-Language MSI Packages without Setup.exe Launcher] (http://www.installsite.org/pages/en/msi/articles/embeddedlang/)  
+  The original page that documents the automatic application of embedded language transforms.
+  First written by Andreas Kerl at Microsoft Germany and then translated into English.
+- GeekTieGuy
+  [Create a multi-lingual / multi-language MSI using WiX and custom build scripts] (http://www.geektieguy.com/2010/03/13/create-a-multi-lingual-multi-language-msi-using-wix-and-custom-build-scripts/)
+  Someone else's build process using the same information.
+
+\par Generating a Language Transform
+
+The only way of generating a language transform is to use the moral equivalent of a `diff` tool.
+This requires two complete MSI files.
+One of them is the default-language MSI; the other is a single-language MSI.
+For reliability, we generate a transform based on the full MSI, including all the payloads,
+  which means the single-language MSI needs all the payloads as well.
+This is a lot of I/O for the build, but there's no way of cutting corners here,
+  at least not without writing a fully custom tool to generate transforms directly.
+
+The `Msitran.exe` tool is used to generate the transform.
+There's an equivalent WiX tool, but it has a defect that makes it unsuitable for us;
+  it omits some elements in the generated transform.
+
+- MSDN
+  [Msitran.exe] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa370495%28v=vs.85%29.aspx)  
+
+
+\par Embedding Language Transforms
+
+Once we have an MST file, we need to embed it into an MSI file.
+The tool we're using is a Visual Basic script `emb.vbs`, provided by Microsoft.
+Its arguments are an MSI file, an MST file, and the name of the substorage (directory).
+It's a short script that utilizes the Automation interface of Windows Installer.
+
+The tool `Msidb.exe` might have been used for this purpose, 
+  but it lacks a command line option to specify the name of the substorage.
+  
+Another script `WiSubStg.vbs` was used to embed transforms in the original installsite.org page.
+It accomplishes the same result as `emb.vbs`, though it's longer and does more.
+The name of this other script, though, makes a useful search term.    
+ 
+- MSDN
+  [Embedding Customization Transforms as Substorage] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa368351%28v=vs.85%29.aspx)
+  Source code listing for `emb.vbs`.
+- MSDN
+  [Msidb.exe] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa370083%28v=vs.85%29.aspx)
+- MSDN Windows Installer Scripting Examples
+  [Manage Substorages] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa369793%28v=vs.85%29.aspx)
+  Documentation on the script `WiSubStg.vbs`. 
+
+  
+*/
