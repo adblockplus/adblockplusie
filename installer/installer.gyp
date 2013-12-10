@@ -38,19 +38,19 @@
     #   All the sources are inputs.
     # Note that locality sources (.wxl) are not present here because they're handled at link time.
     #
-    'installer_source_top_file': 'adblockplusie.wxs',
+    'installer_source_top_file': 'src/msi/adblockplusie.wxs',
     'installer_source_files':
     [
       '<(installer_source_top_file)',
-      'bho_registry_value.wxi',    
-      'dll_class.wxi',
+      'src/msi/bho_registry_value.wxi',    
+      'src/msi/dll_class.wxi',
     ],
     'installer_object_file': '<(build_dir_arch)/adblockplusie.wixobj',
     
     #
     # WiX installer sources for the compiler, common to all architectures
     #
-    'common_source_files': [ 'custom_WixUI_InstallDir.wxs' ],
+    'common_source_files': [ 'src/msi/custom_WixUI_InstallDir.wxs' ],
     'common_object_file': '<(build_dir_common)/common.wixobj',
     
     #
