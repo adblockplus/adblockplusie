@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-    <String Id="LANG">7</String>
+<!-- German - generic -->
+<WixLocalization xmlns="http://schemas.microsoft.com/wix/2006/localization"
+  Language="7"
+  Culture="de"
+>
+    <String Id="LANG">0x07</String>
     <String Id="CODEPAGE">1252</String>
     <!-- WiX has no way of evaluating static string expressions at compile time -->
     <String Id="ProductName32">GENERICGERMAN Adblock Plus for IE (32-bit)</String>
     <String Id="ProductName64">GENERICGERMAN Adblock Plus for IE (32-bit and 64-bit)</String>
-    <String Id="Keywords">GENERICGERMAN Installer</String>
+    <String Id="Keywords">Installer, Adblock Plus</String>
     <String Id="Description">GENERICGERMAN Adblock Plus for IE</String>
     <String Id="Comments">GENERICGERMAN Thank you for using Adblock Plus.</String>
     <String Id="AlreadyInstalled">GENERICGERMAN A newer version of Adblock Plus for IE is already installed.</String>

@@ -67,6 +67,10 @@
 <?define installer_dir="..\.." ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!--
+    The attributes 'Language' and 'Codepage' are specifications for the database only.
+    Codepage 65001 is UTF-8.
+  -->
   <Product
     Name="$(var.Product_Name)"
     Manufacturer="Eyeo GmbH"
@@ -77,22 +81,36 @@
 
     <!--
       Attribute @Languages
-        This attribute appears in the MSI as the second part of the "Template Summary" property in the Summary Information Stream.
-        It contains a list of LCID (Language Code Identifier or Locale Identifier).
         The list contains all the languages supported within the MSI, all but the first as embedded transforms.
-        See http://www.installsite.org/pages/en/msi/articles/embeddedlang/.
-        
-        Template Summary property http://msdn.microsoft.com/en-us/library/windows/desktop/aa372070%28v=vs.85%29.aspx
-          Quote: "Merge Modules are the only packages that may have multiple languages."
-          Contrary to this quotation, MSI files are also allowed to have multiple languages, although such support is undocumented.       
+        The first language code is the language of the base MSI.
+    -->
+    <!--
+      At the present time, we are not localizing the summary information because of limitations
+        both in Windows Installer and in the tool chain.
+      At a later time, localizing this section requires setting an ANSI codepage
+        and the four attributes Keywords, Description, Comments, and Manufacturer.       
+    -->
+    <!--
+      For the present version, the following languages are omitted because the WiX UI extension has no localizations for them yet.
+      They can be added later, but the build script needs to be changed to accept arguments for the extra localization source.
+        fil-PH. Filipino - Phillipines. LCID = 1124
+        kn-IN. Kanada - India. LCID = 1099
+        mr-IN.  Maratha - India. LCID = 1102
+        ms. Malaysian - generic. LCID = 62
+        nn-NO. Nynorsk - Norway. LCID = 2068
+        ur-PK. Urdu - Pakistan. LCID = 1056
+      They are being omitted by having their decimal LCID left out of the Packages/@Languages attribute below.
+      The build system presently embeds transforms for them, but without their LCID in this list, they won't be recognized.
+      These embedded transforms, however, can be explicitly applied on the command line of msiexec.
     -->
     <Package
-      Keywords="!(loc.Keywords)"
-      Description="!(loc.Description)"
-      Comments="!(loc.Comments)"
+      SummaryCodepage="1252"
+      Keywords="Installer, Adblock Plus"
+      Description="Adblock Plus for IE"
+      Comments="Thank you for using Adblock Plus."
+      Manufacturer="Eyeo GmbH"
       InstallerVersion="$(var.Minimum_Version)"
-      Languages="7,1033"
-      SummaryCodepage="!(loc.CODEPAGE)"
+      Languages="7,1,9,12,16,19,1026,1027,1028,1029,1030,1032,1034,1035,1037,1038,1041,1044,1045,1046,1048,1049,1050,1051,1053,1054,1055,1058,1061,1081,2052,2070"
       Compressed="yes"
       InstallScope="perMachine" InstallPrivileges="elevated"
     />
