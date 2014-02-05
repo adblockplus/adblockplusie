@@ -761,6 +761,7 @@
     ],
 	'sources': [
 	  'src/installer-lib/test/process_test.cpp',
+	  'src/installer-lib/test/property_test.cpp',
 	  'src/installer-lib/test/record_test.cpp',
     ],
     'link_settings': {
