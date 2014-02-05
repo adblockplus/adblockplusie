@@ -676,7 +676,6 @@
   {
     'target_name': 'installer-ca',
     'type': 'shared_library',
-    'component': 'shared_library',
     'sources': 
     [
       #
@@ -715,5 +714,63 @@
       'VCLinkerTool': {}
     }
   },
+
+  #############
+  # Windows Installer library
+  #############
+  {
+    'target_name': 'installer-ca-lib',
+    'type': 'static_library',
+    'sources': 
+    [
+      'src/installer-lib/database.cpp', 
+      'src/installer-lib/database.h',
+      'src/installer-lib/DLL.cpp', 
+      'src/installer-lib/DLL.h', 
+      'src/installer-lib/interaction.cpp', 
+      'src/installer-lib/interaction.h',
+      'src/installer-lib/process.cpp', 
+      'src/installer-lib/process.h',
+      'src/installer-lib/property.cpp', 
+      'src/installer-lib/property.h',
+      'src/installer-lib/record.cpp', 
+      'src/installer-lib/record.h',
+      'src/installer-lib/session.cpp', 
+      'src/installer-lib/session.h',
+    ],
+    'include_dirs': 
+    [
+      'src/installer-lib',
+    ],
+    'link_settings': 
+    {
+      'libraries': [ 'user32.lib', 'Shell32.lib', 'advapi32.lib', 'msi.lib', 'Version.lib' ]        
+    },
+    'msvs_settings': 
+    {
+      'VCLinkerTool': {}
+    }
+  },
+  
+  {
+    'target_name': 'installer-ca-tests',
+    'type': 'executable',
+    'dependencies': [
+	  'installer-ca-lib',
+      'googletest.gyp:googletest_main',
+    ],
+	'sources': [
+	  'src/installer-lib/test/process_test.cpp',
+	  'src/installer-lib/test/record_test.cpp',
+    ],
+    'link_settings': {
+      'libraries': [],
+    },
+    'msvs_settings': {
+      'VCLinkerTool': {
+        'SubSystem': '1',   # Console
+      },
+    },
+  }
   ]
 }

@@ -6,6 +6,9 @@
 #include "property.h"
 #include "database.h"
 
+
+#include <TlHelp32.h>
+
 /**
  * Exposed DLL entry point for custom action. 
  * The function signature matches the calling convention used by Windows Installer.
@@ -43,3 +46,25 @@ abp_close_applications( MSIHANDLE session_handle )
    */
   return ERROR_INSTALL_FAILURE ;
 }
+
+/*
+ * EnumWindows system call: http://msdn.microsoft.com/en-us/library/windows/desktop/ms633497%28v=vs.85%29.aspx
+ */
+/**
+ * 
+ * Callback function for EnumWindows.
+ */
+BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
+{
+  return TRUE ;
+}
+
+/**
+ * Windows_List
+ *
+ * 
+ */
+class Window_List {
+public:
+  void enumerate_top_level();
+};
