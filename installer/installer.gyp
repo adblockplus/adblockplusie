@@ -671,35 +671,18 @@
   ##################################
 
   #############
-  # Custom Action library for the installer
+  # Custom Action DLL for the installer
   #############
   {
     'target_name': 'installer-ca',
     'type': 'shared_library',
+	'dependencies':  [ 'installer-library' ],
     'sources': 
     [
-      #
-      # Custom Action
-      #
       'src/custom-action/abp_ca.cpp',
       'src/custom-action/abp_ca.def',
       'src/custom-action/abp_ca.rc',
       'src/custom-action/close_application.cpp',
-      #
-      # Windows Installer library 
-      #
-      'src/installer-lib/database.cpp', 
-      'src/installer-lib/database.h',
-      'src/installer-lib/DLL.cpp', 
-      'src/installer-lib/DLL.h', 
-      'src/installer-lib/interaction.cpp', 
-      'src/installer-lib/interaction.h',
-      'src/installer-lib/property.cpp', 
-      'src/installer-lib/property.h',
-      'src/installer-lib/record.cpp', 
-      'src/installer-lib/record.h',
-      'src/installer-lib/session.cpp', 
-      'src/installer-lib/session.h',
     ],
     'include_dirs': 
     [
@@ -719,7 +702,7 @@
   # Windows Installer library
   #############
   {
-    'target_name': 'installer-ca-lib',
+    'target_name': 'installer-library',
     'type': 'static_library',
     'sources': 
     [
@@ -742,6 +725,13 @@
     [
       'src/installer-lib',
     ],
+	'direct_dependent_settings':
+	{
+	  'include_dirs': 
+	  [
+	    'src/installer-lib',
+	  ],
+	},
     'link_settings': 
     {
       'libraries': [ 'user32.lib', 'Shell32.lib', 'advapi32.lib', 'msi.lib', 'Version.lib' ]        
@@ -755,23 +745,106 @@
   {
     'target_name': 'installer-ca-tests',
     'type': 'executable',
-    'dependencies': [
-	  'installer-ca-lib',
+    'dependencies':
+	[
+	  'installer-library',
       'googletest.gyp:googletest_main',
     ],
-	'sources': [
+	'sources':
+	[
 	  'src/installer-lib/test/process_test.cpp',
 	  'src/installer-lib/test/property_test.cpp',
 	  'src/installer-lib/test/record_test.cpp',
     ],
-    'link_settings': {
+    'link_settings':
+	{
       'libraries': [],
     },
-    'msvs_settings': {
-      'VCLinkerTool': {
+    'msvs_settings':
+	{
+      'VCLinkerTool':
+	  {
         'SubSystem': '1',   # Console
       },
     },
-  }
+  },
+
+  {
+    'target_name': 'installer-library-test-ca-dll',
+    'type': 'shared_library',
+    'dependencies':
+	[
+	  'installer-library',
+    ],
+	'sources': 
+	[
+	  'src/installer-lib/test/test-installer-lib-ca.cpp',
+      'src/installer-lib/test/test-installer-lib-ca.def',
+      'src/installer-lib/test/test-installer-lib-ca.rc',
+      'src/installer-lib/test/test-installer-lib-sandbox.cpp'
+	],
+  },
+
+  {
+    'target_name': 'installer-library-test-ca-wix',
+    'type': 'none',
+	'sources': 
+	[
+	  'src/installer-lib/test/test-installer-lib.wxs'
+	],
+    'actions': 
+    [ {
+      'action_name': 'WiX compile',
+      'message': 'Compiling WiX source',
+      'inputs': 
+      [
+        'src/installer-lib/test/test-installer-lib.wxs'
+      ],
+      'outputs':
+      [
+        '<(build_dir_arch)/test-installer-lib.wixobj'
+      ],
+      'action':
+        [ 'candle -nologo -dNoDefault ', '-out', '<@(_outputs)', '<@(_inputs)' ]
+    } ]
+  },
+
+  {
+    'target_name': 'installer-library-test-ca-msi',
+    'type': 'none',
+    'dependencies':
+	[
+      'installer-library-test-ca-dll',
+      'installer-library-test-ca-wix',
+    ],
+	'sources': 
+	[
+	  '<(build_dir_arch)/test-installer-lib.wixobj',
+	  #'<(build_dir_arch)/Debug/installer-library-test-ca-dll.dll'
+	],
+	'actions':
+	[ {
+	  'action_name': 'WiX link',
+	  'message': 'Linking WiX objects',
+	  'linked_inputs': [
+        '<(build_dir_arch)/test-installer-lib.wixobj',
+	  ],
+	  'inputs': 
+	  [
+		'<(build_dir_arch)/test-installer-lib.wixobj',
+		'<(build_dir_arch)/Debug/installer-library-test-ca-dll.dll'
+	  ],
+	  'outputs': 
+	  [
+	    '<(build_dir_arch)/test-installer-lib.msi'
+	  ],
+	  'action':
+	    [ 'light -notidy -nologo -ext WixUIExtension', '<@(_linked_inputs)', '-out', '<(build_dir_arch)/test-installer-lib.msi' ]
+	} ]
+  },
+
   ]
 }
+
+
+

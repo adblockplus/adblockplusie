@@ -4,26 +4,11 @@
 
 
 /**
- * A promiscuous filter admits everything.
- */
-struct always_true
-  : public std::unary_function< PROCESSENTRY32W, bool >
-{
-  bool operator()( const PROCESSENTRY32W & ) { return true ; } ;
-} ;
-
-struct copy_all
-  : public std::unary_function< PROCESSENTRY32W, PROCESSENTRY32W >
-{
-  PROCESSENTRY32W operator()( const PROCESSENTRY32W & process ) { return process ; }
-} ;
-
-/**
  * Construction test ensures that we don't throw and that at least one process shows up.
  */
 TEST( Process_List_Test, construct )
 {
-  Process_List< PROCESSENTRY32W, always_true, copy_all > pl ;
+  Process_List< PROCESSENTRY32W, every_process, copy_all > pl ;
   ASSERT_GE( pl.v.size(), 1u );
 }
 
@@ -47,7 +32,6 @@ TEST( Process_List_Test, find_our_process )
   ASSERT_GE( 1u, size );
 }
 
-
 struct our_process_by_name_CI
   : std::unary_function< PROCESSENTRY32W, bool >
 {
@@ -68,17 +52,6 @@ TEST( Process_List_Test, find_our_process_CI )
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
-
-
-/*
- * Extractor that copies only the PID.
- */
-struct copy_PID
-  : public std::unary_function< PROCESSENTRY32W, DWORD >
-{
-  DWORD operator()( const PROCESSENTRY32W & process ) { return process.th32ProcessID ; }
-} ;
-
 
 /**
  * Locate the PID of our process.
