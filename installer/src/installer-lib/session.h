@@ -13,6 +13,43 @@
 #include "msi.h"
 
 //-----------------------------------------------------------------------------------------
+// Message
+//-----------------------------------------------------------------------------------------
+/**
+ * Wrapper class for arguments to MsiProcessMessage.
+ *
+ * The "user interface" for custom actions includes both interactive dialog boxes as well as the installation log.
+ * All of them use the same call, MsiProcessMessage.
+ * This class encapsulates its arguments.
+ *
+ * \sa 
+ *    * MSDN [MsiProcessMessage function](http://msdn.microsoft.com/en-us/library/windows/desktop/aa370354%28v=vs.85%29.aspx)
+ *    * MSDN [Sending Messages to Windows Installer Using MsiProcessMessage](http://msdn.microsoft.com/en-us/library/windows/desktop/aa371614%28v=vs.85%29.aspx)
+ */
+class Message
+{
+protected:
+  /**
+   * The flags used by MsiProcessMessage as the box type.
+   */
+  INSTALLMESSAGE message_type ;
+
+  /**
+   * The record argument to MsiProcessMessage
+   */
+  Record r ;
+
+  Message( std::string message, INSTALLMESSAGE message_type ) ;
+
+  Message( std::wstring message, INSTALLMESSAGE message_type ) ;
+
+  /**
+   * This class is a helper for Session, mustering all the arguments for MsiProcessMessage except for the session handle.
+   */
+  friend Session ;
+} ;
+
+//-----------------------------------------------------------------------------------------
 // Session
 //-----------------------------------------------------------------------------------------
 /**
@@ -39,9 +76,32 @@ public:
   ~Session() ;
 
   /**
-   * Write a message to the installation log.
+   * Write a message to the installation log, regular string version.
+   */
+  void log( std::string message ) ;
+
+  /**
+   * Write a message to the installation log, wide string version.
    */
   void log( std::wstring message ) ;
+
+  /**
+   * Write a message to the installation log without raising an exception.
+   *
+   * Use this function only in the three circumstances when an exception cannot be caught by an entry point catch-all.
+   * First and second, there's the constructor and destructor of a Session instance.
+   * These log entry into and exit from the custom action, respectively.
+   * Third, there's the top level catch-blocks of the CA.
+   * The scope of the Session object cannot be within the try-block in order for it to be in scope for the catch-block.
+   * The session must be in scope in the catch-block to allow logging error messages.
+   * In all other cases, use the exception mechanism.
+   */
+  void log_noexcept( std::string message ) ;
+
+  /**
+   * Write to a MessageBox dialog.
+   */
+  int write_message( Message & ) ;
 
 protected:
   /**
@@ -52,28 +112,50 @@ protected:
    *    Handle for the Windows Installer session provided as an argument to a custom action.
    * \param[in] name
    *    The name of the custom action, used for logging.
+   *    This string must be ASCII characters only, so that its wide-character version displays identically.
    */
-  Session( MSIHANDLE handle, std::wstring name ) ;
+  Session( MSIHANDLE handle, std::string name ) ;
 
-protected:
   /**
    * Handle for the Windows Installer session.
+   *
+   * The life cycle of the session handle is not the responsibility of the base class.
+   * In an interactive session, the handle is provided as an argument to the custom action entry point, and we do not manage its life cycle.
+   * In an offline session, the handle is created in the (subclass) constructor.
    */
   MSIHANDLE handle ;
 
 private:
   /**
-   * Prefix for log messages. Contains the name of the custom action.
+   * Prefix for log messages, regular string. Contains the name of the custom action.
    */
-  std::wstring log_prefix ;
+  std::string log_prefix ;
+
+  /**
+   * Prefix for log messages, wide string. Contains the name of the custom action.
+   */
+  std::wstring log_prefix_w ;
 
   /**
    * Private copy constructor is declared but not defined.
+   *
+   * C++11: declare with <b>= delete</b>.
    */
   Session( const Session & ) ;
 
   /**
+   * Write a message with MsiProcessMessage and throw no exceptions.
+   *
+   * This is declared private because there are very few cases in which no-exception behavior is required.
+   *
+   * C++11: declare with **noexcept**.
+   */
+  int write_message_noexcept( Message & m ) ;
+
+  /**
    * Private assignment operator is declared but not defined.
+   *
+   * C++11: declare with <b>= delete</b>.
    */
   Session & operator=( const Session & ) ;
 
@@ -101,8 +183,10 @@ public:
    *    Handle for the Windows Installer session provided as an argument to a custom action.
    * \param[in] name
    *    The name of the custom action, used for logging.
+   * 
+   * **noexcept** declaration to be added for C++11.
    */
-  Immediate_Session( MSIHANDLE handle, std::wstring name ) ;
+  Immediate_Session( MSIHANDLE handle, std::string name ) ;
 
 private:
   /*

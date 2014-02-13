@@ -47,16 +47,44 @@ private:
 };
 
 /**
+ * A promiscuous filter admits everything.
+ */
+struct every_process
+  : public std::unary_function< PROCESSENTRY32W, bool >
+{
+  bool operator()( const PROCESSENTRY32W & ) { return true ; } ;
+} ;
+
+/**
+ * Extractor that copies the entire process structure.
+ */
+struct copy_all
+  : public std::unary_function< PROCESSENTRY32W, PROCESSENTRY32W >
+{
+  PROCESSENTRY32W operator()( const PROCESSENTRY32W & process ) { return process ; }
+} ;
+
+/**
+ * Extractor that copies only the PID.
+ */
+struct copy_PID
+  : public std::unary_function< PROCESSENTRY32W, DWORD >
+{
+  inline DWORD operator()( const PROCESSENTRY32W & process ) { return process.th32ProcessID ; }
+} ;
+
+/**
  * \tparam T The type into which a PROCESSENTRY32W struture is extracted.
  * \tparam Admittance A unary predicate function class that determines what's included
  */
-template< class T, class Admittance, class Extractor >
+template< class T, class Admittance = every_process, class Extractor = copy_all >
 class Process_List
 {
 private:
   Admittance admit;
   Extractor extract;
 public:
+
   /**
    * \tparam Predicate Function pointer or function object. Generally inferred from the argument.
    * \param admit A selection filter predicate. 
@@ -72,7 +100,8 @@ public:
    * Process32Next function http://msdn.microsoft.com/en-us/library/windows/desktop/ms684836%28v=vs.85%29.aspx
    * PROCESSENTRY32 structure http://msdn.microsoft.com/en-us/library/windows/desktop/ms684839%28v=vs.85%29.aspx
    */
-  Process_List()
+  Process_List( Admittance admit = Admittance(), Extractor extract = Extractor() )
+    : admit( admit ), extract( extract )
   {
     /*
      * Take a snapshot only of all processes on the system, and not all the other data available through the 
@@ -118,3 +147,5 @@ public:
  * Case-insensitive wide-character C-style string comparison, fixed-length
  */
 int wcsncmpi( const wchar_t * a, const wchar_t * b, unsigned int length ) ;
+
+

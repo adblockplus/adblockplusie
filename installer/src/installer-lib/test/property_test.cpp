@@ -19,8 +19,10 @@ TEST( Property_Test, null )
     MSIHANDLE session_handle = 0;
 
     // The code in the body.
-    Immediate_Session session( session_handle, L"abp_close_applications" ) ;
+    Immediate_Session session( session_handle, "abp_close_applications" ) ;
     session.log( L"Have session object" ) ;
+    Installation_Database db( session ) ;
+    session.log( L"Have database object" ) ;
 
     // Test: ensure that a property is present with its expected value. Exercises the conversion operator to String.
     session.log( L"VersionMsi = " + Property( session, L"VersionMsi" ) ) ;

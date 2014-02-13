@@ -24,7 +24,13 @@ Record::~Record()
 }
 
 void 
-Record::assign_string( unsigned int field_index, std::wstring value )
+Record::assign_string( unsigned int field_index, const char *value )
 {
-  MsiRecordSetString( _handle, field_index, value.c_str() ) ;
+  MsiRecordSetStringA( _handle, field_index, value ) ;
+}
+
+void 
+Record::assign_string( unsigned int field_index, const wchar_t *value )
+{
+  MsiRecordSetStringW( _handle, field_index, value ) ;
 }
