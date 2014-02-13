@@ -2,7 +2,7 @@
 ; copyright notice goes here
 ; -------------------------------------------------------------------------------------------------
 
-LIBRARY      "installer-ca"
+LIBRARY      "installer-library-test-customactions"
 
 EXPORTS
 ; test-installer-lib-sandbox.cpp
