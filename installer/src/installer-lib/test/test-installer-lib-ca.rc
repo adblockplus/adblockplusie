@@ -18,8 +18,8 @@ BLOCK "StringFileInfo"
     VALUE "CompanyName", "Eyeo, GmbH"
     VALUE "FileDescription", "Custom action DLL for testing the installer library"
     VALUE "FileVersion", "0.0.1"
-    VALUE "InternalName", "installer-library-test-ca-dll"
-    VALUE "OriginalFilename", "installer-library-test-ca-dll.dll"
+    VALUE "InternalName", "installer-library-test-customactions"
+    VALUE "OriginalFilename", "installer-library-test-customactions.dll"
     VALUE "ProductName", "ABP installer library test CA"
     END
   END

@@ -770,7 +770,7 @@
   },
 
   {
-    'target_name': 'installer-library-test-ca-dll',
+    'target_name': 'installer-library-test-customactions',
     'type': 'shared_library',
     'dependencies':
 	[
@@ -786,7 +786,7 @@
   },
 
   {
-    'target_name': 'installer-library-test-ca-wix',
+    'target_name': 'installer-library-test-wix',
     'type': 'none',
 	'sources': 
 	[
@@ -810,29 +810,29 @@
   },
 
   {
-    'target_name': 'installer-library-test-ca-msi',
+    'target_name': 'installer-library-test-msi',
     'type': 'none',
     'dependencies':
 	[
-      'installer-library-test-ca-dll',
-      'installer-library-test-ca-wix',
+      'installer-library-test-customactions',
+      'installer-library-test-wix',
     ],
 	'sources': 
 	[
 	  '<(build_dir_arch)/test-installer-lib.wixobj',
-	  #'<(build_dir_arch)/Debug/installer-library-test-ca-dll.dll'
 	],
 	'actions':
 	[ {
 	  'action_name': 'WiX link',
 	  'message': 'Linking WiX objects',
-	  'linked_inputs': [
+	  'linked_inputs':
+	  [
         '<(build_dir_arch)/test-installer-lib.wixobj',
 	  ],
 	  'inputs': 
 	  [
-		'<(build_dir_arch)/test-installer-lib.wixobj',
-		'<(build_dir_arch)/Debug/installer-library-test-ca-dll.dll'
+		'<@(_linked_inputs)',
+		'<(build_dir_arch)/Debug/installer-library-test-customactions.dll'
 	  ],
 	  'outputs': 
 	  [
