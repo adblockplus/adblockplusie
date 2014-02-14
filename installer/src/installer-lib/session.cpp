@@ -46,6 +46,8 @@ Session::~Session()
  * A message for the installation log.
  *
  * Writing to the installation log uses MsiProcessMessage just like interactive dialog boxes do.
+ *
+ * This class is not exposed outside this compilation unit because everything it can do is already exposed by the log functions.
  */
 struct Log_Message
   : public Message
