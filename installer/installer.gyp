@@ -781,7 +781,9 @@
 	  'src/installer-lib/test/test-installer-lib-ca.cpp',
       'src/installer-lib/test/test-installer-lib-ca.def',
       'src/installer-lib/test/test-installer-lib-ca.rc',
-      'src/installer-lib/test/test-installer-lib-sandbox.cpp'
+      'src/installer-lib/test/test-installer-lib-sandbox.cpp',
+      'src/installer-lib/test/custom-action-fail.cpp',
+	  'src/custom-action/close_application.cpp',	
 	],
   },
 
@@ -839,7 +841,9 @@
 	    '<(build_dir_arch)/test-installer-lib.msi'
 	  ],
 	  'action':
-	    [ 'light -notidy -nologo -ext WixUIExtension', '<@(_linked_inputs)', '-out', '<(build_dir_arch)/test-installer-lib.msi' ]
+	    # ICE71: The Media table has no entries
+		# Suppress ICE71 because the test MSI does not install any files.
+	    [ 'light -notidy -nologo -ext WixUIExtension -sice:ICE71', '<@(_linked_inputs)', '-out', '<(build_dir_arch)/test-installer-lib.msi' ]
 	} ]
   },
 

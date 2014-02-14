@@ -67,8 +67,6 @@ public:
   }
   icon_type ;
 
-public:
-
   /**
    * Ordinary constructor, wide string
    */

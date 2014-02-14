@@ -61,6 +61,19 @@
         DllEntry="sandbox"
         Return="check"
     />
+    <CustomAction
+        Id="Close_IE"
+        BinaryKey="installer_library_test_ca"
+        DllEntry="abp_close_applications"
+        Return="check"
+    />
+    <!-- Always check the return of the "always fail" action; otherwise there's no point in running it. -->
+    <CustomAction
+        Id="Fail"
+        BinaryKey="installer_library_test_ca"
+        DllEntry="fail"
+        Return="check"
+    />
     <!--
       Note that we're using a 32-bit custom action library for both 32- and 64-bit installers. 
     -->
@@ -70,9 +83,10 @@
         The LaunchConditions action occurs near the beginning, before any of the expensive operations.
       -->
       <Custom
-        Action="Sandbox"
+        Action="Close_IE"
         After="LaunchConditions"
       />
+      <Custom Action="Fail" After="Close_IE">1</Custom>
     </InstallUISequence>
 
     <!--
