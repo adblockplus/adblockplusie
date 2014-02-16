@@ -154,56 +154,33 @@ public:
 } ;
 
 //-------------------------------------------------------
-// Process_List
+// initialize_process_list
 //-------------------------------------------------------
 /**
  * \tparam T The type into which a PROCESSENTRY32W struture is extracted.
- * \tparam Admittance A unary predicate function class that determines what's included
+ * \tparam Admittance Function type for argument 'admit'
+ * \tparam Extractor Function type for argument 'extract'
+ * \param admit A unary predicate function class that determines what's included
+ *	A process appears in the list only if the predicate returns true. 
+ *	The use of this predicate is analogous to that in std::copy_if.
+ * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
-template< class T, class Admittance = every_process, class Extractor = copy_all >
-class Process_List
+template< class T, class Admittance, class Extractor >
+void initialize_process_list( std::vector< T > & v, Admittance admit = Admittance(), Extractor extract = Extractor() )
 {
-private:
-  Admittance admit ;
-  Extractor extract ;
-
-public:
-  /**
-   * \tparam Predicate Function pointer or function object. Generally inferred from the argument.
-   * \param admit A selection filter predicate. 
-   *	A process appears in the list only if the predicate returns true. 
-   *	The use of this predicate is analogous to that in std::copy_if.
-   * \tparam Converter Function pointer or function object. Generally inferred from the argument.
-   * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
-   *
-   */
-  Process_List( Admittance admit = Admittance(), Extractor extract = Extractor() )
-    : admit( admit ), extract( extract )
+  Snapshot snap ;
+  Snapshot::Pointer p = snap.begin() ;
+  while ( p != snap.end() )
   {
-    Snapshot snap ;
-    Snapshot::Pointer p = snap.begin() ;
-    while ( p != snap.end() )
+    if ( admit( * p ) )
     {
-      if ( admit( * p ) )
-      {
-	/*
-	 * We don't have C++11 emplace_back, which can construct the element in place.
-	 * Instead, we copy the return value of the converter.
-	 */
-	v.push_back( extract( * p ) );
-      }
-      p = snap.next() ;
+      /*
+	* We don't have C++11 emplace_back, which can construct the element in place.
+	* Instead, we copy the return value of the converter.
+	*/
+      v.push_back( extract( * p ) );
     }
-  } ;
-
-  /**
-   */
-  ~Process_List() {} ;
-
-  /**
-   * This class is principally a way of initializing a vector by filtering and extracting a process list.
-   * There's no point in keeping the underlying vector private.
-   */
-  std::vector< T > v ;
+    p = snap.next() ;
+  }
 } ;
 
