@@ -3,6 +3,15 @@
 
 #include <vector>
 
+//-------------------------------------------------------
+// Windows_Handle
+//-------------------------------------------------------
+/**
+ * A handle to some Windows platform resource. 
+ *
+ * Note, this is not the same as a Windows Installer handle (MSIHANDLE).
+ * The two handles have different underlying types and use different functions to close.
+ */
 class Windows_Handle
 {
 public:
@@ -46,6 +55,9 @@ private:
   HANDLE handle ;
 };
 
+//-------------------------------------------------------
+// Process utility functions.
+//-------------------------------------------------------
 /**
  * A promiscuous filter admits everything.
  */
@@ -74,6 +86,77 @@ struct copy_PID
 } ;
 
 /**
+ * Case-insensitive wide-character C-style string comparison, fixed-length
+ */
+int wcsncmpi( const wchar_t * a, const wchar_t * b, unsigned int length ) ;
+
+//-------------------------------------------------------
+// Snapshot
+//-------------------------------------------------------
+/**
+ * A snapshot of all the processes running on the system.
+ *
+ * Unfortunately, we cannot provide standard iterator for this class.
+ * Standard iterators must be copy-constructible, which entails the possibility of multiple, coexisting iteration states.
+ * The iteration behavior provided by Process32First and Process32Next relies upon state held within the snapshot itself.
+ * Thus, there can be only one iterator at a time for the snapshot.
+ * The two requirements are not simultaneously satisfiable.
+ *
+ * As a substitute for a standard iterator, we provide a few functions mimicking the pattern of standard iterators.
+ * This class acts as its own iterator.
+ * The pointer returned is either one to the member variable "process" or else 0.
+ *
+ * \par Implementation
+ *
+ * CreateToolhelp32Snapshot function http://msdn.microsoft.com/en-us/library/windows/desktop/ms682489%28v=vs.85%29.aspx
+ * Process32First function http://msdn.microsoft.com/en-us/library/windows/desktop/ms684834%28v=vs.85%29.aspx
+ * Process32Next function http://msdn.microsoft.com/en-us/library/windows/desktop/ms684836%28v=vs.85%29.aspx
+ * PROCESSENTRY32 structure http://msdn.microsoft.com/en-us/library/windows/desktop/ms684839%28v=vs.85%29.aspx
+ */
+class Snapshot
+{
+  /**
+   * Handle to the process snapshot.
+   */
+  Windows_Handle handle ;
+
+  /**
+   * Buffer for reading a single process entry out of the snapshot.
+   */
+  PROCESSENTRY32W process;
+
+public:
+  /**
+   * Default constructor takes the snapshot.
+   */
+  Snapshot() ;
+
+  /**
+   * Return a pointer to the first process in the snapshot.
+   */
+  PROCESSENTRY32W * begin() ;
+
+  /**
+   * The end pointer is an alias for the null pointer.
+   */
+  inline PROCESSENTRY32W * end() const { return 0 ; }
+
+  /**
+   * Return a pointer to the next process in the snapshot.
+   * begin() must have been called first.
+   */
+  PROCESSENTRY32W * next() ;
+
+  /**
+   * Type definition for pointer to underlying structure.
+   */
+  typedef PROCESSENTRY32W * Pointer ;
+} ;
+
+//-------------------------------------------------------
+// Process_List
+//-------------------------------------------------------
+/**
  * \tparam T The type into which a PROCESSENTRY32W struture is extracted.
  * \tparam Admittance A unary predicate function class that determines what's included
  */
@@ -81,10 +164,10 @@ template< class T, class Admittance = every_process, class Extractor = copy_all 
 class Process_List
 {
 private:
-  Admittance admit;
-  Extractor extract;
-public:
+  Admittance admit ;
+  Extractor extract ;
 
+public:
   /**
    * \tparam Predicate Function pointer or function object. Generally inferred from the argument.
    * \param admit A selection filter predicate. 
@@ -93,59 +176,34 @@ public:
    * \tparam Converter Function pointer or function object. Generally inferred from the argument.
    * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
    *
-   * \par Implementation
-   *
-   * CreateToolhelp32Snapshot function http://msdn.microsoft.com/en-us/library/windows/desktop/ms682489%28v=vs.85%29.aspx
-   * Process32First function http://msdn.microsoft.com/en-us/library/windows/desktop/ms684834%28v=vs.85%29.aspx
-   * Process32Next function http://msdn.microsoft.com/en-us/library/windows/desktop/ms684836%28v=vs.85%29.aspx
-   * PROCESSENTRY32 structure http://msdn.microsoft.com/en-us/library/windows/desktop/ms684839%28v=vs.85%29.aspx
    */
   Process_List( Admittance admit = Admittance(), Extractor extract = Extractor() )
     : admit( admit ), extract( extract )
   {
-    /*
-     * Take a snapshot only of all processes on the system, and not all the other data available through the 
-     * CreateToolhelp32Snapshot. The second argument is ignored when the only flag is TH32CS_SNAPPROCESS.
-     */
-    Windows_Handle handle( ::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 ) );
-    /*
-     * Initialization of the size member of the process structure is required for Process32FirstW to succeed.
-     */
-    PROCESSENTRY32W process;
-    process.dwSize = sizeof( PROCESSENTRY32W );
-    /*
-     * Process32FirstW and Process32NextW iterate through the process snapshot.
-     */
-    BOOL have_process = ::Process32FirstW( handle, & process );
-    while ( have_process )
+    Snapshot snap ;
+    Snapshot::Pointer p = snap.begin() ;
+    while ( p != snap.end() )
     {
-      if ( admit( process ) )
+      if ( admit( * p ) )
       {
 	/*
 	 * We don't have C++11 emplace_back, which can construct the element in place.
 	 * Instead, we copy the return value of the converter.
 	 */
-	v.push_back( extract( process ) );
+	v.push_back( extract( * p ) );
       }
-      have_process = ::Process32NextW( handle, & process );
+      p = snap.next() ;
     }
-  };
+  } ;
 
   /**
    */
-  ~Process_List() {};
+  ~Process_List() {} ;
 
   /**
    * This class is principally a way of initializing a vector by filtering and extracting a process list.
    * There's no point in keeping the underlying vector private.
    */
-  std::vector< T > v;
-};
-
-
-/**
- * Case-insensitive wide-character C-style string comparison, fixed-length
- */
-int wcsncmpi( const wchar_t * a, const wchar_t * b, unsigned int length ) ;
-
+  std::vector< T > v ;
+} ;
 

@@ -3,6 +3,9 @@
 
 #include "process.h"
 
+//-------------------------------------------------------
+// Windows_Handle
+//-------------------------------------------------------
 Windows_Handle::Windows_Handle( HANDLE h ) 
   : handle( h ) 
 {
@@ -17,7 +20,9 @@ Windows_Handle::~Windows_Handle()
   CloseHandle( handle ) ;
 }
 
-
+//-------------------------------------------------------
+// wcsncmpi
+//-------------------------------------------------------
 int wcsncmpi( const wchar_t * s1, const wchar_t * s2, unsigned int n )
 {
   // Note: Equality of character sequences is case-insensitive in all predicates below.
@@ -45,4 +50,23 @@ int wcsncmpi( const wchar_t * s1, const wchar_t * s2, unsigned int n )
   // Assert s1[0..n) == s2[0..n)
   // The semantics of n-compare ignore everything after the first 'n' characters.
   return 0 ;
+}
+
+//-------------------------------------------------------
+// Snapshot
+//-------------------------------------------------------
+Snapshot::Snapshot()
+  : handle( ::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 ) )
+{
+  process.dwSize = sizeof( PROCESSENTRY32W ) ;
+}
+
+PROCESSENTRY32W * Snapshot::begin()
+{
+  return ::Process32FirstW( handle, & process ) ? ( & process ) : 0 ;
+}
+
+PROCESSENTRY32W * Snapshot::next()
+{
+  return ::Process32NextW( handle, & process ) ? ( & process ) : 0 ;
 }
