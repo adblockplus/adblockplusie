@@ -34,11 +34,17 @@ struct IE_by_name
  * The list is derived from a process snapshot made at construction.
  */
 class IE_List
-  : public Process_List< DWORD, IE_by_name, copy_PID >
 {
+  std::vector< DWORD > v ;
+
 public:
+  IE_List()
+  {
+    initialize_process_list( v, IE_by_name(), copy_PID() ) ;
+  }
+
   bool is_running() { return v.size() > 0 ; } ;
-  bool shut_down( bool ) ;
+  bool shut_down( bool ) { throw std::logic_error( "shut_down not implemented" ) ; } ;
 } ;
 
 

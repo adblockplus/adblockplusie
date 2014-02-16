@@ -8,8 +8,9 @@
  */
 TEST( Process_List_Test, construct )
 {
-  Process_List< PROCESSENTRY32W, every_process, copy_all > pl ;
-  ASSERT_GE( pl.v.size(), 1u );
+  std::vector< PROCESSENTRY32W > v ;
+  initialize_process_list( v, every_process(), copy_all() ) ;
+  ASSERT_GE( v.size(), 1u );
 }
 
 /**
@@ -26,8 +27,9 @@ struct our_process_by_name
  */
 TEST( Process_List_Test, find_our_process )
 {
-  Process_List< PROCESSENTRY32W, our_process_by_name, copy_all > pl ;
-  unsigned int size( pl.v.size() );
+  std::vector< PROCESSENTRY32W > v ;
+  initialize_process_list( v, our_process_by_name(), copy_all() ) ;
+  unsigned int size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
@@ -47,8 +49,9 @@ struct our_process_by_name_CI
  */
 TEST( Process_List_Test, find_our_process_CI )
 {
-  Process_List< PROCESSENTRY32W, our_process_by_name_CI, copy_all > pl ;
-  unsigned int size( pl.v.size() );
+  std::vector< PROCESSENTRY32W > v ;
+  initialize_process_list( v, our_process_by_name_CI(), copy_all() ) ;
+  unsigned int size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
@@ -58,8 +61,9 @@ TEST( Process_List_Test, find_our_process_CI )
  */
 TEST( Process_List_Test, find_our_PID )
 {
-  Process_List< DWORD, our_process_by_name, copy_PID > pl ;
-  unsigned int size( pl.v.size() );
+  std::vector< DWORD > v ;
+  initialize_process_list( v, our_process_by_name(), copy_PID() ) ;
+  unsigned int size( v.size() );
   EXPECT_EQ( size, 1u );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( size, 1u );
 }
