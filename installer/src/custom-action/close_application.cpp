@@ -38,8 +38,14 @@ class IE_List
 {
 public:
   bool is_running() { return v.size() > 0 ; } ;
+  bool shut_down( bool ) ;
 } ;
 
+
+void unexpected_return_value_from_message_box() 
+{
+  throw std::logic_error( "Unexpected return value from message box." ) ;
+}
 //-------------------------------------------------------
 // abp_close_applications
 //-------------------------------------------------------
@@ -89,6 +95,9 @@ public:
 extern "C" UINT __stdcall 
 abp_close_applications( MSIHANDLE session_handle )
 {
+  // Utility typedef to shorten the class name.
+  typedef Installer_Message_Box IMB ;
+
   /*
    * Immediate_Session cannot throw, so it can go outside the try-block.
    * It's needed in the catch-all block to write an error message to the log.
@@ -97,32 +106,24 @@ abp_close_applications( MSIHANDLE session_handle )
     
   // The body of an entry point function must have a catch-all.
   try {
-    
-    // Instantiation of IE_List takes a snapshot.
-    IE_List iel ; 
+
     // MSI property BROWSERRUNNING is one of the return values of this function.
     Property browser_running( session, L"BROWSERRUNNING" ) ;
+    Property browser_closed( session, L"BROWSERCLOSED" ) ;
+
+    // Instantiation of IE_List takes a snapshot.
+    IE_List iel ;
 
     /*
      * We take the short path through this function if IE is not running at the outset.
      */
-    if ( false && ! iel.is_running() )
+    if ( ! iel.is_running() )
     {
-      browser_running = L"0" ;
+      browser_running = L"0" ;	    // The browser is not running.
+      browser_closed = L"0" ;	    // We didn't close the browser (and we couldn't have).
+      session.log( "IE not running. No issue with reboot policy." ) ;
       return ERROR_SUCCESS ;
     }
-
-    /* TEST CODE */
-    /*
-     * We need to see if we can put up dialog boxes when in "Basic UI" mode.
-     * If not, we have a pretty large problem with updates.
-     */
-    /*
-     * First thing is to put up a dialog box at all.
-     */
-    int x = session.write_message( Installer_Message_Box( L"This is the initial dialog box." ) ) ;
-
-    return ERROR_SUCCESS ;
 
     /*
      * As a (potentially) user-driven function, a state machine manages control flow.
@@ -132,13 +133,15 @@ abp_close_applications( MSIHANDLE session_handle )
       // Non-terminal states
       not_known,	  // We don't know the user's stance at all
       part_known,	  // The user has indicated either ACTIVE or AUTOMATIC
-      allow,		  // Allow reboot
-      passive,		  // Passively avoid reboot
       active,		  // Actively avoid reboot
       automatic,          // Automatically avoid reboot
       // Terminal states
       success,
-      abort
+      abort,
+      // Aliases for what would ordinarily be non-terminal states.
+      // They're terminal because of implementation details.
+      allow = success,	  // Allow reboot. 
+      passive = abort,	  // Passively avoid reboot, that is, don't try to close IE.
     };
     Policy_State state = not_known;
 
@@ -147,13 +150,19 @@ abp_close_applications( MSIHANDLE session_handle )
      */
     std::wstring avoid_reboot = Property( session, L"AVOIDREBOOT" ) ;
     std::transform( avoid_reboot.begin(), avoid_reboot.end(), avoid_reboot.begin(), ::towupper ) ;
-    if ( avoid_reboot == L"NO" )
+    if ( avoid_reboot == L"" )
+    {
+      state = not_known ;
+    }
+    else if ( avoid_reboot == L"NO" )
     {
       state = allow ;
+      session.log( "Reboot allowed on command line." ) ;
     }
     else if ( avoid_reboot == L"PASSIVE" )
     {
       state = passive ;
+      session.log( "Reboot avoided on command line." ) ;
     }
     else if ( avoid_reboot == L"ACTIVE" )
     {
@@ -186,19 +195,25 @@ abp_close_applications( MSIHANDLE session_handle )
     if ( uilevel == L"5" || uilevel == L"4" )
     {
       interactive = true ;
-      // Assert state is any of the non-terminal states except part_known
+      // Assert state is one of { not_known, allow, passive, active, automatic }
     }
     else if ( uilevel == L"3" || uilevel == L"2" )
     {
+      // Assert installer is running without user interaction.
       interactive = false ;
       if ( state == not_known )
       {
 	// Assert AVOIDREBOOT was not specified
+	/*
+	 * This is where we specify default behavior for non-interactive operation.
+	 * The choice of "allow" makes it act like other installers, which is to make no effort to avoid a reboot after installation.
+	 */
 	state = allow ;
+	session.log( "Reboot allowed by default in non-interactive session." ) ;
       }
       else if ( state == active )
       {
-	throw std::runtime_error( "may not specify AVOIDREBOOT=ACTIVE in a non-interative session" ) ;
+	throw std::runtime_error( "AVOIDREBOOT=ACTIVE in non-interative session is not consistent" ) ;
       }
       // Assert state is one of { allow, passive, automatic }
     }
@@ -209,6 +224,8 @@ abp_close_applications( MSIHANDLE session_handle )
 
     /*
      * State machine: Loop through non-terminal states.
+     *
+     * Loop invariant: IE was running at last check, that is, iel.is_running() would return true.
      */
     while ( state <= automatic )	  // "automatic" is the non-terminal state with the highest value
     {
@@ -223,7 +240,29 @@ abp_close_applications( MSIHANDLE session_handle )
 	 * No -> Install with reboot. Goto allow.
 	 * Cancel -> terminate installation. Goto abort.
 	 */
-	break;
+	{
+	  // TODO: change string to (localizable) property
+	  std::wstring s = L"IE is still running.\r\n\r\nWould you like to shut down IE in order to avoid having to reboot?" ;
+	  int x = session.write_message( IMB( s, IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
+	  switch ( x )
+	  {
+	  case IDYES:
+	    state = part_known ;
+	    break ;
+	  case IDNO:
+	    state = allow ;
+	    session.log( "User chose to allow reboot" ) ;
+	    break ;
+	  case IDCANCEL:
+	    state = abort ;
+	    session.log( "User cancelled installation" ) ;
+	    break ;
+	  default:
+	    unexpected_return_value_from_message_box() ;
+	  }
+	}
+	break ;
+
       case part_known:
 	/*
 	 * Precondition: interactive session
@@ -233,24 +272,26 @@ abp_close_applications( MSIHANDLE session_handle )
 	 * No -> Goto active
 	 * Cancel -> Goto not_known
 	 */
-	break;
-      case allow:
-	/*
-	 * We are allowing a reboot.
-	 *
-	 * All -> Goto success
-	 */
-	iel = IE_List() ;   // refresh to set BROWSERRUNNING correctly.
-	state = success;
-	break;
-      case passive:
-	/*
-	 * We enter this state only if AVOIDREBOOT=PASSIVE, thus only within the first loop iteration.
-	 * We only enter the loop if IE is running.
-	 * (Hence) Assert IE is still running.
-	 */
-	state = abort;
-	break;
+	{
+	  std::wstring s = L"Would you like the install to close IE for you?" ;
+	  int x = session.write_message( IMB( s, IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
+	  switch ( x )
+	  {
+	  case IDYES:
+	    state = automatic ;
+	    break ;
+	  case IDNO:
+	    state = active ;
+	    break ;
+	  case IDCANCEL:
+	    state = not_known ;
+	    break ;
+	  default:
+	    unexpected_return_value_from_message_box() ;
+	  }
+	}
+	break ;
+
       case active:
 	/*
 	 * Precondition: interactive session
@@ -261,19 +302,38 @@ abp_close_applications( MSIHANDLE session_handle )
 	 *   OK -> re-enter this state
 	 *   Cancel -> Goto not_known
 	 */
-	iel = IE_List() ;
-	if ( iel.is_running() )
 	{
-	  // show the dialog
+	  std::wstring s = L"IE is still running. Please close it and then click OK." ;
+	  int x = session.write_message( IMB( s, IMB::warning_box, IMB::ok_cancel, IMB::default_button_one ) ) ;
+	  switch ( x )
+	  {
+	  case IDOK:
+	    /*
+	     * Refresh our knowledge of whether IE is running.
+	     * If it is, we display the dialog again. The state doesn't change, so we just iterate again.
+	     * If it's not, then the user has closed IE and we're done.
+	     */
+	    iel = IE_List() ;
+	    if ( ! iel.is_running() )
+	    {
+	      state = success ;
+	      session.log( "User shut down IE manually." ) ;
+	    }
+	    break ;
+	  case IDCANCEL:
+	    state = not_known ;
+	    break ;
+	  default:
+	    unexpected_return_value_from_message_box() ;
+	  }
 	}
-	else
-	{
-	  state = success;
-	}
-	break;
+	break ;
+
       case automatic:
 	/*
-	 * Close all known IE instances
+	 * Close all known IE instances.
+	 * Unlike other cases, this state starts with an action and not a user query.
+	 * We first shut down IE, or at least attempt to.
 	 *
 	 * Succeeded -> Goto success
 	 * Failed && interactive ->
@@ -282,6 +342,42 @@ abp_close_applications( MSIHANDLE session_handle )
 	 *   Cancel -> Goto not_known
 	 * Failed && not interactive -> Goto abort
 	 */
+	{
+	  bool IE_was_closed = iel.shut_down( interactive ) ;
+	  if ( iel.is_running() )
+	  {
+	    session.log( "Attempt to shut down IE automatically failed." ) ;
+	    if ( interactive )
+	    {
+	      // Assert Interactive session and IE did not shut down.
+	      std::wstring s = L"The installer failed to close IE.\r\n\r\nWould you like try again?" ;
+	      int x = session.write_message( IMB( s, IMB::warning_box, IMB::retry_cancel, IMB::default_button_one ) ) ;
+	      switch ( x )
+	      {
+	      case IDRETRY:
+		// Don't change the state. Iterate again.
+		break ;
+	      case IDCANCEL:
+		state = not_known ;
+		break ;
+	      default:
+		unexpected_return_value_from_message_box() ;
+	      }
+	    }
+	    else
+	    {
+	      // Assert Non-interactive session and IE did not shut down.
+	      state = abort ;
+	      session.log( "Failed to shut down IE automatically." ) ;
+	    }
+	  }
+	  else
+	  {
+	    // Assert IE is not running, so shut_down() succeeded.
+	    state = success ;
+	    session.log( "Automatically shut down IE." ) ;
+	  }
+	}
 	break;
       }
     }
@@ -291,10 +387,20 @@ abp_close_applications( MSIHANDLE session_handle )
     switch ( state )
     {
       case success:
-	browser_running = iel.is_running() ? L"1" : L"0" ;
+	if ( iel.is_running() )
+	{
+	  browser_running = L"1" ;
+	  browser_closed = L"0" ;
+	}
+	else
+	{
+	  browser_running = L"0" ;
+	  browser_closed = L"1" ;
+	}
 	return ERROR_SUCCESS ;
 	break;
       case abort:
+	return ERROR_INSTALL_USEREXIT ;
 	break;
     }
   }
