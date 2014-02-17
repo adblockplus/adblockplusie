@@ -20,6 +20,19 @@ Windows_Handle::~Windows_Handle()
   CloseHandle( handle ) ;
 }
 
+
+//-------------------------------------------------------
+// process_by_name_CI
+//-------------------------------------------------------
+process_by_name_CI::process_by_name_CI( const wchar_t * name )
+  : name( name ), length( wcslen( name ) )
+{}
+
+bool process_by_name_CI::operator()( const PROCESSENTRY32W & process )
+{
+  return 0 == wcsncmpi( process.szExeFile, name, length ) ;
+}
+
 //-------------------------------------------------------
 // wcsncmpi
 //-------------------------------------------------------

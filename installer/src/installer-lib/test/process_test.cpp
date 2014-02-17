@@ -46,11 +46,25 @@ struct our_process_by_name_CI
 
 /**
  * The only process we are really guaranteed to have is this test process itself.
+ * This test uses a filter function class with a special, fixed name comparison.
  */
-TEST( Process_List_Test, find_our_process_CI )
+TEST( Process_List_Test, find_our_process_CI_special )
 {
   std::vector< PROCESSENTRY32W > v ;
   initialize_process_list( v, our_process_by_name_CI(), copy_all() ) ;
+  unsigned int size( v.size() );
+  EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
+  ASSERT_GE( 1u, size );
+}
+
+/**
+ * The only process we are really guaranteed to have is this test process itself.
+ * This test uses the generic filter function.
+ */
+TEST( Process_List_Test, find_our_process_CI_generic )
+{
+  std::vector< PROCESSENTRY32W > v ;
+  initialize_process_list( v, process_by_name_CI( L"Installer-CA-Tests.exe" ), copy_all() ) ;
   unsigned int size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );

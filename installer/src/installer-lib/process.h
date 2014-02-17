@@ -68,6 +68,19 @@ struct every_process
 } ;
 
 /**
+ * Filter by process name. Comparison is case-insensitive.
+ */
+class process_by_name_CI
+  : public std::unary_function< PROCESSENTRY32W, bool >
+{
+  const wchar_t * name ;
+  const size_t length ;
+public:
+  bool operator()( const PROCESSENTRY32W & ) ;
+  process_by_name_CI( const wchar_t * name ) ;
+} ;
+
+/**
  * Extractor that copies the entire process structure.
  */
 struct copy_all
