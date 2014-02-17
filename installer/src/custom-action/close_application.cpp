@@ -13,7 +13,7 @@
 #include <TlHelp32.h>
 
 //-------------------------------------------------------
-// IE_List
+// IE_Closer
 //-------------------------------------------------------
 /**
  * Filter by the fixed name "IExplore.exe", case-insensitive.
@@ -33,12 +33,12 @@ struct IE_by_name
  *
  * The list is derived from a process snapshot made at construction.
  */
-class IE_List
+class IE_Closer
 {
   std::vector< DWORD > v ;
 
 public:
-  IE_List()
+  IE_Closer()
   {
     initialize_process_list( v, IE_by_name(), copy_PID() ) ;
   }
@@ -117,13 +117,13 @@ abp_close_applications( MSIHANDLE session_handle )
     Property browser_running( session, L"BROWSERRUNNING" ) ;
     Property browser_closed( session, L"BROWSERCLOSED" ) ;
 
-    // Instantiation of IE_List takes a snapshot.
-    IE_List iel ;
+    // Instantiation of IE_Closer takes a snapshot.
+    IE_Closer iec ;
 
     /*
      * We take the short path through this function if IE is not running at the outset.
      */
-    if ( ! iel.is_running() )
+    if ( ! iec.is_running() )
     {
       browser_running = L"0" ;	    // The browser is not running.
       browser_closed = L"0" ;	    // We didn't close the browser (and we couldn't have).
@@ -231,7 +231,7 @@ abp_close_applications( MSIHANDLE session_handle )
     /*
      * State machine: Loop through non-terminal states.
      *
-     * Loop invariant: IE was running at last check, that is, iel.is_running() would return true.
+     * Loop invariant: IE was running at last check, that is, iec.is_running() would return true.
      */
     while ( state <= automatic )	  // "automatic" is the non-terminal state with the highest value
     {
@@ -319,8 +319,8 @@ abp_close_applications( MSIHANDLE session_handle )
 	     * If it is, we display the dialog again. The state doesn't change, so we just iterate again.
 	     * If it's not, then the user has closed IE and we're done.
 	     */
-	    iel = IE_List() ;
-	    if ( ! iel.is_running() )
+	    iec = IE_Closer() ;
+	    if ( ! iec.is_running() )
 	    {
 	      state = success ;
 	      session.log( "User shut down IE manually." ) ;
@@ -349,8 +349,8 @@ abp_close_applications( MSIHANDLE session_handle )
 	 * Failed && not interactive -> Goto abort
 	 */
 	{
-	  bool IE_was_closed = iel.shut_down( interactive ) ;
-	  if ( iel.is_running() )
+	  bool IE_was_closed = iec.shut_down( interactive ) ;
+	  if ( iec.is_running() )
 	  {
 	    session.log( "Attempt to shut down IE automatically failed." ) ;
 	    if ( interactive )
@@ -393,7 +393,7 @@ abp_close_applications( MSIHANDLE session_handle )
     switch ( state )
     {
       case success:
-	if ( iel.is_running() )
+	if ( iec.is_running() )
 	{
 	  browser_running = L"1" ;
 	  browser_closed = L"0" ;
