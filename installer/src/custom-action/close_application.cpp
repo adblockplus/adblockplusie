@@ -35,18 +35,41 @@ struct IE_by_name
  */
 class IE_Closer
 {
-  std::vector< DWORD > v ;
+  std::vector< DWORD > IE_list ;
+  std::vector< DWORD > engine_list ;
+
+  process_by_name_CI filter_IE ;
+
+  process_by_name_CI filter_engine ;
+
+  copy_PID copy ;
+
+  Snapshot snapshot ;
+
+  void update() 
+  {
+    initialize_process_list( IE_list, snapshot, filter_IE, copy ) ;
+    initialize_process_list( engine_list, snapshot, filter_engine, copy ) ;
+  } ;
 
 public:
   IE_Closer()
+    : filter_IE( L"IExplore.exe" ), filter_engine( L"AdblockPlusEngine.exe" )
   {
-    initialize_process_list( v, IE_by_name(), copy_PID() ) ;
+    update() ;
   }
 
-  bool is_running() { return v.size() > 0 ; } ;
+  void refresh()
+  {
+    snapshot.refresh() ;
+    IE_list.clear() ;
+    engine_list.clear() ;
+    update() ;
+  }
+
+  bool is_running() { return ( IE_list.size() > 0 ) || ( engine_list.size() > 0 ) ; } ;
   bool shut_down( bool ) { throw std::logic_error( "shut_down not implemented" ) ; } ;
 } ;
-
 
 void unexpected_return_value_from_message_box() 
 {
@@ -319,7 +342,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	     * If it is, we display the dialog again. The state doesn't change, so we just iterate again.
 	     * If it's not, then the user has closed IE and we're done.
 	     */
-	    iec = IE_Closer() ;
+	    iec.refresh() ;
 	    if ( ! iec.is_running() )
 	    {
 	      state = success ;
@@ -350,6 +373,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	 */
 	{
 	  bool IE_was_closed = iec.shut_down( interactive ) ;
+	  iec.refresh() ;
 	  if ( iec.is_running() )
 	  {
 	    session.log( "Attempt to shut down IE automatically failed." ) ;

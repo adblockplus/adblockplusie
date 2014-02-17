@@ -9,10 +9,7 @@
 Windows_Handle::Windows_Handle( HANDLE h ) 
   : handle( h ) 
 {
-  if ( handle == INVALID_HANDLE_VALUE )
-  {
-    throw std::runtime_error( "Invalid handle" ) ;
-  }
+  validate_handle() ;
 }
 
 Windows_Handle::~Windows_Handle()
@@ -20,6 +17,20 @@ Windows_Handle::~Windows_Handle()
   CloseHandle( handle ) ;
 }
 
+void Windows_Handle::operator=( HANDLE h )
+{
+  this -> ~Windows_Handle() ;
+  handle = h ;
+  validate_handle() ;
+}
+
+void Windows_Handle::validate_handle()
+{
+  if ( handle == INVALID_HANDLE_VALUE )
+  {
+    throw std::runtime_error( "Invalid handle" ) ;
+  }
+}
 
 //-------------------------------------------------------
 // process_by_name_CI
@@ -82,4 +93,9 @@ PROCESSENTRY32W * Snapshot::begin()
 PROCESSENTRY32W * Snapshot::next()
 {
   return ::Process32NextW( handle, & process ) ? ( & process ) : 0 ;
+}
+
+void Snapshot::refresh()
+{
+  handle = ::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 ) ;
 }

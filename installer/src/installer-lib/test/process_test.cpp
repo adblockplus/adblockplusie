@@ -4,6 +4,16 @@
 
 
 /**
+ * Single-snapshot version of initialize_process_list, for testing.
+ */
+template< class T, class Admittance, class Extractor >
+void initialize_process_list( std::vector< T > & v, Admittance admit = Admittance(), Extractor extract = Extractor() )
+{
+  initialize_process_list( v, Snapshot(), admit, extract ) ;
+}
+
+
+/**
  * Construction test ensures that we don't throw and that at least one process shows up.
  */
 TEST( Process_List_Test, construct )

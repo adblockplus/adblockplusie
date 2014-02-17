@@ -28,7 +28,31 @@ public:
   ~Windows_Handle() ;
 
   /**
-   * Copy constructor declared but not defined.
+   * Conversion operator to underlying HANDLE.
+   */
+  operator HANDLE() const { return handle ; } ;  
+
+  /**
+   * Raw handle assignment.
+   *
+   * This is equivalent to destroying the old object and constructing a new one in its place.
+   * In C++11 this would be handled by the move constructor on an rvalue reference.
+   */
+  void operator=( HANDLE h ) ;
+
+private:
+  /**
+   * \invariant The handle is an open handle to some system resource.
+   */
+  HANDLE handle ;
+
+  /**
+   * Validation function for the handle. Invoked at both construction and assignment.
+   */
+  void validate_handle() ;
+
+  /**
+   * Copy constructor declared private and not defined.
    *
    * \par Implementation
    *   Add "= delete" for C++11.
@@ -36,23 +60,13 @@ public:
   Windows_Handle( const Windows_Handle & ) ;
 
   /**
-   * Copy assignment declared but not defined.
+   * Copy assignment declared private and not defined.
    *
    * \par Implementation
    *   Add "= delete" for C++11.
    */
   Windows_Handle operator=( const Windows_Handle & ) ;
 
-  /**
-   * Conversion operator to underlying HANDLE.
-   */
-  operator HANDLE() const { return handle ; } ;
-
-private:
-  /**
-   * \invariant The handle is an open handle to some system resource.
-   */
-  HANDLE handle ;
 };
 
 //-------------------------------------------------------
@@ -75,6 +89,7 @@ class process_by_name_CI
 {
   const wchar_t * name ;
   const size_t length ;
+  process_by_name_CI() ;
 public:
   bool operator()( const PROCESSENTRY32W & ) ;
   process_by_name_CI( const wchar_t * name ) ;
@@ -138,11 +153,33 @@ class Snapshot
    */
   PROCESSENTRY32W process;
 
+  /**
+   * Copy constructor declared private and not defined.
+   *
+   * \par Implementation
+   *   Add "= delete" for C++11.
+   */
+  Snapshot( const Snapshot & ) ;
+
+  /**
+   * Copy assignment declared private and not defined.
+   *
+   * \par Implementation
+   *   Add "= delete" for C++11.
+   */
+  Snapshot operator=( const Snapshot & ) ;
+
+
 public:
   /**
    * Default constructor takes the snapshot.
    */
   Snapshot() ;
+
+  /**
+   * Reconstruct the current instance with a new system snapshot.
+   */
+  void refresh() ;
 
   /**
    * Return a pointer to the first process in the snapshot.
@@ -179,9 +216,8 @@ public:
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
 template< class T, class Admittance, class Extractor >
-void initialize_process_list( std::vector< T > & v, Admittance admit = Admittance(), Extractor extract = Extractor() )
+void initialize_process_list( std::vector< T > & v, Snapshot & snap, Admittance admit = Admittance(), Extractor extract = Extractor() )
 {
-  Snapshot snap ;
   Snapshot::Pointer p = snap.begin() ;
   while ( p != snap.end() )
   {
