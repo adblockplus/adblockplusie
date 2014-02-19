@@ -742,6 +742,9 @@
     }
   },
   
+  #############
+  # Custom Action unit tests
+  #############
   {
     'target_name': 'installer-ca-tests',
     'type': 'executable',
@@ -769,6 +772,9 @@
     },
   },
 
+  #############
+  # Custom actions for library test MSI
+  #############
   {
     'target_name': 'installer-library-test-customactions',
     'type': 'shared_library',
@@ -787,6 +793,9 @@
 	],
   },
 
+  #############
+  # WiX compile for library test MSI
+  #############
   {
     'target_name': 'installer-library-test-wix',
     'type': 'none',
@@ -811,6 +820,9 @@
     } ]
   },
 
+  #############
+  # WiX link for library test MSI
+  #############
   {
     'target_name': 'installer-library-test-msi',
     'type': 'none',
