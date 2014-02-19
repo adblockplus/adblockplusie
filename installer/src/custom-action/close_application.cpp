@@ -2,74 +2,13 @@
  * \file close_application.cpp
  */
 
+#include <algorithm>
+
 #include "session.h"
 #include "property.h"
 #include "database.h"
 #include "process.h"
 #include "interaction.h"
-
-#include <algorithm>
-
-#include <TlHelp32.h>
-
-//-------------------------------------------------------
-// IE_Closer
-//-------------------------------------------------------
-/**
- * Filter by the fixed name "IExplore.exe", case-insensitive.
- */
-struct IE_by_name
-  : std::unary_function< PROCESSENTRY32W, bool >
-{
-  bool operator()( const PROCESSENTRY32W & process ) 
-  {
-    static const wchar_t IE_name[] = L"IExplore.exe" ;
-    return 0 == wcsncmpi( process.szExeFile, IE_name, sizeof( IE_name ) / sizeof( wchar_t ) ) ;
-  } ;
-} ;
-
-/**
- * A list of the process ID's of all IE processes running on the system.
- *
- * The list is derived from a process snapshot made at construction.
- */
-class IE_Closer
-{
-  std::vector< DWORD > IE_list ;
-  std::vector< DWORD > engine_list ;
-
-  process_by_name_CI filter_IE ;
-
-  process_by_name_CI filter_engine ;
-
-  copy_PID copy ;
-
-  Snapshot snapshot ;
-
-  void update() 
-  {
-    initialize_process_list( IE_list, snapshot, filter_IE, copy ) ;
-    initialize_process_list( engine_list, snapshot, filter_engine, copy ) ;
-  } ;
-
-public:
-  IE_Closer()
-    : filter_IE( L"IExplore.exe" ), filter_engine( L"AdblockPlusEngine.exe" )
-  {
-    update() ;
-  }
-
-  void refresh()
-  {
-    snapshot.refresh() ;
-    IE_list.clear() ;
-    engine_list.clear() ;
-    update() ;
-  }
-
-  bool is_running() { return ( IE_list.size() > 0 ) || ( engine_list.size() > 0 ) ; } ;
-  bool shut_down( bool ) { throw std::logic_error( "shut_down not implemented" ) ; } ;
-} ;
 
 void unexpected_return_value_from_message_box() 
 {
@@ -140,8 +79,9 @@ abp_close_applications( MSIHANDLE session_handle )
     Property browser_running( session, L"BROWSERRUNNING" ) ;
     Property browser_closed( session, L"BROWSERCLOSED" ) ;
 
-    // Instantiation of IE_Closer takes a snapshot.
-    IE_Closer iec ;
+    // Instantiation of Process_Closer takes a snapshot.
+    const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
+    Process_Closer iec( IE_names, 2 ) ;
 
     /*
      * We take the short path through this function if IE is not running at the outset.
@@ -302,7 +242,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	 * Cancel -> Goto not_known
 	 */
 	{
-	  std::wstring s = L"Would you like the install to close IE for you?" ;
+	  std::wstring s = L"Would you like the installer to close IE for you?" ;
 	  int x = session.write_message( IMB( s, IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
 	  switch ( x )
 	  {
