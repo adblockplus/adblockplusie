@@ -77,16 +77,20 @@
     <!--
       Note that we're using a 32-bit custom action library for both 32- and 64-bit installers. 
     -->
-    <Binary Id="installer_library_test_ca" SourceFile="$(var.installer_dir)\build\ia32\$(var.CA_Configuration)\installer-library-test-customactions.dll"/>    
+    <Binary Id="installer_library_test_ca" SourceFile="$(var.installer_dir)\build\ia32\$(var.CA_Configuration)\installer-library-test-customactions.dll"/>
+    <!--
+      The sequence of testing actions go here.
+      Alter this sequence at will to test, exercise, observe, or debug custom action code.
+      The "Fail" action can be put at the end to ensure that the installer terminates before actually trying to install anything.
+      Action might also be put into the InstallExecuteSequence, if needed.
+    -->
     <InstallUISequence>
       <!--
-        The LaunchConditions action occurs near the beginning, before any of the expensive operations.
+        "LaunchConditions" occurs at the beginning of the InstallUISequence, before any of the expensive operations.
       -->
-      <Custom
-        Action="Close_IE"
-        After="LaunchConditions"
-      />
-      <Custom Action="Fail" After="Close_IE">1</Custom>
+      <Custom Action="Sandbox" After="LaunchConditions">1</Custom>
+      <Custom Action="Close_IE" After="Sandbox" />
+      <Custom Action="Fail" After="Close_IE" />
     </InstallUISequence>
 
     <!--

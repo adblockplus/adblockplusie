@@ -10,10 +10,11 @@
 #include "process.h"
 #include "interaction.h"
 
-void unexpected_return_value_from_message_box() 
-{
-  throw std::logic_error( "Unexpected return value from message box." ) ;
-}
+//-------------------------------------------------------
+// Message box text
+//-------------------------------------------------------
+
+
 //-------------------------------------------------------
 // abp_close_applications
 //-------------------------------------------------------
@@ -227,7 +228,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	    session.log( "User cancelled installation" ) ;
 	    break ;
 	  default:
-	    unexpected_return_value_from_message_box() ;
+	    throw unexpected_return_value_from_message_box() ;
 	  }
 	}
 	break ;
@@ -256,7 +257,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	    state = not_known ;
 	    break ;
 	  default:
-	    unexpected_return_value_from_message_box() ;
+	    throw unexpected_return_value_from_message_box() ;
 	  }
 	}
 	break ;
@@ -293,7 +294,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	    state = not_known ;
 	    break ;
 	  default:
-	    unexpected_return_value_from_message_box() ;
+	    throw unexpected_return_value_from_message_box() ;
 	  }
 	}
 	break ;
@@ -312,8 +313,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	 * Failed && not interactive -> Goto abort
 	 */
 	{
-	  bool IE_was_closed = iec.shut_down( interactive ) ;
-	  iec.refresh() ;
+	  bool IE_was_closed = iec.shut_down() ;
 	  if ( iec.is_running() )
 	  {
 	    session.log( "Attempt to shut down IE automatically failed." ) ;
@@ -331,7 +331,7 @@ abp_close_applications( MSIHANDLE session_handle )
 		state = not_known ;
 		break ;
 	      default:
-		unexpected_return_value_from_message_box() ;
+		throw unexpected_return_value_from_message_box() ;
 	      }
 	    }
 	    else

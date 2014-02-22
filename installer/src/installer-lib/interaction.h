@@ -90,4 +90,15 @@ public:
   ) ;
 } ;
 
+/**
+ * Error for any non-handled return value from Session.write_message().
+ */
+struct unexpected_return_value_from_message_box
+  : std::logic_error
+{
+  unexpected_return_value_from_message_box()
+    : std::logic_error( "Unexpected return value from message box." )
+  {}
+} ;
+
 #endif
