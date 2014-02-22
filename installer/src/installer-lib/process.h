@@ -8,6 +8,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <memory>
 
 #include <Windows.h>
 #include <TlHelp32.h>
@@ -339,102 +340,125 @@ void initialize_process_set( std::set< T > & set, Snapshot & snap, Admittance ad
 } ;
 
 //-------------------------------------------------------
-// iterate_top_windows
+// enumerate_windows
 //-------------------------------------------------------
+
 /**
- * Iterate a function object over top-level window handles.
- *
- * 
+ * States of a window enumeration.
  */
-template< class T >
-class iterate_top_windows
+typedef enum
 {
-  typedef enum
+  started,	  ///< The iteration is currently running
+  normal,	  ///< Iteration terminated without error.
+  early,	  ///< Callback returned false and terminated iteration early.
+  exception,	  ///< Callback threw an exception and thereby terminated iteration.
+  error		  ///< Callback always return true but EnumWindows failed.
+} enumerate_windows_state ;
+
+/**
+ * Data to perform a window enumeration, shared between the main function and the callback function.
+ */
+template< class F >
+struct ew_data
+{
+  F & f ;
+
+  enumerate_windows_state status ;
+
+  std::unique_ptr< std::exception > ee ;
+
+  ew_data( F & f )
+    : f( f ), status( started )
+  {}
+} ;
+
+/**
+ * Callback function for EnumWindows.
+ */
+template< class F >
+BOOL CALLBACK enumeration_callback( HWND window, LPARAM x )
+{
+  // LPARAM is always the same size as a pointer
+  ew_data< F > * data = reinterpret_cast< ew_data< F > * >( x ) ;
+  try 
   {
-    never,	  ///< The iteration has never been run.
-    started,	  ///< The iteration is currently running
-    normal,	  ///< Iteration terminated without error.
-    early,	  ///< Callback returned false and terminated iteration early.
-    exception,	  ///< Callback threw an exception and thereby terminated iteration.
-    error	  ///< Callback always return true but EnumWindows failed.
-  } termination ;
-
-  static BOOL CALLBACK callback( HWND window, LPARAM x )
-  {
-    // LPARAM is always the same size as a pointer
-    iterate_top_windows * self = reinterpret_cast< iterate_top_windows * >( x ) ;
-    try 
+    bool r = data -> f( window ) ;
+    if ( ! r )
     {
-      bool r = self -> f -> operator()( window ) ;
-      if ( ! r )
-      {
-        self -> status = early ;
-      }
-      return r ;
-    }
-    catch ( ... )
-    {
-      self -> status = exception ;
-      return FALSE ;
-    }
-    return TRUE ;
-  }
-
-  T * f ;
-
-  termination status ;
-
-public:
-  iterate_top_windows( T & f )
-    : f( & f ), status( never )
-  {
-  }
-
-  bool operator()()
-  {
-    status = started ;
-    BOOL x( ::EnumWindows( callback, reinterpret_cast< LPARAM >( this ) ) ) ;
-    bool r ;
-    if ( status != started )
-    {
-      if ( x )
-      {
-	throw std::logic_error( "Callback function returned 0, but EnumWindows call did not." ) ;
-      }
-      r = false ;
-    }
-    else
-    {
-      if ( x )
-      {
-        status = normal ;
-	r = true ;
-      }
-      else
-      {
-	// Assert EnumWindows failed
-	status = error ;
-	r = false ;
-      }
+      data -> status = early ;
     }
     return r ;
   }
+  catch ( std::exception e )
+  {
+    data -> ee = std::unique_ptr< std::exception >( new( std::nothrow ) std::exception( e ) ) ;
+    data -> status = exception ;
+    return FALSE ;
+  }
+  catch ( ... )
+  {
+    data -> status = exception ;
+    return FALSE ;
+  }
+  return TRUE ;
+}
 
-} ;
+/**
+ * Enumerate windows, applying a function to each one.
+ */
+template< class F >
+bool enumerate_windows( F f )
+{
+  ew_data< F > data( f ) ;
+  BOOL x( ::EnumWindows( enumeration_callback< F >, reinterpret_cast< LPARAM >( & data ) ) ) ;
+  bool r ;
+  if ( data.status != started )
+  {
+    // Assert status was changed within the callback
+    if ( data.status == exception )
+    {
+      /*
+       * The callback threw an exception of some sort.
+       * We forward it to the extent we are able.
+       */
+      if ( data.ee )
+      {
+	throw * data.ee ;
+      }
+      else
+      {
+	throw std::runtime_error( "Unknown exception thrown in callback function." ) ;
+      }
+    }
+    r = false ;
+  }
+  else
+  {
+    if ( x )
+    {
+      data.status = normal ;
+      r = true ;
+    }
+    else
+    {
+      // Assert EnumWindows failed
+      data.status = error ;
+      r = false ;
+    }
+  }
+  return r ;
+}
 
 //-------------------------------------------------------
 // Process_Closer
 //-------------------------------------------------------
 class Process_Closer
 {
-public:
-  // Temporarily public
   /**
-   * Set of process ID's for
+   * Set of process identifiers matching one of the executable names.
    */
   std::set< DWORD > pid_set ;
 
-private:
   /**
    * Set of executable names by which to filter.
    *
@@ -462,6 +486,39 @@ private:
     initialize_process_set( pid_set, snapshot, filter, copy ) ;
   } ;
 
+  template< class F >
+  class only_our_processes
+  {
+    Process_Closer & self ;
+
+    F f ;
+
+  public:
+    only_our_processes( Process_Closer & self, F f )
+      : f( f ), self( self )
+    {}
+
+    bool operator()( HWND window )
+    {
+      bool b ;
+      try
+      {
+	b = self.contains( creator_process( window ) ) ;
+      }
+      catch ( ... )
+      {
+	// ignore window handles that are no longer valid
+	return true ;
+      }
+      if ( ! b )
+      {
+	// Assert the process that created the window is not in our pid_set
+	return true ;
+      }
+      return f( window ) ;
+    }
+  } ;
+
 public:
   Process_Closer( const wchar_t * exe_name_list[], size_t n_exe_names )
     : pid_set(), exe_names( exe_name_list, n_exe_names ), filter( exe_names )
@@ -478,7 +535,19 @@ public:
 
   bool is_running() { return ! pid_set.empty() ; } ;
 
-  bool shut_down( bool ) { throw std::logic_error( "shut_down not implemented" ) ; } ;
+  bool contains( DWORD pid ) const { return pid_set.find( pid ) != pid_set.end() ; } ;
+
+  template< class F >
+  bool iterate_our_windows( F f )
+  {
+    only_our_processes< F > g( * this, f ) ;
+    return enumerate_windows( g ) ;
+  }
+
+  /*
+   * Shut down every process in the pid_set.
+   */
+  bool shut_down() ;
 
 } ;
 

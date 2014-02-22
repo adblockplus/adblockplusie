@@ -1,8 +1,17 @@
 /**
  * \file test-installer-lib-sandbox.cpp
+ *
+ * Automatic testing of many of the units within the custom action is infeasible.
+ * In one case, they rely on the execution environment within an installation session.
+ * In another, they rely on the operation system environment as a whole.
+ * In these cases, it's easier to verify behavior manually.
+ *
+ * This file contains a custom action function sandbox() as well as a number of test functions.
+ * At any given time, not all of the test functions need to be referenced within the body of custom action.
  */
 
 #include <sstream>
+#include <functional>
 
 #include "session.h"
 #include "property.h"
@@ -11,7 +20,7 @@
 #include "interaction.h"
 
 //-------------------------------------------------------
-// Log all window handles
+// log_all_window_handles
 //-------------------------------------------------------
 class log_single_window_handle
 {
@@ -36,29 +45,28 @@ void log_all_window_handles( Immediate_Session & session )
 {
   session.log( "log_all_window_handles" ) ;
   log_single_window_handle lp( session ) ;
-  iterate_top_windows< log_single_window_handle > iter( lp ) ;
-  bool x = iter() ;
+  enumerate_windows( lp ) ;
 }
 
 //-------------------------------------------------------
-// Log all window handles
+// log_IE_window_handles
 //-------------------------------------------------------
 class log_single_window_handle_only_if_IE
 {
   Immediate_Session & session ;
 
-  std::set< DWORD > PID_set ;
+  Process_Closer & pc ;
 
 public:
-  log_single_window_handle_only_if_IE( Immediate_Session & session, std::set< DWORD > PID_set )
-    : session( session ), PID_set( PID_set )
+  log_single_window_handle_only_if_IE( Immediate_Session & session, Process_Closer & pc )
+    : session( session ), pc( pc )
   {
   }
 
   bool operator()( HWND window )
   {
     DWORD pid = creator_process( window ) ;
-    if ( PID_set.find( pid ) != PID_set.end() )
+    if ( pc.contains( pid ) )
     {
       std::stringstream s ;
       s << "Window handle 0x" << std::hex << window ;
@@ -73,9 +81,19 @@ void log_IE_window_handles( Immediate_Session & session )
   session.log( "log_IE_window_handles" ) ;
   const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
   Process_Closer iec( IE_names, 2 ) ;
-  log_single_window_handle_only_if_IE lp( session, iec.pid_set ) ;
-  iterate_top_windows< log_single_window_handle_only_if_IE > iter( lp ) ;
-  bool x = iter() ;
+  log_single_window_handle_only_if_IE lp( session, iec ) ;
+  enumerate_windows( lp ) ;
+}
+
+//-------------------------------------------------------
+// log_only_window_handle_in_closer
+//-------------------------------------------------------
+void log_only_window_handle_in_closer( Immediate_Session & session )
+{
+  session.log( "log_only_window_handle_in_closer" ) ;
+  const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
+  Process_Closer iec( IE_names, 2 ) ;
+  iec.iterate_our_windows( log_single_window_handle( session ) ) ;
 }
 
 //-------------------------------------------------------
@@ -101,7 +119,7 @@ sandbox( MSIHANDLE session_handle )
 
   try
   {
-    log_IE_window_handles( session ) ;
+    log_only_window_handle_in_closer( session ) ;
   }
   catch( std::exception & e )
   {
@@ -114,6 +132,6 @@ sandbox( MSIHANDLE session_handle )
     return ERROR_INSTALL_FAILURE ;
   }
 
-  return ERROR_INSTALL_FAILURE ;
+  return ERROR_SUCCESS ;
 }
 
