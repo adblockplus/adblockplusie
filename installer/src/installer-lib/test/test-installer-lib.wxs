@@ -131,7 +131,7 @@
       <Row>
         <Data Column="component">close_ie</Data>
         <Data Column="id">dialog_unknown</Data>
-        <Data Column="content">IE is still running.\r\n\r\nWould you like to shut down IE in order to avoid having to reboot?</Data>
+        <Data Column="content">IE is still running.&#13;&#10;&#13;&#10;Would you like to shut down IE in order to avoid having to reboot?</Data>
       </Row>
       <Row>
         <Data Column="component">close_ie</Data>
@@ -146,7 +146,7 @@
       <Row>
         <Data Column="component">close_ie</Data>
         <Data Column="id">dialog_automatic_retry</Data>
-        <Data Column="content">The installer failed to close IE.\r\n\r\nWould you like try again?</Data>
+        <Data Column="content">The installer failed to close IE.&#13;&#10;&#13;&#10;Would you like try again?</Data>
       </Row>
     </CustomTable>
 

@@ -13,7 +13,41 @@
 //-------------------------------------------------------
 // Message box text
 //-------------------------------------------------------
+class custom_message_text
+{
+  Database & db ;
+  const std::wstring component ;
 
+protected:
+  custom_message_text( Database & db, const std::wstring component )
+    : db( db ), component( component )
+  {}
+
+public:
+  std::wstring text( const std::wstring id )
+  {
+    try {
+      View v( db, L"SELECT `content` FROM `AbpUIText` WHERE `component`=? and `id`=?" ) ;
+      Record arg( 2 ) ;
+      arg.assign_string( 1, component ) ;
+      arg.assign_string( 2, id.c_str() ) ;
+      Record r( v.first( arg ) ) ;
+      return r.value_string( 1 ) ;
+    }
+    catch( ... )
+    {
+      return L" " ;
+    }
+  }
+} ;
+
+struct close_IE_message_text
+  : public custom_message_text
+{
+  close_IE_message_text( Database & db )
+    : custom_message_text( db, L"close_ie" )
+  {}
+} ;
 
 //-------------------------------------------------------
 // abp_close_applications
@@ -192,6 +226,10 @@ abp_close_applications( MSIHANDLE session_handle )
       throw std::runtime_error( "unrecognized value for UILevel" ) ;
     }
 
+    // Now that preliminaries are over, we set up the accessors for UI text.
+    Installation_Database db( session ) ;
+    close_IE_message_text message_text( db ) ;
+
     /*
      * State machine: Loop through non-terminal states.
      *
@@ -211,9 +249,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	 * Cancel -> terminate installation. Goto abort.
 	 */
 	{
-	  // TODO: change string to (localizable) property
-	  std::wstring s = L"IE is still running.\r\n\r\nWould you like to shut down IE in order to avoid having to reboot?" ;
-	  int x = session.write_message( IMB( s, IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
+	  int x = session.write_message( IMB( message_text.text( L"dialog_unknown" ), IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
 	  switch ( x )
 	  {
 	  case IDYES:

@@ -28,7 +28,7 @@ class View ;
  * Every constructor has a postcondition that the _handle member points to an open record.
  * The destructor closes the record.
  * The copy constructor syntax is used as a move constructor (since no C++11 yet).
- * Copy assignment is disabled.
+ * Analogously, copy assignment has move semantics.
  *
  * \par Invariant
  *   - _handle is not null implies _handle points to a record open in the Windows Installer subsystem
