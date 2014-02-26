@@ -6,8 +6,14 @@
 #define RECORD_H
 
 #include <string>
-#include "windows.h"
-#include "msi.h"
+
+#include <Windows.h>
+#include <Msi.h>
+
+#include "handle.h"
+
+// Forward
+class View ;
 
 /**
  * An abstract record entity. 
@@ -21,16 +27,72 @@
  * This class has exclusive-ownership semantics for the API handle to the record.
  * Every constructor has a postcondition that the _handle member points to an open record.
  * The destructor closes the record.
- * The copy constructor and copy assignment are disabled.
+ * The copy constructor syntax is used as a move constructor (since no C++11 yet).
+ * Copy assignment is disabled.
  *
  * \par Invariant
- *   - _handle is not null
- *   - _handle points to a record open in the Windows Installer subsystem
+ *   - _handle is not null implies _handle points to a record open in the Windows Installer subsystem
  *
  * \sa http://msdn.microsoft.com/en-us/library/windows/desktop/aa372881%28v=vs.85%29.aspx
  *    Windows Installer on MSDN: "Working with Records"
  */
 class Record {
+  /**
+   * The handle for the record as a Windows Installer resource.
+   */
+  MSIHANDLE _handle ;
+
+  /**
+   * Construct a record from its handle as returned by some MSI call.
+   */
+  Record( msi_handle handle )
+    : _handle( handle )
+  {} 
+
+  /**
+   * Internal validation guard for operations that require a non-null handle.
+   *
+   * \post
+   *   - if _handle is zero, throw an exception
+   *   - if _handle is non-zero, nothing
+   */
+  void only_non_null() ;
+
+  /**
+   * Proxy class used to implement move semantics, prior to use of C++11.
+   *
+   * /sa
+   *   - Wikibooks [More C++ Idioms/Move Constructor](http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Move_Constructor)
+   */
+  struct Proxy_Record
+  {
+    MSIHANDLE _handle ;
+
+    Proxy_Record( MSIHANDLE handle )
+      : _handle( handle )
+    {}
+  } ;
+
+  /**
+   * Tag class for null record constructor
+   */
+  class null_t {} ;
+
+  /**
+   * Null record constructor.
+   *
+   * The null record constructor avoids the ordinary check that an external handle not be zero.
+   * It's declared private so that only friends can instantiate them.
+   */
+  Record( null_t )
+    : _handle( 0 )
+  {}
+
+  /**
+   * View class needs access to constructor-from-handle.
+   */
+  friend class View ;
+
 public:
   /**
    * Ordinary constructor creates a free-standing record.
@@ -47,6 +109,72 @@ public:
    * Destructor
    */
   ~Record() ;
+
+  /**
+   * Copy constructor syntax used as a move constructor.
+   */
+  Record( Record & r ) 
+    : _handle( r._handle )
+  {
+    r._handle = 0 ;
+  }
+
+  /**
+   * Proxy move constructor.
+   */
+  Record( Proxy_Record r )
+    : _handle( r._handle )
+  {
+    r._handle = 0 ;
+  }
+  
+  /**
+   * Copy assignment syntax has move assignment semantics. 
+   */
+  Record & operator=( Record & r )
+  {
+    this -> ~Record() ;
+    _handle = r._handle ;
+    r._handle = 0 ;
+    return * this ;
+  }
+
+  /**
+   * Proxy move assignment.
+   */
+  Record & operator=( Proxy_Record pr )
+  {
+    this -> ~Record() ;
+    _handle = pr._handle ;
+    pr._handle = 0 ;
+    return * this ;
+  }
+
+  /**
+   * Proxy conversion operator
+   */
+  operator Proxy_Record()
+  {
+    Proxy_Record pr( _handle ) ;
+    _handle = 0 ;
+    return pr ;
+  }
+
+  /**
+   * Two records are equal exactly when their handles are equal.
+   */
+  inline bool operator==( const Record & x ) const
+  {
+    return _handle == x._handle ;
+  }
+
+  /**
+   * Standard inequality operator defined by negating the equality operator.
+   */
+  inline bool operator!=( const Record & x ) const
+  {
+    return ! operator==( x ) ;
+  }
 
   /**
    * Assign a string to a record, (regular) character pointer.
@@ -95,34 +223,19 @@ public:
   }
 
   /**
+   * Retrieve a wide string value from a record
+   */
+  std::wstring value_string( unsigned int field_index ) ;
+
+  /**
+   * The number of fields in the record.
+   */
+  size_t n_fields() const ;
+
+  /**
    * Handle accessor.
    */
   MSIHANDLE handle() { return _handle ; }
-
-private:
-  /**
-   * The handle for the record as a Windows Installer resource.
-   */
-  MSIHANDLE _handle ;
-
-  /** 
-   * The number of fields in the record.
-   */
-  unsigned int n_fields ;
-
-  /**
-   * Private copy constructor is not implemented.
-   *
-   * C++11 declare as <b>= delete</b>.
-   */
-  Record( const Record & ) ;
-
-  /**
-   * Private copy assignment is not implemented.
-   *
-   * C++11 declare as <b>= delete</b>.
-   */
-  Record & operator=( const Record & ) ;
 };
 
 #endif
