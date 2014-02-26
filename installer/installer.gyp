@@ -710,6 +710,7 @@
       'src/installer-lib/database.h',
       'src/installer-lib/DLL.cpp', 
       'src/installer-lib/DLL.h', 
+      'src/installer-lib/handle.h', 
       'src/installer-lib/interaction.cpp', 
       'src/installer-lib/interaction.h',
       'src/installer-lib/process.cpp', 
@@ -742,36 +743,6 @@
     }
   },
   
-  #############
-  # Custom Action unit tests
-  #############
-  {
-    'target_name': 'installer-ca-tests',
-    'type': 'executable',
-    'dependencies':
-	[
-	  'installer-library',
-      'googletest.gyp:googletest_main',
-    ],
-	'sources':
-	[
-	  'src/installer-lib/test/process_test.cpp',
-	  'src/installer-lib/test/property_test.cpp',
-	  'src/installer-lib/test/record_test.cpp',
-    ],
-    'link_settings':
-	{
-      'libraries': [],
-    },
-    'msvs_settings':
-	{
-      'VCLinkerTool':
-	  {
-        'SubSystem': '1',   # Console
-      },
-    },
-  },
-
   #############
   # Custom actions for library test MSI
   #############
@@ -857,6 +828,38 @@
 		# Suppress ICE71 because the test MSI does not install any files.
 	    [ 'light -notidy -nologo -ext WixUIExtension -sice:ICE71', '<@(_linked_inputs)', '-out', '<(build_dir_arch)/test-installer-lib.msi' ]
 	} ]
+  },
+
+  #############
+  # Custom Action unit tests
+  #############
+  {
+    'target_name': 'installer-ca-tests',
+    'type': 'executable',
+    'dependencies':
+	[
+	  'installer-library',
+	  'installer-library-test-msi',			# Some unit tests open the test MSI database
+      'googletest.gyp:googletest_main',
+    ],
+	'sources':
+	[
+	  'src/installer-lib/test/database_test.cpp',
+	  'src/installer-lib/test/process_test.cpp',
+	  'src/installer-lib/test/property_test.cpp',
+	  'src/installer-lib/test/record_test.cpp',
+    ],
+    'link_settings':
+	{
+      'libraries': [],
+    },
+    'msvs_settings':
+	{
+      'VCLinkerTool':
+	  {
+        'SubSystem': '1',   # Console
+      },
+    },
   },
 
   ]
