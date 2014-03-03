@@ -9,45 +9,9 @@
 #include "database.h"
 #include "process.h"
 #include "interaction.h"
+#include "custom-i18n.h"
 
-//-------------------------------------------------------
-// Message box text
-//-------------------------------------------------------
-class custom_message_text
-{
-  Database & db ;
-  const std::wstring component ;
 
-protected:
-  custom_message_text( Database & db, const std::wstring component )
-    : db( db ), component( component )
-  {}
-
-public:
-  std::wstring text( const std::wstring id )
-  {
-    try {
-      View v( db, L"SELECT `content` FROM `AbpUIText` WHERE `component`=? and `id`=?" ) ;
-      Record arg( 2 ) ;
-      arg.assign_string( 1, component ) ;
-      arg.assign_string( 2, id.c_str() ) ;
-      Record r( v.first( arg ) ) ;
-      return r.value_string( 1 ) ;
-    }
-    catch( ... )
-    {
-      return L" " ;
-    }
-  }
-} ;
-
-struct close_IE_message_text
-  : public custom_message_text
-{
-  close_IE_message_text( Database & db )
-    : custom_message_text( db, L"close_ie" )
-  {}
-} ;
 
 //-------------------------------------------------------
 // abp_close_applications
@@ -226,9 +190,15 @@ abp_close_applications( MSIHANDLE session_handle )
       throw std::runtime_error( "unrecognized value for UILevel" ) ;
     }
 
-    // Now that preliminaries are over, we set up the accessors for UI text.
+    /*
+     * Now that preliminaries are over, we set up the accessors for UI text.
+     * We only use the object 'message_text' for interactive sessions, but it's cheap to set up and a hassle to conditionalize.
+     *
+     * The key "close_ie" is the component name within the file "close_ie.wxi" that defines rows in the localization table.
+     * The identifiers for the message_text.text() function are defined within that file.
+     */
     Installation_Database db( session ) ;
-    close_IE_message_text message_text( db ) ;
+    custom_message_text message_text( db, L"close_ie" ) ;
 
     /*
      * State machine: Loop through non-terminal states.
@@ -279,8 +249,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	 * Cancel -> Goto not_known
 	 */
 	{
-	  std::wstring s = L"Would you like the installer to close IE for you?" ;
-	  int x = session.write_message( IMB( s, IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
+	  int x = session.write_message( IMB( message_text.text( L"dialog_part_known" ), IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
 	  switch ( x )
 	  {
 	  case IDYES:
@@ -309,8 +278,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	 *   Cancel -> Goto not_known
 	 */
 	{
-	  std::wstring s = L"IE is still running. Please close it and then click OK." ;
-	  int x = session.write_message( IMB( s, IMB::warning_box, IMB::ok_cancel, IMB::default_button_one ) ) ;
+	  int x = session.write_message( IMB( message_text.text( L"dialog_active_retry" ), IMB::warning_box, IMB::ok_cancel, IMB::default_button_one ) ) ;
 	  switch ( x )
 	  {
 	  case IDOK:
@@ -356,8 +324,7 @@ abp_close_applications( MSIHANDLE session_handle )
 	    if ( interactive )
 	    {
 	      // Assert Interactive session and IE did not shut down.
-	      std::wstring s = L"The installer failed to close IE.\r\n\r\nWould you like try again?" ;
-	      int x = session.write_message( IMB( s, IMB::warning_box, IMB::retry_cancel, IMB::default_button_one ) ) ;
+	      int x = session.write_message( IMB( message_text.text( L"dialog_automatic_retry" ), IMB::warning_box, IMB::retry_cancel, IMB::default_button_one ) ) ;
 	      switch ( x )
 	      {
 	      case IDRETRY:
