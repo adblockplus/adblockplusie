@@ -116,39 +116,9 @@
     </Directory>
     
     <!--
-      Custom table
-      
       Unit tests verify the number of rows and columns of the table, as well as the presence of certain data.
     -->
-    <CustomTable Id="AbpUIText">
-      <Column Id="component" Type="string" Category="Identifier" PrimaryKey="yes" />
-      <Column Id="id" Type="string" Category="Identifier" PrimaryKey="yes" />
-      <Column Id="content" Type="string" Category="Text" />
-    </CustomTable>
-    <EnsureTable Id="AbpUIText"/>
-
-    <CustomTable Id="AbpUIText">
-      <Row>
-        <Data Column="component">close_ie</Data>
-        <Data Column="id">dialog_unknown</Data>
-        <Data Column="content">IE is still running.&#13;&#10;&#13;&#10;Would you like to shut down IE in order to avoid having to reboot?</Data>
-      </Row>
-      <Row>
-        <Data Column="component">close_ie</Data>
-        <Data Column="id">dialog_part_known</Data>
-        <Data Column="content">Would you like the installer to close IE for you?</Data>
-      </Row>
-      <Row>
-        <Data Column="component">close_ie</Data>
-        <Data Column="id">dialog_active_retry</Data>
-        <Data Column="content">IE is still running. Please close it and then click OK.</Data>
-      </Row>
-      <Row>
-        <Data Column="component">close_ie</Data>
-        <Data Column="id">dialog_automatic_retry</Data>
-        <Data Column="content">The installer failed to close IE.&#13;&#10;&#13;&#10;Would you like try again?</Data>
-      </Row>
-    </CustomTable>
-
+    <?include ../custom-i18n.wxi ?>
+    <?include ../../custom-action/close_ie.wxi ?>
   </Product>
 </Wix>
