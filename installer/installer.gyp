@@ -707,7 +707,6 @@
     'type': 'static_library',
     'sources': 
     [
-	  'src/installer-lib/custom-i18n.cpp',
 	  'src/installer-lib/custom-i18n.h',
 	  'src/installer-lib/custom-i18n.wxi',
       'src/installer-lib/database.cpp', 
