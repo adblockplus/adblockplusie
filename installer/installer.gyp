@@ -683,6 +683,7 @@
       'src/custom-action/abp_ca.def',
       'src/custom-action/abp_ca.rc',
       'src/custom-action/close_application.cpp',
+      'src/custom-action/close_ie.wxi',
     ],
     'include_dirs': 
     [
@@ -706,6 +707,9 @@
     'type': 'static_library',
     'sources': 
     [
+	  'src/installer-lib/custom-i18n.cpp',
+	  'src/installer-lib/custom-i18n.h',
+	  'src/installer-lib/custom-i18n.wxi',
       'src/installer-lib/database.cpp', 
       'src/installer-lib/database.h',
       'src/installer-lib/DLL.cpp', 
@@ -772,8 +776,9 @@
     'type': 'none',
 	'sources': 
 	[
-	  'src/installer-lib/test/test-installer-lib.wxs'
-	],
+	  'src/installer-lib/test/test-installer-lib.wxs',
+	  'src/installer-lib/custom-i18n.wxi',
+    ],
     'actions': 
     [ {
       'action_name': 'WiX compile',
@@ -814,9 +819,15 @@
 	  [
         '<(build_dir_arch)/test-installer-lib.wixobj',
 	  ],
+	  'localization_input':
+	  [
+		'src/custom-action/close_ie_default.wxl',			# Keep the .WXL file out of 'sources', since otherwise the custom rule will kick in
+	  ],
 	  'inputs': 
 	  [
 		'<@(_linked_inputs)',
+		'<@(_localization_input)',
+		'src/custom-action/close_ie.wxi',
 		'<(build_dir_arch)/Debug/installer-library-test-customactions.dll'
 	  ],
 	  'outputs': 
@@ -826,7 +837,12 @@
 	  'action':
 	    # ICE71: The Media table has no entries
 		# Suppress ICE71 because the test MSI does not install any files.
-	    [ 'light -notidy -nologo -ext WixUIExtension -sice:ICE71', '<@(_linked_inputs)', '-out', '<(build_dir_arch)/test-installer-lib.msi' ]
+	    [
+			'light -notidy -nologo -ext WixUIExtension -sice:ICE71',
+			'<@(_linked_inputs)',
+			'-out', '<(build_dir_arch)/test-installer-lib.msi',
+			'-loc', '<@(_localization_input)'
+		]
 	} ]
   },
 

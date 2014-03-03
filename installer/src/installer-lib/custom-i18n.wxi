@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!--
+    Schema for custom database to internationalize custom actions.
+  -->
+  <CustomTable Id="AbpUIText">
+    <!-- 
+      'component' is the name of the custom action; think of it as a namespace
+    -->
+    <Column Id="component" Type="string" Category="Identifier" PrimaryKey="yes" />
+    <!--
+      'id' is the particular item within the component
+    -->
+    <Column Id="id" Type="string" Category="Identifier" PrimaryKey="yes" />
+    <!--
+      'content' is the string to be localized
+    -->
+    <Column Id="content" Type="string" Category="Text" />
+  </CustomTable>
+  <!-- 
+    If we declare the table, we include the table even if empty 
+  -->
+  <EnsureTable Id="AbpUIText"/>
+</Include>
