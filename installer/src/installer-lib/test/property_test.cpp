@@ -6,7 +6,7 @@
 TEST( Property_Test, null )
 {
   /*
-   * This is an extract of manual test code originally run from abp_close_applications DLL entry point.
+   * This is an extract of manual test code originally run from abp_close_ie DLL entry point.
    * This code relies on an MSI database opened for installation, which we don't need to access properties.
    * We can instead use an offline session, with the database opened outside Windows Installer.
    */
@@ -19,7 +19,7 @@ TEST( Property_Test, null )
     MSIHANDLE session_handle = 0;
 
     // The code in the body.
-    Immediate_Session session( session_handle, "abp_close_applications" ) ;
+    Immediate_Session session( session_handle, "abp_close_ie" ) ;
     session.log( L"Have session object" ) ;
     Installation_Database db( session ) ;
     session.log( L"Have database object" ) ;

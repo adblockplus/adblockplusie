@@ -153,7 +153,7 @@
     <CustomAction
         Id="Close_IE"
         BinaryKey="installer_ca"
-        DllEntry="abp_close_applications"
+        DllEntry="abp_close_ie"
         Return="check"
     />
     <!--
