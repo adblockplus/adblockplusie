@@ -64,7 +64,7 @@
     <CustomAction
         Id="Close_IE"
         BinaryKey="installer_library_test_ca"
-        DllEntry="abp_close_applications"
+        DllEntry="abp_close_ie"
         Return="check"
     />
     <!-- Always check the return of the "always fail" action; otherwise there's no point in running it. -->

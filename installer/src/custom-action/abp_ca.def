@@ -6,4 +6,4 @@ LIBRARY      "installer-ca"
 
 EXPORTS
 ; close_application.cpp
-    abp_close_applications
+    abp_close_ie

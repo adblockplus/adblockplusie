@@ -14,7 +14,7 @@
 
 
 //-------------------------------------------------------
-// abp_close_applications
+// abp_close_ie
 //-------------------------------------------------------
 /**
  * Exposed DLL entry point for custom action. 
@@ -60,7 +60,7 @@
  *   - MSDN [Custom Action Return Values](http://msdn.microsoft.com/en-us/library/aa368072%28v=vs.85%29.aspx)
  */
 extern "C" UINT __stdcall 
-abp_close_applications( MSIHANDLE session_handle )
+abp_close_ie( MSIHANDLE session_handle )
 {
   // Utility typedef to shorten the class name.
   typedef Installer_Message_Box IMB ;
@@ -69,7 +69,7 @@ abp_close_applications( MSIHANDLE session_handle )
    * Immediate_Session cannot throw, so it can go outside the try-block.
    * It's needed in the catch-all block to write an error message to the log.
    */
-  Immediate_Session session( session_handle, "abp_close_applications" ) ;
+  Immediate_Session session( session_handle, "abp_close_ie" ) ;
     
   // The body of an entry point function must have a catch-all.
   try {
@@ -405,8 +405,6 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 
 /**
  * Windows_List
- *
- * 
  */
 class Window_List {
 public:
