@@ -38,6 +38,11 @@ class View ;
  */
 class Record {
   /**
+   * 
+   */
+  typedef handle< MSIHANDLE, Special_Null, MSI_Generic_Destruction > record_handle_type ;
+
+  /**
    * The handle for the record as a Windows Installer resource.
    */
   MSIHANDLE _handle ;

@@ -192,7 +192,7 @@ private:
   /*
    * Allow helper function for Installation_Database constructor to have access to the handle.
    */
-  friend MSIHANDLE get_active_database( Immediate_Session & session ) ;
+  friend msi_handle get_active_database( Immediate_Session & session ) ;
 };
 
 

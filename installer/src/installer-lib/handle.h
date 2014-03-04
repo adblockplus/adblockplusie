@@ -11,41 +11,27 @@
 //-------------------------------------------------------
 // msi_handle
 //-------------------------------------------------------
+/**
+ * Disambiguation class holding an MSIHANDLE.
+ *
+ * We need constructors for Record that accept both handles and record counts.
+ * Since the underlying type of a handle is integral, without its own type these constructors are ambiguous.
+ */
 class msi_handle
 {
-protected:
   MSIHANDLE _handle ;
 
 public:
-  msi_handle( MSIHANDLE handle )
+  /**
+   * Ordinary constructor is explicit to avoid inadvertent conversions.
+   */
+  explicit msi_handle( MSIHANDLE handle )
     : _handle( handle )
   {}
 
   operator MSIHANDLE()
   {
     return _handle ;
-  }
-} ;
-
-//-------------------------------------------------------
-// msi_handle_managed
-//-------------------------------------------------------
-class msi_handle_managed
-  : public msi_handle
-{
-public:
-  msi_handle_managed( msi_handle handle )
-    : msi_handle( handle )
-  {
-    if ( handle == 0 )
-    {
-      throw std::runtime_error( "Empty MsiHandle" ) ;
-    }
-  }
-
-  ~msi_handle_managed()
-  {
-    MsiCloseHandle( _handle ) ;
   }
 } ;
 
@@ -91,6 +77,20 @@ class No_Destruction
 public:
   inline static void close( T handle ) {} ;
 } ;
+
+/**
+ * Policy class that does not close a file handle when it goes out of scope
+ */
+template< class T >
+class MSI_Generic_Destruction
+{
+public:
+  inline static void close( T handle )
+  {
+    MsiCloseHandle( handle ) ;
+  } ;
+} ;
+
 
 //-------------------------------------------------------
 // Handle
