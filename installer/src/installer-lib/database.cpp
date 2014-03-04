@@ -52,14 +52,14 @@ msi_handle Database::open_view( const wchar_t * query )
  *    Return value of this function, a handle, must be released in order to avoid a resource leak.
  *    Passing it as an argument to the Database constructor is adequate.
  */
-MSIHANDLE get_active_database( Immediate_Session & session )
+msi_handle get_active_database( Immediate_Session & session )
 {
   MSIHANDLE h( MsiGetActiveDatabase( session.handle ) ) ;
   if ( h == 0 )
   {
     throw std::runtime_error( "Failed to retrieve active databases" ) ;
   }
-  return h ;
+  return msi_handle( h ) ;
 }
 
 /**

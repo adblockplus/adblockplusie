@@ -36,7 +36,7 @@ class Database
 {
 protected:
   /**
-   * Protected constructor. Life cycle depends strongly on context.
+   * Protected constructor. Beginning of life cycle depends strongly on context.
    */
   Database( MSIHANDLE handle ) ;
 
@@ -105,7 +105,7 @@ class File_System_Database : public Database
    * \sa
    *   - MSDN [MsiOpenDatabase function](http://msdn.microsoft.com/en-us/library/aa370338%28v=vs.85%29.aspx)
    */
-  MSIHANDLE handle_from_pathname( const wchar_t * pathname )
+  msi_handle handle_from_pathname( const wchar_t * pathname )
   {
     MSIHANDLE handle ;
     UINT x = MsiOpenDatabaseW( pathname, MSIDBOPEN_READONLY, & handle ) ;
@@ -113,14 +113,13 @@ class File_System_Database : public Database
     {
       throw std::runtime_error( "Open database from file system failed" ) ;
     }
-    return handle ;
+    return msi_handle( handle ) ;
   }
 
 public:
   File_System_Database( const wchar_t * pathname )
     : Database( handle_from_pathname( pathname ) )
-  {
-  }
+  {}
 } ;
 
 //-------------------------------------------------------
