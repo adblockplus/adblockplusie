@@ -35,20 +35,25 @@ class View ;
 class Database
 {
 protected:
-  /**
-   * Protected constructor. Beginning of life cycle depends strongly on context.
-   */
-  Database( MSIHANDLE handle ) ;
+  typedef handle< MSIHANDLE, Disallow_Null, MSI_Generic_Destruction > handle_type ;
 
   /**
-   * Destructor.
+   * Protected constructor. 
+   *
+   * An MSI database handle is an overloaded type, used both for installation databases and one opened outside an installation.
+   * These database handles, while both databases, have different capabilities and are thus defined in subclasses.
+   * Each subclass has the responsibility for obtaining a database handle appropriate to its circumstance.
+   * 
+   * \sa MSDN "Obtaining a Database Handle"
+   *    http://msdn.microsoft.com/en-us/library/windows/desktop/aa370541(v=vs.85).aspx
    */
-  ~Database() ;
+  Database( MSIHANDLE handle )
+    : handle( handle )
+  {}
 
-protected:
   /**
    */
-  MSIHANDLE handle ;
+  handle_type handle ;
 
 private:
   /**
@@ -150,7 +155,7 @@ class View
     }
   } ;
 
-  typedef handle< MSIHANDLE, Disallow_Null, View_Destruction> handle_type ;
+  typedef handle< MSIHANDLE, Disallow_Null, View_Destruction > handle_type ;
 
   /**
    * Handle for the MSI view object
