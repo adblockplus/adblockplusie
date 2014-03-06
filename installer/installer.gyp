@@ -825,7 +825,12 @@
 	  'inputs': 
 	  [
 		'<@(_linked_inputs)',
-		'<@(_localization_input)',
+
+		# Keep the .WXL file out of here, since otherwise the custom rule will kick in
+		# This isn't the best solution, since it means manual recompilation it this file changes, 
+		#   but it's easier to do this than to deal with how to change the default rule for '.wxl' that all the MSI targets use.
+		#'<@(_localization_input)',
+
 		'src/custom-action/close_ie.wxi',
 		'<(build_dir_arch)/Debug/installer-library-test-customactions.dll'
 	  ],
