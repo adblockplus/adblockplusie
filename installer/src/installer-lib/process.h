@@ -477,9 +477,10 @@ class Process_Closer
    */
   copy_PID copy ;
 
-  /** Snapshot of running processes.
+  /** 
+   * Snapshot of running processes.
    */
-  Snapshot snapshot ;
+  Snapshot & snapshot ;
 
   void update()
   {
@@ -520,15 +521,17 @@ class Process_Closer
   } ;
 
 public:
-  Process_Closer( const wchar_t * exe_name_list[], size_t n_exe_names )
-    : pid_set(), exe_names( exe_name_list, n_exe_names ), filter( exe_names )
+  Process_Closer( Snapshot & snapshot, const wchar_t * exe_name_list[], size_t n_exe_names )
+    : snapshot( snapshot ), exe_names( exe_name_list, n_exe_names ), filter( exe_names )
   {
     update() ;
   }
 
+  /**
+   * Refresh our state to match the snapshot state.
+   */
   void refresh()
   {
-    snapshot.refresh() ;
     pid_set.clear() ;
     update() ;
   }
