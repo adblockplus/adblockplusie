@@ -11,7 +11,57 @@
 #include "interaction.h"
 #include "custom-i18n.h"
 
+//-------------------------------------------------------
+//-------------------------------------------------------
+class IE_Closer
+{
+  Snapshot snapshot ;
 
+  Process_Closer ie_closer ;
+
+  Process_Closer engine_closer ;
+
+  static const wchar_t * ie_names[] ;
+  static const wchar_t * engine_names[] ;
+  //Process_Closer iec( snapshot, IE_names, 2 ) ;
+
+public:
+  IE_Closer()
+    : snapshot(), ie_closer( snapshot, ie_names, 1 ), engine_closer( snapshot, engine_names, 1 )
+  {}
+
+  void refresh()
+  {
+    snapshot.refresh() ;
+    ie_closer.refresh() ;
+    engine_closer.refresh() ;
+  }
+
+  bool is_running()
+  {
+    return ie_closer.is_running() || engine_closer.is_running() ;
+  }
+
+  bool shut_down()
+  {
+    if ( ie_closer.is_running() && ! ie_closer.shut_down() )
+    {
+      // Assert IE is still running
+      // This is after we've tried to shut it down, so we fail
+      return false ;
+    }
+    if ( engine_closer.is_running() && ! engine_closer.shut_down() )
+    {
+      // Assert the engine is still running
+      // This is after IE has shut down itself and after we've tried to shut down the engine. Whatever.
+      return false ;
+    }
+    return true ;
+  }
+} ;
+
+const wchar_t * IE_Closer::ie_names[] = { L"IExplore.exe" } ;
+const wchar_t * IE_Closer::engine_names[] = { L"AdblockPlusEngine.exe" } ;
 
 //-------------------------------------------------------
 // abp_close_ie
@@ -79,8 +129,7 @@ abp_close_ie( MSIHANDLE session_handle )
     Property browser_closed( session, L"BROWSERCLOSED" ) ;
 
     // Instantiation of Process_Closer takes a snapshot.
-    const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
-    Process_Closer iec( IE_names, 2 ) ;
+    IE_Closer iec ;
 
     /*
      * We take the short path through this function if IE is not running at the outset.

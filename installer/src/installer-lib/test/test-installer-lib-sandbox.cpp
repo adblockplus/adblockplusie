@@ -80,7 +80,8 @@ void log_IE_window_handles( Immediate_Session & session )
 {
   session.log( "log_IE_window_handles" ) ;
   const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
-  Process_Closer iec( IE_names, 2 ) ;
+  Snapshot snapshot ;
+  Process_Closer iec( snapshot, IE_names, 2 ) ;
   log_single_window_handle_only_if_IE lp( session, iec ) ;
   enumerate_windows( lp ) ;
 }
@@ -92,7 +93,8 @@ void log_only_window_handle_in_closer( Immediate_Session & session )
 {
   session.log( "log_only_window_handle_in_closer" ) ;
   const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
-  Process_Closer iec( IE_names, 2 ) ;
+  Snapshot snapshot ;
+  Process_Closer iec( snapshot, IE_names, 2 ) ;
   iec.iterate_our_windows( log_single_window_handle( session ) ) ;
 }
 
