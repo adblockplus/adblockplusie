@@ -9,6 +9,7 @@ TEST( Property_Test, null )
    * This is an extract of manual test code originally run from abp_close_ie DLL entry point.
    * This code relies on an MSI database opened for installation, which we don't need to access properties.
    * We can instead use an offline session, with the database opened outside Windows Installer.
+   * That session class, though, isn't written yet.
    */
   /*
    * DISABLED. Refactor into proper tests.
