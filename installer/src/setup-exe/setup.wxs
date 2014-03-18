@@ -41,7 +41,9 @@
         </BootstrapperApplicationRef>
         <WixVariable Id="WixStdbaThemeXml" Value="bootstrap-theme.xml" />
         <WixVariable Id="WixStdbaThemeWxl" Value="bootstrap-theme.wxl" />
-        <Chain>
+        <Chain
+            DisableSystemRestore="yes"
+        >
             <!--
                 Note that use have DisplayInternalUI turned on.
                 This avoids much (but not all) of the need to deal with the undocumented 'burn' UI facility.
