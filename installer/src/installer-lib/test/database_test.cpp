@@ -1,6 +1,11 @@
 #include <gtest/gtest.h>
 #include "../database.h"
 
+/*
+ * Note: These tests need to be run in the same directory as the MSI file.
+ * There's a batch file for that purpose "run-tests.cmd".
+ */
+
 TEST( Database, open )
 {
   File_System_Database db( L"test-installer-lib.msi" ) ;

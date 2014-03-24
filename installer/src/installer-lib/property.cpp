@@ -22,16 +22,14 @@ Property::Property( Session & session, std::wstring name )
 Property::operator std::wstring() const
 {
   /*
-   * The screwy logic below arises from how the API works.
-   * MsiGetProperty insists on copying into your buffer, but you don't know how long that buffer needs to be in advance.
    * The first call gets the size, but also the actual value if it's short enough.
-   * A second call, if necessary, gets the actual value after allocat
+   * A second call, if necessary, allocates a sufficiently-long buffer and then gets the full value.
+   * We use only a modest fixed-size buffer for the first step, because we handle arbitrary-length property values in a second step.
    */
-  // We only need a modest fixed-size buffer here, because we handle arbitrary-length property values in a second step.
-  // It has 'auto' allocation, so we don't want it too large.
-  TCHAR buffer1[ 64 ] = { L'\0' } ;
-  DWORD length = sizeof( buffer1 ) / sizeof( TCHAR ) ;
-  switch ( MsiGetProperty( handle, name.c_str(), buffer1, & length ) ) 
+  // This buffer allocates on the stack, so we don't want it too large; 64 characters is enough for most properties anyway.
+  WCHAR buffer1[ 64 ] = { L'\0' } ;
+  DWORD length = sizeof( buffer1 ) / sizeof( WCHAR ) ;
+  switch ( MsiGetPropertyW( handle, name.c_str(), buffer1, & length ) ) 
   {
   case ERROR_SUCCESS:
     // This call might succeed, which means the return value was short enough to fit into the buffer.
@@ -44,8 +42,8 @@ Property::operator std::wstring() const
   }
   // Assert we received ERROR_MORE_DATA
   // unique_ptr handles deallocation transparently
-  std::unique_ptr< TCHAR[] > buffer2( new TCHAR[ length ] );
-  switch ( MsiGetProperty( handle, name.c_str(), buffer2.get(), & length ) )
+  std::unique_ptr< WCHAR[] > buffer2( new WCHAR[ length ] );
+  switch ( MsiGetPropertyW( handle, name.c_str(), buffer2.get(), & length ) )
   {
   case ERROR_SUCCESS:
     return std::wstring( buffer2.get(), length ) ;

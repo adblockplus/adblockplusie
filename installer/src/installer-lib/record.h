@@ -1,5 +1,5 @@
 /**
- * \file session.h The "install session" is the context for all custom installation behavior.
+ * \file record.h Definition of Record class.
  */
 
 #ifndef RECORD_H
