@@ -1,0 +1,26 @@
+// Resource file for the custom action library 
+
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION	0.0.1
+PRODUCTVERSION	0.0.1
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS	( VS_FF_DEBUG | VS_FF_PRERELEASE )
+FILEOS		VOS__WINDOWS32
+FILETYPE	VFT_DLL
+FILESUBTYPE	0
+BEGIN
+BLOCK "StringFileInfo"
+  BEGIN 
+  BLOCK "000004E4"
+    BEGIN
+    VALUE "CompanyName", "Eyeo, GmbH"
+    VALUE "FileDescription", "Installer Custom Action Library"
+    VALUE "FileVersion", "0.0.1"
+    VALUE "InternalName", "installer-ca"
+    VALUE "OriginalFilename", "installer-ca.dll"
+    VALUE "ProductName", "Adblock Plus for IE"
+    END
+  END
+END

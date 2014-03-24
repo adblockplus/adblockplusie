@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Include xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!--
+    Localization data for the Close_IE action.
+    This file defines the rows in the localization table within the MSI database.
+    The content strings must appear in a .WXL file.
+  -->
+  <CustomTable Id="AbpUIText">
+    <Row>
+      <Data Column="component">close_ie</Data>
+      <Data Column="id">dialog_unknown</Data>
+      <Data Column="content">!(loc.close_ie__dialog_unknown)</Data>
+    </Row>
+    <Row>
+      <Data Column="component">close_ie</Data>
+      <Data Column="id">dialog_part_known</Data>
+      <Data Column="content">!(loc.close_ie__dialog_part_known)</Data>
+    </Row>
+    <Row>
+      <Data Column="component">close_ie</Data>
+      <Data Column="id">dialog_active_retry</Data>
+      <Data Column="content">!(loc.close_ie__dialog_active_retry)</Data>
+    </Row>
+    <Row>
+      <Data Column="component">close_ie</Data>
+      <Data Column="id">dialog_automatic_retry</Data>
+      <Data Column="content">!(loc.close_ie__dialog_automatic_retry)</Data>
+    </Row>
+  </CustomTable>
+</Include>
