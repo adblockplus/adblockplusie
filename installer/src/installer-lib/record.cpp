@@ -1,5 +1,5 @@
 /**
- * \file record.cpp Implementation of Session class.
+ * \file record.cpp Implementation of Record class.
  */
 
 #include "record.h"
