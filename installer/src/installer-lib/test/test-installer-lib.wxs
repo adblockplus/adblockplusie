@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?define installer_dir="..\.." ?>
+<?define CA_Configuration="Debug" ?>
+
+<?if $(sys.BUILDARCH)="x86"?>
+  <?define Program_Files="ProgramFilesFolder"?>
+  <?define Product_Name="!(loc.ProductName32)"?>
+<?elseif $(sys.BUILDARCH)="x64"?>
+  <?define Program_Files="ProgramFiles64Folder"?>
+  <?define Product_Name="!(loc.ProductName64)"?>
+<?else?>
+  <?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
+<?endif?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!--
+    The attributes 'Language' and 'Codepage' are specifications for the database only.
+    Codepage 65001 is UTF-8.
+  -->
+  <Product
+    Name="ABP Installer Library Test MSI"
+    Manufacturer="Eyeo GmbH"
+    Version="1.0"
+    Language="9" Codepage="1252"
+    Id="*"
+    UpgradeCode="8D94C7AB-91B3-4A5B-A013-FB01DCC20C58">
+    <Package
+      SummaryCodepage="1252"
+      Keywords="Installer, Adblock Plus"
+      Description="Adblock Plus for IE"
+      Comments="Thank you for using Adblock Plus."
+      Manufacturer="Eyeo GmbH"
+      InstallerVersion="200"
+      Languages="0"
+      Compressed="yes"
+      InstallScope="perMachine" InstallPrivileges="elevated"
+    />
+    <MediaTemplate EmbedCab="yes"/>
+
+    <!--
+      User interface
+    -->
+    <UIRef Id="WixUI_ErrorProgressText"/>
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+
+    <!--
+      Define and schedule a "Custom Action Type 1" to ensure that IE is closed before installation.
+      Because WiX is closely tied to the MSI database format, there are multiple tags required to do this.
+      The "CustomAction" tag defines the tag itself, but doesn't sequence it;
+        it defines an entry in the "CustomAction" table.
+      The "Binary" tag describe an asset that's incorporated into the MSI but that is not an installed component.
+      The "Custom" tag defines when the action executes by defining an entry in one of the sequence tables.
+      
+      Attribute "Return" sets the "Custom Action Return Processing Options" to zero,
+        which indicates to block the installer until the action completes
+        and to treat a non-zero return value from the action as an error.
+    -->
+    <CustomAction
+        Id="Sandbox"
+        BinaryKey="installer_library_test_ca"
+        DllEntry="sandbox"
+        Return="check"
+    />
+    <CustomAction
+        Id="Close_IE"
+        BinaryKey="installer_library_test_ca"
+        DllEntry="abp_close_ie"
+        Return="check"
+    />
+    <!-- Always check the return of the "always fail" action; otherwise there's no point in running it. -->
+    <CustomAction
+        Id="Fail"
+        BinaryKey="installer_library_test_ca"
+        DllEntry="fail"
+        Return="check"
+    />
+    <!--
+      Note that we're using a 32-bit custom action library for both 32- and 64-bit installers. 
+    -->
+    <Binary Id="installer_library_test_ca" SourceFile="$(var.installer_dir)\build\ia32\$(var.CA_Configuration)\installer-library-test-customactions.dll"/>
+    <!--
+      The sequence of testing actions go here.
+      Alter this sequence at will to test, exercise, observe, or debug custom action code.
+      The "Fail" action can be put at the end to ensure that the installer terminates before actually trying to install anything.
+      Action might also be put into the InstallExecuteSequence, if needed.
+    -->
+    <InstallUISequence>
+      <!--
+        "LaunchConditions" occurs at the beginning of the InstallUISequence, before any of the expensive operations.
+      -->
+      <Custom Action="Sandbox" After="LaunchConditions">1</Custom>
+      <Custom Action="Close_IE" After="Sandbox" />
+      <Custom Action="Fail" After="Close_IE" />
+    </InstallUISequence>
+
+    <!--
+      We have only a single feature, since there aren't any optional parts.
+      The display is hidden for the same reason; there's nothing to choose from.
+    -->
+    <Feature Id="ProductFeature"
+      Title="Empty_Feature" Description="This is a test MSI for custom actions. We don't need no stinking features."
+      Display="hidden">
+    </Feature>
+
+    <!--
+      The top-level directory structure.
+    -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.Program_Files)">
+        <!--
+          INSTALLFOLDER is within ProgramFilesFolder, which is a protected directory.
+          As a result, this installer requires elevated permissions to operate.
+        -->
+        <Directory Id="INSTALLFOLDER" Name="ABP Test Installer Library"/>
+      </Directory>
+    </Directory>
+    
+    <!--
+      Unit tests verify the number of rows and columns of the table, as well as the presence of certain data.
+    -->
+    <?include ../custom-i18n.wxi ?>
+    <?include ../../custom-action/close_ie.wxi ?>
+  </Product>
+</Wix>

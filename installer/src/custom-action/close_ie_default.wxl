@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default version of the localization for the Close_IE custom action.
+  This file is present primarily for testing.
+  The unit tests for the installer library check for equality against some of these strings.
+-->
+<WixLocalization xmlns="http://schemas.microsoft.com/wix/2006/localization" Language="9" Culture="en">
+  <String Id="close_ie__dialog_unknown">IE is still running.&#13;&#10;&#13;&#10;Would you like to shut down IE in order to avoid having to reboot?</String>
+  <String Id="close_ie__dialog_part_known">Would you like the installer to close IE for you?</String>
+  <String Id="close_ie__dialog_active_retry">IE is still running. Please close it and then click OK.</String>
+  <String Id="close_ie__dialog_automatic_retry">The installer failed to close IE.&#13;&#10;&#13;&#10;Would you like try again?</String>
+</WixLocalization>

@@ -1,0 +1,26 @@
+// Resource file for the custom action library 
+
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION	0.0.1
+PRODUCTVERSION	0.0.1
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS	( VS_FF_DEBUG | VS_FF_PRERELEASE )
+FILEOS		VOS__WINDOWS32
+FILETYPE	VFT_DLL
+FILESUBTYPE	0
+BEGIN
+BLOCK "StringFileInfo"
+  BEGIN 
+  BLOCK "000004E4"
+    BEGIN
+    VALUE "CompanyName", "Eyeo, GmbH"
+    VALUE "FileDescription", "Custom action DLL for testing the installer library"
+    VALUE "FileVersion", "0.0.1"
+    VALUE "InternalName", "installer-library-test-customactions"
+    VALUE "OriginalFilename", "installer-library-test-customactions.dll"
+    VALUE "ProductName", "ABP installer library test CA"
+    END
+  END
+END
