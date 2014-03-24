@@ -1,0 +1,827 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Compilation Note:
+  You may see linking errors that look like these:
+    <quote>LGHT0217 : Error executing ICE action 'ICExx' [...] The error code is 2738.</quote>
+  The documentation for this error code talks about custom actions,
+    even though the CustomAction keyword does not appear in this source.
+  Certain WiX elements are implemented by MSI custom actions,
+    which means this source implicitly declares some insofar as the Windows Installer sees it.
+  These errors are benign and can be avoided by some fiddling with the registry on the development machine.
+  See http://blogs.msdn.com/b/heaths/archive/2007/05/31/windows-installer-errors-2738-and-2739-with-script-custom-actions.aspx
+    and http://blogs.msdn.com/b/astebner/archive/2007/06/07/3151752.aspx,
+    both taken from (must use the Wayback Machine) http://wix.sourceforge.net/faq.html#Error217 
+-->
+<!--
+  These definitions enable compiling multiple versions & Product ID's from the same file.
+  This is to allow testing upgrade features without having to switch back and forth between working copies.
+-->
+<?ifdef Version ?>
+  <!--
+    If we're given a version on the command line, use it.
+    We use a short name on the command line for ease of use.
+    We use a longer name within this file for clarity about which "version" it is specifically
+  -->
+  <?define Product_Version=$(var.Version) ?>
+<?else?>
+  <?error "Version" parameter is required ?>
+<?endif?>
+
+<?ifndef Configuration ?>
+  <?error "Configuration" parameter is required ?>
+<?endif?>
+
+<!--
+  CA_Configuration is the Visual Studio configuration for the Custom Action library.
+  It's set to "Debug" while the installer with a CA is in development.
+  TODO. 
+    First, set this variable based on the configuration in the VS solution.
+    Second, change the default to "Release" (or perhaps an error).
+-->
+<?ifndef CA_Configuration?>
+  <?define CA_Configuration="Debug" ?>
+<?endif?>
+
+<!--
+  sys.BUILDARCH is set by the command line argument '-arch'.
+  The default value to "x86"
+-->
+<?if $(sys.BUILDARCH)="x86"?>
+  <?define Minimum_Version="100"?>
+  <?define Program_Files="ProgramFilesFolder"?>
+  <?define Product_Name="!(loc.ProductName32)"?>
+<?elseif $(sys.BUILDARCH)="x64"?>
+  <?define Minimum_Version="200"?>
+  <?define Program_Files="ProgramFiles64Folder"?>
+  <?define Product_Name="!(loc.ProductName64)"?>
+<?else?>
+  <?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
+<?endif?>
+
+<!--
+  The current directory when the compiler runs is "installer/build/<arch>".
+  Most assets are based in the root directory, three levels up.
+  The custom action library is base in the installer directory, two levels up.
+-->
+<?define plugin_dir="..\..\.." ?>
+<?define installer_dir="..\.." ?>
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!--
+    The attributes 'Language' and 'Codepage' are specifications for the database only.
+    Codepage 65001 is UTF-8.
+  -->
+  <Product
+    Name="$(var.Product_Name)"
+    Manufacturer="Eyeo GmbH"
+    Version="$(var.Product_Version)"
+    Language="!(loc.LANG)" Codepage="1252"
+    Id="*"
+    UpgradeCode="3a8e3ab4-762d-4641-806e-2dccb953d73f">
+
+    <!--
+      Attribute @Languages
+        The list contains all the languages supported within the MSI, all but the first as embedded transforms.
+        The first language code is the language of the base MSI.
+    -->
+    <!--
+      At the present time, we are not localizing the summary information because of limitations
+        both in Windows Installer and in the tool chain.
+      At a later time, localizing this section requires setting an ANSI codepage
+        and the four attributes Keywords, Description, Comments, and Manufacturer.       
+    -->
+    <!--
+      For the present version, the following languages are omitted because the WiX UI extension has no localizations for them yet.
+      They can be added later, but the build script needs to be changed to accept arguments for the extra localization source.
+        fil-PH. Filipino - Phillipines. LCID = 1124
+        kn-IN. Kanada - India. LCID = 1099
+        mr-IN.  Maratha - India. LCID = 1102
+        ms. Malaysian - generic. LCID = 62
+        nn-NO. Nynorsk - Norway. LCID = 2068
+        ur-PK. Urdu - Pakistan. LCID = 1056
+      They are being omitted by having their decimal LCID left out of the Packages/@Languages attribute below.
+      The build system presently embeds transforms for them, but without their LCID in this list, they won't be recognized.
+      These embedded transforms, however, can be explicitly applied on the command line of msiexec.
+    -->
+    <Package
+      SummaryCodepage="1252"
+      Keywords="Installer, Adblock Plus"
+      Description="Adblock Plus for IE"
+      Comments="Thank you for using Adblock Plus."
+      Manufacturer="Eyeo GmbH"
+      InstallerVersion="$(var.Minimum_Version)"
+      Languages="7,1,9,12,16,19,1026,1027,1028,1029,1030,1032,1034,1035,1037,1038,1041,1044,1045,1046,1048,1049,1050,1051,1053,1054,1055,1058,1061,1081,2052,2070"
+      Compressed="yes"
+      InstallScope="perMachine" InstallPrivileges="elevated"
+    />
+    <!--
+      The MajorUpgrade tag allows us to specify the relationship between our
+      version number and the one installed. The attribute Disallow="no" is
+      implied and allows major upgrades to be performed. Downgrades aren't
+      allowed by default.
+
+      The @Schedule attribute looks a little opaque.
+      Suffice it to say that it's the only option for scheduling where uninstallation of the previous version
+        and installation of the present version is _always_ going to act atomically.
+      It's a shame that you to even explicitly make that choice.
+    -->
+    <MajorUpgrade
+      Schedule="afterInstallExecute"
+      DowngradeErrorMessage="!(loc.AlreadyInstalled)"
+    />
+    <MediaTemplate EmbedCab="yes"/>
+
+    <!--
+      User interface
+    -->
+    <UIRef Id="custom_WixUI_InstallDir"/>
+    <UIRef Id="WixUI_ErrorProgressText"/>
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+
+    <!--
+      Define and schedule a "Custom Action Type 1" to ensure that IE is closed before installation.
+      Because WiX is closely tied to the MSI database format, there are multiple tags required to do this.
+      The "CustomAction" tag defines the tag itself, but doesn't sequence it;
+        it defines an entry in the "CustomAction" table.
+      The "Binary" tag describe an asset that's incorporated into the MSI but that is not an installed component.
+      The "Custom" tag defines when the action executes by defining an entry in one of the sequence tables.
+      
+      Attribute "Return" sets the "Custom Action Return Processing Options" to zero,
+        which indicates to block the installer until the action completes
+        and to treat a non-zero return value from the action as an error.
+    -->
+    <CustomAction
+        Id="Close_IE"
+        BinaryKey="installer_ca"
+        DllEntry="abp_close_applications"
+        Return="check"
+    />
+    <!--
+      Note that we're using a 32-bit custom action library for both 32- and 64-bit installers. 
+    -->
+    <Binary Id="installer_ca" SourceFile="$(var.installer_dir)\build\ia32\$(var.CA_Configuration)\installer-ca.dll"/>    
+    <InstallUISequence>
+      <!--
+        The LaunchConditions action occurs near the beginning, before any of the expensive operations.
+      -->
+      <Custom
+        Action="Close_IE"
+        After="LaunchConditions"
+      />
+    </InstallUISequence>
+
+    <!--
+      We have only a single feature, since there aren't any optional parts.
+      The display is hidden for the same reason; there's nothing to choose from.
+    -->
+    <Feature Id="ProductFeature"
+      Title="!(loc.Title)" Description="!(loc.UI_Description)"
+      Display="hidden">
+      <ComponentGroupRef Id="Installation_Folders"/>
+      <ComponentGroupRef Id="Binaries"/>
+      <ComponentGroupRef Id="HTML_Tree"/>
+      <ComponentGroupRef Id="Locale_Files"/>
+      <ComponentGroupRef Id="INI_Files"/>
+    </Feature>
+
+    <!--
+      Remove the "Modify" button from our control panel entry.
+      Since we only have a single feature, there's only a single way of installing the plugin,
+        and thus modifying the installation can't possibly do anything.
+      This is currently set by the WiXUI property WIXUI_INSTALLDIR, so it's commented out now.
+      <Property Id="ARPNOMODIFY" Value="1"/>
+     -->
+
+    <!--
+      The application data folder has to vary by operating system version.
+      With Vista and later, we have to use an application data folder suitable for low-integrity applications.
+      XP and earlier don't have UAC and we use the regular application data folder.
+    -->
+    <Property Id="LOCAL_LOW_APP_DATA_FOLDER">
+      <!-- There's no built-in property with this name, so we need to extract its value from the registry. -->
+      <RegistrySearch Id="RUMK"
+        Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+        Name="{A520A1A4-1780-4FF6-BD18-167343C5AF16}"
+        Type="raw"/>
+    </Property>
+    <SetDirectory Id="APP_DATA_FOLDER" Action="SetHTMLFOLDER1"
+      Value="[LOCAL_LOW_APP_DATA_FOLDER]">
+      <![CDATA[ VersionNT >= 600 ]]>
+    </SetDirectory>
+    <SetDirectory Id="APP_DATA_FOLDER" Action="SetHTMLFOLDER2"
+      Value="[AppDataFolder]">
+      <![CDATA[ VersionNT < 600 ]]>
+    </SetDirectory>
+
+    <!--
+      We record the locations of directories in the registry.
+      Each directory requires both a property and a component representing the registry key for that property.
+      For more explanation, see http://robmensching.com/blog/posts/2010/5/2/the-wix-toolsets-remember-property-pattern
+    -->
+    <ComponentGroup Id="Installation_Folders">
+      <ComponentRef Id="ABP_AppData_Folder.component"/>
+      <ComponentRef Id="Install_Folder.component"/>
+    </ComponentGroup>
+    <Property Id="ABP_APPDATA_FOLDER">
+      <RegistrySearch Id="Registry_Read_ABP_AppData_Folder"
+        Root="HKCU" Key="SOFTWARE\AdblockPlus"
+        Name="AppDataFolder" Type="raw"/>
+    </Property>
+    <Component Id="ABP_AppData_Folder.component" Guid="eb639a60-d713-11e2-8b8b-0800200c9a66" Directory="ABP_APPDATA_FOLDER">
+      <RegistryValue
+        Root="HKCU" Key="SOFTWARE\AdblockPlus"
+        Name="AppDataFolder" Type="string"
+        Value="[ABP_APPDATA_FOLDER]"/>
+    </Component>
+    <!--
+      Testing the 32-bit install on a 64 bit OS will cause these entries to be written under Wow6432Node.
+      It should be transparent to the application code, but in case it's not ...
+      See http://stackoverflow.com/questions/1882024/wix-will-not-add-hklm-registry-setting-during-windows-7-install
+    -->
+    <Property Id="INSTALLFOLDER">
+      <RegistrySearch Id="Registry_Read_Install_Folder"
+        Root="HKLM" Key="Software\Adblock Plus for IE\$(var.Product_Version)"
+        Name="InstallFolder" Type="raw"/>
+    </Property>
+    <Component Id="Install_Folder.component" Guid="f4e25400-d713-11e2-8b8b-0800200c9a66" Directory="INSTALLFOLDER">
+      <RegistryKey Root="HKLM" Key="Software\Adblock Plus for IE">
+        <RegistryKey Key="$(var.Product_Version)">
+          <RegistryValue
+            Name="InstallFolder" Type="string"
+            Value="[INSTALLFOLDER]"/>
+        </RegistryKey>
+      </RegistryKey>
+    </Component>
+
+
+    <!--
+      The top-level directory structure.
+    -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.Program_Files)">
+        <!--
+          INSTALLFOLDER is within ProgramFilesFolder, which is a protected directory.
+          As a result, this installer requires elevated permissions to operate.
+        -->
+        <Directory Id="INSTALLFOLDER" Name="Adblock Plus for IE">
+          <Directory Id="HTML_Folder" Name="html"></Directory>
+          <Directory Id="Locales_Folder" Name="locales"></Directory>
+        </Directory>
+        <Directory Id="APP_DATA_FOLDER">
+          <Directory Id="ABP_APPDATA_FOLDER" Name="Adblock Plus for IE"></Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <!--
+      The Binaries component group contains the DLL's.
+      64-bit versions of Windows ship with both 32-bit and 64-bit versions of Internet Explorer.
+      Each of these versions hosts only its own bit-size objects.
+      Therefore, for 64-bit platforms we must install both the 64-bit plugin as well as the 32-bit one.
+      For 32-bit platforms, we only need the 32-bit one.
+
+      The DLL images are taken directly from the build directory.
+      There's no parameter as yet for building an unsigned development version vs. a signed release version.
+
+      Note: We do not use SelfRegCost, which calls the entry point DLLRegisterServer to make registry entries.
+      See http://stackoverflow.com/questions/364187/how-do-you-register-a-win32-com-dll-file-in-wix-3
+
+      The present installer is a per-machine installer.
+      That means it writes to HKEY_LOCAL_MACHINE, so that all users on the machine will have the BHO installed.
+      It's possible to write keys to HKEY_CURRENT_USER in a situation where that's not desirable, if needed.
+    -->
+    <ComponentGroup Id="Binaries" Directory="INSTALLFOLDER">
+      <!--
+        The 32-bit version of the DLL is included in both 32- and 64-bit installers.
+        We need an explicit value for attribute @Win64 so that the ARCH argument does not override its implicit value.
+      -->
+      <Component Id="AdblockPlus32.dll" Guid="d9a35780-d712-11e2-8b8b-0800200c9a66" Win64="no">
+        <File Id="AdblockPlus32.dll" Name="AdblockPlus32.dll" Source="$(var.plugin_dir)\build\ia32\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
+          <?include dll_class.wxi ?>
+        </File>
+        <?include bho_registry_value.wxi ?>
+      </Component>
+      <!--
+        The 64-bit version of the DLL is only included in the 64-bit installer.
+        We don't really need an explicit value for attribute @Win64, but it's there for resilience.
+
+        Note that the <Class> element and the <RegistryKey> element are duplicated from the 32-bit version.
+        We use "include" directives to ensure that they are identical.
+        They have to be the same to support both the 32- and 64-bit versions of Internet Explorer on a 64-bit system.
+        IE uses the same algorithm to search for BHO regardless of platform,
+          so with two versions of IE, we need two identical registrations.
+        The 32-bit version on a 64-bit system will be registered under "Wow6432Node" translated keys,
+          while the 64-bit version will be under the keys as they appear in this source, not translated.
+        We don't need to put in the "Wow6432Node" registry key explicitly;
+          something in Windows Installer takes care of the mapping transparently.
+      -->
+      <?if $(sys.BUILDARCH)="x64"?>
+        <Component Id="AdblockPlus64.dll" Guid="ed77a2c0-d712-11e2-8b8b-0800200c9a66" Win64="yes">
+          <File Id="AdblockPlus64.dll" Name="AdblockPlus64.dll" Source="$(var.plugin_dir)\build\x64\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
+            <?include dll_class.wxi ?>
+          </File>
+          <?include bho_registry_value.wxi ?>
+        </Component>
+      <?endif?>
+
+      <!--
+        The engine must go into the same directory as the DLL, since that location is searched explicitly (and uniquely).
+      -->
+      <?if $(sys.BUILDARCH)="x86"?>
+        <Component Id="AdblockPlusEngine.exe" Guid="f45572c0-d712-11e2-8b8b-0800200c9a66" Win64="no">
+          <File Id="AdblockPlusEngine.exe" Source="$(var.plugin_dir)\build\ia32\$(var.Configuration)\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+        </Component>
+      <?elseif $(sys.BUILDARCH)="x64"?>
+        <Component Id="AdblockPlusEngine.exe" Guid="fa8d65d0-d712-11e2-8b8b-0800200c9a66" Win64="yes">
+          <File Id="AdblockPlusEngine.exe" Source="$(var.plugin_dir)\build\x64\$(var.Configuration)\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+        </Component>
+      <?endif?>
+    </ComponentGroup>
+
+    <!--
+      The HTML_Tree component group contains all the files in the HTML folder.
+      Individual file entries within a single component group must all be in the same directory.
+      Also, ComponentGroup is not a valid child of ComponentGroup, so subdirectories are linked by reference.
+    -->
+    <ComponentGroup Id="HTML_Tree">
+      <ComponentRef Id="html_static_css_firstRun.css"/>
+      <ComponentRef Id="html_static_css_settings.css"/>
+      <ComponentRef Id="html_static_img_abp.128.png"/>
+      <ComponentRef Id="html_static_img_ajax_loader.gif"/>
+      <ComponentRef Id="html_static_img_background.png"/>
+      <ComponentRef Id="html_static_img_bb_disable.png"/>
+      <ComponentRef Id="html_static_img_bb_disable_active.png"/>
+      <ComponentRef Id="html_static_img_bb_donate.png"/>
+      <ComponentRef Id="html_static_img_bb_enable.png"/>
+      <ComponentRef Id="html_static_img_bb_enable_active.png"/>
+      <ComponentRef Id="html_static_img_checkmark.png"/>
+      <ComponentRef Id="html_static_img_features_language.png"/>
+      <ComponentRef Id="html_static_img_features_adblocking.png"/>
+      <ComponentRef Id="html_static_img_social_facebook.png"/>
+      <ComponentRef Id="html_static_img_social_facebook_old.png"/>
+      <ComponentRef Id="html_static_img_social_gplus.png"/>
+      <ComponentRef Id="html_static_img_social_gplus_old.png"/>
+      <ComponentRef Id="html_static_img_social_twitter.png"/>
+      <ComponentRef Id="html_static_img_social_twitter_old.png"/>
+      <ComponentRef Id="html_static_js_firstRun.js"/>
+      <ComponentRef Id="html_static_js_IESettings.js"/>
+      <ComponentRef Id="html_static_js_ieFirstRun.js"/>
+      <ComponentRef Id="html_static_js_settings.js"/>
+      <ComponentRef Id="html_static_js_vendor_DD.belatedPNG.js"/>
+      <ComponentRef Id="html_static_js_vendor_html5shiv.js"/>
+      <ComponentRef Id="html_templates_firstRun.html"/>
+      <ComponentRef Id="html_templates_index.html"/>
+    </ComponentGroup>
+
+    <DirectoryRef Id="HTML_Folder">
+      <Directory Id="html" FileSource="$(var.plugin_dir)\html">
+        <Directory Name="static" Id="html_static">
+          <Directory Name="css" Id="html_static_css">
+            <Component Id="html_static_css_firstRun.css" Guid="facb02d0-f073-11e2-b778-0800200c9a66">
+              <File Name="firstRun.css"/>
+            </Component>
+            <Component Id="html_static_css_settings.css" Guid="07173c90-d713-11e2-8b8b-0800200c9a66">
+              <File Name="settings.css"/>
+            </Component>
+          </Directory>
+          <Directory Name="img" Id="html_static_img">
+            <Component Id="html_static_img_abp.128.png" Guid="0d86ba60-d713-11e2-8b8b-0800200c9a66">
+              <File Name="abp-128.png"/>
+            </Component>
+            <Component Id="html_static_img_ajax_loader.gif" Guid="10cdc6d0-f074-11e2-b778-0800200c9a66">
+              <File Name="ajax-loader.gif"/>
+            </Component>
+            <Component Id="html_static_img_background.png" Guid="407e5db0-d713-11e2-8b8b-0800200c9a66">
+              <File Name="background.png"/>
+            </Component>
+            <Directory Name="button-background" Id="html_static_img_bb">
+              <Component Id="html_static_img_bb_disable.png" Guid="580bb950-d713-11e2-8b8b-0800200c9a66">
+                <File Name="disable.png"/>
+              </Component>
+              <Component Id="html_static_img_bb_disable_active.png" Guid="5c0db990-d713-11e2-8b8b-0800200c9a66">
+                <File Name="disable_active.png"/>
+              </Component>
+              <Component Id="html_static_img_bb_donate.png" Guid="16c8ff00-f074-11e2-b778-0800200c9a66">
+                <File Name="donate.png"/>
+              </Component>
+              <Component Id="html_static_img_bb_enable.png" Guid="5fab52b0-d713-11e2-8b8b-0800200c9a66">
+                <File Name="enable.png"/>
+              </Component>
+              <Component Id="html_static_img_bb_enable_active.png" Guid="63efb320-d713-11e2-8b8b-0800200c9a66">
+                <File Name="enable_active.png"/>
+              </Component>
+            </Directory>
+            <Component Id="html_static_img_checkmark.png" Guid="210c1a10-f074-11e2-b778-0800200c9a66">
+              <File Name="checkmark.png"/>
+            </Component>
+            <Directory Name="features" Id="html_static_img_features">
+              <Component Id="html_static_img_features_language.png" Guid="72b8cb80-d713-11e2-8b8b-0800200c9a66">
+                <File Name="language.png"/>
+              </Component>
+              <Component Id="html_static_img_features_adblocking.png" Guid="7dd12150-d713-11e2-8b8b-0800200c9a66">
+                <File Name="adblocking.png"/>
+              </Component>
+            </Directory>
+            <Directory Name="social" Id="html_static_img_social">
+              <Component Id="html_static_img_social_facebook.png" Guid="862e7c00-d713-11e2-8b8b-0800200c9a66">
+                <File Name="facebook.png"/>
+              </Component>
+              <Component Id="html_static_img_social_facebook_old.png" Guid="26386980-f074-11e2-b778-0800200c9a66">
+                <File Name="facebook-old.png"/>
+              </Component>
+              <Component Id="html_static_img_social_gplus.png" Guid="8de48390-d713-11e2-8b8b-0800200c9a66">
+                <File Name="gplus.png"/>
+              </Component>
+              <Component Id="html_static_img_social_gplus_old.png" Guid="2c0035a0-f074-11e2-b778-0800200c9a66">
+                <File Name="gplus-old.png"/>
+              </Component>
+              <Component Id="html_static_img_social_twitter.png" Guid="948152f0-d713-11e2-8b8b-0800200c9a66">
+                <File Name="twitter.png"/>
+              </Component>
+              <Component Id="html_static_img_social_twitter_old.png" Guid="2c0035a1-f074-11e2-b778-0800200c9a66">
+                <File Name="twitter-old.png"/>
+              </Component>
+            </Directory>
+          </Directory>
+          <Directory Name="js" Id="html_static_js">
+            <Component Id="html_static_js_firstRun.js" Guid="2c0035a2-f074-11e2-b778-0800200c9a66">
+              <File Name="firstRun.js"/>
+            </Component>
+            <Component Id="html_static_js_ieFirstRun.js" Guid="f2a86685-d713-11e2-8b8b-0800200c9a66">
+              <File Name="ieFirstRun.js"/>
+            </Component>
+            <Component Id="html_static_js_IESettings.js" Guid="9e851b10-d713-11e2-8b8b-0800200c9a66">
+              <File Name="IESettings.js"/>
+            </Component>
+            <Component Id="html_static_js_settings.js" Guid="a5908ac0-d713-11e2-8b8b-0800200c9a66">
+              <File Name="settings.js"/>
+            </Component>
+            <Directory Name="vendor" Id="html_static_js_vendor">
+              <Component Id="html_static_js_vendor_DD.belatedPNG.js" Guid="ad5a4160-d713-11e2-8b8b-0800200c9a66">
+                <File Name="DD_belatedPNG.js"/>
+              </Component>
+              <Component Id="html_static_js_vendor_html5shiv.js" Guid="b3699dd0-d713-11e2-8b8b-0800200c9a66">
+                <File Name="html5shiv.js"/>
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+        <Directory Name="templates" Id="html_templates">
+          <Component Id="html_templates_firstRun.html" Guid="3d423d40-f074-11e2-b778-0800200c9a66">
+            <File Name="firstRun.html"/>
+          </Component>
+          <Component Id="html_templates_index.html" Guid="ba2259a0-d713-11e2-8b8b-0800200c9a66">
+            <File Name="index.html"/>
+          </Component>
+         </Directory>
+      </Directory>
+    </DirectoryRef>
+
+    <!--
+      Locale files
+    -->
+    <ComponentGroup Id="Locale_Files">
+        <ComponentRef Id="locales_af.ini"/>
+        <ComponentRef Id="locales_am.ini"/>
+        <ComponentRef Id="locales_ar.ini"/>
+        <ComponentRef Id="locales_as.ini"/>
+        <ComponentRef Id="locales_az.ini"/>
+        <ComponentRef Id="locales_bg.ini"/>
+        <ComponentRef Id="locales_bn_IN.ini"/>
+        <ComponentRef Id="locales_bs.ini"/>
+        <ComponentRef Id="locales_ca.ini"/>
+        <ComponentRef Id="locales_cs.ini"/>
+        <ComponentRef Id="locales_cy.ini"/>
+        <ComponentRef Id="locales_da.ini"/>
+        <ComponentRef Id="locales_de.ini"/>
+        <ComponentRef Id="locales_el.ini"/>
+        <ComponentRef Id="locales_en.ini"/>
+        <ComponentRef Id="locales_es_ES.ini"/>
+        <ComponentRef Id="locales_et.ini"/>
+        <ComponentRef Id="locales_eu.ini"/>
+        <ComponentRef Id="locales_fa.ini"/>
+        <ComponentRef Id="locales_fi.ini"/>
+        <ComponentRef Id="locales_fil.ini"/>
+        <ComponentRef Id="locales_fr.ini"/>
+        <ComponentRef Id="locales_ga_IE.ini"/>
+        <ComponentRef Id="locales_gl.ini"/>
+        <ComponentRef Id="locales_gu_IN.ini"/>
+        <ComponentRef Id="locales_he.ini"/>
+        <ComponentRef Id="locales_hi.ini"/>
+        <ComponentRef Id="locales_hr.ini"/>
+        <ComponentRef Id="locales_hu.ini"/>
+        <ComponentRef Id="locales_hy_AM.ini"/>
+        <ComponentRef Id="locales_is.ini"/>
+        <ComponentRef Id="locales_it.ini"/>
+        <ComponentRef Id="locales_ja.ini"/>
+        <ComponentRef Id="locales_ka.ini"/>
+        <ComponentRef Id="locales_kk.ini"/>
+        <ComponentRef Id="locales_km.ini"/>
+        <ComponentRef Id="locales_kn.ini"/>
+        <ComponentRef Id="locales_ko.ini"/>
+        <ComponentRef Id="locales_lb.ini"/>
+        <ComponentRef Id="locales_lt.ini"/>
+        <ComponentRef Id="locales_lv.ini"/>
+        <ComponentRef Id="locales_mi.ini"/>
+        <ComponentRef Id="locales_mk.ini"/>
+        <ComponentRef Id="locales_ml_IN.ini"/>
+        <ComponentRef Id="locales_mr.ini"/>
+        <ComponentRef Id="locales_ms.ini"/>
+        <ComponentRef Id="locales_mt.ini"/>
+        <ComponentRef Id="locales_nb.ini"/>
+        <ComponentRef Id="locales_ne_NP.ini"/>
+        <ComponentRef Id="locales_nl.ini"/>
+        <ComponentRef Id="locales_nn_NO.ini"/>
+        <ComponentRef Id="locales_or.ini"/>
+        <ComponentRef Id="locales_pa_IN.ini"/>
+        <ComponentRef Id="locales_pl.ini"/>
+        <ComponentRef Id="locales_pt_BR.ini"/>
+        <ComponentRef Id="locales_pt_PT.ini"/>
+        <ComponentRef Id="locales_ro.ini"/>
+        <ComponentRef Id="locales_ru.ini"/>
+        <ComponentRef Id="locales_si_LK.ini"/>
+        <ComponentRef Id="locales_sk.ini"/>
+        <ComponentRef Id="locales_sl.ini"/>
+        <ComponentRef Id="locales_sq.ini"/>
+        <ComponentRef Id="locales_sr_CS.ini"/>
+        <ComponentRef Id="locales_sr.ini"/>
+        <ComponentRef Id="locales_sv_SE.ini"/>
+        <ComponentRef Id="locales_ta.ini"/>
+        <ComponentRef Id="locales_te.ini"/>
+        <ComponentRef Id="locales_th.ini"/>
+        <ComponentRef Id="locales_tr.ini"/>
+        <ComponentRef Id="locales_tt_RU.ini"/>
+        <ComponentRef Id="locales_uk.ini"/>
+        <ComponentRef Id="locales_ur_PK.ini"/>
+        <ComponentRef Id="locales_uz.ini"/>
+        <ComponentRef Id="locales_vi.ini"/>
+        <ComponentRef Id="locales_xh.ini"/>
+        <ComponentRef Id="locales_zh_CN.ini"/>
+        <ComponentRef Id="locales_zh_HK.ini"/>
+        <ComponentRef Id="locales_zh_TW.ini"/>
+        <ComponentRef Id="locales_zu.ini"/>
+    </ComponentGroup>
+    <DirectoryRef Id="Locales_Folder">
+      <Directory Id="locales" FileSource="$(var.plugin_dir)\locales">
+        <Component Id="locales_af.ini" Guid="0311a948-3e76-45e8-83c0-8455fa9083b7">
+          <RemoveFile Id="af.ini" Name="af.ini" On="install"/>
+        </Component>
+        <Component Id="locales_am.ini" Guid="cca25e4e-9b74-4e99-a592-c54a310fe806">
+          <RemoveFile Id="am.ini" Name="am.ini" On="install"/>
+        </Component>
+        <Component Id="locales_ar.ini" Guid="2e25459f-e7e0-40bf-b9d2-05a60be967f9">
+          <File Name="ar.ini"/>
+        </Component>
+        <Component Id="locales_as.ini" Guid="871517f1-be55-4b8c-83b9-5da89230de6b">
+          <RemoveFile Id="as.ini" Name="as.ini" On="install"/>
+        </Component>
+        <Component Id="locales_az.ini" Guid="7039faf6-5ff6-441d-aad0-b009588f29fd">
+          <RemoveFile Id="az.ini" Name="az.ini" On="install"/>
+        </Component>
+        <Component Id="locales_bg.ini" Guid="97abd38d-969c-48d8-9a18-ccfd340c2f3f">
+          <File Name="bg.ini"/>
+        </Component>
+        <Component Id="locales_bn_IN.ini" Guid="cc42ac9c-c697-4eb2-8023-d37ebc1bac28">
+          <RemoveFile Id="bn_IN.ini" Name="bn-IN.ini" On="install"/>
+        </Component>
+        <Component Id="locales_bs.ini" Guid="16f317bb-2c93-40bc-af30-ff608738718b">
+          <RemoveFile Id="bs.ini" Name="bs.ini" On="install"/>
+        </Component>
+        <Component Id="locales_ca.ini" Guid="cc6fd89b-34f4-45c6-86c5-65ed05ddeb96">
+          <File Name="ca.ini"/>
+        </Component>
+        <Component Id="locales_cs.ini" Guid="ff15fbec-647b-4c4e-aa8d-f6315ae59cc2">
+          <File Name="cs.ini"/>
+        </Component>
+        <Component Id="locales_cy.ini" Guid="3d524ffb-1314-4ffb-81be-bb119856d5f4">
+          <RemoveFile Id="cy.ini" Name="cy.ini" On="install"/>
+        </Component>
+        <Component Id="locales_da.ini" Guid="d02413b6-ab8c-4b71-9ca2-74c978175eaf">
+          <File Name="da.ini"/>
+        </Component>
+        <Component Id="locales_de.ini" Guid="30ba6ff3-a270-4128-b879-808cea4af421">
+          <File Name="de.ini"/>
+        </Component>
+        <Component Id="locales_el.ini" Guid="b970189c-2ad8-4615-b32a-b8cdd73f3ce7">
+          <File Name="el.ini"/>
+        </Component>
+        <Component Id="locales_en.ini" Guid="c5622430-d713-11e2-8b8b-0800200c9a66">
+          <File Name="en.ini"/>
+        </Component>
+        <Component Id="locales_es_ES.ini" Guid="2acf58cf-7e1e-4f42-89c6-7018d4b92527">
+          <File Name="es-ES.ini"/>
+        </Component>
+        <Component Id="locales_et.ini" Guid="11f6ea6b-e4ac-49fa-a41d-756df8fa2c48">
+          <File Name="et.ini"/>
+        </Component>
+        <Component Id="locales_eu.ini" Guid="179abc5f-e70b-4a58-9881-7ca27bf6da47">
+          <RemoveFile Id="eu.ini" Name="eu.ini" On="install"/>
+        </Component>
+        <Component Id="locales_fa.ini" Guid="fb358e71-8843-452b-98b4-af8bb618c45b">
+          <RemoveFile Id="fa.ini" Name="fa.ini" On="install"/>
+        </Component>
+        <Component Id="locales_fi.ini" Guid="4af580a0-7c3c-4552-8cf0-7c1a65f22438">
+          <File Name="fi.ini"/>
+        </Component>
+        <Component Id="locales_fil.ini" Guid="aeece306-318f-48a1-a0ac-b94f022d3d60">
+          <File Name="fil.ini"/>
+        </Component>
+        <Component Id="locales_fr.ini" Guid="543f944a-e20b-42fc-931d-875f399fb82a">
+          <File Name="fr.ini"/>
+        </Component>
+        <Component Id="locales_ga_IE.ini" Guid="f87a10c0-4692-4a82-bdff-0d00f385dfbc">
+          <RemoveFile Id="ga_IE.ini" Name="ga-IE.ini" On="install"/>
+        </Component>
+        <Component Id="locales_gl.ini" Guid="cdbfdfd9-310b-4e5f-b00d-d462fa560bb3">
+          <RemoveFile Id="gl.ini" Name="gl.ini" On="install"/>
+        </Component>
+        <Component Id="locales_gu_IN.ini" Guid="d50bc57b-a02a-4a62-b066-2ff224cf4c9c">
+          <RemoveFile Id="gu_IN.ini" Name="gu-IN.ini" On="install"/>
+        </Component>
+        <Component Id="locales_he.ini" Guid="691a5871-71ca-48cc-9869-ec1acacda7f2">
+          <File Name="he.ini"/>
+        </Component>
+        <Component Id="locales_hi.ini" Guid="d1e62141-1c1a-45ff-9c5f-f4c11d0b04e6">
+          <File Name="hi.ini"/>
+        </Component>
+        <Component Id="locales_hr.ini" Guid="e285c729-215e-4a9c-85c5-6a45cafc850a">
+          <File Name="hr.ini"/>
+        </Component>
+        <Component Id="locales_hu.ini" Guid="7f84c5b5-b292-4444-a73a-14c86ee1e0ed">
+          <File Name="hu.ini"/>
+        </Component>
+        <Component Id="locales_hy_AM.ini" Guid="302e915a-2f2a-4492-a3d5-cdc5074d9f4b">
+          <RemoveFile Id="hy_AM.ini" Name="hy-AM.ini" On="install"/>
+        </Component>
+        <Component Id="locales_is.ini" Guid="1b44e363-ebc3-4dc0-85ff-bdd9a7e97d89">
+          <RemoveFile Id="is.ini" Name="is.ini" On="install"/>
+        </Component>
+        <Component Id="locales_it.ini" Guid="49843985-89c8-4aff-bd8e-fb5445d9b9bc">
+          <File Name="it.ini"/>
+        </Component>
+        <Component Id="locales_ja.ini" Guid="292edd8f-0f9e-4c83-8583-d6f1642e561f">
+          <File Name="ja.ini"/>
+        </Component>
+        <Component Id="locales_ka.ini" Guid="c919ef5f-d2e2-495b-a1c5-82efd67546c8">
+          <RemoveFile Id="ka.ini" Name="ka.ini" On="install"/>
+        </Component>
+        <Component Id="locales_kk.ini" Guid="c104d59d-5c7c-4375-bbd6-124a3902ce50">
+          <RemoveFile Id="kk.ini" Name="kk.ini" On="install"/>
+        </Component>
+        <Component Id="locales_km.ini" Guid="a03ba982-79ce-4da8-ab44-12a1ccf22905">
+          <RemoveFile Id="km.ini" Name="km.ini" On="install"/>
+        </Component>
+        <Component Id="locales_kn.ini" Guid="1cfb9189-fb89-4cf8-b97a-65273f2c0541">
+          <File Name="kn.ini"/>
+        </Component>
+        <Component Id="locales_ko.ini" Guid="ac35398c-b8dc-41ac-943e-28fcea7ca6f9">
+          <RemoveFile Id="ko.ini" Name="ko.ini" On="install"/>
+        </Component>
+        <Component Id="locales_lb.ini" Guid="8ef2495b-b20b-425f-b8f4-222fb168659a">
+          <RemoveFile Id="lb.ini" Name="lb.ini" On="install"/>
+        </Component>
+        <Component Id="locales_lt.ini" Guid="f72ecd23-6cd4-40cb-b068-24a4de7b4302">
+          <RemoveFile Id="lt.ini" Name="lt.ini" On="install"/>
+        </Component>
+        <Component Id="locales_lv.ini" Guid="adb820be-e1a6-416c-acc8-a6bb31c80d7a">
+          <RemoveFile Id="lv.ini" Name="lv.ini" On="install"/>
+        </Component>
+        <Component Id="locales_mi.ini" Guid="62dd48e6-cd00-4c98-9930-e260c2cc0601">
+          <RemoveFile Id="mi.ini" Name="mi.ini" On="install"/>
+        </Component>
+        <Component Id="locales_mk.ini" Guid="42b16da9-af05-4423-8a72-8492a777c63e">
+          <RemoveFile Id="mk.ini" Name="mk.ini" On="install"/>
+        </Component>
+        <Component Id="locales_ml_IN.ini" Guid="8766521a-fee3-4404-831e-c4bb44eb5e4f">
+          <RemoveFile Id="ml_IN.ini" Name="ml-IN.ini" On="install"/>
+        </Component>
+        <Component Id="locales_mr.ini" Guid="e7351e07-87fe-4185-8def-c32086a15145">
+          <File Name="mr.ini"/>
+        </Component>
+        <Component Id="locales_ms.ini" Guid="bd858ff5-269d-42d1-a482-767177097a92">
+          <File Name="ms.ini"/>
+        </Component>
+        <Component Id="locales_mt.ini" Guid="546032e9-3ffc-4e33-82ef-0d9799f10ee7">
+          <RemoveFile Id="mt.ini" Name="mt.ini" On="install"/>
+        </Component>
+        <Component Id="locales_nb.ini" Guid="1217b6c4-69c9-43aa-8949-62c4d4fcd02f">
+          <File Name="nb.ini"/>
+        </Component>
+        <Component Id="locales_ne_NP.ini" Guid="0a388fba-c446-4276-b944-a99e53e25b3b">
+          <RemoveFile Id="ne_NP.ini" Name="ne-NP.ini" On="install"/>
+        </Component>
+        <Component Id="locales_nl.ini" Guid="ef0d8100-2d49-4309-a653-a13785d9311d">
+          <File Name="nl.ini"/>
+        </Component>
+        <Component Id="locales_nn_NO.ini" Guid="08b05411-a908-4dd6-8691-13fedae92ffc">
+          <File Name="nn-NO.ini"/>
+        </Component>
+        <Component Id="locales_or.ini" Guid="b1c8d9f1-eabe-4d78-bee5-186f5ae54955">
+          <RemoveFile Id="or.ini" Name="or.ini" On="install"/>
+        </Component>
+        <Component Id="locales_pa_IN.ini" Guid="9ff0faa2-963d-4bcd-ab59-f6144cc5a465">
+          <RemoveFile Id="pa_IN.ini" Name="pa-IN.ini" On="install"/>
+        </Component>
+        <Component Id="locales_pl.ini" Guid="2b13846c-2b81-464b-995e-83df9623205b">
+          <File Name="pl.ini"/>
+        </Component>
+        <Component Id="locales_pt_BR.ini" Guid="a72846c2-e263-42a9-80bc-dc8e4a0ead76">
+          <File Name="pt-BR.ini"/>
+        </Component>
+        <Component Id="locales_pt_PT.ini" Guid="bd0e8723-772c-4d66-8afc-30cff3ba904a">
+          <File Name="pt-PT.ini"/>
+        </Component>
+        <Component Id="locales_ro.ini" Guid="83cd96c0-4edc-4fa9-9145-4c88875772ad">
+          <File Name="ro.ini"/>
+        </Component>
+        <Component Id="locales_ru.ini" Guid="d06e3490-d713-11e2-8b8b-0800200c9a66">
+          <File Name="ru.ini"/>
+        </Component>
+        <Component Id="locales_si_LK.ini" Guid="dbb7c66c-e21e-402a-9ee2-90adb51da7e8">
+          <RemoveFile Id="si_LK.ini" Name="si-LK.ini" On="install"/>
+        </Component>
+        <Component Id="locales_sk.ini" Guid="8edf0206-ccc2-4f7c-a6e8-a494646e46a9">
+          <File Name="sk.ini"/>
+        </Component>
+        <Component Id="locales_sl.ini" Guid="160bea38-36fc-4278-a5f6-5d781879b929">
+          <RemoveFile Id="sl.ini" Name="sl.ini" On="install"/>
+        </Component>
+        <Component Id="locales_sq.ini" Guid="aab46279-3ab7-4836-ba97-4e84a106b131">
+          <RemoveFile Id="sq.ini" Name="sq.ini" On="install"/>
+        </Component>
+        <Component Id="locales_sr_CS.ini" Guid="a65d66e2-68cf-4384-a306-94ed58781ac0">
+          <RemoveFile Id="sr_CS.ini" Name="sr-CS.ini" On="install"/>
+        </Component>
+        <Component Id="locales_sr.ini" Guid="4bd35f58-16bd-408c-b0d2-1e2e202e94a9">
+          <RemoveFile Id="sr.ini" Name="sr.ini" On="install"/>
+        </Component>
+        <Component Id="locales_sv_SE.ini" Guid="7f0766a9-73ce-440d-88ef-33363390e21c">
+          <File Name="sv-SE.ini"/>
+        </Component>
+        <Component Id="locales_ta.ini" Guid="b0193bef-0202-4058-9216-6e6691e7d6af">
+          <RemoveFile Id="ta.ini" Name="ta.ini" On="install"/>
+        </Component>
+        <Component Id="locales_te.ini" Guid="880aa83f-e3a4-48ea-8398-30c8a77ead6e">
+          <RemoveFile Id="te.ini" Name="te.ini" On="install"/>
+        </Component>
+        <Component Id="locales_th.ini" Guid="0fe17e7e-99a1-4355-a3eb-11cc94d2319a">
+          <File Name="th.ini"/>
+        </Component>
+        <Component Id="locales_tr.ini" Guid="5dc19107-7843-46fb-abf0-f3933e710822">
+          <File Name="tr.ini"/>
+        </Component>
+        <Component Id="locales_tt_RU.ini" Guid="6d0d3a08-fbc3-43ce-a419-1f808047ff27">
+          <RemoveFile Id="tt_RU.ini" Name="tt-RU.ini" On="install"/>
+        </Component>
+        <Component Id="locales_uk.ini" Guid="7ceda30d-cb1b-4b6c-b34d-2034b8d14229">
+          <File Name="uk.ini"/>
+        </Component>
+        <Component Id="locales_ur_PK.ini" Guid="cb57112a-200b-4789-8077-0e939924853a">
+          <File Name="ur-PK.ini"/>
+        </Component>
+        <Component Id="locales_uz.ini" Guid="e5962669-0154-48d9-bd73-de03e8b55ed4">
+          <RemoveFile Id="uz.ini" Name="uz.ini" On="install"/>
+        </Component>
+        <Component Id="locales_vi.ini" Guid="028a2383-8e89-4300-a022-9568ed914d42">
+          <RemoveFile Id="vi.ini" Name="vi.ini" On="install"/>
+        </Component>
+        <Component Id="locales_xh.ini" Guid="b7b53a80-5364-40b5-a011-fa363d446102">
+          <RemoveFile Id="xh.ini" Name="xh.ini" On="install"/>
+        </Component>
+        <Component Id="locales_zh_CN.ini" Guid="c02225f8-9b2c-4388-a977-df6cda67d836">
+          <File Name="zh-CN.ini"/>
+        </Component>
+        <Component Id="locales_zh_HK.ini" Guid="3c8050f9-fbc8-48e1-844a-46ae997da276">
+          <RemoveFile Id="zh_HK.ini" Name="zh-HK.ini" On="install"/>
+        </Component>
+        <Component Id="locales_zh_TW.ini" Guid="9281de74-822c-493c-8122-9a786a099ace">
+          <File Name="zh-TW.ini"/>
+        </Component>
+        <Component Id="locales_zu.ini" Guid="6958c098-99df-4ced-96fa-6436f934981d">
+          <RemoveFile Id="zu.ini" Name="zu.ini" On="install"/>
+        </Component>
+      </Directory>
+    </DirectoryRef>
+
+    <!--
+      INI files
+
+      The settings.ini file should not be installed this way, since it contains user-generated data.
+      A component in Windows Installer represents a fixed piece of data with the MSI, not a changing one.
+      The present method of making settings.ini a component is simply an expedient for the present,
+        not a permanent solution.
+      The correct solution requires the application to manage this file; the installer can't do it right.
+      See http://stackoverflow.com/questions/357911/manage-configuration-files-with-wix
+    -->
+    <ComponentGroup Id="INI_Files">
+      <ComponentRef Id="ini_settings.ini"/>
+    </ComponentGroup>
+    <DirectoryRef Id="ABP_APPDATA_FOLDER">
+      <Directory Id="ini" FileSource="$(var.plugin_dir)\files">
+        <Component Id="ini_settings.ini" Guid="dc30c3b0-d713-11e2-8b8b-0800200c9a66">
+          <File Name="settings.ini"/>
+        </Component>
+      </Directory>
+    </DirectoryRef>
+  </Product>
+</Wix>

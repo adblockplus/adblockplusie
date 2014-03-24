@@ -1,0 +1,46 @@
+/*!
+
+\mainpage Installer for ABP-IE Documentation
+
+The main source code for the installer uses WiX.
+WiX, however, is simply a front end to create Windows Installer assets.
+Most of the documentation needed to understand how the installer works is on MSDN, not on the WiX site.
+Unfortunately, the WiX documentation does a poor job of linking itself into MSDN.
+
+- MSDN
+  [Windows Installer] (http://msdn.microsoft.com/en-us/library/windows/desktop/cc185688%28v=vs.85%29.aspx)
+  Top page for the Windows Installer on MSDN.
+- WiX
+  [WiX Toolset] (http://wixtoolset.org/)
+  Home page.
+
+\par Internal Pages  
+
+- \subpage localization.
+  Localization of Windows Installer files is idiosyncratic at best.
+  This page surveys all the relevant data structures required for localization of the installer.
+- \subpage source_code.
+  Notes on source code organization and structure.
+  Some of this is supplementary WiX documentation, where that's lacking.   
+- \subpage build_process.
+  Largely because of localization, the build process is rather involved.
+  The page outlines the process and provides rationale for why it works this way. 
+
+\par Custom Action library
+
+The custom action library is used to ensure that IE is closed during installation.
+This prevents a reboot as part of the installation process.
+
+The library uses a number of Windows Installer database functions.
+
+- MSDN
+  [Database Functions] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa368250%28v=vs.85%29.aspx)
+- MSDN
+  [Functions Not for Use in Custom Actions] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa368612%28v=vs.85%29.aspx)
+
+\par DLL Entry Points
+
+- DllMain()
+- abp_close_applications()
+
+*/

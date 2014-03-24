@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Estonian - Estonia -->
+<WixLocalization xmlns="http://schemas.microsoft.com/wix/2006/localization"
+  Language="1061"
+  Culture="et-EE"
+>
+    <String Id="LANG">0x0425</String>
+    <String Id="CODEPAGE">1257</String>
+    <!-- WiX has no way of evaluating static string expressions at compile time -->
+    <String Id="ProductName32">Adblock Plus for IE (32-bit)</String>
+    <String Id="ProductName64">Adblock Plus for IE (32-bit and 64-bit)</String>
+    <String Id="Keywords">Installer</String>
+    <String Id="Description">Adblock Plus for IE</String>
+    <String Id="Comments">Thank you for using Adblock Plus.</String>
+    <String Id="AlreadyInstalled">A newer version of Adblock Plus for IE is already installed.</String>
+    <String Id="Title">Adblock Plus for IE</String>
+    <String Id="UI_Description">All of Adblock Plus for IE</String>
+    
+    <String Id="close_ie__dialog_unknown">IE is still running.&#13;&#10;&#13;&#10;Would you like to shut down IE in order to avoid having to reboot?</String>
+    <String Id="close_ie__dialog_part_known">Would you like the installer to close IE for you?</String>
+    <String Id="close_ie__dialog_active_retry">IE is still running. Please close it and then click OK.</String>
+    <String Id="close_ie__dialog_automatic_retry">The installer failed to close IE.&#13;&#10;&#13;&#10;Would you like try again?</String>
+</WixLocalization>

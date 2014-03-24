@@ -1,0 +1,13 @@
+; -------------------------------------------------------------------------------------------------
+; copyright notice goes here
+; -------------------------------------------------------------------------------------------------
+
+LIBRARY      "installer-library-test-customactions"
+
+EXPORTS
+; test-installer-lib-sandbox.cpp
+    sandbox
+; close_application.cpp
+    abp_close_ie
+; custom-action-fail.cpp
+    fail

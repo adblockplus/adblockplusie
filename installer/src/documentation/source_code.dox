@@ -1,0 +1,108 @@
+/*!
+
+\page source_code Source Code
+
+## Localization Source ##
+
+See \subpage localization for all the relevant MSI data structures.
+
+\par WiX `.loc` localization files
+
+- WiX
+  [WixLocalization Element] (http://wixtoolset.org/documentation/manual/v3/xsd/wixloc/wixlocalization.html)
+
+\par WiX sources for SIS strings
+
+The WiX documentation isn't always very explicit about how it maps WiX elements and attributes to MSI values.
+Most of them are in the WiX elements `Product` and `Package`.
+The documentation for `Package` elements states that it is "properties about the package to be placed in the Summary Information Stream."
+That, however, is misleading, since it's not the only source of such properties.
+  nor does quite every attribute in the element appear in the SIS.
+
+- MSDN
+  [Summary Property Descriptions] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa372049%28v=vs.85%29.aspx)
+- WiX
+  [Product Element] (http://wixtoolset.org/documentation/manual/v3/xsd/wix/product.html)
+- WiX
+  [Package Element] (http://wixtoolset.org/documentation/manual/v3/xsd/wix/package.html)
+
+This section enumerates the properties in the SIS and shows where they originate in the source code.
+They are listed in order of their property index numbers, the same order used by the `msiinfo`. 
+The properties in the SIS appear in the Control Panel tool _Programs and Features_.
+
+- **Codepage**. 
+  In the attribute `Package/@SummaryCodepage`.
+  This is the code page used to display strings in the Summary Information.
+- **Title**.
+  The fixed string "Installation Database".
+- **Subject**.
+  In the attribute `Package/@Description`.
+  Appears as the "Name" field in the tabular listing in Programs and Features.
+- **Author**.
+  In the attribute `Package/@Manufacturer`.
+  If omitted, (apparently) defaults to `Product/@Manufacturer`.
+  Appears as the "Publisher" field in the tabular listing in Programs and Features.
+  Related to this, there's a property "Manufacturer" in the installer database.
+- **Keywords**.
+  In the attribute `Package/@Keywords`.
+  Appears at the bottom of Programs and Features when the package is selected. (?)
+- **Comments**.
+  In the attribute `Package/@Comments`.
+  Appears at the bottom of Programs and Features when the package is selected.
+- **Template**. 
+  This single SIS property is the concatenation of two fields. 
+  The first is the value of the `-arch` command line option of the compiler `candle`.
+  If that's not specified, it's in `Package/@Platform` or `Package/@Platforms`.
+  The second is in `Package/@Languages`.
+- **Revision**.
+  Used to store the package GUID
+  In attribute `Package/@Id`, but is automatically generated if absent, 
+    which is the recommended usage.
+- **Last Printed**.
+  Used for administrative images.
+  Not a concern for us, but set by a tool.
+- **Create Time/Date**.
+  The linker sets this value.
+  So does the embedding tool, which is arguably a defect in the Automation interface.
+- **Last Saved Time/Date**.
+  The linker sets this value, as do the other tools that modify the MSI.
+- **Page Count**.
+  Used to store the minimum installer version required to install.
+  In the attribute `Package/@InstallerVersion`.
+- **Word Count**.
+  A bit field in attributes `Package/@ShortNames`, `Package/@Compressed`, `Package/@AdminImage`, and `Package/@InstallPrivileges`. 
+- **Creating Application**.
+  Set by the linker to "Windows Installer XML" and a version number.
+- **Security**.
+  A bit field in attribute `Package/@ReadOnly`.
+  
+\par Localization of the WiX UI extension.
+
+We are using the WiX UI extension for the installer.
+It already has localizations for many languages,
+  including most of the ones that we already support in the plugin.
+There are a few, however, that do not have localizations, yet, and we'll have to provide them.
+The source code location for these WiX localizations is `src/ext/UIExtension/wixlib`
+  with files named `WixUI_<language-code>.wxl`. 
+These lists were checked against both WiX 3.7 and WiX 3.8.
+
+The WiX UI extension DOES NOT support the following languages that we do.
+
+- fil-PH. Filipino - Phillipines.
+- kn-IN. Kanada - India.
+- mr-IN.  Maratha - India.
+- ms. Malaysian - generic.
+- nn-NO. Nynorsk - Norway.
+- ur-PK. Urdu - Pakistan.
+
+The WiX UI extension supports the following languages that we do not yet support.
+
+- kk-KZ. Kazakh - Kazakhstan.
+- ko-KR. Korean - Korea.
+- lt-LT. Lithuanian - Lithuania.
+- lv-LV. Latvian - Latvia.
+- sl-SI. Slovenian - Slovenia. 
+- sr-Latn-CS. Serbian, Latin alphabet - Serbia and Montenegro.
+- zh-HK. China - Hong Kong
+
+*/

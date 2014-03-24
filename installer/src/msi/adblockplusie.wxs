@@ -8,7 +8,9 @@
   Certain WiX elements are implemented by MSI custom actions,
     which means this source implicitly declares some insofar as the Windows Installer sees it.
   These errors are benign and can be avoided by some fiddling with the registry on the development machine.
-  See http://wix.sourceforge.net/faq.html#Error217
+  See http://blogs.msdn.com/b/heaths/archive/2007/05/31/windows-installer-errors-2738-and-2739-with-script-custom-actions.aspx
+    and http://blogs.msdn.com/b/astebner/archive/2007/06/07/3151752.aspx,
+    both taken from (must use the Wayback Machine) http://wix.sourceforge.net/faq.html#Error217 
 -->
 <!--
   These definitions enable compiling multiple versions & Product ID's from the same file.
@@ -30,6 +32,17 @@
 <?endif?>
 
 <!--
+  CA_Configuration is the Visual Studio configuration for the Custom Action library.
+  It's set to "Debug" while the installer with a CA is in development.
+  TODO. 
+    First, set this variable based on the configuration in the VS solution.
+    Second, change the default to "Release" (or perhaps an error).
+-->
+<?ifndef CA_Configuration?>
+  <?define CA_Configuration="Debug" ?>
+<?endif?>
+
+<!--
   sys.BUILDARCH is set by the command line argument '-arch'.
   The default value to "x86"
 -->
@@ -45,7 +58,19 @@
   <?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
 <?endif?>
 
+<!--
+  The current directory when the compiler runs is "installer/build/<arch>".
+  Most assets are based in the root directory, three levels up.
+  The custom action library is base in the installer directory, two levels up.
+-->
+<?define plugin_dir="..\..\.." ?>
+<?define installer_dir="..\.." ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <!--
+    The attributes 'Language' and 'Codepage' are specifications for the database only.
+    Codepage 65001 is UTF-8.
+  -->
   <Product
     Name="$(var.Product_Name)"
     Manufacturer="Eyeo GmbH"
@@ -54,12 +79,38 @@
     Id="*"
     UpgradeCode="3a8e3ab4-762d-4641-806e-2dccb953d73f">
 
+    <!--
+      Attribute @Languages
+        The list contains all the languages supported within the MSI, all but the first as embedded transforms.
+        The first language code is the language of the base MSI.
+    -->
+    <!--
+      At the present time, we are not localizing the summary information because of limitations
+        both in Windows Installer and in the tool chain.
+      At a later time, localizing this section requires setting an ANSI codepage
+        and the four attributes Keywords, Description, Comments, and Manufacturer.       
+    -->
+    <!--
+      For the present version, the following languages are omitted because the WiX UI extension has no localizations for them yet.
+      They can be added later, but the build script needs to be changed to accept arguments for the extra localization source.
+        fil-PH. Filipino - Phillipines. LCID = 1124
+        kn-IN. Kanada - India. LCID = 1099
+        mr-IN.  Maratha - India. LCID = 1102
+        ms. Malaysian - generic. LCID = 62
+        nn-NO. Nynorsk - Norway. LCID = 2068
+        ur-PK. Urdu - Pakistan. LCID = 1056
+      They are being omitted by having their decimal LCID left out of the Packages/@Languages attribute below.
+      The build system presently embeds transforms for them, but without their LCID in this list, they won't be recognized.
+      These embedded transforms, however, can be explicitly applied on the command line of msiexec.
+    -->
     <Package
-      Keywords="!(loc.Keywords)"
-      Description="!(loc.Description)"
-      Comments="!(loc.Comments)"
+      SummaryCodepage="1252"
+      Keywords="Installer, Adblock Plus"
+      Description="Adblock Plus for IE"
+      Comments="Thank you for using Adblock Plus."
+      Manufacturer="Eyeo GmbH"
       InstallerVersion="$(var.Minimum_Version)"
-      Languages="!(loc.LANG)" SummaryCodepage="!(loc.CODEPAGE)"
+      Languages="7,1,9,12,16,19,1026,1027,1028,1029,1030,1032,1034,1035,1037,1038,1041,1044,1045,1046,1048,1049,1050,1051,1053,1054,1055,1058,1061,1081,2052,2070"
       Compressed="yes"
       InstallScope="perMachine" InstallPrivileges="elevated"
     />
@@ -68,7 +119,6 @@
       version number and the one installed. The attribute Disallow="no" is
       implied and allows major upgrades to be performed. Downgrades aren't
       allowed by default.
-
 
       The @Schedule attribute looks a little opaque.
       Suffice it to say that it's the only option for scheduling where uninstallation of the previous version
@@ -87,6 +137,38 @@
     <UIRef Id="custom_WixUI_InstallDir"/>
     <UIRef Id="WixUI_ErrorProgressText"/>
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+
+    <!--
+      Define and schedule a "Custom Action Type 1" to ensure that IE is closed before installation.
+      Because WiX is closely tied to the MSI database format, there are multiple tags required to do this.
+      The "CustomAction" tag defines the tag itself, but doesn't sequence it;
+        it defines an entry in the "CustomAction" table.
+      The "Binary" tag describe an asset that's incorporated into the MSI but that is not an installed component.
+      The "Custom" tag defines when the action executes by defining an entry in one of the sequence tables.
+      
+      Attribute "Return" sets the "Custom Action Return Processing Options" to zero,
+        which indicates to block the installer until the action completes
+        and to treat a non-zero return value from the action as an error.
+    -->
+    <CustomAction
+        Id="Close_IE"
+        BinaryKey="installer_ca"
+        DllEntry="abp_close_ie"
+        Return="check"
+    />
+    <!--
+      Note that we're using a 32-bit custom action library for both 32- and 64-bit installers. 
+    -->
+    <Binary Id="installer_ca" SourceFile="$(var.installer_dir)\build\ia32\$(var.CA_Configuration)\installer-ca.dll"/>    
+    <InstallUISequence>
+      <!--
+        The LaunchConditions action occurs near the beginning, before any of the expensive operations.
+      -->
+      <Custom
+        Action="Close_IE"
+        After="LaunchConditions"
+      />
+    </InstallUISequence>
 
     <!--
       We have only a single feature, since there aren't any optional parts.
@@ -214,7 +296,7 @@
         We need an explicit value for attribute @Win64 so that the ARCH argument does not override its implicit value.
       -->
       <Component Id="AdblockPlus32.dll" Guid="d9a35780-d712-11e2-8b8b-0800200c9a66" Win64="no">
-        <File Id="AdblockPlus32.dll" Name="AdblockPlus32.dll" Source="..\build\ia32\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
+        <File Id="AdblockPlus32.dll" Name="AdblockPlus32.dll" Source="$(var.plugin_dir)\build\ia32\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
           <?include dll_class.wxi ?>
         </File>
         <?include bho_registry_value.wxi ?>
@@ -235,7 +317,7 @@
       -->
       <?if $(sys.BUILDARCH)="x64"?>
         <Component Id="AdblockPlus64.dll" Guid="ed77a2c0-d712-11e2-8b8b-0800200c9a66" Win64="yes">
-          <File Id="AdblockPlus64.dll" Name="AdblockPlus64.dll" Source="..\build\x64\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
+          <File Id="AdblockPlus64.dll" Name="AdblockPlus64.dll" Source="$(var.plugin_dir)\build\x64\$(var.Configuration)\AdblockPlus.dll" KeyPath="yes" Checksum="yes">
             <?include dll_class.wxi ?>
           </File>
           <?include bho_registry_value.wxi ?>
@@ -247,11 +329,11 @@
       -->
       <?if $(sys.BUILDARCH)="x86"?>
         <Component Id="AdblockPlusEngine.exe" Guid="f45572c0-d712-11e2-8b8b-0800200c9a66" Win64="no">
-          <File Id="AdblockPlusEngine.exe" Source="..\build\ia32\$(var.Configuration)\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+          <File Id="AdblockPlusEngine.exe" Source="$(var.plugin_dir)\build\ia32\$(var.Configuration)\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
         </Component>
       <?elseif $(sys.BUILDARCH)="x64"?>
         <Component Id="AdblockPlusEngine.exe" Guid="fa8d65d0-d712-11e2-8b8b-0800200c9a66" Win64="yes">
-          <File Id="AdblockPlusEngine.exe" Source="..\build\x64\$(var.Configuration)\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
+          <File Id="AdblockPlusEngine.exe" Source="$(var.plugin_dir)\build\x64\$(var.Configuration)\AdblockPlusEngine.exe" KeyPath="yes" Checksum="yes"/>
         </Component>
       <?endif?>
     </ComponentGroup>
@@ -292,7 +374,7 @@
     </ComponentGroup>
 
     <DirectoryRef Id="HTML_Folder">
-      <Directory Id="html" FileSource="..\html">
+      <Directory Id="html" FileSource="$(var.plugin_dir)\html">
         <Directory Name="static" Id="html_static">
           <Directory Name="css" Id="html_static_css">
             <Component Id="html_static_css_firstRun.css" Guid="facb02d0-f073-11e2-b778-0800200c9a66">
@@ -480,7 +562,7 @@
         <ComponentRef Id="locales_zu.ini"/>
     </ComponentGroup>
     <DirectoryRef Id="Locales_Folder">
-      <Directory Id="locales" FileSource="..\locales">
+      <Directory Id="locales" FileSource="$(var.plugin_dir)\locales">
         <Component Id="locales_af.ini" Guid="0311a948-3e76-45e8-83c0-8455fa9083b7">
           <RemoveFile Id="af.ini" Name="af.ini" On="install"/>
         </Component>
@@ -735,7 +817,7 @@
       <ComponentRef Id="ini_settings.ini"/>
     </ComponentGroup>
     <DirectoryRef Id="ABP_APPDATA_FOLDER">
-      <Directory Id="ini" FileSource="..\files">
+      <Directory Id="ini" FileSource="$(var.plugin_dir)\files">
         <Component Id="ini_settings.ini" Guid="dc30c3b0-d713-11e2-8b8b-0800200c9a66">
           <File Name="settings.ini"/>
         </Component>

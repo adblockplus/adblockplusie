@@ -1,0 +1,219 @@
+/*!
+
+\page localization Localization
+
+The Windows Installer originally dates from 1999, and it hasn't kept up with the times.
+Most problematic is that as of this writing [2013 Nov] it doesn't have official support for Unicode.
+Support is largely undocumented, and in any case is only partial.
+This causes all sorts of problems with modern tools, many of which default to UTF-8.
+WiX, as XML, does not exactly default to UTF-8, but it's close to it by convention.
+Some languages are Unicode-only, notably those based on Indic scripts.
+
+Overall, these limitation generate two kinds of issues.
+The first class is deficits in the shipped product.
+In short, some strings in certain languages simply cannot be localized.
+The second class is a burden on compliance testing before release.
+Unicode support is not official in Windows Installer; indeed it's only partial support at that.
+But also the WiX toolset does not provide a complete set of assurance tools,
+  even though all the necessary compiler mechanisms seem to be present.
+As a result, manual verification of localization must occur for each language.
+
+\par MSI format
+
+The format of Windows Installer affects these issues.
+While it's a proprietary format, it's not totally opaque.
+Overall, it's uses the [COM Structured Storage][structured_storage] format, 
+  which is just an archive file with an internal file system.
+In their lingo, a "storage" is a directory and "stream" is a file.
+Two important aspects of localization use mechanisms whose documentation uses these terms.
+The "Summary Information Stream" is a file that provides metadata for the installer database.
+Embedded language transforms sit in the final MSI as storages.
+Some commentary on this topic is available on Rob Mensching's blog;
+  he's the principal author of WiX and a former member of the Windows Installer team.
+- Mensching 
+  [Inside the MSI file format] (http://robmensching.com/blog/posts/2003/11/25/inside-the-msi-file-format)
+- Mensching 
+  [Inside the MSI file format, again] (http://robmensching.com/blog/posts/2004/2/10/inside-the-msi-file-format-again) 
+
+[structured_storage]: http://msdn.microsoft.com/en-us/library/aa380369%28VS.85%29.aspx 
+
+The Summary Information Stream is an important structure for two reasons.
+The first is that it needs to be localized.
+It contains the strings that appear in the Control Panel tool that lists all installed programs.
+This includes basic things like the name of the program.
+The second is that one of its fields lists the languages supported in a multiple-language installer.
+- MSDN 
+  [Summary Property Descriptions] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa372049%28v=vs.85%29.aspx)
+
+It's worth noting that these summary properties were not originally designed for installation.
+Rather, they are derived from the summary information for documents defined by the COM structured storage interface.
+The names originally used for these fields were carried over to the SIS for installers,
+    even when they didn't fit at all,
+One example is use of the page count field to represent the minimum required installer version.
+Likewise, certain fields were dropped entirely, such as "total editing time".
+- MSDN 
+  [Summary Information Property Set] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa380376%28v=vs.85%29.aspx)
+  This page is about COM Structured Storage, not Windows Installer.
+
+The tool OpenMCDF, available on sourceforge, is a .NET component to manipulate structured storage. 
+It contains a simple structured storage browser that can show if embedded transforms are present.
+- SourceForge
+  [OpenMCDF] (http://sourceforge.net/projects/openmcdf/)
+
+
+\par Installation Strings
+
+A simple MSI contains two internal files that contain localizable strings.
+- An installation database itself. 
+  This is a set of tables, some of which contain properties and UI strings.
+- The Summary Information Stream. 
+  This data appears principally in the Add/Remove Programs Menu within the Control Panel.
+We're also using embedded directories (storages) to store language-specific transforms.
+These transforms, however, are generated from simple MSI's that contain only the two files above.
+
+These two files are localized differently and have different levels of support for Unicode.
+In short, the installer database mostly supports Unicode and the SIS does not.
+Unicode is not officially supported anywhere, but it seems to work in practice for installer databases.
+The SIS is another story.
+Trying to use Unicode in the SIS leads to Windows thinking the MSI is malformed and refusing to install it.
+The SIS can be localized into many languages, but not all; see the section on code pages below.
+
+
+\par Language Identifiers
+
+Microsoft has its own system of identifying languages.
+(Could it have been otherwise?)
+A language is identified with an LCID, which variously stands for language code identifier or locale identifier.
+The inconsistency is internal to Microsoft, because it itself doesn't have a completely consistent usage of LCID.
+The earlier LCID is the one accepted by Windows system calls;
+  the later one is used for the .NET library.
+They are mostly the same, but they're not identical.
+
+Windows installer does not itself use any of the textual identifiers that are available,
+  such as ISO 693 or its IETF usage. 
+WiX has some support for textual identifiers, but doesn't document how LCID's are generated from them.
+As a result, WiX should be considered unreliable for this.
+LCID reference tables are usually specified as hexadecimal constant,
+  since the LCID itself is a bit field.
+Infuriatingly, WiX doesn't support hexadecimal integer constants,
+  requiring a conversion of the LCID to decimal.
+  
+The notion of a character set is given by a code page,
+  which is simply an assignment of character strings to glyph strings.
+It's not as simple as a character-to-glyph map,
+  since a double-byte character set (DBCS) uses an internal escape code
+  and mixes single- and double-byte characters.
+Regardless of these details, the important distinction is between the so-called "ANSI code pages" and Unicode.
+  
+- MSDN
+  [Language Identifiers] (http://msdn.microsoft.com/en-us/library/dd318691%28v=vs.85%29.aspx)
+  The format of LCID as the operating system recognizes them.
+- MSDN
+  [Language Identifier Constants and Strings] (http://msdn.microsoft.com/en-us/library/dd318693%28v=vs.85%29.aspx).
+  Note: This is for the .NET version, but contains enough information to derive the Window system call version. 
+
+
+\par Code Pages
+
+The SIS is the only place where code pages really matter, because the SIS doesn't support Unicode.
+
+Microsoft has its own system of character sets, called code pages.
+Code pages predate Unicode, and while Microsoft is shifting over to Unicode, the transition isn't complete.
+As long as the Windows Installer doesn't fully support Unicode, code pages will be relevant.
+Even afterwards, they'll remain relevant until the first working version is the oldest one requiring support.
+
+A code page specifies an encoding from byte strings to character strings.
+The details aren't particularly relevant to installation issues.
+What matters are the identifiers.
+With Unicode, you can settle on a single identifier, "UTF-8", that represents an encoding.
+Code page identifiers are 16-bit integers.
+The most common one is 1252 (Latin-1), used for English and most Western European languages.
+The code page identifier 65001 means UTF-8, but it's not universally supported.
+
+Even within the Microsoft environment, code page identifiers are not completely consistent.
+The Windows operating system accepts a basic set of code pages;
+  overall these are alphabetic writing systems.
+There are also OEM code pages and non-native code pages.
+Code pages are used by Windows for font selection (amongst other things).
+Either or both of the code page itself and the requisite display fonts might be absent on a machine.
+Furthermore, .NET introduced some others, such one for UTF-16LE, 
+  but these are only available to managed applications.
+Luckily, there don't seem to be any multiply-assigned code page identifiers.
+All this matters because various tables of code page identifiers tend not to distinguish clearly between these categories.
+Even armed with a table, the developer or a linguist should be cautious about selecting a code page.
+   
+The SIS uses, however, so-called "ANSI code pages", sometimes called "Windows code pages".
+This doesn't seem to be particularly well-defined term.
+It seems to mean "acceptable to a system call ending with A and not W",
+  but even that's not clear.
+What is clear is that even though 65001 for UTF-8 appears in some tables of ANSI code pages,
+  it isn't one insofar as Windows Installer is concerned.
+Caveat emptor, indeed.
+
+- MSDN 
+  [Code Pages] (http://msdn.microsoft.com/en-us/library/windows/desktop/dd317752%28v=vs.85%29.aspx) 
+  Commentary and historical information.
+- Wikipedia 
+  [Code page] (http://en.wikipedia.org/wiki/Code_page) 
+  Do not take as authoritative, but nevertheless useful for understanding some things you might see elsewhere. 
+- MSDN
+  [Code Page Identifiers] (http://msdn.microsoft.com/en-us/library/dd317756%28VS.85%29.aspx)
+- Heath Stewart's blog
+  [MSI Databases and Code Pages] (http://blogs.msdn.com/b/heaths/archive/2005/10/05/msi-databases-and-code-pages.aspx)
+  Explains how older tools dealt with this issue; WiX is much easier.
+  Contains some useful background information. 
+- Mailing list wix-users
+  [Build time selection of codepage...] (http://comments.gmane.org/gmane.comp.windows.devel.wix.user/44388)
+  One developer decided not to localize the SIS at all. 
+- [Character Sets And Code Pages At The Push Of A Button] (http://www.i18nguy.com/unicode/codepages.html) 
+  A wealth of information about the specific code page and other encodings.
+  Hopefully we never need to dig this far in.  
+
+
+\par Multiple-language Installers
+
+The Windows Installer does not have good mechanisms for multiple languages.
+Each installation package is a single-language installer at the time of installation.
+In some situations it's feasible to simply ship out single-language installers,
+  such as internal deployment within a multinational company.
+In others, where multiple languages are required, this leads to bloat because of duplication of installation assets.
+
+The documented way to support this situation is to deliver two assets:
+  (1) a basic MSI and (2) a transform (MST) that changes the language of the MSI.
+There's syntax on the `msiexec` command line to apply a transform before installation.
+For consumer software, this is too much, so people started using an installation driver executable.
+This executable would typically present a menu for the locale,
+  or sometimes infer it from the environment.
+After selecting a locale, it would select and apply an appropriate transform.
+This is the documented way of doing things. 
+
+There is, however, an undocumented way to automatically apply a transform.
+The Summary Information has a property called `Template` that contains a list of languages supported.
+These languages are specified by a language identifer (LCID), a decimal integer,
+  whose sublanguage may either be generic (zero) or specific.
+For example, 1033 is US English.
+The first (or only) language on the list specifies the language of the non-transformed installation database.
+Each subsequent identifier specifies an additional language.
+The MSI must contain an embedded transform for each additional language.
+(If it doens't, Windows Installer throws up an error message and aborts installation.)
+An embedded transform is an MST file in a substorage (directory) whose name is the decimal LCID.
+Windows Installer checks the language list before installation proper begins to determine the most appropriate language.
+If finds one that's not first on the list, it applies its embedded transform before installation proper begins.
+Otherwise it uses the installer database as-is, without any transformation.
+
+- installsite.org
+  [Multi-Language MSI Packages without Setup.exe Launcher] (http://www.installsite.org/pages/en/msi/articles/embeddedlang/)  
+  The original page that documents the automatic application of embedded language transforms.
+  First written by Andreas Kerl at Microsoft Germany and then translated into English.
+- MSDN
+  [Template Summary property] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa372070%28v=vs.85%29.aspx)
+  Documents the format of the Template property in the SIS.
+  From this page: "Merge Modules are the only packages that may have multiple languages."
+  Contrary to this quotation, MSI files are also allowed to have multiple languages, although such support is undocumented.       
+- MSDN
+  [Embedded Transforms] (http://msdn.microsoft.com/en-us/library/windows/desktop/aa368347%28v=vs.85%29.aspx)
+  This page not only isn't very informative, it's also slightly wrong.
+  There's an implication that an embedded transform is stored as a file, which is only sort-of right;
+    the actual mechanism is as a substorage (directory).
+  
+*/
