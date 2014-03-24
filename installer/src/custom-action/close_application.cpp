@@ -23,7 +23,6 @@ class IE_Closer
 
   static const wchar_t * ie_names[] ;
   static const wchar_t * engine_names[] ;
-  //Process_Closer iec( snapshot, IE_names, 2 ) ;
 
 public:
   IE_Closer()
@@ -132,7 +131,7 @@ abp_close_ie( MSIHANDLE session_handle )
     IE_Closer iec ;
 
     /*
-     * We take the short path through this function if IE is not running at the outset.
+     * We take the short path through this function if neither IE nor engine is not running at the outset.
      */
     if ( ! iec.is_running() )
     {
@@ -160,7 +159,7 @@ abp_close_ie( MSIHANDLE session_handle )
       allow = success,	  // Allow reboot. 
       passive = abort,	  // Passively avoid reboot, that is, don't try to close IE.
     };
-    Policy_State state = not_known;
+    Policy_State state ;
 
     /*
      * Use the AVOIDREBOOT property, if present, to set an initial state.

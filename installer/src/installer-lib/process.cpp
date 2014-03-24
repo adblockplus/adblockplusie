@@ -62,7 +62,7 @@ int wcscmpi( const wchar_t * s1, const wchar_t * s2 )
 {
   // Note: Equality of character sequences is case-insensitive in all predicates below.
   // Loop invariant: s1[0..j) == s2[0..j)
-  const size_t LIMIT( 4294967295 ) ; // Runaway limit of 2^32 - 1 should be acceptably long.
+  const size_t LIMIT( 65535 ) ; // Runaway limit of 2^16 - 1 should be acceptably long.
   for ( size_t j = 0 ; j < LIMIT ; ++j )
   {
     wchar_t c1 = towupper( *s1++ ) ;
