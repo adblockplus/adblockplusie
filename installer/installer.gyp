@@ -717,13 +717,14 @@
     'type': 'static_library',
     'sources': 
     [
-	  'src/installer-lib/custom-i18n.h',
-	  'src/installer-lib/custom-i18n.wxi',
+      'src/installer-lib/custom-i18n.h',
+      'src/installer-lib/custom-i18n.wxi',
       'src/installer-lib/database.cpp', 
       'src/installer-lib/database.h',
       'src/installer-lib/DLL.cpp', 
       'src/installer-lib/DLL.h', 
-      'src/installer-lib/handle.h', 
+      'src/installer-lib/handle.h',
+      'src/installer-lib/installer-lib.h',
       'src/installer-lib/interaction.cpp', 
       'src/installer-lib/interaction.h',
       'src/installer-lib/process.cpp', 
@@ -875,6 +876,7 @@
 	'sources':
 	[
 	  'src/installer-lib/test/database_test.cpp',
+	  'src/installer-lib/test/exception_test.cpp',
 	  'src/installer-lib/test/process_test.cpp',
 	  'src/installer-lib/test/property_test.cpp',
 	  'src/installer-lib/test/record_test.cpp',

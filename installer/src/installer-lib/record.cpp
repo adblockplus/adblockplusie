@@ -2,6 +2,7 @@
  * \file record.cpp Implementation of Record class.
  */
 
+#include "installer-lib.h"
 #include "record.h"
 #include "msiquery.h"
 
@@ -13,7 +14,7 @@ Record::Record( unsigned int n_fields )
   _handle = MsiCreateRecord( n_fields ) ;
   if ( ! _handle )
   {
-    throw std::runtime_error( "Failed to create record" ) ;
+    throw windows_api_error( "MsiCreateRecord", 0 ) ;
   }
 }
 
@@ -51,8 +52,8 @@ void Record::assign_string( unsigned int field_index, const wchar_t *value )
  */
 std::wstring Record::value_string( unsigned int field_index )
 {
-  static wchar_t initial_buffer[ 256 ] = L"" ;
-  DWORD length = 255 ; // one less than the buffer length to hold a terminating null character
+  static wchar_t initial_buffer[ 1024 ] = L"" ;
+  DWORD length = 1023 ; // one less than the buffer length to hold a terminating null character
   UINT x = MsiRecordGetStringW( _handle, field_index, initial_buffer, & length ) ;
   if ( x == ERROR_SUCCESS )
   {
@@ -61,9 +62,13 @@ std::wstring Record::value_string( unsigned int field_index )
   if ( x == ERROR_MORE_DATA )
   {
     // Future: handle longer strings.
-    throw std::runtime_error( "Record strings longer than 255 not supported yet" ) ;
+    /*
+     * The present custom action only uses this function for strings that appear in dialog boxes.
+     * A thousand characters is about a dozen lines of text, which is far more than enough.
+     */
+    throw not_yet_supported( "retrieving string values longer than 1023 from a record" ) ;
   }
-  throw std::runtime_error( "Error retrieving string from record" ) ;
+  throw windows_api_error( "MsiRecordGetStringW", x ) ;
 }
 
 size_t Record::n_fields() const
@@ -71,7 +76,7 @@ size_t Record::n_fields() const
    unsigned int x = MsiRecordGetFieldCount( _handle ) ;
    if ( x == 0xFFFFFFFF )
    {
-     throw std::runtime_error( "Invalid handle" ) ;
+     throw windows_api_error( "MsiRecordGetFieldCount", x, "invalid handle" ) ;
    }
    return x ;
 }
