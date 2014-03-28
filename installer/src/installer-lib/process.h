@@ -403,12 +403,34 @@ typedef enum
 template< class F >
 struct ew_data
 {
+  /**
+   * Function to be applied to each enumerated window.
+   */
   F & f ;
 
+  /**
+   * Completion status of the enumeration.
+   */
   enumerate_windows_state status ;
 
+  /**
+   * An exception to be transported across the callback.
+   *
+   * The enumerator and the callback are not guaranteed to share a call stack,
+   *   nor need they even share compatible exception conventions,
+   *   and might not even be in the same thread.
+   * Thus, if the applied function throws an exception, 
+   *   we catch it in the callback and re-throw it in the enumerator.
+   * This member holds such an exception.
+   *
+   * This member holds an exception only if 'status' has the value 'exception'.
+   * Otherwise it's a null pointer.
+   */
   std::unique_ptr< std::exception > ee ;
 
+  /**
+   * Ordinary constructor.
+   */
   ew_data( F & f )
     : f( f ), status( started )
   {}
@@ -416,12 +438,19 @@ struct ew_data
 
 /**
  * Callback function for EnumWindows.
+ *
+ * This function provides two standard behaviors.
+ * It records early termination of the enumeration, should that happen by the applied function returning false.
+ * It captures any exception thrown for transport back to the enumerator.
  */
 template< class F >
 BOOL CALLBACK enumeration_callback( HWND window, LPARAM x )
 {
   // LPARAM is always the same size as a pointer
   ew_data< F > * data = reinterpret_cast< ew_data< F > * >( x ) ;
+  /*
+   * Top-level try statement prevents exception from propagating back to system.
+   */
   try 
   {
     bool r = data -> f( window ) ;
@@ -439,10 +468,10 @@ BOOL CALLBACK enumeration_callback( HWND window, LPARAM x )
   }
   catch ( ... )
   {
+    data -> ee = std::unique_ptr< std::exception >() ;
     data -> status = exception ;
     return FALSE ;
   }
-  return TRUE ;
 }
 
 /**

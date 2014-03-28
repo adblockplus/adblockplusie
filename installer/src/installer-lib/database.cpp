@@ -14,11 +14,11 @@ msi_handle Database::open_view( const wchar_t * query )
   UINT x = MsiDatabaseOpenView( handle, query, & view_handle ) ;
   if ( x == ERROR_BAD_QUERY_SYNTAX )
   {
-    throw std::runtime_error( "Bad MSI query syntax" ) ;
+    throw windows_api_error( "MsiDatabaseOpenView", "ERROR_BAD_QUERY_SYNTAX" ) ;
   }
   else if ( x == ERROR_INVALID_HANDLE )
   {
-    throw std::runtime_error( "Invalid handle" ) ;
+    throw windows_api_error( "MsiDatabaseOpenView", "ERROR_INVALID_HANDLE" ) ;
   }
   return msi_handle( view_handle ) ;
 }
@@ -39,7 +39,7 @@ msi_handle get_active_database( Immediate_Session & session )
   MSIHANDLE h( MsiGetActiveDatabase( session.handle ) ) ;
   if ( h == 0 )
   {
-    throw std::runtime_error( "Failed to retrieve active databases" ) ;
+    throw windows_api_error( "MsiGetActiveDatabase", 0 ) ;
   }
   return msi_handle( h ) ;
 }
@@ -64,7 +64,7 @@ void view_first_body( UINT x )
 {
   if ( x != ERROR_SUCCESS )
   {
-    throw std::runtime_error( "MsiViewExecute call failed" ) ;
+    throw windows_api_error( "MsiViewExecute", x ) ;
   }
 }
 
@@ -92,6 +92,6 @@ Record View::next()
   {
     return Record( msi_handle( h ) ) ;
   }
-  throw std::runtime_error( "Error fetch record from view" ) ;
+  throw windows_api_error( "MsiViewFetch", x ) ;
 }
 

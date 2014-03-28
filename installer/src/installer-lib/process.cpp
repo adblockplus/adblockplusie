@@ -4,6 +4,7 @@
 // <thread> is C++11, but implemented in VS2012
 #include <thread>
 
+#include "installer-lib.h"
 #include "process.h"
 
 //-------------------------------------------------------
@@ -149,7 +150,7 @@ DWORD creator_process( HWND window )
   {
     // Assert GetWindowThreadProcessId returned an error
     // If the window handle is invalid, we end up here.
-    throw std::runtime_error( "" ) ;
+    throw windows_api_error( "GetWindowThreadProcessId", r ) ;
   }
   return pid ;
 }
