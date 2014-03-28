@@ -13,6 +13,16 @@
   'variables': 
   {
     #
+	# Architecture specification
+	# -- WiX uses {x86,x64}. VS uses {ia32,x64}
+	#
+	'conditions' :
+	[
+	  [ 'target_arch=="ia32"', { 'candle_arch': 'x86' } ],
+	  [ 'target_arch=="x64"', { 'candle_arch': 'x64' } ]
+	],
+
+    #
     # Build directories, both common and architecture-specific
     # 
     'build_dir_arch': 'build/<(target_arch)',
@@ -161,7 +171,7 @@
         '<(installer_object_file)'
       ],
       'action':
-        [ 'candle -nologo -dNoDefault -dVersion=91.0 -dConfiguration=Release ', '-out', '<@(_outputs)', '<(installer_source_top_file)' ]
+        [ 'candle -nologo -arch <(candle_arch) -dNoDefault -dVersion=91.0 -dConfiguration=Release', '-out', '<@(_outputs)', '<(installer_source_top_file)' ]
     } ]
   },
 

@@ -10,7 +10,28 @@
 #define WM_UPDATE_CHECK_ERROR WM_APP+2
 #define WM_DOWNLOADING_UPDATE WM_APP+3
 
+//
+// Application Package Authority.
+//
+
+#define SECURITY_APP_PACKAGE_AUTHORITY              {0,0,0,0,0,15}
+
+#define SECURITY_APP_PACKAGE_BASE_RID               (0x00000002L)
+#define SECURITY_BUILTIN_APP_PACKAGE_RID_COUNT      (2L)
+#define SECURITY_APP_PACKAGE_RID_COUNT              (8L)
+#define SECURITY_CAPABILITY_BASE_RID                (0x00000003L)
+#define SECURITY_BUILTIN_CAPABILITY_RID_COUNT       (2L)
+#define SECURITY_CAPABILITY_RID_COUNT               (5L)
+
+//
+// Built-in Packages.
+//
+
+#define SECURITY_BUILTIN_PACKAGE_ANY_PACKAGE        (0x00000001L)
+
+
 bool IsWindowsVistaOrLater();
+bool IsAppContainersSupported();
 
 std::string ToUtf8String(const std::wstring& str);
 std::wstring ToUtf16String(const std::string& str);

@@ -8,11 +8,7 @@
 #include "Communication.h"
 #include "Utils.h"
 
-#ifndef SECURITY_APP_PACKAGE_AUTHORITY
-#define SECURITY_APP_PACKAGE_AUTHORITY              {0,0,0,0,0,15}
-#endif
 
-std::wstring Communication::browserSID;
 
 namespace
 {
@@ -56,12 +52,11 @@ namespace
     return sid;
   }
 
-  std::auto_ptr<SECURITY_DESCRIPTOR> CreateObjectSecurityDescriptor(PSID logonSid)
+  // Creates a security descriptor: 
+  // Allows ALL access to Logon SID and to all app containers in DACL.
+  // Sets Low Integrity in SACL.
+  std::auto_ptr<SECURITY_DESCRIPTOR> CreateSecurityDescriptor(PSID logonSid)
   {
-    PSID browserSid = 0;
-    std::tr1::shared_ptr<SID> sharedBrowserSid(reinterpret_cast<SID*>(browserSid), FreeSid); // Just to simplify cleanup
-    ConvertStringSidToSid(Communication::browserSID.c_str(), &browserSid);
-
     EXPLICIT_ACCESSW explicitAccess[2] = {};
 
     explicitAccess[0].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
@@ -71,24 +66,64 @@ namespace
     explicitAccess[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
     explicitAccess[0].Trustee.ptstrName  = static_cast<LPWSTR>(logonSid);
 
-    explicitAccess[1].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
-    explicitAccess[1].grfAccessMode = SET_ACCESS;
-    explicitAccess[1].grfInheritance= NO_INHERITANCE;
-    explicitAccess[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
-    explicitAccess[1].Trustee.TrusteeType = TRUSTEE_IS_GROUP;
-    explicitAccess[1].Trustee.ptstrName = static_cast<LPWSTR>(browserSid);
+    std::tr1::shared_ptr<SID> sharedAllAppContainersSid;
+    // TODO: Would be better to detect if AppContainers are supported instead of checking the Windows version
+    bool isAppContainersSupported = IsAppContainersSupported();
+    if (isAppContainersSupported)
+    {
+      // Create a well-known SID for the all appcontainers group.
+      // We need to allow access to all AppContainers, since, apparently,
+      // giving access to specific AppContainer (for example AppContainer of IE) 
+      // tricks Windows into thinking that token is IN AppContainer. 
+      // Which blocks all the calls from outside, making it impossible to communicate
+      // with the engine when IE is launched with different security settings.
+      PSID allAppContainersSid = 0;
+      SID_IDENTIFIER_AUTHORITY applicationAuthority = SECURITY_APP_PACKAGE_AUTHORITY;
 
+      AllocateAndInitializeSid(&applicationAuthority, 
+              SECURITY_BUILTIN_APP_PACKAGE_RID_COUNT,
+              SECURITY_APP_PACKAGE_BASE_RID,
+              SECURITY_BUILTIN_PACKAGE_ANY_PACKAGE,
+              0, 0, 0, 0, 0, 0,
+              &allAppContainersSid);
+      sharedAllAppContainersSid.reset(static_cast<SID*>(allAppContainersSid), FreeSid); // Just to simplify cleanup
+
+      explicitAccess[1].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
+      explicitAccess[1].grfAccessMode = SET_ACCESS;
+      explicitAccess[1].grfInheritance= NO_INHERITANCE;
+      explicitAccess[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+      explicitAccess[1].Trustee.TrusteeType = TRUSTEE_IS_GROUP;
+      explicitAccess[1].Trustee.ptstrName = static_cast<LPWSTR>(allAppContainersSid);
+    }
     PACL acl = 0;
-    std::tr1::shared_ptr<ACL> sharedAcl(acl, FreeSid); // Just to simplify cleanup
-    if (SetEntriesInAcl(2, explicitAccess, 0, &acl) != ERROR_SUCCESS)
+    if (SetEntriesInAcl(isAppContainersSupported ? 2 : 1, explicitAccess, 0, &acl) != ERROR_SUCCESS)
       return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
+    std::tr1::shared_ptr<ACL> sharedAcl(static_cast<ACL*>(acl), LocalFree); // Just to simplify cleanup
 
-    std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor(new SECURITY_DESCRIPTOR[SECURITY_DESCRIPTOR_MIN_LENGTH]);
+    std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor((SECURITY_DESCRIPTOR*)new char[SECURITY_DESCRIPTOR_MIN_LENGTH]);
     if (!InitializeSecurityDescriptor(securityDescriptor.get(), SECURITY_DESCRIPTOR_REVISION)) 
       return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
 
     if (!SetSecurityDescriptorDacl(securityDescriptor.get(), TRUE, acl, FALSE))
       return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
+
+    // Create a dummy security descriptor with low integrirty preset and copy its SACL into ours
+    LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
+    PSECURITY_DESCRIPTOR dummySecurityDescriptorLow;
+    ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1, &dummySecurityDescriptorLow, 0);
+    std::tr1::shared_ptr<SECURITY_DESCRIPTOR> sharedDummySecurityDescriptor(static_cast<SECURITY_DESCRIPTOR*>(dummySecurityDescriptorLow), LocalFree); // Just to simplify cleanup
+    BOOL saclPresent = FALSE;
+    BOOL saclDefaulted = FALSE;
+    PACL sacl;
+    GetSecurityDescriptorSacl(dummySecurityDescriptorLow, &saclPresent, &sacl, &saclDefaulted); 
+    if (saclPresent)
+    {
+      if (!SetSecurityDescriptorSacl(securityDescriptor.get(), TRUE, sacl, FALSE))
+      {
+        DWORD err = GetLastError();
+        return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
+      }
+    }
 
     return securityDescriptor;
   }
@@ -146,27 +181,18 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
 
     std::tr1::shared_ptr<SECURITY_DESCRIPTOR> sharedSecurityDescriptor; // Just to simplify cleanup
 
-    const bool inAppContainer = !browserSID.empty();
-    if (inAppContainer)
-    {
-      AutoHandle token;
-      OpenProcessToken(GetCurrentProcess(), TOKEN_READ, token);
-      std::auto_ptr<SID> logonSid = GetLogonSid(token);
-      std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor = CreateObjectSecurityDescriptor(logonSid.get());
-      securityAttributes.lpSecurityDescriptor = securityDescriptor.release();
-      sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor));
-    }
-    else if (IsWindowsVistaOrLater())
-    {
-      // Low mandatory label. See http://msdn.microsoft.com/en-us/library/bb625958.aspx
-      LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
-      ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1,
-        &securityAttributes.lpSecurityDescriptor, 0);
-      sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor), LocalFree);
-    }
+    AutoHandle token;
+    OpenProcessToken(GetCurrentProcess(), TOKEN_READ, token);
+    std::auto_ptr<SID> logonSid = GetLogonSid(token);
+    // Create a SECURITY_DESCRIPTOR that has both Low Integrity and allows access to all AppContainers
+    // This is needed since IE likes to jump out of Enhanced Protected Mode for specific pages (bing.com)
+    std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor = CreateSecurityDescriptor(logonSid.get());
+    securityAttributes.lpSecurityDescriptor = securityDescriptor.release();
+    sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor));
 
     pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
       PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
+
   }
   else
   {
