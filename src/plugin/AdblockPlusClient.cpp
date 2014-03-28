@@ -44,21 +44,30 @@ namespace
     // Running inside AppContainer?
     if (acs != NULL && acs->TokenAppContainer != NULL)
     {
-      // Launch with default security. Registry entry will eat the user prompt
+      // We need to break out from AppContainer. Launch with default security - registry entry will eat the user prompt
       // See http://msdn.microsoft.com/en-us/library/bb250462(v=vs.85).aspx#wpm_elebp
-      LPWSTR stringSid;
-      ConvertSidToStringSidW(acs->TokenAppContainer, &stringSid);
-      params.Append(L" ");
-      params.Append(stringSid);
-      LocalFree(stringSid);
       createProcRes = CreateProcessW(engineExecutablePath.c_str(), params.GetBuffer(params.GetLength() + 1),
                               0, 0, false, 0, 0, 0, (STARTUPINFOW*)&startupInfo, &processInformation);
     }
     else
     {
-      // Launch with the same security token (Low Integrity) explicitly
+      // Launch with Low Integrity explicitly
       HANDLE newToken;
       DuplicateTokenEx(token, 0, 0, SecurityImpersonation, TokenPrimary, &newToken);
+
+      PSID integritySid = 0;
+      ConvertStringSidToSid(L"S-1-16-4096", &integritySid);
+      std::tr1::shared_ptr<SID> sharedIntegritySid(static_cast<SID*>(integritySid), FreeSid); // Just to simplify cleanup
+
+      TOKEN_MANDATORY_LABEL tml = {};
+      tml.Label.Attributes = SE_GROUP_INTEGRITY;
+      tml.Label.Sid = integritySid;
+
+      // Set the process integrity level
+      SetTokenInformation(newToken, TokenIntegrityLevel, &tml, sizeof(TOKEN_MANDATORY_LABEL) + GetLengthSid(integritySid));
+
+      STARTUPINFO startupInfo = {};
+      PROCESS_INFORMATION processInformation = {};
 
       createProcRes = CreateProcessAsUserW(newToken, engineExecutablePath.c_str(), params.GetBuffer(params.GetLength() + 1),
                               0, 0, false, 0, 0, 0, (STARTUPINFOW*)&startupInfo, &processInformation);
