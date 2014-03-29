@@ -8,39 +8,6 @@
 #include "process.h"
 
 //-------------------------------------------------------
-// Windows_Handle
-//-------------------------------------------------------
-Windows_Handle::Windows_Handle( HANDLE h ) 
-  : handle( h ) 
-{
-  validate_handle() ;
-}
-
-Windows_Handle::~Windows_Handle()
-{
-  CloseHandle( handle ) ;
-}
-
-void Windows_Handle::operator=( HANDLE h )
-{
-  this -> ~Windows_Handle() ;
-  handle = h ;
-  validate_handle() ;
-}
-
-void Windows_Handle::validate_handle()
-{
-  if ( handle == INVALID_HANDLE_VALUE )
-  {
-    // TODO: This code really deserves use of a proper exception class that packages 
-    // Windows API errors consistently.
-    char tmp[256];
-    sprintf_s(tmp, "Invalid handle. Last error: %d", GetLastError());
-    throw std::runtime_error( tmp ) ;
-  }
-}
-
-//-------------------------------------------------------
 // process_by_name_CI
 //-------------------------------------------------------
 process_by_name_CI::process_by_name_CI( const wchar_t * name )

@@ -5,6 +5,8 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include "handle.h"
+
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -13,71 +15,6 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 
-//-------------------------------------------------------
-// Windows_Handle
-//-------------------------------------------------------
-/**
- * A handle to some Windows platform resource. 
- *
- * Note, this is not the same as a Windows Installer handle (MSIHANDLE).
- * The two handles have different underlying types and use different functions to close.
- */
-class Windows_Handle
-{
-public:
-  /**
-   * Ordinary constructor.
-   *
-   * Validates argument against INVALID_HANDLE_VALUE. No other checks performed.
-   */
-  Windows_Handle( HANDLE h ) ;
-
-  /**
-   * Destructor
-   */
-  ~Windows_Handle() ;
-
-  /**
-   * Conversion operator to underlying HANDLE.
-   */
-  operator HANDLE() const { return handle ; } ;  
-
-  /**
-   * Raw handle assignment.
-   *
-   * This is equivalent to destroying the old object and constructing a new one in its place.
-   * In C++11 this would be handled by the move constructor on an rvalue reference.
-   */
-  void operator=( HANDLE h ) ;
-
-private:
-  /**
-   * \invariant The handle is an open handle to some system resource.
-   */
-  HANDLE handle ;
-
-  /**
-   * Validation function for the handle. Invoked at both construction and assignment.
-   */
-  void validate_handle() ;
-
-  /**
-   * Copy constructor declared private and not defined.
-   *
-   * \par Implementation
-   *   Add "= delete" for C++11.
-   */
-  Windows_Handle( const Windows_Handle & ) ;
-
-  /**
-   * Copy assignment declared private and not defined.
-   *
-   * \par Implementation
-   *   Add "= delete" for C++11.
-   */
-  Windows_Handle operator=( const Windows_Handle & ) ;
-
-};
 
 //-------------------------------------------------------
 // file_name_set: case-insensitive wide-string set
