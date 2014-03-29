@@ -69,7 +69,7 @@ struct Allow_Null
 } ;
 
 /**
- * Policy class that does not close a file handle when it goes out of scope
+ * Policy class that does not close a handle at all.
  */
 template< class T >
 class No_Destruction
@@ -79,7 +79,7 @@ public:
 } ;
 
 /**
- * Policy class that does not close a file handle when it goes out of scope
+ * Policy class that closes an MSI handle when it goes out of scope.
  */
 template< class T >
 class MSI_Generic_Destruction
@@ -88,6 +88,19 @@ public:
   inline static void close( T handle )
   {
     MsiCloseHandle( handle ) ;
+  } ;
+} ;
+
+/**
+ * Policy class that closes a Windows handle when it goes out of scope.
+ */
+template< class T >
+class Windows_Generic_Destruction
+{
+public:
+  inline static void close( T handle )
+  {
+    CloseHandle( handle ) ;
   } ;
 } ;
 
@@ -148,6 +161,41 @@ template<
 class handle
   : public handle_raw< T >
 {
+  /**
+   * Copy constructor prohibited.
+   *
+   * This class represents an external resource and is responsible for its lifecycle.
+   * As such, the semantics here require a one-to-one match between instances and resource.
+   * Copy construction violates these semantics.
+   *
+   * \par Implementation
+   *   Currently, declared private and not defined.
+   *   Add "= delete" for C++11.
+   */
+  handle( handle & ) ;
+
+  /**
+   * Copy assignment not implemented.
+   *
+   * It's not used anywhere yet.
+   *
+   * \par Implementation
+   *   Currently, declared private and not defined.
+   */
+  handle operator=( const handle & ) ;
+
+  /**
+   * Validate initial handle values, both for construction and reinitialization assignment.
+   */
+  T validate_handle( T handle )
+  {
+    if ( Null_Policy< T >::prohibited_from_outside() && handle == 0 )
+    {
+      throw null_handle_error() ;
+    }
+    return handle ;
+  }
+
 protected:
   /**
    * Tag class for null record constructor
@@ -176,13 +224,21 @@ public:
    *
    * A check for a non-zero handle compiles in conditionally based on the Null_Policy.
    */
-  handle( T _handle )
-    : handle_raw( _handle )
+  handle( T handle )
+    : handle_raw( validate_handle( handle ) )
+  {}
+
+  /**
+   * Reinitialization Assignment.
+   *
+   * If we had C++11 move constructors, we wouldn't need this, since this acts exactly as construct-plus-move would.
+   */
+  handle & operator=( T handle )
   {
-    if ( Null_Policy< T >::prohibited_from_outside() && _handle == 0 )
-    {
-      throw null_handle_error() ;
-    }
+    validate_handle( handle ) ;
+    this -> ~handle() ;
+    _handle = handle ;
+    return * this ;
   }
 
   /**
@@ -199,5 +255,10 @@ public:
   }
 
 } ;
+
+//-------------------------------------------------------
+// Common instantiations of handle
+//-------------------------------------------------------
+typedef handle< HANDLE, Disallow_Null, Windows_Generic_Destruction > Windows_Handle ;
 
 #endif
