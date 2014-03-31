@@ -801,7 +801,7 @@
         '<(build_dir_arch)/test-installer-lib.wixobj'
       ],
       'action':
-        [ 'candle -nologo -dNoDefault ', '-out', '<@(_outputs)', '<@(_inputs)' ]
+        [ 'candle -nologo -arch <(candle_arch) -dNoDefault ', '-out', '<@(_outputs)', '<@(_inputs)' ]
     } ]
   },
 

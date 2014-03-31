@@ -11,6 +11,11 @@
 #include "interaction.h"
 #include "custom-i18n.h"
 
+const wchar_t * ie_names[] = { L"IExplore.exe" } ;
+const wchar_t * engine_names[] = { L"AdblockPlusEngine.exe" } ;
+const wchar_t * abp_module_names[] = { L"AdblockPlus32.dll", L"AdblockPlus64.dll" } ;
+
+
 //-------------------------------------------------------
 //-------------------------------------------------------
 class IE_Closer
@@ -21,12 +26,9 @@ class IE_Closer
 
   Process_Closer engine_closer ;
 
-  static const wchar_t * ie_names[] ;
-  static const wchar_t * engine_names[] ;
-
 public:
   IE_Closer()
-    : snapshot(), ie_closer( snapshot, ie_names, 1 ), engine_closer( snapshot, engine_names, 1 )
+    : snapshot(), ie_closer( snapshot, ie_names, abp_module_names), engine_closer( snapshot, engine_names )
   {}
 
   void refresh()
@@ -59,8 +61,6 @@ public:
   }
 } ;
 
-const wchar_t * IE_Closer::ie_names[] = { L"IExplore.exe" } ;
-const wchar_t * IE_Closer::engine_names[] = { L"AdblockPlusEngine.exe" } ;
 
 //-------------------------------------------------------
 // abp_close_ie
