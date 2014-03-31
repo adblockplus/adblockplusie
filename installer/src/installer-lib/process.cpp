@@ -31,7 +31,11 @@ void Windows_Handle::validate_handle()
 {
   if ( handle == INVALID_HANDLE_VALUE )
   {
-    throw std::runtime_error( "Invalid handle" ) ;
+    // TODO: This code really deserves use of a proper exception class that packages 
+    // Windows API errors consistently.
+    char tmp[256];
+    sprintf_s(tmp, "Invalid handle. Last error: %d", GetLastError());
+    throw std::runtime_error( tmp ) ;
   }
 }
 
@@ -47,12 +51,26 @@ bool process_by_name_CI::operator()( const PROCESSENTRY32W & process )
   return 0 == wcsncmpi( process.szExeFile, name, length ) ;
 }
 
-//-------------------------------------------------------
-// process_by_any_exe_name_CI
-//-------------------------------------------------------
-bool process_by_any_exe_name_CI::operator()( const PROCESSENTRY32W & process )
+
+bool process_by_any_exe_with_any_module::operator()( const PROCESSENTRY32W & process )
 {
-  return names.find( process.szExeFile ) != names.end() ;
+  if (processNames.find(process.szExeFile) != processNames.end())
+  {
+    if (moduleNames.empty())
+      return true;
+
+    ModulesSnapshot ms(process.th32ProcessID);
+    MODULEENTRY32W* me = ms.first();
+    while (me != NULL)
+    {
+      if (moduleNames.find(me->szModule) != moduleNames.end())
+      {
+        return true;
+      }
+      me = ms.next();
+    }
+  }
+  return false;
 }
 
 //-------------------------------------------------------
@@ -145,19 +163,39 @@ Snapshot::Snapshot()
   process.dwSize = sizeof( PROCESSENTRY32W ) ;
 }
 
-PROCESSENTRY32W * Snapshot::begin()
+PROCESSENTRY32W * Snapshot::first()
 {
-  return ::Process32FirstW( handle, & process ) ? ( & process ) : 0 ;
+  return ::Process32FirstW(handle, &process) ? (&process) : 0;
 }
 
 PROCESSENTRY32W * Snapshot::next()
 {
-  return ::Process32NextW( handle, & process ) ? ( & process ) : 0 ;
+  return ::Process32NextW(handle, &process) ? (&process) : 0;
 }
 
 void Snapshot::refresh()
 {
-  handle = ::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 ) ;
+  handle = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+}
+
+
+//-------------------------------------------------------
+// ModulesSnapshot
+//-------------------------------------------------------
+ModulesSnapshot::ModulesSnapshot(DWORD processId)
+  : handle(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, processId))
+{
+  module.dwSize = sizeof(MODULEENTRY32);
+}
+
+MODULEENTRY32W * ModulesSnapshot::first()
+{
+  return ::Module32FirstW(handle, &module) ? (&module) : 0;
+}
+
+MODULEENTRY32W * ModulesSnapshot::next()
+{
+  return ::Module32NextW(handle, &module) ? (&module) : 0;
 }
 
 

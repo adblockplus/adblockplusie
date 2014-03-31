@@ -5,9 +5,11 @@
 <?if $(sys.BUILDARCH)="x86"?>
   <?define Program_Files="ProgramFilesFolder"?>
   <?define Product_Name="!(loc.ProductName32)"?>
+  <?define build_dir="ia32"?>
 <?elseif $(sys.BUILDARCH)="x64"?>
   <?define Program_Files="ProgramFiles64Folder"?>
   <?define Product_Name="!(loc.ProductName64)"?>
+  <?define build_dir="x64"?>
 <?else?>
   <?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
 <?endif?>
@@ -77,7 +79,7 @@
     <!--
       Note that we're using a 32-bit custom action library for both 32- and 64-bit installers. 
     -->
-    <Binary Id="installer_library_test_ca" SourceFile="$(var.installer_dir)\build\ia32\$(var.CA_Configuration)\installer-library-test-customactions.dll"/>
+    <Binary Id="installer_library_test_ca" SourceFile="$(var.installer_dir)\build\$(var.build_dir)\$(var.CA_Configuration)\installer-library-test-customactions.dll"/>
     <!--
       The sequence of testing actions go here.
       Alter this sequence at will to test, exercise, observe, or debug custom action code.
