@@ -120,9 +120,10 @@ extern "C" UINT __stdcall
 sandbox( MSIHANDLE session_handle )
 {
   Immediate_Session session( session_handle, "sandbox" ) ;
-
+   
   try
   {
+    session.log( "Sandbox timestamp " __TIMESTAMP__ ) ;
     log_only_window_handle_in_closer( session ) ;
   }
   catch( std::exception & e )

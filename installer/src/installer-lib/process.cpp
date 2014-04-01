@@ -8,18 +8,7 @@
 #include "process.h"
 
 //-------------------------------------------------------
-// process_by_name_CI
 //-------------------------------------------------------
-process_by_name_CI::process_by_name_CI( const wchar_t * name )
-  : name( name ), length( wcslen( name ) )
-{}
-
-bool process_by_name_CI::operator()( const PROCESSENTRY32W & process )
-{
-  return 0 == wcsncmpi( process.szExeFile, name, length ) ;
-}
-
-
 bool process_by_any_exe_with_any_module::operator()( const PROCESSENTRY32W & process )
 {
   if (processNames.find(process.szExeFile) != processNames.end())
@@ -39,71 +28,6 @@ bool process_by_any_exe_with_any_module::operator()( const PROCESSENTRY32W & pro
     }
   }
   return false;
-}
-
-//-------------------------------------------------------
-// wcscmpi
-//-------------------------------------------------------
-int wcscmpi( const wchar_t * s1, const wchar_t * s2 )
-{
-  // Note: Equality of character sequences is case-insensitive in all predicates below.
-  // Loop invariant: s1[0..j) == s2[0..j)
-  const size_t LIMIT( 65535 ) ; // Runaway limit of 2^16 - 1 should be acceptably long.
-  for ( size_t j = 0 ; j < LIMIT ; ++j )
-  {
-    wchar_t c1 = towupper( *s1++ ) ;
-    wchar_t c2 = towupper( *s2++ ) ;
-    if ( c1 != c2 )
-    {
-      // Map to -1/+1 because c2 - c1 may not fit into an 'int'.
-      return ( c1 < c2 ) ? -1 : 1 ;
-    }
-    else
-    {
-      if ( c1 == L'\0' )
-      {
-	// Assert length( s1 ) == length( s2 ) == j
-	// Assert strings are equal at length < n
-	return 0 ;
-      }
-    }
-  }
-  // Assert j == LIMIT
-  // Assert s1[0..LIMIT) == s2[0..LIMIT)
-  // Both strings are longer than 64K, which violates the precondition
-  throw std::runtime_error( "String arguments too long for wcscmpi" ) ;
-}
-
-//-------------------------------------------------------
-// wcsncmpi
-//-------------------------------------------------------
-int wcsncmpi( const wchar_t * s1, const wchar_t * s2, unsigned int n )
-{
-  // Note: Equality of character sequences is case-insensitive in all predicates below.
-  // Loop invariant: s1[0..j) == s2[0..j)
-  for ( unsigned int j = 0 ; j < n ; ++j )
-  {
-    wchar_t c1 = towupper( *s1++ ) ;
-    wchar_t c2 = towupper( *s2++ ) ;
-    if ( c1 != c2 )
-    {
-      // Map to -1/+1 because c2 - c1 may not fit into an 'int'.
-      return ( c1 < c2 ) ? -1 : 1 ;
-    }
-    else
-    {
-      if ( c1 == L'\0' )
-      {
-	// Assert length( s1 ) == length( s2 ) == j
-	// Assert strings are equal at length < n
-	return 0 ;
-      }
-    }
-  }
-  // Assert j == n
-  // Assert s1[0..n) == s2[0..n)
-  // The semantics of n-compare ignore everything after the first 'n' characters.
-  return 0 ;
 }
 
 //-------------------------------------------------------
@@ -146,7 +70,6 @@ void Snapshot::refresh()
   handle = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 }
 
-
 //-------------------------------------------------------
 // ModulesSnapshot
 //-------------------------------------------------------
@@ -165,7 +88,6 @@ MODULEENTRY32W * ModulesSnapshot::next()
 {
   return ::Module32NextW(handle, &module) ? (&module) : 0;
 }
-
 
 //-------------------------------------------------------
 // send_message, send_endsession_messages
