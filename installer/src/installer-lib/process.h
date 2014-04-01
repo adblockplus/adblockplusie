@@ -7,6 +7,8 @@
 
 #include "handle.h"
 
+#include <string>
+#include <cctype>
 #include <vector>
 #include <set>
 #include <algorithm>
@@ -15,42 +17,74 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 
+//-------------------------------------------------------
+// wstring_ci: case-insensitive wide string
+//-------------------------------------------------------
+
+/**
+ * Traits class for case-insensitive strings.
+ */
+template< class T >
+struct ci_traits: std::char_traits< T >
+{
+  static bool eq( T c1, T c2 )
+  {
+    return std::tolower( c1 ) == std::tolower( c2 ) ;
+  }
+
+  static bool lt( T c1, T c2 )
+  {
+    return std::tolower( c1 ) < std::tolower( c2 ) ;
+  }
+
+  /**
+   * Trait comparison function.
+   *
+   * Note that this is not a comparison of C-style strings.
+   * In particular, there's no concern over null characters '\0'.
+   * The argument 'n' is the minimum length of the two strings being compared.
+   * We may assume that the intervals p1[0..n) and p2[0..n) are both valid substrings.
+   */
+  static int compare( const T * p1, const T * p2, size_t n )
+  {
+    while ( n-- > 0 )
+    {
+      T l1 = std::tolower( * p1 ++ ) ;
+      T l2 = std::tolower( * p2 ++ ) ;
+      if ( l1 == l2 )
+      {
+        continue ;
+      }
+      return ( l1 < l2 ) ? -1 : +1 ;
+    }
+    return 0  ;
+  }
+} ;
+
+typedef std::basic_string< wchar_t, ci_traits< wchar_t > > wstring_ci ;
+
 
 //-------------------------------------------------------
 // file_name_set: case-insensitive wide-string set
 //-------------------------------------------------------
-int wcscmpi( const wchar_t * s1, const wchar_t * s2 ) ;
-
-struct file_name
+struct file_name_set
+  : public std::set< wstring_ci >
 {
   /**
-   * Pointer to wide-character string, which is supposed to be null-terminated.
+   * Empty set constructor.
    */
-  const wchar_t * name ;
+  file_name_set()
+  {}
 
-  file_name( const wchar_t * name ) : name( name ) {} ;
-} ;
-
-template <>
-struct std::less< file_name >
-  : std::binary_function< file_name, file_name, bool >
-{
-  bool operator()( const file_name & a, const file_name & b ) const
-  {
-    return wcscmpi( a.name, b.name ) < 0 ; 
-  }
-} ;
-
-struct file_name_set
-  : public std::set< file_name >
-{
-  file_name_set(){};
-
-  file_name_set( const wchar_t * file_name_list[], size_t n_file_names )
+  /**
+   * Constructor initialization from an array.
+   */
+  template< size_t n_file_names >
+  file_name_set( const wchar_t * ( & file_name_list )[ n_file_names ] )
   {
     for ( unsigned int j = 0 ; j < n_file_names ; ++ j )
     {
-      insert( file_name( file_name_list[ j ] ) ) ;
+      insert( wstring_ci( file_name_list[ j ] ) ) ;
     }
   }
 } ;
@@ -63,6 +97,15 @@ struct file_name_set
 class process_by_any_exe_with_any_module
   : public std::binary_function< PROCESSENTRY32W, file_name_set, bool >
 {
+  /**
+   * Set of file names from which to match candidate process names.
+   *
+   * This is a reference to, not a copy of, the set.
+   * The lifetime of this object must be subordinate to that of its referent.
+   * The set used to instantiate this class is a member of Process_Closer,
+   *   and so also is this class.
+   * Hence the lifetimes are coterminous, and the reference is not problematic.
+   */
   const file_name_set & processNames ;
   const file_name_set & moduleNames;
 public:
@@ -86,20 +129,6 @@ struct every_process
 } ;
 
 /**
- * Filter by process name. Comparison is case-insensitive.
- */
-class process_by_name_CI
-  : public std::unary_function< PROCESSENTRY32W, bool >
-{
-  const wchar_t * name ;
-  const size_t length ;
-  process_by_name_CI() ;
-public:
-  bool operator()( const PROCESSENTRY32W & ) ;
-  process_by_name_CI( const wchar_t * name ) ;
-} ;
-
-/**
  * Extractor that copies the entire process structure.
  */
 struct copy_all
@@ -116,11 +145,6 @@ struct copy_PID
 {
   inline DWORD operator()( const PROCESSENTRY32W & process ) { return process.th32ProcessID ; }
 } ;
-
-/**
- * Case-insensitive wide-character C-style string comparison, fixed-length
- */
-int wcsncmpi( const wchar_t * a, const wchar_t * b, unsigned int length ) ;
 
 /**
  * Retrieve the process ID that created a window.
@@ -473,7 +497,8 @@ class Process_Closer
    * The argument of the filter constructor is a set by reference.
    * Since it does not make a copy for itself, we define it as a class member to provide its allocation.
    */
-  file_name_set file_names ;
+  file_name_set process_names ;
+
   /**
    * Set of module (DLL) names by which to filter.
    */
@@ -532,13 +557,13 @@ class Process_Closer
 public:
   template <size_t n_file_names, size_t n_module_names>
   Process_Closer(Snapshot & snapshot, const wchar_t* (&file_name_list)[n_file_names], const wchar_t* (&module_name_list)[n_module_names])
-    : snapshot(snapshot), file_names(file_name_list, n_file_names), module_names(module_name_list, n_module_names), filter(file_names, module_names)
+    : snapshot(snapshot), process_names(file_name_list), module_names(module_name_list), filter(process_names, module_names)
   {
     update() ;
   }
   template <size_t n_file_names>
   Process_Closer(Snapshot & snapshot, const wchar_t * (&file_name_list)[n_file_names])
-    : snapshot(snapshot), file_names(file_name_list, n_file_names), module_names(), filter(file_names, module_names)
+    : snapshot(snapshot), process_names(file_name_list), module_names(), filter(process_names, module_names)
   {
     update() ;
   }
