@@ -216,7 +216,7 @@ TEST( Process_List_Test, find_our_process )
 {
   std::vector< PROCESSENTRY32W > v ;
   initialize_process_list( v, our_process_by_name(), copy_all() ) ;
-  unsigned int size( v.size() );
+  size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
@@ -229,7 +229,7 @@ TEST( Process_List_Test, find_our_process_CI_generic )
 {
   std::vector< PROCESSENTRY32W > v ;
   initialize_process_list( v, process_by_name_CI( mixedcase_exe_name ), copy_all() ) ;
-  unsigned int size( v.size() );
+  size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
@@ -242,7 +242,7 @@ TEST( Process_List_Test, find_our_process_CI_as_used )
 {
   std::vector< PROCESSENTRY32W > v ;
   initialize_process_list( v, process_by_any_file_name_CI( file_name_set( multiple_exe_names ) ), copy_all() ) ;
-  unsigned int size( v.size() );
+  size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
@@ -254,7 +254,7 @@ TEST( Process_List_Test, find_our_PID )
 {
   std::vector< DWORD > v ;
   initialize_process_list( v, our_process_by_name(), copy_PID() ) ;
-  unsigned int size( v.size() );
+  size_t size( v.size() );
   EXPECT_EQ( size, 1u );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( size, 1u );
 }
@@ -266,7 +266,7 @@ TEST( Process_List_Test, find_our_process_in_set )
 {
   std::vector< DWORD > v ;
   initialize_process_list( v, find_in_set, copy_PID() ) ;
-  unsigned int size( v.size() );
+  size_t size( v.size() );
   EXPECT_EQ( size, 1u );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( size, 1u );
 }

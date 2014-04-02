@@ -17,7 +17,7 @@ bool process_by_any_exe_with_any_module::operator()( const PROCESSENTRY32W & pro
       return true;
 
     Module_Snapshot ms(process.th32ProcessID);
-    MODULEENTRY32W* me = ms.first();
+    const MODULEENTRY32W* me = ms.first();
     while (me != 0)
     {
       if (moduleNames.find(me->szModule) != moduleNames.end())
@@ -65,7 +65,7 @@ static const unsigned int timeout = 5000 ;    // milliseconds
  * This class provides the base for any variation from the default behavior.
  */
 struct message_accumulator
-  : public std::binary_function< DWORD_PTR, BOOL, bool >
+  : public std::binary_function< DWORD_PTR, bool, bool >
 {
   virtual result_type operator()( first_argument_type result, second_argument_type return_value ) = 0 ;
   virtual ~message_accumulator() {} ;
@@ -107,7 +107,7 @@ public:
   bool operator()( HWND window )
   {
     DWORD_PTR result ;
-    BOOL rv = SendMessageTimeoutW( window, message, p1, p2, SMTO_BLOCK, timeout, & result ) ;
+    LRESULT rv = SendMessageTimeoutW( window, message, p1, p2, SMTO_BLOCK, timeout, & result ) ;
     /*
      * If we have no message accumulator, the default behavior is to iterate everything.
      * If we do have one, we delegate to it the decision whether to break or to continue.
@@ -116,7 +116,7 @@ public:
     {
       return true ;
     }
-    return ( * f )( result, rv ) ;
+    return ( * f )( result, (rv != 0) ) ;
   }
 } ;
 
@@ -171,7 +171,7 @@ struct endsession_accumulator :
   /**
    * Enumeration function applied to each window.
    */
-  bool operator()( DWORD_PTR result, BOOL return_value )
+  bool operator()( DWORD_PTR result, bool return_value )
   {
     if ( ( ! return_value ) || result )
     {
