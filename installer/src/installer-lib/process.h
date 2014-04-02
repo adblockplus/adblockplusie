@@ -64,7 +64,6 @@ struct ci_traits: std::char_traits< T >
 
 typedef std::basic_string< wchar_t, ci_traits< wchar_t > > wstring_ci ;
 
-
 //-------------------------------------------------------
 // file_name_set: case-insensitive wide-string set
 //-------------------------------------------------------
@@ -279,10 +278,10 @@ private:
   /**
    * Buffer for reading a single process entry out of the snapshot.
    *
-   * This buffer is constant insofar as the code in this class is concerned.
-   * Only the 'first' and 'next' system calls write to the buffer.
+   * This buffer is constant insofar as the code outside this class is concerned.
+   * The accessor functions first() and next() return pointers to constant result_type.
    */
-  /*const*/ result_type buffer;
+  result_type buffer;
 
   /**
    * Copy constructor declared private and not defined.
@@ -352,7 +351,7 @@ public:
    *   The upshot is that we rely that our implementation calls the right functions on the snapshot,
    *     and so we ignore the case where we've passed bad arguments to the system call.
    */
-  result_type * first()
+  const result_type * first()
   {
     return Traits::first(handle, &buffer) ? &buffer : 0;
   }
@@ -368,7 +367,7 @@ public:
    * \par Design Note
    *   See the Design Note for first(); the same considerations apply here.
    */
-  result_type * next()
+  const result_type * next()
   {
     return Traits::next(handle, &buffer) ? &buffer : 0;
   }
@@ -411,7 +410,7 @@ struct Module_Snapshot
 template<class T, class Admittance, class Extractor>
 void initialize_process_list(std::vector<T>& v, Process_Snapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
-  PROCESSENTRY32W* p = snap.first();
+  const PROCESSENTRY32W* p = snap.first();
   while (p != 0)
   {
     if (admit(*p ))
@@ -441,7 +440,7 @@ void initialize_process_list(std::vector<T>& v, Process_Snapshot &snap, Admittan
 template<class T, class Admittance, class Extractor>
 void initialize_process_set(std::set< T > & set, Process_Snapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
-  PROCESSENTRY32W* p = snap.first();
+  const PROCESSENTRY32W* p = snap.first();
   while (p != 0)
   {
     if (admit(*p))
