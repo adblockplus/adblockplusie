@@ -15,12 +15,11 @@ const wchar_t * ie_names[] = { L"IExplore.exe" } ;
 const wchar_t * engine_names[] = { L"AdblockPlusEngine.exe" } ;
 const wchar_t * abp_module_names[] = { L"AdblockPlus32.dll", L"AdblockPlus64.dll" } ;
 
-
 //-------------------------------------------------------
 //-------------------------------------------------------
 class IE_Closer
 {
-  Snapshot snapshot ;
+  Process_Snapshot snapshot ;
 
   Process_Closer ie_closer ;
 
