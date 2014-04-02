@@ -141,11 +141,19 @@ public:
     return _handle ;
   }
 
+  /**
+   * Error thrown when initialize or assigning a null handle against policy.
+   *
+   * Note that this error is a logic_error, not a runtime error.
+   * If it's against policy for a handle to be null, it's an error for the caller to try to make it null.
+   * Policy enforcment here is not a substitute for good error handling by the caller.
+   * In many cases, the caller ought to be throwing windows_api_error.
+   */
   struct null_handle_error
-    : public std::runtime_error
+    : public std::logic_error
   {
     null_handle_error()
-      : std::runtime_error( "May not initialize with null handle" ) 
+      : std::logic_error( "May not initialize with null handle" ) 
     {}
   } ;
 } ;
@@ -254,6 +262,10 @@ public:
     }
   }
 
+  /**
+   * Expose the underlying handle type.
+   */
+  typedef T handle_type ;
 } ;
 
 //-------------------------------------------------------
