@@ -166,6 +166,8 @@ DWORD creator_process( HWND window ) ;
 //-------------------------------------------------------
 // Snapshot
 //-------------------------------------------------------
+
+
 /**
  * A snapshot of all the processes running on the system.
  *
@@ -238,6 +240,11 @@ public:
   PROCESSENTRY32W * next() ;
 } ;
 
+class Process_Snapshot
+  : public Snapshot
+{
+} ;
+
 class ModulesSnapshot
 {
   /**
@@ -299,7 +306,7 @@ public:
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
 template<class T, class Admittance, class Extractor>
-void initialize_process_list(std::vector<T>& v, Snapshot& snap, Admittance admit = Admittance(), Extractor extract = Extractor())
+void initialize_process_list(std::vector<T>& v, Process_Snapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
   PROCESSENTRY32W* p = snap.first();
   while (p != NULL)
@@ -329,7 +336,7 @@ void initialize_process_list(std::vector<T>& v, Snapshot& snap, Admittance admit
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
 template<class T, class Admittance, class Extractor>
-void initialize_process_set(std::set< T > & set, Snapshot& snap, Admittance admit = Admittance(), Extractor extract = Extractor())
+void initialize_process_set(std::set< T > & set, Process_Snapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
   PROCESSENTRY32W* p = snap.first();
   while (p != NULL)
@@ -514,7 +521,7 @@ class Process_Closer
   /** 
    * Snapshot of running processes.
    */
-  Snapshot & snapshot ;
+  Process_Snapshot & snapshot ;
 
   void update()
   {
@@ -556,13 +563,13 @@ class Process_Closer
 
 public:
   template <size_t n_file_names, size_t n_module_names>
-  Process_Closer(Snapshot & snapshot, const wchar_t* (&file_name_list)[n_file_names], const wchar_t* (&module_name_list)[n_module_names])
+  Process_Closer(Process_Snapshot & snapshot, const wchar_t* (&file_name_list)[n_file_names], const wchar_t* (&module_name_list)[n_module_names])
     : snapshot(snapshot), process_names(file_name_list), module_names(module_name_list), filter(process_names, module_names)
   {
     update() ;
   }
   template <size_t n_file_names>
-  Process_Closer(Snapshot & snapshot, const wchar_t * (&file_name_list)[n_file_names])
+  Process_Closer(Process_Snapshot & snapshot, const wchar_t * (&file_name_list)[n_file_names])
     : snapshot(snapshot), process_names(file_name_list), module_names(), filter(process_names, module_names)
   {
     update() ;

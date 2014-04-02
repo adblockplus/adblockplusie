@@ -184,7 +184,7 @@ TEST( process_by_any_file_name_CI, two_elements )
 template< class T, class Admittance, class Extractor >
 void initialize_process_list( std::vector< T > & v, Admittance admit = Admittance(), Extractor extract = Extractor() )
 {
-  initialize_process_list( v, Snapshot(), admit, extract ) ;
+  initialize_process_list( v, Process_Snapshot(), admit, extract ) ;
 }
 
 /**
@@ -193,7 +193,7 @@ void initialize_process_list( std::vector< T > & v, Admittance admit = Admittanc
 template< class T, class Admittance, class Extractor >
 void initialize_process_set( std::set< T > & s, Admittance admit = Admittance(), Extractor extract = Extractor() )
 {
-  initialize_process_set( s, Snapshot(), admit, extract ) ;
+  initialize_process_set( s, Process_Snapshot(), admit, extract ) ;
 }
 
 //-------------------------------------------------------
