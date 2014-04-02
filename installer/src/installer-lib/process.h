@@ -5,6 +5,7 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include "installer-lib.h"
 #include "handle.h"
 
 #include <string>
@@ -166,10 +167,72 @@ DWORD creator_process( HWND window ) ;
 //-------------------------------------------------------
 // Snapshot
 //-------------------------------------------------------
+/**
+ * Traits class for snapshots of all processes on the system.
+ */
+struct Process_Snapshot_Traits
+{
+  /**
+   * The type of the data resulting from CreateToolhelp32Snapshot.
+   */
+  typedef PROCESSENTRY32W result_type ;
 
+  /**
+   * Flags used to call CreateToolhelp32Snapshot.
+   */
+  const static DWORD snapshot_flags = TH32CS_SNAPPROCESS ;
+
+  /**
+   * Wrapper for 'first' function for processes
+   */
+  static BOOL first( HANDLE arg1, LPPROCESSENTRY32 arg2 )
+  {
+    return ::Process32First( arg1, arg2 ) ;
+  }
+
+  /**
+   * Wrapper for 'next' function for processes
+   */
+  static BOOL next( HANDLE arg1, LPPROCESSENTRY32 arg2 )
+  {
+    return ::Process32Next( arg1, arg2 ) ;
+  }
+} ;
 
 /**
- * A snapshot of all the processes running on the system.
+ * Traits class for snapshots of all modules loaded by a process.
+ */
+struct Module_Snapshot_Traits
+{
+  /**
+   * The type of the data resulting from CreateToolhelp32Snapshot.
+   */
+  typedef MODULEENTRY32W result_type ;
+
+  /**
+   * Flags used to call CreateToolhelp32Snapshot.
+   */
+  const static DWORD snapshot_flags = TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32 ;
+
+  /**
+   * Wrapper for 'first' function for modules
+   */
+  static BOOL first( HANDLE arg1, LPMODULEENTRY32 arg2 )
+  {
+    return ::Module32First( arg1, arg2 ) ;
+  }
+
+  /**
+   * Wrapper for 'next' function for modules
+   */
+  static BOOL next( HANDLE arg1, LPMODULEENTRY32 arg2 )
+  {
+    return ::Module32Next( arg1, arg2 ) ;
+  }
+} ;
+
+/**
+ * A snapshot wrapping the results of CreateToolhelp32Snapshot system call.
  *
  * Unfortunately, we cannot provide standard iterator for this class.
  * Standard iterators must be copy-constructible, which entails the possibility of multiple, coexisting iteration states.
@@ -177,9 +240,7 @@ DWORD creator_process( HWND window ) ;
  * Thus, there can be only one iterator at a time for the snapshot.
  * The two requirements are not simultaneously satisfiable.
  *
- * As a substitute for a standard iterator, we provide a few functions mimicking the pattern of standard iterators.
- * This class acts as its own iterator.
- * The pointer returned is either one to the member variable "process" or else 0.
+ * Instead of a standard iterator, we provide a first() and next() functions wrapping the corresponding system calls.
  *
  * \par Implementation
  *
@@ -187,18 +248,41 @@ DWORD creator_process( HWND window ) ;
  * - MSDN [Process32First function](http://msdn.microsoft.com/en-us/library/windows/desktop/ms684834%28v=vs.85%29.aspx)
  * - MSDN [Process32Next function](http://msdn.microsoft.com/en-us/library/windows/desktop/ms684836%28v=vs.85%29.aspx)
  * - MSDN [PROCESSENTRY32 structure](http://msdn.microsoft.com/en-us/library/windows/desktop/ms684839%28v=vs.85%29.aspx)
+ *
+ * \par Design Note
+ *   The traits class defines first() and next() functions instead of using function pointers.
+ *   This arises from a limitation in the compiler.
+ *   The system calls are declared 'WINAPI', which is a compiler-specific extension.
+ *   That extension, however, does not go far enough to be able to declare a pointer with the same modifier.
+ *   Hence the system calls must be called directly; they are wrapped in the trait functions.
  */
+template< class Traits >
 class Snapshot
 {
+public:
   /**
-   * Handle to the process snapshot.
+   * Expose the result type from the traits class as our own.
+   */
+  typedef typename Traits::result_type result_type ;
+
+private:
+  /**
+   * Process ID argument for CreateToolhelp32Snapshot.
+   */
+  DWORD _id ;
+
+  /**
+   * Handle to the underlying snapshot.
    */
   Windows_Handle handle ;
 
   /**
    * Buffer for reading a single process entry out of the snapshot.
+   *
+   * This buffer is constant insofar as the code in this class is concerned.
+   * Only the 'first' and 'next' system calls write to the buffer.
    */
-  PROCESSENTRY32W process;
+  /*const*/ result_type buffer;
 
   /**
    * Copy constructor declared private and not defined.
@@ -216,82 +300,101 @@ class Snapshot
    */
   Snapshot operator=( const Snapshot & ) ;
 
+  /**
+   * Create a new snapshot and return its handle.
+   */
+  Windows_Handle::handle_type make_handle()
+  {
+    Windows_Handle::handle_type h = ::CreateToolhelp32Snapshot( Traits::snapshot_flags, _id ) ;
+    if ( h == INVALID_HANDLE_VALUE )
+    {
+      throw windows_api_error( "CreateToolhelp32Snapshot", "INVALID_HANDLE_VALUE" ) ;
+    }
+    return h ;
+  }
+
+protected:
+  /**
+   * Constructor takes a snapshot.
+   */
+  Snapshot( DWORD id )
+    : _id( id ), handle( make_handle() )
+  {
+    // The various result types all define 'dwSize' with the same semantics.
+    buffer.dwSize = sizeof( result_type ) ;
+  }
 
 public:
-  /**
-   * Default constructor takes the snapshot.
-   */
-  Snapshot() ;
-
   /**
    * Reconstruct the current instance with a new system snapshot.
+   *
+   * This function uses reinitialization assignment in the Windows_Handle class,
+   *   which takes care of closing the old handle.
    */
-  void refresh() ;
+  void refresh()
+  {
+    handle = make_handle();
+  }
 
   /**
-   * Return a pointer to the first process in the snapshot.
+   * Retrieve the first snapshot item into our member buffer.
+   *
+   * \return
+   *   Pointer to our member buffer if there was a first item
+   *   0 otherwise
+   *
+   * \par Design Note
+   *   There's no error handling in the present version of this function.
+   *   In part that's because the underlying system call returns either true or false, both of which are ordinarily valid answers.
+   *   The trouble is that a false return is overloaded.
+   *   It can mean either that (ordinary) there are no more items or (exceptional) the snapshot did not contain the right kind of item.
+   *   GetLastError is no help here; it doesn't distinguish between these cases.
+   *   The upshot is that we rely that our implementation calls the right functions on the snapshot,
+   *     and so we ignore the case where we've passed bad arguments to the system call.
    */
-  PROCESSENTRY32W * first() ;
+  result_type * first()
+  {
+    return Traits::first(handle, &buffer) ? &buffer : 0;
+  }
 
   /**
-   * Return a pointer to the next process in the snapshot.
+   * Retrieve the next snapshot item into our member buffer and return a pointer to it.
    * begin() must have been called first.
+   *
+   * \return
+   *   Pointer to our member buffer if there was a first item
+   *   0 otherwise
+   *
+   * \par Design Note
+   *   See the Design Note for first(); the same considerations apply here.
    */
-  PROCESSENTRY32W * next() ;
+  result_type * next()
+  {
+    return Traits::next(handle, &buffer) ? &buffer : 0;
+  }
 } ;
 
-class Process_Snapshot
-  : public Snapshot
+/**
+ * A snapshot of all processes running on the system.
+ */
+struct Process_Snapshot
+  : public Snapshot< Process_Snapshot_Traits >
 {
+  Process_Snapshot()
+    : Snapshot( 0 ) 
+  {}
 } ;
 
-class ModulesSnapshot
+/**
+ * A snapshot of all modules loaded for a given process.
+ */
+struct Module_Snapshot
+  : public Snapshot< Module_Snapshot_Traits >
 {
-  /**
-   * Handle to the process snapshot.
-   */
-  Windows_Handle handle;
-
-  /**
-   * Buffer for reading a single module entry out of the snapshot.
-   */
-  MODULEENTRY32W module;
-
-  /**
-   * Copy constructor declared private and not defined.
-   *
-   * \par Implementation
-   *   Add "= delete" for C++11.
-   */
-  ModulesSnapshot(const ModulesSnapshot&);
-
-  /**
-   * Copy assignment declared private and not defined.
-   *
-   * \par Implementation
-   *   Add "= delete" for C++11.
-   */
-  ModulesSnapshot operator=(const ModulesSnapshot&);
-
-
-public:
-  /**
-   * Default constructor takes the snapshot.
-   */
-  ModulesSnapshot(DWORD processId);
-
-  /**
-   * Return a pointer to the first process in the snapshot.
-   */
-  MODULEENTRY32W* first();
-
-  /**
-   * Return a pointer to the next process in the snapshot.
-   * begin() must have been called first.
-   */
-  MODULEENTRY32W* next();
-};
-
+  Module_Snapshot( DWORD process_id )
+    : Snapshot( process_id )
+  {}
+} ;
 
 //-------------------------------------------------------
 // initialize_process_list
@@ -309,7 +412,7 @@ template<class T, class Admittance, class Extractor>
 void initialize_process_list(std::vector<T>& v, Process_Snapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
   PROCESSENTRY32W* p = snap.first();
-  while (p != NULL)
+  while (p != 0)
   {
     if (admit(*p ))
     {
@@ -339,7 +442,7 @@ template<class T, class Admittance, class Extractor>
 void initialize_process_set(std::set< T > & set, Process_Snapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
   PROCESSENTRY32W* p = snap.first();
-  while (p != NULL)
+  while (p != 0)
   {
     if (admit(*p))
     {

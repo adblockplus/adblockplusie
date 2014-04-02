@@ -16,9 +16,9 @@ bool process_by_any_exe_with_any_module::operator()( const PROCESSENTRY32W & pro
     if (moduleNames.empty())
       return true;
 
-    ModulesSnapshot ms(process.th32ProcessID);
+    Module_Snapshot ms(process.th32ProcessID);
     MODULEENTRY32W* me = ms.first();
-    while (me != NULL)
+    while (me != 0)
     {
       if (moduleNames.find(me->szModule) != moduleNames.end())
       {
@@ -44,49 +44,6 @@ DWORD creator_process( HWND window )
     throw windows_api_error( "GetWindowThreadProcessId", r ) ;
   }
   return pid ;
-}
-
-//-------------------------------------------------------
-// Snapshot
-//-------------------------------------------------------
-Snapshot::Snapshot()
-  : handle( ::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 ) )
-{
-  process.dwSize = sizeof( PROCESSENTRY32W ) ;
-}
-
-PROCESSENTRY32W * Snapshot::first()
-{
-  return ::Process32FirstW(handle, &process) ? (&process) : 0;
-}
-
-PROCESSENTRY32W * Snapshot::next()
-{
-  return ::Process32NextW(handle, &process) ? (&process) : 0;
-}
-
-void Snapshot::refresh()
-{
-  handle = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-}
-
-//-------------------------------------------------------
-// ModulesSnapshot
-//-------------------------------------------------------
-ModulesSnapshot::ModulesSnapshot(DWORD processId)
-  : handle(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, processId))
-{
-  module.dwSize = sizeof(MODULEENTRY32);
-}
-
-MODULEENTRY32W * ModulesSnapshot::first()
-{
-  return ::Module32FirstW(handle, &module) ? (&module) : 0;
-}
-
-MODULEENTRY32W * ModulesSnapshot::next()
-{
-  return ::Module32NextW(handle, &module) ? (&module) : 0;
 }
 
 //-------------------------------------------------------
