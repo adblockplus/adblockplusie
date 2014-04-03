@@ -676,6 +676,31 @@
 	'sources': [ 'src/msi/locale/zh-TW.wxl' ],
   },
 
+  #####################
+  # The last step is to copy the INTERIM file to the FINAL file
+  #####################
+  #############
+  # MSI Final
+  #############
+  {
+    'target_name': 'MSI _ [FINAL]',
+	'type': 'none',
+	'dependencies': [ 'MSI zh-TW 1028 (Chinese - Taiwan)' ],
+	'actions': 
+	[{
+	  'action_name': 'MSI Final',
+	  'message': '',
+	  'inputs': [ '<(build_dir_arch)/adblockplusie-INTERIM-<(target_arch).msi' ],
+	  'outputs': [ '<(build_dir_arch)/adblockplusie-FINAL-<(target_arch).msi' ],
+	  'action':
+	  [
+	    'copy',
+		'<(build_dir_arch)/adblockplusie-INTERIM-<(target_arch).msi',
+		'<(build_dir_arch)/adblockplusie-FINAL-<(target_arch).msi',
+	  ]
+	}]
+  },
+
   ##################################
   # END of MSI section
   ##################################
