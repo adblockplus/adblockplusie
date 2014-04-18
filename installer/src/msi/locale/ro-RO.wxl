@@ -3,8 +3,14 @@
 <WixLocalization xmlns="http://schemas.microsoft.com/wix/2006/localization" Codepage="1250" Culture="ro-RO" Language="1048">
   <String Id="LANG">0x0418</String>
   <String Id="CODEPAGE">1250</String>
-  <String Id="ProductName32">Adblock Plus pentru IE (2-bit)</String>
-  <String Id="ProductName64">Adblock Plus pentru IE (32-bit și 64-bit)</String>
+  <String Id="ProductName32">Adblock Plus pentru IE (32-bit)</String>
+  <!--
+    ProductName64 uses the s-cedilla instead of the (correct) s-comma character.
+    Because the product name goes into the Summary information, it has to be compatible with a code page, which is 1250 in this case.
+    Unfortunate codepage 1250 only contains s-cedilla, which was the old substitute used.
+    S-comma is a Unicode-only character, and it appears in other strings below.
+  -->
+  <String Id="ProductName64">Adblock Plus pentru IE (32-bit şi 64-bit)</String>
   <String Id="Keywords">Program de instalare</String>
   <String Id="Description">Adblock Plus pentru IE</String>
   <String Id="Comments">Vă mulțumim pentru utilizarea Adblock Plus.</String>

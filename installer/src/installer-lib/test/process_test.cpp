@@ -9,9 +9,11 @@
 // Comparison objects
 //-------------------------------------------------------
 
-const wchar_t exact_exe_name[] = L"installer-ca-tests.exe" ;
-const wchar_t mixedcase_exe_name[] = L"Installer-CA-Tests.exe" ;
-const wchar_t * multiple_exe_names[] = { mixedcase_exe_name, L"non-matching-name" } ;
+const wchar_t exact_file_name[] = L"installer-ca-tests.exe" ;
+const wchar_t mixedcase_file_name[] = L"Installer-CA-Tests.exe" ;
+const wchar_t * multiple_file_names[] = { mixedcase_file_name, L"non-matching-name" } ;
+const wchar_t * multiple_module_names[] = { L"kernel32.dll", L"non-matching-name" } ;
+const wchar_t * non_existent_module_names[] = { L"non-matching-name" } ;
 
 /**
  * Compare to our own process name, case-sensitive, no length limit
@@ -21,7 +23,7 @@ struct our_process_by_name
 {
   bool operator()( const PROCESSENTRY32W & process )
   {
-    return 0 == wcscmp( process.szExeFile, exact_exe_name ) ;
+    return 0 == wcscmp( process.szExeFile, exact_file_name ) ;
   } ;
 };
 
@@ -33,7 +35,7 @@ struct our_process_by_name_CI
 {
   bool operator()( const PROCESSENTRY32W & process ) 
   {
-    return 0 == wcscmpi( process.szExeFile, mixedcase_exe_name ) ;
+    return 0 == wcscmpi( process.szExeFile, mixedcase_file_name ) ;
   } ;
 } ;
 
@@ -45,8 +47,28 @@ struct our_process_by_name_CI_N
 {
   bool operator()( const PROCESSENTRY32W & process ) 
   {
-    return 0 == wcsncmpi( process.szExeFile, mixedcase_exe_name, sizeof( mixedcase_exe_name ) / sizeof( wchar_t ) ) ;
+    return 0 == wcsncmpi( process.szExeFile, mixedcase_file_name, sizeof( mixedcase_file_name ) / sizeof( wchar_t ) ) ;
   } ;
+} ;
+
+
+//-------------------------------------------------------
+//-------------------------------------------------------
+/**
+ * Filter by process name. Comparison is case-insensitive.
+ */
+class process_by_any_file_name_CI
+  : public std::unary_function< PROCESSENTRY32W, bool >
+{
+  const file_name_set & names ;
+public:
+  bool operator()( const PROCESSENTRY32W & process)
+  {
+    return names.find( process.szExeFile ) != names.end() ;
+  }
+  process_by_any_file_name_CI( const file_name_set & names )
+    : names( names )
+  {}
 } ;
 
 
@@ -61,28 +83,32 @@ PROCESSENTRY32 process_with_name( const wchar_t * s )
 }
 
 PROCESSENTRY32 process_empty = process_with_name( L"" ) ;
-PROCESSENTRY32 process_exact = process_with_name( exact_exe_name ) ;
-PROCESSENTRY32 process_mixedcase = process_with_name( mixedcase_exe_name ) ;
+PROCESSENTRY32 process_exact = process_with_name( exact_file_name ) ;
+PROCESSENTRY32 process_mixedcase = process_with_name( mixedcase_file_name ) ;
 PROCESSENTRY32 process_explorer = process_with_name( L"explorer.exe" ) ;
 PROCESSENTRY32 process_absent = process_with_name( L"no_such_name" ) ;
 
-exe_name_set multiple_name_set( multiple_exe_names, 2 ) ;
-process_by_any_exe_name_CI find_in_set( multiple_name_set ) ;
+file_name_set multiple_name_set( multiple_file_names, 2 ) ;
+file_name_set multiple_name_set_modules( multiple_module_names, 2 ) ;
+file_name_set non_existent_name_set_modules( non_existent_module_names, 1 ) ;
+process_by_any_file_name_CI find_in_set( multiple_name_set ) ;
+process_by_any_exe_with_any_module find_in_set_w_kernel32( multiple_name_set, multiple_name_set_modules ) ;
+process_by_any_exe_with_any_module find_in_set_w_non_existent( multiple_name_set, non_existent_name_set_modules ) ;
 
-TEST( exe_name_set, validate_setup )
+TEST( file_name_set, validate_setup )
 {
   ASSERT_EQ( 2u, multiple_name_set.size() ) ;
-  ASSERT_TRUE( multiple_name_set.find( mixedcase_exe_name ) != multiple_name_set.end() ) ;
-  ASSERT_TRUE( multiple_name_set.find( exact_exe_name ) != multiple_name_set.end() ) ;
+  ASSERT_TRUE( multiple_name_set.find( mixedcase_file_name ) != multiple_name_set.end() ) ;
+  ASSERT_TRUE( multiple_name_set.find( exact_file_name ) != multiple_name_set.end() ) ;
   ASSERT_TRUE( multiple_name_set.find( L"" ) == multiple_name_set.end() ) ;
   ASSERT_TRUE( multiple_name_set.find( L"not-in-list" ) == multiple_name_set.end() ) ;
 }
 
-TEST( process_by_any_exe_name_CI, empty )
+TEST( process_by_any_file_name_CI, empty )
 {
   const wchar_t * elements[ 1 ] = { 0 } ;   // cheating a bit
-  exe_name_set s( elements, 0 ) ;
-  process_by_any_exe_name_CI x( s ) ;
+  file_name_set s( elements, 0 ) ;
+  process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( x( process_empty ) ) ;
   ASSERT_FALSE( x( process_exact ) ) ;
@@ -91,11 +117,11 @@ TEST( process_by_any_exe_name_CI, empty )
   ASSERT_FALSE( x( process_absent ) ) ;
 }
 
-TEST( process_by_any_exe_name_CI, single_element )
+TEST( process_by_any_file_name_CI, single_element )
 {
-  const wchar_t * elements[ 1 ] = { exact_exe_name } ;
-  exe_name_set s( elements, 1 ) ;
-  process_by_any_exe_name_CI x( s ) ;
+  const wchar_t * elements[ 1 ] = { exact_file_name } ;
+  file_name_set s( elements, 1 ) ;
+  process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( x( process_empty ) ) ;
   ASSERT_TRUE( x( process_exact ) ) ;
@@ -104,10 +130,10 @@ TEST( process_by_any_exe_name_CI, single_element )
   ASSERT_FALSE( x( process_absent ) ) ;
 }
 
-TEST( process_by_any_exe_name_CI, two_elements )
+TEST( process_by_any_file_name_CI, two_elements )
 {
-  exe_name_set s( multiple_exe_names, 2 ) ;
-  process_by_any_exe_name_CI x( s ) ;
+  file_name_set s( multiple_file_names, 2 ) ;
+  process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( find_in_set( process_empty ) ) ;
   ASSERT_TRUE( find_in_set( process_exact ) ) ;
@@ -182,7 +208,7 @@ TEST( Process_List_Test, find_our_process_CI_N_special )
 TEST( Process_List_Test, find_our_process_CI_N_generic )
 {
   std::vector< PROCESSENTRY32W > v ;
-  initialize_process_list( v, process_by_name_CI( mixedcase_exe_name ), copy_all() ) ;
+  initialize_process_list( v, process_by_name_CI( mixedcase_file_name ), copy_all() ) ;
   unsigned int size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
@@ -237,4 +263,21 @@ TEST( pid_set, find_our_process_in_set )
   size_t size( s.size() ) ;
   EXPECT_EQ( size, 1u );
   ASSERT_GE( size, 1u );
+}
+
+TEST( pid_set, find_our_process_in_set_w_kernel32 )
+{
+  std::set< DWORD > s ;
+  initialize_process_set( s, find_in_set_w_kernel32, copy_PID() ) ;
+  size_t size( s.size() ) ;
+  EXPECT_EQ( size, 1u );
+  ASSERT_GE( size, 1u );
+}
+TEST( pid_set, find_our_process_in_set_w_non_existant )
+{
+  std::set< DWORD > s ;
+  initialize_process_set( s, find_in_set_w_non_existent, copy_PID() ) ;
+  size_t size( s.size() ) ;
+  EXPECT_EQ( size, 0u );
+  ASSERT_GE( size, 0u );
 }
