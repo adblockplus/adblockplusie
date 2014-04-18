@@ -4,7 +4,7 @@
   Language="1102"
   Culture="mr-IN"
 >
-    <String Id="LANG">0x044E</String>
+    <String Id="LANG">1102</String><!-- 0x044E -->
     <!-- WARNING: Don't know what code page will work -->
     <!-- Code page "UTF-8", id=65001 -->
     <!-- Code page "x-iscii-de", id=57002, ISCII Devanagari -->
