@@ -4,7 +4,7 @@
   Language="1"
   Culture="ar"
 >
-    <String Id="LANG">0x01</String>
+    <String Id="LANG">1</String><!-- 0x01 -->
     <String Id="CODEPAGE">1256</String>
     <!-- WiX has no way of evaluating static string expressions at compile time -->
     <String Id="ProductName32">Adblock Plus for IE (32-bit)</String>

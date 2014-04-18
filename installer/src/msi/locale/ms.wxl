@@ -4,7 +4,7 @@
   Language="62"
   Culture="ms"
 >
-    <String Id="LANG">0x3E</String>
+    <String Id="LANG">62</String><!-- 0x3E -->
     <!-- WARNING: Don't know what code page will work -->
     <!-- Code page "UTF-8", id=65001 -->
     <!-- Code page "x-iscii-ma", id=57009, ISCII Malayalam -->
