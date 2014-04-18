@@ -80,38 +80,40 @@ private:
 };
 
 //-------------------------------------------------------
-// exe_name_set: case-insensitive wide-string set
+// file_name_set: case-insensitive wide-string set
 //-------------------------------------------------------
 int wcscmpi( const wchar_t * s1, const wchar_t * s2 ) ;
 
-struct exe_name
+struct file_name
 {
   /**
    * Pointer to wide-character string, which is supposed to be null-terminated.
    */
   const wchar_t * name ;
 
-  exe_name( const wchar_t * name ) : name( name ) {} ;
+  file_name( const wchar_t * name ) : name( name ) {} ;
 } ;
 
 template <>
-struct std::less< exe_name >
-  : std::binary_function< exe_name, exe_name, bool >
+struct std::less< file_name >
+  : std::binary_function< file_name, file_name, bool >
 {
-  bool operator()( const exe_name & a, const exe_name & b ) const
+  bool operator()( const file_name & a, const file_name & b ) const
   {
     return wcscmpi( a.name, b.name ) < 0 ; 
   }
 } ;
 
-struct exe_name_set
-  : public std::set< exe_name >
+struct file_name_set
+  : public std::set< file_name >
 {
-  exe_name_set( const wchar_t * exe_name_list[], size_t n_exe_names )
+  file_name_set(){};
+
+  file_name_set( const wchar_t * file_name_list[], size_t n_file_names )
   {
-    for ( unsigned int j = 0 ; j < n_exe_names ; ++ j )
+    for ( unsigned int j = 0 ; j < n_file_names ; ++ j )
     {
-      insert( exe_name( exe_name_list[ j ] ) ) ;
+      insert( file_name( file_name_list[ j ] ) ) ;
     }
   }
 } ;
@@ -119,18 +121,20 @@ struct exe_name_set
 //-------------------------------------------------------
 //-------------------------------------------------------
 /**
- * Filter by process name. Comparison is case-insensitive.
+ * Filter by process name. Comparison is case-insensitive. With ABP module loaded
  */
-class process_by_any_exe_name_CI
-  : public std::unary_function< PROCESSENTRY32W, bool >
+class process_by_any_exe_with_any_module
+  : public std::binary_function< PROCESSENTRY32W, file_name_set, bool >
 {
-  const exe_name_set & names ;
+  const file_name_set & processNames ;
+  const file_name_set & moduleNames;
 public:
   bool operator()( const PROCESSENTRY32W & ) ;
-  process_by_any_exe_name_CI( const exe_name_set & names )
-    : names( names )
+  process_by_any_exe_with_any_module( const file_name_set & names, const file_name_set & moduleNames )
+    : processNames( names ), moduleNames( moduleNames )
   {}
 } ;
+
 
 //-------------------------------------------------------
 // Process utility functions.
@@ -264,24 +268,62 @@ public:
   /**
    * Return a pointer to the first process in the snapshot.
    */
-  PROCESSENTRY32W * begin() ;
-
-  /**
-   * The end pointer is an alias for the null pointer.
-   */
-  inline PROCESSENTRY32W * end() const { return 0 ; }
+  PROCESSENTRY32W * first() ;
 
   /**
    * Return a pointer to the next process in the snapshot.
    * begin() must have been called first.
    */
   PROCESSENTRY32W * next() ;
+} ;
+
+class ModulesSnapshot
+{
+  /**
+   * Handle to the process snapshot.
+   */
+  Windows_Handle handle;
 
   /**
-   * Type definition for pointer to underlying structure.
+   * Buffer for reading a single module entry out of the snapshot.
    */
-  typedef PROCESSENTRY32W * Pointer ;
-} ;
+  MODULEENTRY32W module;
+
+  /**
+   * Copy constructor declared private and not defined.
+   *
+   * \par Implementation
+   *   Add "= delete" for C++11.
+   */
+  ModulesSnapshot(const ModulesSnapshot&);
+
+  /**
+   * Copy assignment declared private and not defined.
+   *
+   * \par Implementation
+   *   Add "= delete" for C++11.
+   */
+  ModulesSnapshot operator=(const ModulesSnapshot&);
+
+
+public:
+  /**
+   * Default constructor takes the snapshot.
+   */
+  ModulesSnapshot(DWORD processId);
+
+  /**
+   * Return a pointer to the first process in the snapshot.
+   */
+  MODULEENTRY32W* first();
+
+  /**
+   * Return a pointer to the next process in the snapshot.
+   * begin() must have been called first.
+   */
+  MODULEENTRY32W* next();
+};
+
 
 //-------------------------------------------------------
 // initialize_process_list
@@ -295,23 +337,23 @@ public:
  *	The use of this predicate is analogous to that in std::copy_if.
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
-template< class T, class Admittance, class Extractor >
-void initialize_process_list( std::vector< T > & v, Snapshot & snap, Admittance admit = Admittance(), Extractor extract = Extractor() )
+template<class T, class Admittance, class Extractor>
+void initialize_process_list(std::vector<T>& v, Snapshot& snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
-  Snapshot::Pointer p = snap.begin() ;
-  while ( p != snap.end() )
+  PROCESSENTRY32W* p = snap.first();
+  while (p != NULL)
   {
-    if ( admit( * p ) )
+    if (admit(*p ))
     {
       /*
 	* We don't have C++11 emplace_back, which can construct the element in place.
 	* Instead, we copy the return value of the converter.
 	*/
-      v.push_back( extract( * p ) );
+      v.push_back(extract(*p));
     }
-    p = snap.next() ;
+    p = snap.next();
   }
-} ;
+};
 
 //-------------------------------------------------------
 // initialize_process_set
@@ -325,19 +367,19 @@ void initialize_process_list( std::vector< T > & v, Snapshot & snap, Admittance 
  *	The use of this predicate is analogous to that in std::copy_if.
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
-template< class T, class Admittance, class Extractor >
-void initialize_process_set( std::set< T > & set, Snapshot & snap, Admittance admit = Admittance(), Extractor extract = Extractor() )
+template<class T, class Admittance, class Extractor>
+void initialize_process_set(std::set< T > & set, Snapshot& snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
-  Snapshot::Pointer p = snap.begin() ;
-  while ( p != snap.end() )
+  PROCESSENTRY32W* p = snap.first();
+  while (p != NULL)
   {
-    if ( admit( * p ) )
+    if (admit(*p))
     {
-      set.insert( extract( * p ) );
+      set.insert(extract(*p));
     }
-    p = snap.next() ;
+    p = snap.next();
   }
-} ;
+};
 
 //-------------------------------------------------------
 // enumerate_windows
@@ -465,12 +507,13 @@ class Process_Closer
    * The argument of the filter constructor is a set by reference.
    * Since it does not make a copy for itself, we define it as a class member to provide its allocation.
    */
-  exe_name_set exe_names ;
-
+  file_name_set file_names ;
   /**
-   * Filter function object matches on any of the exe names specified in the constructor.
+   * Set of module (DLL) names by which to filter.
    */
-  process_by_any_exe_name_CI filter ;
+  file_name_set module_names ;
+
+  process_by_any_exe_with_any_module filter ;
 
   /**
    * Copy function object copies just the process ID.
@@ -521,8 +564,15 @@ class Process_Closer
   } ;
 
 public:
-  Process_Closer( Snapshot & snapshot, const wchar_t * exe_name_list[], size_t n_exe_names )
-    : snapshot( snapshot ), exe_names( exe_name_list, n_exe_names ), filter( exe_names )
+  template <size_t n_file_names, size_t n_module_names>
+  Process_Closer(Snapshot & snapshot, const wchar_t* (&file_name_list)[n_file_names], const wchar_t* (&module_name_list)[n_module_names])
+    : snapshot(snapshot), file_names(file_name_list, n_file_names), module_names(module_name_list, n_module_names), filter(file_names, module_names)
+  {
+    update() ;
+  }
+  template <size_t n_file_names>
+  Process_Closer(Snapshot & snapshot, const wchar_t * (&file_name_list)[n_file_names])
+    : snapshot(snapshot), file_names(file_name_list, n_file_names), module_names(), filter(file_names, module_names)
   {
     update() ;
   }
