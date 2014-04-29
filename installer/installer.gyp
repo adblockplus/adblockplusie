@@ -112,7 +112,7 @@
 	  'outputs': [ '<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).msi', '<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).mst' ],
       'action': 
 	  [
-	    '..\..\msibuild.cmd >(msi_build_phase) >(locale_id)', '<(RULE_INPUT_PATH)', 
+	    '..\..\msibuild.cmd >(msi_build_phase) >(locale_id) >(RULE_INPUT_ROOT)', '<(RULE_INPUT_PATH)', 
 		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).msi',
 		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).mst',
 		'<(build_dir_arch)/adblockplusie-BASE-<(target_arch).msi',
@@ -243,7 +243,7 @@
   #     Generates the reference MSI upon which all transforms are based.
   #############
   {
-    'target_name': 'MSI @ de 7 (German) [BASE]',
+    'target_name': 'MSI @ en 9 (English) [BASE]',
     'type': 'none',
     'dependencies' : 
     [
@@ -254,20 +254,20 @@
 	'variables': {
 	  # Only define 'msi_build_phase' once as 'initial', here in the BASE target. All others use the default value.
 	  'msi_build_phase': 'initial',
-	  'locale_id': '7',
+	  'locale_id': '9',
 	},
-	'sources': [ 'src/msi/locale/de.wxl' ],
+	'sources': [ 'src/msi/locale/en.wxl' ],
   },
 
   #############
-  # MSI ar 1 (Arabic - generic)
+  # MSI ar 1 (Arabic - Saudi Arabia)
   #############
   {
-    'target_name': 'MSI ar 1 (Arabic - generic)',
+    'target_name': 'MSI ar 1 (Arabic - Saudi Arabia)',
     'type': 'none',
-    'dependencies' : [ 'MSI @ de 7 (German) [BASE]' ],
+    'dependencies' : [ 'MSI @ en 9 (English) [BASE]' ],
 	'variables': { 'locale_id': '1' },
-	'sources': [ 'src/msi/locale/ar.wxl' ],
+	'sources': [ 'src/msi/locale/ar-SA.wxl' ],
   },
 
   #############
@@ -276,7 +276,7 @@
   {
     'target_name': 'MSI bg-BG 1026 (Bulgarian - Bulgaria)',
     'type': 'none',
-    'dependencies' : [ 'MSI ar 1 (Arabic - generic)' ],
+    'dependencies' : [ 'MSI ar 1 (Arabic - Saudi Arabia)' ],
 	'variables': { 'locale_id': '1026' },
 	'sources': [ 'src/msi/locale/bg-BG.wxl' ],
   },
@@ -326,14 +326,14 @@
   },
 
   #############
-  # MSI en 9 (English - generic)
+  # MSI de 7 (German - Germany)
   #############
   {
-    'target_name': 'MSI en 9 (English - generic)',
+    'target_name': 'MSI de 7 (German - Germany)',
     'type': 'none',
     'dependencies' : [ 'MSI el-GR 1032 (Greek - Greece)' ],
-	'variables': { 'locale_id': '9' },
-	'sources': [ 'src/msi/locale/en.wxl' ],
+	'variables': { 'locale_id': '7' },
+	'sources': [ 'src/msi/locale/de-DE.wxl' ],
   },
 
   #############
@@ -342,7 +342,7 @@
   {
     'target_name': 'MSI es-ES 1034 (Spanish - Spain)',
     'type': 'none',
-    'dependencies' : [ 'MSI en 9 (English - generic)' ],
+    'dependencies' : [ 'MSI de 7 (German - Germany)' ],
 	'variables': { 'locale_id': '1034' },
 	'sources': [ 'src/msi/locale/es-ES.wxl' ],
   },
@@ -370,25 +370,14 @@
   },
 
   #############
-  # MSI fil-PH 1124 (Filipino - Philippines)
+  # MSI fr 12 (French - France)
   #############
   {
-    'target_name': 'MSI fil-PH 1124 (Filipino - Philippines)',
+    'target_name': 'MSI fr 12 (French - France)',
     'type': 'none',
     'dependencies' : [ 'MSI fi 1035 (Finnish - Finland)' ],
-	'variables': { 'locale_id': '1124' },
-	'sources': [ 'src/msi/locale/fil-PH.wxl' ],
-  },
-
-  #############
-  # MSI fr 12 (French - generic)
-  #############
-  {
-    'target_name': 'MSI fr 12 (French - generic)',
-    'type': 'none',
-    'dependencies' : [ 'MSI fil-PH 1124 (Filipino - Philippines)' ],
 	'variables': { 'locale_id': '12' },
-	'sources': [ 'src/msi/locale/fr.wxl' ],
+	'sources': [ 'src/msi/locale/fr-FR.wxl' ],
   },
 
   #############
@@ -397,20 +386,9 @@
   {
     'target_name': 'MSI he-IL 1037 (Hebrew - Israel)',
     'type': 'none',
-    'dependencies' : [ 'MSI fr 12 (French - generic)' ],
+    'dependencies' : [ 'MSI fr 12 (French - France)' ],
 	'variables': { 'locale_id': '1037' },
 	'sources': [ 'src/msi/locale/he-IL.wxl' ],
-  },
-
-  #############
-  # MSI hi-IN 1081 (Hindi - India)
-  #############
-  {
-    'target_name': 'MSI hi-IN 1081 (Hindi - India)',
-    'type': 'none',
-    'dependencies' : [ 'MSI he-IL 1037 (Hebrew - Israel)' ],
-	'variables': { 'locale_id': '1081' },
-	'sources': [ 'src/msi/locale/hi-IN.wxl' ],
   },
 
   #############
@@ -419,7 +397,7 @@
   {
     'target_name': 'MSI hr-HR 1050 (Croatian - Croatia)',
     'type': 'none',
-    'dependencies' : [ 'MSI hi-IN 1081 (Hindi - India)' ],
+    'dependencies' : [ 'MSI he-IL 1037 (Hebrew - Israel)' ],
 	'variables': { 'locale_id': '1050' },
 	'sources': [ 'src/msi/locale/hr-HR.wxl' ],
   },
@@ -436,14 +414,14 @@
   },
 
   #############
-  # MSI it 16 (Italian - generic)
+  # MSI it 16 (Italian - Italy)
   #############
   {
-    'target_name': 'MSI it 16 (Italian - generic)',
+    'target_name': 'MSI it 16 (Italian - Italy)',
     'type': 'none',
     'dependencies' : [ 'MSI hu-HU 1038 (Hungarian - Hungary)' ],
 	'variables': { 'locale_id': '16' },
-	'sources': [ 'src/msi/locale/it.wxl' ],
+	'sources': [ 'src/msi/locale/it-IT.wxl' ],
   },
 
   #############
@@ -452,42 +430,9 @@
   {
     'target_name': 'MSI ja-JP 1041 (Japanese - Japan)',
     'type': 'none',
-    'dependencies' : [ 'MSI it 16 (Italian - generic)' ],
+    'dependencies' : [ 'MSI it 16 (Italian - Italy)' ],
 	'variables': { 'locale_id': '1041' },
 	'sources': [ 'src/msi/locale/ja-JP.wxl' ],
-  },
-
-  #############
-  # MSI kn-IN 1099 (Kannada - India)
-  #############
-  {
-    'target_name': 'MSI kn-IN 1099 (Kannada - India)',
-    'type': 'none',
-    'dependencies' : [ 'MSI ja-JP 1041 (Japanese - Japan)' ],
-	'variables': { 'locale_id': '1099' },
-	'sources': [ 'src/msi/locale/kn-IN.wxl' ],
-  },
-
-  #############
-  # MSI mr-IN 1102 (Marathi - India)
-  #############
-  {
-    'target_name': 'MSI mr-IN 1102 (Marathi - India)',
-    'type': 'none',
-    'dependencies' : [ 'MSI kn-IN 1099 (Kannada - India)' ],
-	'variables': { 'locale_id': '1102' },
-	'sources': [ 'src/msi/locale/mr-IN.wxl' ],
-  },
-
-  #############
-  # MSI ms 62 (Malay - generic)
-  #############
-  {
-    'target_name': 'MSI ms 62 (Malay - generic)',
-    'type': 'none',
-    'dependencies' : [ 'MSI mr-IN 1102 (Marathi - India)' ],
-	'variables': { 'locale_id': '62' },
-	'sources': [ 'src/msi/locale/ms.wxl' ],
   },
 
   #############
@@ -497,31 +442,20 @@
   {
     'target_name': 'MSI nb-NO 1044 (Norwegian - Bokmal, Norway)',
     'type': 'none',
-    'dependencies' : [ 'MSI ms 62 (Malay - generic)' ],
+    'dependencies' : [ 'MSI ja-JP 1041 (Japanese - Japan)' ],
 	'variables': { 'locale_id': '1044' },
 	'sources': [ 'src/msi/locale/nb-NO.wxl' ],
   },
 
   #############
-  # MSI nl 19 (Dutch - generic)
+  # MSI nl 19 (Dutch - Netherlands)
   #############
   {
-    'target_name': 'MSI nl 19 (Dutch - generic)',
+    'target_name': 'MSI nl 19 (Dutch - Netherlands)',
     'type': 'none',
     'dependencies' : [ 'MSI nb-NO 1044 (Norwegian - Bokmal, Norway)' ],
 	'variables': { 'locale_id': '19' },
-	'sources': [ 'src/msi/locale/nl.wxl' ],
-  },
-
-  #############
-  # MSI nn-NO 2068 (Norwegian - Nynorsk, Norway)
-  #############
-  {
-    'target_name': 'MSI nn-NO 2068 (Norwegian - Nynorsk, Norway)',
-    'type': 'none',
-    'dependencies' : [ 'MSI nl 19 (Dutch - generic)' ],
-	'variables': { 'locale_id': '2068' },
-	'sources': [ 'src/msi/locale/nn-NO.wxl' ],
+	'sources': [ 'src/msi/locale/nl-NL.wxl' ],
   },
 
   #############
@@ -530,7 +464,7 @@
   {
     'target_name': 'MSI pl-PL 1045 (Polish - Poland)',
     'type': 'none',
-    'dependencies' : [ 'MSI nn-NO 2068 (Norwegian - Nynorsk, Norway)' ],
+    'dependencies' : [ 'MSI nl 19 (Dutch - Netherlands)' ],
 	'variables': { 'locale_id': '1045' },
 	'sources': [ 'src/msi/locale/pl-PL.wxl' ],
   },
@@ -634,17 +568,6 @@
 	'sources': [ 'src/msi/locale/uk-UA.wxl' ],
   },
 
-  #############
-  # MSI ur-PK 1056 (Urdu - Pakistan)
-  #############
-  {
-    'target_name': 'MSI ur-PK 1056 (Urdu - Pakistan)',
-    'type': 'none',
-    'dependencies' : [ 'MSI uk-UA 1058 (Ukrainian - Ukraine)' ],
-	'variables': { 'locale_id': '1056' },
-	'sources': [ 'src/msi/locale/ur-PK.wxl' ],
-  },
-
   #####################
   # Note: The locale codes for Chinese differ between the usage in the .NET library and the Windows OS.
   #   Mostly these are the same, but there are some places where LCID's are listed that use the .NET values.
@@ -660,7 +583,7 @@
   {
     'target_name': 'MSI zh-CN 2052 (Chinese - China)',
     'type': 'none',
-    'dependencies' : [ 'MSI ur-PK 1056 (Urdu - Pakistan)' ],
+    'dependencies' : [ 'MSI uk-UA 1058 (Ukrainian - Ukraine)' ],
 	'variables': { 'locale_id': '2052' },
 	'sources': [ 'src/msi/locale/zh-CN.wxl' ],
   },
