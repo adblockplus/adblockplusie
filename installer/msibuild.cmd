@@ -4,6 +4,8 @@ set FLAG=%1
 shift
 set LOCALE_ID=%1
 shift
+set LOCALE_NAME=%1
+shift
 set LOCALE_FILE=%1
 shift
 set MSI_LOCALE=%1
@@ -22,14 +24,20 @@ set WIXOBJ=%WIXOBJ% %1
 shift
 set WIXOBJ=%WIXOBJ% %1
 if "%WIXOBJ%"=="" goto Help
-if "%FLAG%"=="initial" goto Light
-if "%FLAG%"=="additional" goto Light
+if "%FLAG%"=="initial" (
+  set CULTURES=
+  goto Light
+)
+if "%FLAG%"=="additional" ( 
+  set CULTURES=-cultures:%LOCALE_NAME%
+  goto Light
+)
 echo First argument must be either 'initial' or 'additional'
 exit /b 1
 goto End
 :Light
 echo on
-light -notidy -nologo -ext WixUIExtension -sval -loc %LOCALE_FILE% -out %MSI_LOCALE% %WIXOBJ%
+light -notidy -nologo -ext WixUIExtension -sval %CULTURES% -loc %LOCALE_FILE% -out %MSI_LOCALE% %WIXOBJ%
 if errorlevel 1 GOTO :Error
 @echo off
 if "%FLAG%"=="additional" goto Additional
