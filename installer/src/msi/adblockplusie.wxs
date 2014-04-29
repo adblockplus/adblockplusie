@@ -39,7 +39,7 @@
     Second, change the default to "Release" (or perhaps an error).
 -->
 <?ifndef CA_Configuration?>
-  <?define CA_Configuration="Debug" ?>
+  <?define CA_Configuration="Release" ?>
 <?endif?>
 
 <!--
