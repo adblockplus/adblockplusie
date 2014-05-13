@@ -35,7 +35,7 @@
                 Not exactly a very expressive way of getting this result.
             -->
             <bal:WixStandardBootstrapperApplication
-                LicenseUrl=""
+                LicenseUrl="" SuppressOptionsUI="yes"
             />
         </BootstrapperApplicationRef>
         <Chain
