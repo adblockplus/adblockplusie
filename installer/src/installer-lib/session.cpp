@@ -2,13 +2,10 @@
  * \file session.cpp Implementation of Session class.
  */
 
+#include "installer-lib.h"
 #include "session.h"
 #include "property.h"
 #include "msiquery.h"
-
-// Temporary for debugging
-#include <sstream>
-
 
 //-----------------------------------------------------------------------------------------
 // Message
@@ -81,10 +78,7 @@ int Session::write_message( Message & m )
   int x = write_message_noexcept( m ) ;
   if ( x == -1 )
   {
-    DWORD z = ::GetLastError();
-    std::ostringstream s ;
-    s << "Error writing message. err = 0x" << std::hex << z ;
-    throw std::runtime_error( s.str() ) ;
+    throw windows_api_error( "MsiProcessMessage", x, "attempt to write to log file" ) ;
   }
   return x ;
 }

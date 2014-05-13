@@ -4,7 +4,7 @@
   Language="2052"
   Culture="zh-CN"
 >
-    <String Id="LANG">0x0804</String>
+    <String Id="LANG">2052</String><!-- 0x0804 -->
     <!-- WARNING: Multiple code pages possible -->
     <!-- Code page "UTF-8", id=65001 -->
     <!-- Code page "gb2312-8", id=936, ANSI/OEM Simplified Chinese (PRC, Singapore); Chinese Simplified (GB2312) -->

@@ -7,6 +7,9 @@
     <?error No definition for WiX variable "Version" ?>
 <?endif?>
 
+<?define source_dir="src\setup-exe" ?>
+<?define build_base_dir="build" ?>
+
 <Wix
     xmlns="http://schemas.microsoft.com/wix/2006/wi"
     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension"
@@ -25,22 +28,16 @@
             When we replace the UI, we should be sure to change this symbol in both places to avoid inadvertently linking to the wrong object. 
         -->
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
-            <Payload Name="abp-64.png" SourceFile="abp-64.png" />
+            <Payload Name="abp-64.png" SourceFile="$(var.source_dir)\abp-64.png" />
             <!--
                 The way to suppress the license in the UI sequence is to set the URL attribute to an empty string 
                     and to leave out the file attribute entirely.
                 Not exactly a very expressive way of getting this result.
             -->
             <bal:WixStandardBootstrapperApplication
-                LicenseUrl=""
+                LicenseUrl="" SuppressOptionsUI="yes"
             />
-            <!--
-              Localization payloads. See http://stackoverflow.com/a/11402260/1794538 for why it's done this way.
-            -->
-            <Payload Name="1031\bootstrap-theme.wxl" SourceFile="1031\bootstrap-theme.wxl" />
         </BootstrapperApplicationRef>
-        <WixVariable Id="WixStdbaThemeXml" Value="bootstrap-theme.xml" />
-        <WixVariable Id="WixStdbaThemeWxl" Value="bootstrap-theme.wxl" />
         <Chain
             DisableSystemRestore="yes"
         >
@@ -50,16 +47,18 @@
              -->
             <MsiPackage
                 DisplayName="Adblock Plus for IE (ia32)"
-                DisplayInternalUI="no"
+                DisplayInternalUI="yes"
                 Visible="yes"
-                SourceFile="..\build\ia32\adblockplusie-$(var.Version)-en-us-ia32.msi"
+                ForcePerMachine="yes"
+                SourceFile="$(var.build_base_dir)\ia32\adblockplusie-$(var.Version)-multilanguage-ia32.msi"
                 InstallCondition="Not VersionNT64"
             />
             <MsiPackage
                 DisplayName="Adblock Plus for IE (x64)"
-                DisplayInternalUI="no"
+                DisplayInternalUI="yes"
                 Visible="yes"
-                SourceFile="..\build\x64\adblockplusie-$(var.Version)-en-us-x64.msi"
+                ForcePerMachine="yes"
+                SourceFile="$(var.build_base_dir)\x64\adblockplusie-$(var.Version)-multilanguage-x64.msi"
                 InstallCondition="VersionNT64"
             />
         </Chain>

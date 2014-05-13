@@ -4,7 +4,7 @@
   Language="1099"
   Culture="kn-IN"
 >
-    <String Id="LANG">0x044B</String>
+    <String Id="LANG">1099</String><!-- 0x044B -->
     <!-- WARNING: Don't know what code page will work -->
     <!-- Code page "UTF-8", id=65001 -->
     <!-- Code page "x-iscii-ka", id=57008, ISCII Kannada -->

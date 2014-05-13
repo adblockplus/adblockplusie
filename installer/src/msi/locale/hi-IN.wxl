@@ -4,7 +4,7 @@
   Language="1081"
   Culture="hi-IN"
 >
-    <String Id="LANG">0x0439</String>
+    <String Id="LANG">1081</String><!-- 0x0439 -->
     <!-- WARNING: Don't know what code page will work -->
     <!-- Code page "UTF-8", id=65001 -->
     <!-- Code page "x-iscii-de", id=57002, ISCII Devanagari -->

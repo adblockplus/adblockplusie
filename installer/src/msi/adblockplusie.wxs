@@ -39,7 +39,7 @@
     Second, change the default to "Release" (or perhaps an error).
 -->
 <?ifndef CA_Configuration?>
-  <?define CA_Configuration="Debug" ?>
+  <?define CA_Configuration="Release" ?>
 <?endif?>
 
 <!--
@@ -112,7 +112,7 @@
       Comments="Thank you for using Adblock Plus."
       Manufacturer="Eyeo GmbH"
       InstallerVersion="$(var.Minimum_Version)"
-      Languages="7,1,9,12,16,19,1026,1027,1028,1029,1030,1032,1034,1035,1037,1038,1041,1044,1045,1046,1048,1049,1050,1051,1053,1054,1055,1058,1061,1081,2052,2070"
+      Languages="9,1,7,12,16,19,1026,1027,1029,1030,1032,1034,1035,1037,1038,1041,1044,1045,1046,1048,1049,1050,1051,1053,1054,1055,1058,1061,2052,2070"
       Compressed="yes"
       InstallScope="perMachine" InstallPrivileges="elevated"
     />
