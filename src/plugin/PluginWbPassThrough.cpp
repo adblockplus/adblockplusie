@@ -133,14 +133,14 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
   CString boundDomain;
   CString mimeType;
+  LPOLESTR mime[10];
   if (pOIBindInfo)
   {
     ULONG resLen = 0;
-    LPOLESTR mime = 0;
-    pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, &mime, 1, &resLen);
+    pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, mime, 10, &resLen);
     if (mime && resLen > 0)
     {
-      mimeType.SetString(mime);
+      mimeType.SetString(mime[0]);
     }
     LPOLESTR bindToObject = 0;
     pOIBindInfo->GetBindString(BINDSTRING_FLAG_BIND_TO_OBJECT, &bindToObject, 1, &resLen);
