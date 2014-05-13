@@ -2,9 +2,10 @@
  * \file property.cpp Implementation of Property class etc.
  */
 
+#include "installer-lib.h"
 #include "property.h"
 #include "session.h"
-#include "msiquery.h"
+#include <msiquery.h>
 #include <memory>
 
 //-----------------------------------------------------------------------------------------
@@ -29,7 +30,8 @@ Property::operator std::wstring() const
   // This buffer allocates on the stack, so we don't want it too large; 64 characters is enough for most properties anyway.
   WCHAR buffer1[ 64 ] = { L'\0' } ;
   DWORD length = sizeof( buffer1 ) / sizeof( WCHAR ) ;
-  switch ( MsiGetPropertyW( handle, name.c_str(), buffer1, & length ) ) 
+  UINT x = MsiGetPropertyW( handle, name.c_str(), buffer1, & length ) ;
+  switch ( x )
   {
   case ERROR_SUCCESS:
     // This call might succeed, which means the return value was short enough to fit into the buffer.
@@ -38,17 +40,18 @@ Property::operator std::wstring() const
     // Do nothing yet.
     break ;
   default:
-    throw std::runtime_error( "Error getting property" ) ;
+    throw windows_api_error( "MsiGetPropertyW", x, "fixed buffer" ) ;
   }
   // Assert we received ERROR_MORE_DATA
   // unique_ptr handles deallocation transparently
-  std::unique_ptr< WCHAR[] > buffer2( new WCHAR[ length ] );
-  switch ( MsiGetPropertyW( handle, name.c_str(), buffer2.get(), & length ) )
+  std::unique_ptr< WCHAR[] > buffer2( new WCHAR[ length ] ) ;
+  x = MsiGetPropertyW( handle, name.c_str(), buffer2.get(), & length ) ;
+  switch ( x )
   {
   case ERROR_SUCCESS:
     return std::wstring( buffer2.get(), length ) ;
   default:
-    throw std::runtime_error( "Error getting property" ) ;
+    throw windows_api_error( "MsiGetPropertyW", x, "allocated buffer" ) ;
   }
 }
 
@@ -58,8 +61,9 @@ Property::operator std::wstring() const
  */
 void Property::operator=( const std::wstring & value )
 {
-  if ( MsiSetProperty( handle, name.c_str(), value.c_str() ) != ERROR_SUCCESS )
+  UINT x = MsiSetPropertyW( handle, name.c_str(), value.c_str() ) ;
+  if ( x != ERROR_SUCCESS )
   {
-    throw std::runtime_error( "Error setting property" ) ;
+    throw windows_api_error( "MsiSetPropertyW", x ) ;
   }
 }

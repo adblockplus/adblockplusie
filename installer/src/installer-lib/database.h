@@ -12,6 +12,7 @@
 #include <Msi.h>
 #include <MsiQuery.h>
 
+#include "installer-lib.h"
 #include "handle.h"
 #include "session.h"
 
@@ -116,7 +117,7 @@ class File_System_Database : public Database
     UINT x = MsiOpenDatabaseW( pathname, MSIDBOPEN_READONLY, & handle ) ;
     if ( x != ERROR_SUCCESS )
     {
-      throw std::runtime_error( "Open database from file system failed" ) ;
+      throw windows_api_error( "MsiOpenDatabaseW", x, "MSI database on file system" ) ;
     }
     return msi_handle( handle ) ;
   }

@@ -9,11 +9,18 @@
 // Comparison objects
 //-------------------------------------------------------
 
-const wchar_t exact_file_name[] = L"installer-ca-tests.exe" ;
-const wchar_t mixedcase_file_name[] = L"Installer-CA-Tests.exe" ;
-const wchar_t * multiple_file_names[] = { mixedcase_file_name, L"non-matching-name" } ;
 const wchar_t * multiple_module_names[] = { L"kernel32.dll", L"non-matching-name" } ;
 const wchar_t * non_existent_module_names[] = { L"non-matching-name" } ;
+
+const wchar_t exact_exe_name[] = L"installer-ca-tests.exe" ;
+const std::wstring exact_exe_string( exact_exe_name ) ;
+const wstring_ci exact_exe_string_ci( exact_exe_name ) ;
+
+const wchar_t mixedcase_exe_name[] = L"Installer-CA-Tests.exe" ;
+const wstring_ci mixedcase_exe_string_ci( mixedcase_exe_name ) ;
+
+const wchar_t unknown_name[] = L"non-matching-name" ;
+const wchar_t * multiple_exe_names[] = { mixedcase_exe_name, unknown_name } ;
 
 /**
  * Compare to our own process name, case-sensitive, no length limit
@@ -23,7 +30,7 @@ struct our_process_by_name
 {
   bool operator()( const PROCESSENTRY32W & process )
   {
-    return 0 == wcscmp( process.szExeFile, exact_file_name ) ;
+    return std::wstring( process.szExeFile ) == exact_exe_string ;
   } ;
 };
 
@@ -35,20 +42,17 @@ struct our_process_by_name_CI
 {
   bool operator()( const PROCESSENTRY32W & process ) 
   {
-    return 0 == wcscmpi( process.szExeFile, mixedcase_file_name ) ;
+    return wstring_ci( process.szExeFile ) == mixedcase_exe_string_ci ;
   } ;
 } ;
 
-/**
- * Compare to our own process name, case-insensitive, length-limited
- */
-struct our_process_by_name_CI_N
-  : std::unary_function< PROCESSENTRY32W, bool >
+
+struct our_process_by_name_subclassed
+  : public process_by_any_exe_with_any_module
 {
-  bool operator()( const PROCESSENTRY32W & process ) 
-  {
-    return 0 == wcsncmpi( process.szExeFile, mixedcase_file_name, sizeof( mixedcase_file_name ) / sizeof( wchar_t ) ) ;
-  } ;
+  our_process_by_name_subclassed()
+    : process_by_any_exe_with_any_module( file_name_set( multiple_exe_names ), file_name_set() )
+  {}
 } ;
 
 
@@ -71,6 +75,23 @@ public:
   {}
 } ;
 
+/**
+ * Filter by process name. Comparison is case-insensitive.
+ */
+class process_by_name_CI
+  : public std::unary_function< PROCESSENTRY32W, bool >
+{
+  const wstring_ci _name ;
+public:
+  bool operator()( const PROCESSENTRY32W & process )
+  {
+    return _name == wstring_ci( process.szExeFile ) ;
+  }
+
+  process_by_name_CI( const wchar_t * name )
+    : _name( name )
+  {}
+} ;
 
 //-------------------------------------------------------
 // TESTS, no snapshots
@@ -83,14 +104,14 @@ PROCESSENTRY32 process_with_name( const wchar_t * s )
 }
 
 PROCESSENTRY32 process_empty = process_with_name( L"" ) ;
-PROCESSENTRY32 process_exact = process_with_name( exact_file_name ) ;
-PROCESSENTRY32 process_mixedcase = process_with_name( mixedcase_file_name ) ;
+PROCESSENTRY32 process_exact = process_with_name( exact_exe_name ) ;
+PROCESSENTRY32 process_mixedcase = process_with_name( mixedcase_exe_name ) ;
 PROCESSENTRY32 process_explorer = process_with_name( L"explorer.exe" ) ;
 PROCESSENTRY32 process_absent = process_with_name( L"no_such_name" ) ;
 
-file_name_set multiple_name_set( multiple_file_names, 2 ) ;
-file_name_set multiple_name_set_modules( multiple_module_names, 2 ) ;
-file_name_set non_existent_name_set_modules( non_existent_module_names, 1 ) ;
+file_name_set multiple_name_set( multiple_exe_names ) ;
+file_name_set multiple_name_set_modules( multiple_module_names ) ;
+file_name_set non_existent_name_set_modules( non_existent_module_names ) ;
 process_by_any_file_name_CI find_in_set( multiple_name_set ) ;
 process_by_any_exe_with_any_module find_in_set_w_kernel32( multiple_name_set, multiple_name_set_modules ) ;
 process_by_any_exe_with_any_module find_in_set_w_non_existent( multiple_name_set, non_existent_name_set_modules ) ;
@@ -98,16 +119,15 @@ process_by_any_exe_with_any_module find_in_set_w_non_existent( multiple_name_set
 TEST( file_name_set, validate_setup )
 {
   ASSERT_EQ( 2u, multiple_name_set.size() ) ;
-  ASSERT_TRUE( multiple_name_set.find( mixedcase_file_name ) != multiple_name_set.end() ) ;
-  ASSERT_TRUE( multiple_name_set.find( exact_file_name ) != multiple_name_set.end() ) ;
+  ASSERT_TRUE( multiple_name_set.find( exact_exe_string_ci ) != multiple_name_set.end() ) ;
+  ASSERT_TRUE( multiple_name_set.find( mixedcase_exe_string_ci ) != multiple_name_set.end() ) ;
   ASSERT_TRUE( multiple_name_set.find( L"" ) == multiple_name_set.end() ) ;
   ASSERT_TRUE( multiple_name_set.find( L"not-in-list" ) == multiple_name_set.end() ) ;
 }
 
 TEST( process_by_any_file_name_CI, empty )
 {
-  const wchar_t * elements[ 1 ] = { 0 } ;   // cheating a bit
-  file_name_set s( elements, 0 ) ;
+  file_name_set s ;
   process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( x( process_empty ) ) ;
@@ -117,10 +137,10 @@ TEST( process_by_any_file_name_CI, empty )
   ASSERT_FALSE( x( process_absent ) ) ;
 }
 
-TEST( process_by_any_file_name_CI, single_element )
+TEST( process_by_any_file_name_CI, single_element_known )
 {
-  const wchar_t * elements[ 1 ] = { exact_file_name } ;
-  file_name_set s( elements, 1 ) ;
+  const wchar_t * elements[ 1 ] = { exact_exe_name } ;
+  file_name_set s( elements ) ;
   process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( x( process_empty ) ) ;
@@ -130,9 +150,22 @@ TEST( process_by_any_file_name_CI, single_element )
   ASSERT_FALSE( x( process_absent ) ) ;
 }
 
+TEST( process_by_any_file_name_CI, single_element_unknown )
+{
+  const wchar_t * elements[ 1 ] = { unknown_name } ;
+  file_name_set s( elements ) ;
+  process_by_any_file_name_CI x( s ) ;
+
+  ASSERT_FALSE( x( process_empty ) ) ;
+  ASSERT_FALSE( x( process_exact ) ) ;
+  ASSERT_FALSE( x( process_mixedcase ) ) ;
+  ASSERT_FALSE( x( process_explorer ) ) ;
+  ASSERT_FALSE( x( process_absent ) ) ;
+}
+
 TEST( process_by_any_file_name_CI, two_elements )
 {
-  file_name_set s( multiple_file_names, 2 ) ;
+  file_name_set s( multiple_exe_names ) ;
   process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( find_in_set( process_empty ) ) ;
@@ -151,7 +184,7 @@ TEST( process_by_any_file_name_CI, two_elements )
 template< class T, class Admittance, class Extractor >
 void initialize_process_list( std::vector< T > & v, Admittance admit = Admittance(), Extractor extract = Extractor() )
 {
-  initialize_process_list( v, Snapshot(), admit, extract ) ;
+  initialize_process_list( v, Process_Snapshot(), admit, extract ) ;
 }
 
 /**
@@ -160,7 +193,7 @@ void initialize_process_list( std::vector< T > & v, Admittance admit = Admittanc
 template< class T, class Admittance, class Extractor >
 void initialize_process_set( std::set< T > & s, Admittance admit = Admittance(), Extractor extract = Extractor() )
 {
-  initialize_process_set( s, Snapshot(), admit, extract ) ;
+  initialize_process_set( s, Process_Snapshot(), admit, extract ) ;
 }
 
 //-------------------------------------------------------
@@ -183,20 +216,20 @@ TEST( Process_List_Test, find_our_process )
 {
   std::vector< PROCESSENTRY32W > v ;
   initialize_process_list( v, our_process_by_name(), copy_all() ) ;
-  unsigned int size( v.size() );
+  size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
 
 /**
  * The only process we are really guaranteed to have is this test process itself.
- * This test uses a filter function class with a special, fixed name comparison.
+ * This test uses same one used in Process_Closer
  */
-TEST( Process_List_Test, find_our_process_CI_N_special )
+TEST( Process_List_Test, find_our_process_CI_generic )
 {
   std::vector< PROCESSENTRY32W > v ;
-  initialize_process_list( v, our_process_by_name_CI_N(), copy_all() ) ;
-  unsigned int size( v.size() );
+  initialize_process_list( v, process_by_name_CI( mixedcase_exe_name ), copy_all() ) ;
+  size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
@@ -205,11 +238,11 @@ TEST( Process_List_Test, find_our_process_CI_N_special )
  * The only process we are really guaranteed to have is this test process itself.
  * This test uses the generic filter function.
  */
-TEST( Process_List_Test, find_our_process_CI_N_generic )
+TEST( Process_List_Test, find_our_process_CI_as_used )
 {
   std::vector< PROCESSENTRY32W > v ;
-  initialize_process_list( v, process_by_name_CI( mixedcase_file_name ), copy_all() ) ;
-  unsigned int size( v.size() );
+  initialize_process_list( v, process_by_any_file_name_CI( file_name_set( multiple_exe_names ) ), copy_all() ) ;
+  size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
 }
@@ -221,7 +254,7 @@ TEST( Process_List_Test, find_our_PID )
 {
   std::vector< DWORD > v ;
   initialize_process_list( v, our_process_by_name(), copy_PID() ) ;
-  unsigned int size( v.size() );
+  size_t size( v.size() );
   EXPECT_EQ( size, 1u );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( size, 1u );
 }
@@ -233,7 +266,7 @@ TEST( Process_List_Test, find_our_process_in_set )
 {
   std::vector< DWORD > v ;
   initialize_process_list( v, find_in_set, copy_PID() ) ;
-  unsigned int size( v.size() );
+  size_t size( v.size() );
   EXPECT_EQ( size, 1u );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( size, 1u );
 }

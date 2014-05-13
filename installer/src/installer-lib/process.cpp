@@ -4,54 +4,11 @@
 // <thread> is C++11, but implemented in VS2012
 #include <thread>
 
+#include "installer-lib.h"
 #include "process.h"
 
 //-------------------------------------------------------
-// Windows_Handle
 //-------------------------------------------------------
-Windows_Handle::Windows_Handle( HANDLE h ) 
-  : handle( h ) 
-{
-  validate_handle() ;
-}
-
-Windows_Handle::~Windows_Handle()
-{
-  CloseHandle( handle ) ;
-}
-
-void Windows_Handle::operator=( HANDLE h )
-{
-  this -> ~Windows_Handle() ;
-  handle = h ;
-  validate_handle() ;
-}
-
-void Windows_Handle::validate_handle()
-{
-  if ( handle == INVALID_HANDLE_VALUE )
-  {
-    // TODO: This code really deserves use of a proper exception class that packages 
-    // Windows API errors consistently.
-    char tmp[256];
-    sprintf_s(tmp, "Invalid handle. Last error: %d", GetLastError());
-    throw std::runtime_error( tmp ) ;
-  }
-}
-
-//-------------------------------------------------------
-// process_by_name_CI
-//-------------------------------------------------------
-process_by_name_CI::process_by_name_CI( const wchar_t * name )
-  : name( name ), length( wcslen( name ) )
-{}
-
-bool process_by_name_CI::operator()( const PROCESSENTRY32W & process )
-{
-  return 0 == wcsncmpi( process.szExeFile, name, length ) ;
-}
-
-
 bool process_by_any_exe_with_any_module::operator()( const PROCESSENTRY32W & process )
 {
   if (processNames.find(process.szExeFile) != processNames.end())
@@ -59,9 +16,9 @@ bool process_by_any_exe_with_any_module::operator()( const PROCESSENTRY32W & pro
     if (moduleNames.empty())
       return true;
 
-    ModulesSnapshot ms(process.th32ProcessID);
-    MODULEENTRY32W* me = ms.first();
-    while (me != NULL)
+    Module_Snapshot ms(process.th32ProcessID);
+    const MODULEENTRY32W* me = ms.first();
+    while (me != 0)
     {
       if (moduleNames.find(me->szModule) != moduleNames.end())
       {
@@ -71,71 +28,6 @@ bool process_by_any_exe_with_any_module::operator()( const PROCESSENTRY32W & pro
     }
   }
   return false;
-}
-
-//-------------------------------------------------------
-// wcscmpi
-//-------------------------------------------------------
-int wcscmpi( const wchar_t * s1, const wchar_t * s2 )
-{
-  // Note: Equality of character sequences is case-insensitive in all predicates below.
-  // Loop invariant: s1[0..j) == s2[0..j)
-  const size_t LIMIT( 65535 ) ; // Runaway limit of 2^16 - 1 should be acceptably long.
-  for ( size_t j = 0 ; j < LIMIT ; ++j )
-  {
-    wchar_t c1 = towupper( *s1++ ) ;
-    wchar_t c2 = towupper( *s2++ ) ;
-    if ( c1 != c2 )
-    {
-      // Map to -1/+1 because c2 - c1 may not fit into an 'int'.
-      return ( c1 < c2 ) ? -1 : 1 ;
-    }
-    else
-    {
-      if ( c1 == L'\0' )
-      {
-	// Assert length( s1 ) == length( s2 ) == j
-	// Assert strings are equal at length < n
-	return 0 ;
-      }
-    }
-  }
-  // Assert j == LIMIT
-  // Assert s1[0..LIMIT) == s2[0..LIMIT)
-  // Both strings are longer than 64K, which violates the precondition
-  throw std::runtime_error( "String arguments too long for wcscmpi" ) ;
-}
-
-//-------------------------------------------------------
-// wcsncmpi
-//-------------------------------------------------------
-int wcsncmpi( const wchar_t * s1, const wchar_t * s2, unsigned int n )
-{
-  // Note: Equality of character sequences is case-insensitive in all predicates below.
-  // Loop invariant: s1[0..j) == s2[0..j)
-  for ( unsigned int j = 0 ; j < n ; ++j )
-  {
-    wchar_t c1 = towupper( *s1++ ) ;
-    wchar_t c2 = towupper( *s2++ ) ;
-    if ( c1 != c2 )
-    {
-      // Map to -1/+1 because c2 - c1 may not fit into an 'int'.
-      return ( c1 < c2 ) ? -1 : 1 ;
-    }
-    else
-    {
-      if ( c1 == L'\0' )
-      {
-	// Assert length( s1 ) == length( s2 ) == j
-	// Assert strings are equal at length < n
-	return 0 ;
-      }
-    }
-  }
-  // Assert j == n
-  // Assert s1[0..n) == s2[0..n)
-  // The semantics of n-compare ignore everything after the first 'n' characters.
-  return 0 ;
 }
 
 //-------------------------------------------------------
@@ -149,55 +41,10 @@ DWORD creator_process( HWND window )
   {
     // Assert GetWindowThreadProcessId returned an error
     // If the window handle is invalid, we end up here.
-    throw std::runtime_error( "" ) ;
+    throw windows_api_error( "GetWindowThreadProcessId", r ) ;
   }
   return pid ;
 }
-
-//-------------------------------------------------------
-// Snapshot
-//-------------------------------------------------------
-Snapshot::Snapshot()
-  : handle( ::CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 ) )
-{
-  process.dwSize = sizeof( PROCESSENTRY32W ) ;
-}
-
-PROCESSENTRY32W * Snapshot::first()
-{
-  return ::Process32FirstW(handle, &process) ? (&process) : 0;
-}
-
-PROCESSENTRY32W * Snapshot::next()
-{
-  return ::Process32NextW(handle, &process) ? (&process) : 0;
-}
-
-void Snapshot::refresh()
-{
-  handle = ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-}
-
-
-//-------------------------------------------------------
-// ModulesSnapshot
-//-------------------------------------------------------
-ModulesSnapshot::ModulesSnapshot(DWORD processId)
-  : handle(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, processId))
-{
-  module.dwSize = sizeof(MODULEENTRY32);
-}
-
-MODULEENTRY32W * ModulesSnapshot::first()
-{
-  return ::Module32FirstW(handle, &module) ? (&module) : 0;
-}
-
-MODULEENTRY32W * ModulesSnapshot::next()
-{
-  return ::Module32NextW(handle, &module) ? (&module) : 0;
-}
-
 
 //-------------------------------------------------------
 // send_message, send_endsession_messages
@@ -218,7 +65,7 @@ static const unsigned int timeout = 5000 ;    // milliseconds
  * This class provides the base for any variation from the default behavior.
  */
 struct message_accumulator
-  : public std::binary_function< DWORD_PTR, BOOL, bool >
+  : public std::binary_function< DWORD_PTR, bool, bool >
 {
   virtual result_type operator()( first_argument_type result, second_argument_type return_value ) = 0 ;
   virtual ~message_accumulator() {} ;
@@ -260,7 +107,7 @@ public:
   bool operator()( HWND window )
   {
     DWORD_PTR result ;
-    BOOL rv = SendMessageTimeoutW( window, message, p1, p2, SMTO_BLOCK, timeout, & result ) ;
+    LRESULT rv = SendMessageTimeoutW( window, message, p1, p2, SMTO_BLOCK, timeout, & result ) ;
     /*
      * If we have no message accumulator, the default behavior is to iterate everything.
      * If we do have one, we delegate to it the decision whether to break or to continue.
@@ -269,7 +116,7 @@ public:
     {
       return true ;
     }
-    return ( * f )( result, rv ) ;
+    return ( * f )( result, (rv != 0) ) ;
   }
 } ;
 
@@ -324,7 +171,7 @@ struct endsession_accumulator :
   /**
    * Enumeration function applied to each window.
    */
-  bool operator()( DWORD_PTR result, BOOL return_value )
+  bool operator()( DWORD_PTR result, bool return_value )
   {
     if ( ( ! return_value ) || result )
     {
