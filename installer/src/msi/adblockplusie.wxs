@@ -826,5 +826,8 @@
         </Component>
       </Directory>
     </DirectoryRef>
+
+    <?include ../installer-lib/custom-i18n.wxi ?>
+    <?include ../custom-action/close_ie.wxi ?>
   </Product>
 </Wix>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?define installer_dir="..\.." ?>
-<?define CA_Configuration="Release" ?>
+<?define CA_Configuration="Debug" ?>
 
 <?if $(sys.BUILDARCH)="x86"?>
   <?define Program_Files="ProgramFilesFolder"?>
