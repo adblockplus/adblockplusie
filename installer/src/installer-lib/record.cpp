@@ -1,6 +1,6 @@
 /**
- * \file record.cpp Implementation of Record class.
- */
+* \file record.cpp Implementation of Record class.
+*/
 
 #include "installer-lib.h"
 #include "record.h"
@@ -47,9 +47,9 @@ void Record::assign_string( unsigned int field_index, const wchar_t *value )
 }
 
 /**
- * \par Implementation
- *    - MSDN [MsiRecordGetString](http://msdn.microsoft.com/en-us/library/aa370368%28v=vs.85%29.aspx)
- */
+* \par Implementation
+*    - MSDN [MsiRecordGetString](http://msdn.microsoft.com/en-us/library/aa370368%28v=vs.85%29.aspx)
+*/
 std::wstring Record::value_string( unsigned int field_index )
 {
   static wchar_t initial_buffer[ 1024 ] = L"" ;
@@ -63,9 +63,9 @@ std::wstring Record::value_string( unsigned int field_index )
   {
     // Future: handle longer strings.
     /*
-     * The present custom action only uses this function for strings that appear in dialog boxes.
-     * A thousand characters is about a dozen lines of text, which is far more than enough.
-     */
+    * The present custom action only uses this function for strings that appear in dialog boxes.
+    * A thousand characters is about a dozen lines of text, which is far more than enough.
+    */
     throw not_yet_supported( "retrieving string values longer than 1023 from a record" ) ;
   }
   throw windows_api_error( "MsiRecordGetStringW", x ) ;
@@ -73,10 +73,10 @@ std::wstring Record::value_string( unsigned int field_index )
 
 size_t Record::n_fields() const
 {
-   unsigned int x = MsiRecordGetFieldCount( _handle ) ;
-   if ( x == 0xFFFFFFFF )
-   {
-     throw windows_api_error( "MsiRecordGetFieldCount", x, "invalid handle" ) ;
-   }
-   return x ;
+  unsigned int x = MsiRecordGetFieldCount( _handle ) ;
+  if ( x == 0xFFFFFFFF )
+  {
+    throw windows_api_error( "MsiRecordGetFieldCount", x, "invalid handle" ) ;
+  }
+  return x ;
 }

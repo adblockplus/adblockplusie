@@ -1,6 +1,6 @@
 /**
- * \file property.cpp Implementation of Property class etc.
- */
+* \file property.cpp Implementation of Property class etc.
+*/
 
 #include "installer-lib.h"
 #include "property.h"
@@ -17,16 +17,16 @@ Property::Property( Session & session, std::wstring name )
 {}
 
 /**
- * \par Implementation
- * The center of the implementation is the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa370134%28v=vs.85%29.aspx">MsiGetProperty function</a>.
- */
+* \par Implementation
+* The center of the implementation is the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa370134%28v=vs.85%29.aspx">MsiGetProperty function</a>.
+*/
 Property::operator std::wstring() const
 {
   /*
-   * The first call gets the size, but also the actual value if it's short enough.
-   * A second call, if necessary, allocates a sufficiently-long buffer and then gets the full value.
-   * We use only a modest fixed-size buffer for the first step, because we handle arbitrary-length property values in a second step.
-   */
+  * The first call gets the size, but also the actual value if it's short enough.
+  * A second call, if necessary, allocates a sufficiently-long buffer and then gets the full value.
+  * We use only a modest fixed-size buffer for the first step, because we handle arbitrary-length property values in a second step.
+  */
   // This buffer allocates on the stack, so we don't want it too large; 64 characters is enough for most properties anyway.
   WCHAR buffer1[ 64 ] = { L'\0' } ;
   DWORD length = sizeof( buffer1 ) / sizeof( WCHAR ) ;
@@ -56,9 +56,9 @@ Property::operator std::wstring() const
 }
 
 /**
- * \par Implementation
- * The center of the implementation is the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa370391%28v=vs.85%29.aspx">MsiSetProperty function</a>.
- */
+* \par Implementation
+* The center of the implementation is the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/aa370391%28v=vs.85%29.aspx">MsiSetProperty function</a>.
+*/
 void Property::operator=( const std::wstring & value )
 {
   UINT x = MsiSetPropertyW( handle, name.c_str(), value.c_str() ) ;
