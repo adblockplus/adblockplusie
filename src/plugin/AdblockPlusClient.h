@@ -76,6 +76,7 @@ public:
   std::wstring GetAppLocale();
   std::wstring GetDocumentationLink();
   bool TogglePluginEnabled();
+  std::wstring GetHostFromUrl(const std::wstring& url);
 
   bool IsFirstRun();
 };

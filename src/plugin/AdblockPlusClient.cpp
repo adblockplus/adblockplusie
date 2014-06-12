@@ -513,3 +513,16 @@ bool CAdblockPlusClient::TogglePluginEnabled()
   response >> currentEnabledState;
   return currentEnabledState;
 }
+std::wstring CAdblockPlusClient::GetHostFromUrl(const std::wstring& url)
+{
+  DEBUG_GENERAL("GetHostFromUrl");
+  Communication::OutputBuffer request;
+  request << Communication::PROC_GET_HOST << ToUtf8String(url);
+
+  Communication::InputBuffer response;
+  if (!CallEngine(request, response)) 
+    return L"";
+  std::string host;
+  response >> host;
+  return ToUtf16String(host);
+}

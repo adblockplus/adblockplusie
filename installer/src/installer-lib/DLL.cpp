@@ -1,13 +1,12 @@
 /**
- * \file abp_ca.cpp Top-level source for custom actions. Includes DLL initialization.
- */
+* \file abp_ca.cpp Top-level source for custom actions. Includes DLL initialization.
+*/
 #include "DLL.h"
 #include <stdexcept>
 
 std::shared_ptr< DLL_Module > DLL_Module::singleton = 0 ;
 
-DLL_Module & 
-DLL_Module::module()
+DLL_Module & DLL_Module::module()
 { 
   if ( singleton )
   {
@@ -17,11 +16,10 @@ DLL_Module::module()
 }
 
 /**
- * The attachment function is the _de facto_ equivalent of initialization. Under ordinary circumstances, this should 
- * only be called once, and called before everything else.
- */
-void
-DLL_Module::attach( HINSTANCE handle )
+* The attachment function is the _de facto_ equivalent of initialization. Under ordinary circumstances, this should 
+* only be called once, and called before everything else.
+*/
+void DLL_Module::attach( HINSTANCE handle )
 {
   if ( singleton )
   {
@@ -31,25 +29,23 @@ DLL_Module::attach( HINSTANCE handle )
 }
 
 /**
- * The detachment function is the _de facto_ equivalent of finalization. Under ordinary circumstances, this should 
- * only be called once, and called after everything else.
- */
-void 
-DLL_Module::detach()
+* The detachment function is the _de facto_ equivalent of finalization. Under ordinary circumstances, this should 
+* only be called once, and called after everything else.
+*/
+void DLL_Module::detach()
 {
   singleton.reset();
 }
 
 /**
- * Since this class is mostly a replacement for a global variable, it's no surprising the constructor is almost trivial.
- */
+* Since this class is mostly a replacement for a global variable, it's no surprising the constructor is almost trivial.
+*/
 DLL_Module::DLL_Module( HINSTANCE handle )
   : handle( handle )
 {
 }
 
-std::wstring 
-DLL_Module::name() 
+std::wstring DLL_Module::name() 
 {
   if ( _name )
     return *_name ;

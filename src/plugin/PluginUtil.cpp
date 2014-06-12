@@ -43,13 +43,3 @@ std::wstring FileUrl(const std::wstring& path)
   std::replace(url.begin(), url.end(), L'\\', L'/');
   return L"file:///" + url;
 }
-
-CString ExtractDomain(const CString& url)
-{
-  int pos = 0;
-  if (url.Find('/', pos) >= 0)
-    url.Tokenize(L"/", pos);
-  CString domain = url.Tokenize(L"/", pos);
-  domain.MakeLower();
-  return domain;
-}

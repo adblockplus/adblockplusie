@@ -133,14 +133,14 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
   CString boundDomain;
   CString mimeType;
+  LPOLESTR mime[10];
   if (pOIBindInfo)
   {
     ULONG resLen = 0;
-    LPOLESTR mime = 0;
-    pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, &mime, 1, &resLen);
+    pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, mime, 10, &resLen);
     if (mime && resLen > 0)
     {
-      mimeType.SetString(mime);
+      mimeType.SetString(mime[0]);
     }
     LPOLESTR bindToObject = 0;
     pOIBindInfo->GetBindString(BINDSTRING_FLAG_BIND_TO_OBJECT, &bindToObject, 1, &resLen);
@@ -148,21 +148,10 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     if (resLen == 0 || wcscmp(bindToObject, L"FALSE") == 0)
     {   
       HRESULT hr = pOIBindInfo->GetBindString(BINDSTRING_XDR_ORIGIN, &domainRetrieved, 1, &resLen);
+      
       if ((hr == S_OK) && domainRetrieved && (resLen > 0))
       {
         boundDomain.SetString(domainRetrieved);
-        // Remove protocol
-        int pos = boundDomain.Find(L"://");
-        if (pos > 0)
-        {
-          boundDomain = boundDomain.Mid(pos + 3);
-        }
-        // Remove port
-        pos = boundDomain.Find(L":");
-        if (pos > 0)
-        {
-          boundDomain.Left(pos);
-        }
       }
     }
   }
@@ -177,6 +166,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
   CPluginClient* client = CPluginClient::GetInstance();
 
+
   if (tab && client)
   {
     CString documentUrl = tab->GetDocumentUrl();
@@ -187,7 +177,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     }
     else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(std::wstring(documentUrl)))
     {
-      CString domain = tab->GetDocumentDomain();
+      boundDomain = tab->GetDocumentUrl();
 
       contentType = CFilter::contentTypeAny;
 
@@ -199,32 +189,13 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       else
 #endif // SUPPORT_FRAME_CACHING
       contentType = GetContentType(mimeType, boundDomain, src);
-      if (client->ShouldBlock(src, contentType, domain, true))
+      if (client->ShouldBlock(src, contentType, boundDomain, true))
       {
         isBlocked = true;
 
         DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
       }
-#ifdef ENABLE_DEBUG_RESULT_IGNORED
-      else
-      {
-        CString type;
-
-        if (contentType == CFilter::contentTypeDocument) type = "DOCUMENT";
-        else if (contentType == CFilter::contentTypeObject) type = "OBJECT";
-        else if (contentType == CFilter::contentTypeImage) type = "IMAGE";
-        else if (contentType == CFilter::contentTypeScript) type = "SCRIPT";
-        else if (contentType == CFilter::contentTypeOther) type = "OTHER";
-        else if (contentType == CFilter::contentTypeUnknown) type = "OTHER";
-        else if (contentType == CFilter::contentTypeSubdocument) type = "SUBDOCUMENT";
-        else if (contentType == CFilter::contentTypeStyleSheet) type = "STYLESHEET";
-        else type = "OTHER";
-
-        CPluginDebug::DebugResultIgnoring(type, src, boundDomain);
-      }
-#endif // ENABLE_DEBUG_RESULT_IGNORED
     }
-
     if (!isBlocked)
     {
       DEBUG_BLOCKER("Blocker::Ignoring Http-request:" + src)
@@ -234,12 +205,35 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
   if (tab == NULL)
   {
-    int contentType = GetContentType(mimeType, boundDomain, src);
+    contentType = GetContentType(mimeType, boundDomain, src);
     if (client->ShouldBlock(src, contentType, boundDomain, true))
     {
       isBlocked = true;
     }
   }
+
+#ifdef _DEBUG
+  CString type;
+
+  if (contentType == CFilter::contentTypeDocument) type = "DOCUMENT";
+  else if (contentType == CFilter::contentTypeObject) type = "OBJECT";
+  else if (contentType == CFilter::contentTypeImage) type = "IMAGE";
+  else if (contentType == CFilter::contentTypeScript) type = "SCRIPT";
+  else if (contentType == CFilter::contentTypeOther) type = "OTHER";
+  else if (contentType == CFilter::contentTypeUnknown) type = "OTHER";
+  else if (contentType == CFilter::contentTypeSubdocument) type = "SUBDOCUMENT";
+  else if (contentType == CFilter::contentTypeStyleSheet) type = "STYLESHEET";
+  else type = "OTHER";
+
+  if (isBlocked)
+  {
+    CPluginDebug::DebugResultBlocking(type, src, boundDomain);
+  }
+  else
+  {
+    CPluginDebug::DebugResultIgnoring(type, src, boundDomain);
+  }
+#endif
 
   //Fixes the iframe back button issue
   if (client->GetIEVersion() > 6)
@@ -263,17 +257,29 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       //For some reason on that environment the next line causes IE to crash
       if (CPluginSettings::GetInstance()->GetWindowsBuildNumber() != 8250)
       {
-        m_spInternetProtocolSink->ReportResult(INET_E_REDIRECT_FAILED, 0, L"res://mshtml.dll/blank.htm");
+        m_spInternetProtocolSink->ReportResult(INET_E_REDIRECTING, 301, L"res://mshtml.dll/blank.htm");
       }
 
       return INET_E_REDIRECT_FAILED;
     } 
-    if ((isBlocked)) 
+    if (((contentType == CFilter::contentTypeScript))&& (isBlocked)) 
     {
       m_shouldBlock = true;
       BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
       m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/javascript");
-      m_spInternetProtocolSink->ReportResult(INET_E_REDIRECT_FAILED, 0, L"res://mshtml.dll/blank.htm");
+      m_spInternetProtocolSink->ReportResult(INET_E_REDIRECTING, 301, L"data:");
+      return INET_E_REDIRECT_FAILED;
+    }
+    if ((isBlocked)) 
+    {
+/*      WCHAR tmp[256];
+      wsprintf(tmp, L"URL: %s, domain: %s, mime: %s, type: %d", szUrl, boundDomain, mimeType, contentType); 
+      MessageBox(NULL, tmp, L"", MB_OK);
+      contentType = GetContentType(mimeType, boundDomain, src);
+*/
+      m_shouldBlock = true;
+      BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+      m_spInternetProtocolSink->ReportResult(S_FALSE, 0, L"");
 
       return INET_E_REDIRECT_FAILED;
     }

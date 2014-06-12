@@ -284,6 +284,21 @@ namespace
         response << filterEngine->GetPref("enabled")->AsBool();
         break;
       }
+      case Communication::PROC_GET_HOST:
+      {
+        std::string url;
+        request >> url;
+        std::string host = filterEngine->GetHostFromURL(url);
+        if (host.empty())
+        {
+          response << url;
+        }
+        else
+        {
+          response << host;
+        }
+        break;
+      }
     }
     return response;
   }
