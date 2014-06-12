@@ -252,7 +252,7 @@ void CPluginTabBase::SetDocumentUrl(const CString& url)
   m_criticalSection.Lock();
   {
     m_documentUrl = url;
-    m_documentDomain = ExtractDomain(url);
+    m_documentDomain = CString(CAdblockPlusClient::GetInstance()->GetHostFromUrl(url.GetString()).c_str());
   }
   m_criticalSection.Unlock();
 }

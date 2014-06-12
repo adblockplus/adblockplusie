@@ -1,6 +1,6 @@
 /**
- * \file database.h MSI database
- */
+* \file database.h MSI database
+*/
 
 #include "database.h"
 #include "msiquery.h"
@@ -28,12 +28,12 @@ msi_handle Database::open_view( const wchar_t * query )
 //-----------------------------------------------------------------------------------------
 
 /**
- * Helper function for Installation_Database constructor.
- *
- * \par Resource Allocator
- *    Return value of this function, a handle, must be released in order to avoid a resource leak.
- *    Passing it as an argument to the Database constructor is adequate.
- */
+* Helper function for Installation_Database constructor.
+*
+* \par Resource Allocator
+*    Return value of this function, a handle, must be released in order to avoid a resource leak.
+*    Passing it as an argument to the Database constructor is adequate.
+*/
 msi_handle get_active_database( Immediate_Session & session )
 {
   MSIHANDLE h( MsiGetActiveDatabase( session.handle ) ) ;
@@ -45,9 +45,9 @@ msi_handle get_active_database( Immediate_Session & session )
 }
 
 /**
- * \par Implementation Notes
- *    The only thing this constructor needs to do is to initialize the base class.
- */
+* \par Implementation Notes
+*    The only thing this constructor needs to do is to initialize the base class.
+*/
 Installation_Database::Installation_Database( Immediate_Session & session )
   : Database( get_active_database( session ) )
 {
@@ -58,8 +58,8 @@ Installation_Database::Installation_Database( Immediate_Session & session )
 // View
 //-----------------------------------------------------------------------------------------
 /**
- * Implementation function for View::first().
- */
+* Implementation function for View::first().
+*/
 void view_first_body( UINT x )
 {
   if ( x != ERROR_SUCCESS )
@@ -76,8 +76,8 @@ Record View::first()
 
 Record View::first( Record & arguments )
 {
- view_first_body( MsiViewExecute( _handle, arguments._handle ) ) ;
- return next() ;
+  view_first_body( MsiViewExecute( _handle, arguments._handle ) ) ;
+  return next() ;
 }
 
 Record View::next()

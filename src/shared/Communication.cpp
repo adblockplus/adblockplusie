@@ -57,20 +57,24 @@ namespace
   // Sets Low Integrity in SACL.
   std::auto_ptr<SECURITY_DESCRIPTOR> CreateSecurityDescriptor(PSID logonSid)
   {
-    EXPLICIT_ACCESSW explicitAccess[2] = {};
-
-    explicitAccess[0].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
-    explicitAccess[0].grfAccessMode = SET_ACCESS;
-    explicitAccess[0].grfInheritance= NO_INHERITANCE;
-    explicitAccess[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
-    explicitAccess[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
-    explicitAccess[0].Trustee.ptstrName  = static_cast<LPWSTR>(logonSid);
-
-    std::tr1::shared_ptr<SID> sharedAllAppContainersSid;
+    std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor((SECURITY_DESCRIPTOR*)new char[SECURITY_DESCRIPTOR_MIN_LENGTH]);
+    if (!InitializeSecurityDescriptor(securityDescriptor.get(), SECURITY_DESCRIPTOR_REVISION)) 
+      return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
     // TODO: Would be better to detect if AppContainers are supported instead of checking the Windows version
-    bool isAppContainersSupported = IsAppContainersSupported();
+    bool isAppContainersSupported = IsWindows8OrLater();
     if (isAppContainersSupported)
     {
+      EXPLICIT_ACCESSW explicitAccess[2] = {};
+
+      explicitAccess[0].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
+      explicitAccess[0].grfAccessMode = SET_ACCESS;
+      explicitAccess[0].grfInheritance= NO_INHERITANCE;
+      explicitAccess[0].Trustee.TrusteeForm = TRUSTEE_IS_SID;
+      explicitAccess[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
+      explicitAccess[0].Trustee.ptstrName  = static_cast<LPWSTR>(logonSid);
+
+      std::tr1::shared_ptr<SID> sharedAllAppContainersSid;
+
       // Create a well-known SID for the all appcontainers group.
       // We need to allow access to all AppContainers, since, apparently,
       // giving access to specific AppContainer (for example AppContainer of IE) 
@@ -94,18 +98,16 @@ namespace
       explicitAccess[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
       explicitAccess[1].Trustee.TrusteeType = TRUSTEE_IS_GROUP;
       explicitAccess[1].Trustee.ptstrName = static_cast<LPWSTR>(allAppContainersSid);
+
+      PACL acl = 0;
+      if (SetEntriesInAcl(2, explicitAccess, 0, &acl) != ERROR_SUCCESS)
+        return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
+      std::tr1::shared_ptr<ACL> sharedAcl(static_cast<ACL*>(acl), LocalFree); // Just to simplify cleanup
+
+      if (!SetSecurityDescriptorDacl(securityDescriptor.get(), TRUE, acl, FALSE))
+        return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
+
     }
-    PACL acl = 0;
-    if (SetEntriesInAcl(isAppContainersSupported ? 2 : 1, explicitAccess, 0, &acl) != ERROR_SUCCESS)
-      return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
-    std::tr1::shared_ptr<ACL> sharedAcl(static_cast<ACL*>(acl), LocalFree); // Just to simplify cleanup
-
-    std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor((SECURITY_DESCRIPTOR*)new char[SECURITY_DESCRIPTOR_MIN_LENGTH]);
-    if (!InitializeSecurityDescriptor(securityDescriptor.get(), SECURITY_DESCRIPTOR_REVISION)) 
-      return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
-
-    if (!SetSecurityDescriptorDacl(securityDescriptor.get(), TRUE, acl, FALSE))
-      return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
 
     // Create a dummy security descriptor with low integrirty preset and copy its SACL into ours
     LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
@@ -115,7 +117,7 @@ namespace
     BOOL saclPresent = FALSE;
     BOOL saclDefaulted = FALSE;
     PACL sacl;
-    GetSecurityDescriptorSacl(dummySecurityDescriptorLow, &saclPresent, &sacl, &saclDefaulted); 
+    GetSecurityDescriptorSacl(dummySecurityDescriptorLow, &saclPresent, &sacl, &saclDefaulted);
     if (saclPresent)
     {
       if (!SetSecurityDescriptorSacl(securityDescriptor.get(), TRUE, sacl, FALSE))
@@ -175,6 +177,7 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
   pipe = INVALID_HANDLE_VALUE;
   if (mode == MODE_CREATE)
   {
+
     SECURITY_ATTRIBUTES securityAttributes = {};
     securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
     securityAttributes.bInheritHandle = TRUE;
@@ -214,7 +217,10 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     throw std::runtime_error("SetNamedPipeHandleState failed: error " + GetLastError());
 
   if (mode == MODE_CREATE && !ConnectNamedPipe(pipe, 0))
+  {
+    DWORD err = GetLastError();
     throw std::runtime_error("Client failed to connect: error " + GetLastError());
+  }
 }
 
 Communication::Pipe::~Pipe()

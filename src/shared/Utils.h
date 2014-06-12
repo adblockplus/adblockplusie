@@ -31,7 +31,7 @@
 
 
 bool IsWindowsVistaOrLater();
-bool IsAppContainersSupported();
+bool IsWindows8OrLater();
 
 std::string ToUtf8String(const std::wstring& str);
 std::wstring ToUtf16String(const std::string& str);

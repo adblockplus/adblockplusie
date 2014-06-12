@@ -1,6 +1,6 @@
 /**
- * \file session.cpp Implementation of Session class.
- */
+* \file session.cpp Implementation of Session class.
+*/
 
 #include "installer-lib.h"
 #include "session.h"
@@ -40,12 +40,12 @@ Session::~Session()
 }
 
 /**
- * A message for the installation log.
- *
- * Writing to the installation log uses MsiProcessMessage just like interactive dialog boxes do.
- *
- * This class is not exposed outside this compilation unit because everything it can do is already exposed by the log functions.
- */
+* A message for the installation log.
+*
+* Writing to the installation log uses MsiProcessMessage just like interactive dialog boxes do.
+*
+* This class is not exposed outside this compilation unit because everything it can do is already exposed by the log functions.
+*/
 struct Log_Message
   : public Message
 {

@@ -1,6 +1,6 @@
 /**
- * \file interaction.h User interaction classes. Message boxes and translations.
- */
+* \file interaction.h User interaction classes. Message boxes and translations.
+*/
 
 #ifndef INTERACTION_H
 #define INTERACTION_H
@@ -14,16 +14,16 @@
 #include <MsiQuery.h>
 
 /**
- * A modal dialog box as displayable from within a custom action.
- *
- * The only fully user interface element that the Windows Installer supports for use within custom actions is a small set of modal dialog boxes.
- * The Windows Installer provides the call MsiProcessMessage, overloaded by a set of message type constants.
- * This class represents those messages with user-provided messages; these ultimately call MessageBox.
- *
- * \sa 
- *    * MSDN [MsiProcessMessage function](http://msdn.microsoft.com/en-us/library/windows/desktop/aa370354%28v=vs.85%29.aspx)
- *    * MSDN [Sending Messages to Windows Installer Using MsiProcessMessage](http://msdn.microsoft.com/en-us/library/windows/desktop/aa371614%28v=vs.85%29.aspx)
- */
+* A modal dialog box as displayable from within a custom action.
+*
+* The only fully user interface element that the Windows Installer supports for use within custom actions is a small set of modal dialog boxes.
+* The Windows Installer provides the call MsiProcessMessage, overloaded by a set of message type constants.
+* This class represents those messages with user-provided messages; these ultimately call MessageBox.
+*
+* \sa 
+*    * MSDN [MsiProcessMessage function](http://msdn.microsoft.com/en-us/library/windows/desktop/aa370354%28v=vs.85%29.aspx)
+*    * MSDN [Sending Messages to Windows Installer Using MsiProcessMessage](http://msdn.microsoft.com/en-us/library/windows/desktop/aa371614%28v=vs.85%29.aspx)
+*/
 class Installer_Message_Box
   : public Message
 {
@@ -68,31 +68,31 @@ public:
   icon_type ;
 
   /**
-   * Ordinary constructor, wide string
-   */
+  * Ordinary constructor, wide string
+  */
   Installer_Message_Box(
     std::wstring message, 
     box_type box = box_type::user_box, 
     buttonset_type buttonset = buttonset_type::default_buttonset, 
     default_button_type default_button = default_button_type::default_default_button,
     icon_type icon = icon_type::default_icon
-  ) ;
+    ) ;
 
   /**
-   * Ordinary constructor, regular string
-   */
+  * Ordinary constructor, regular string
+  */
   Installer_Message_Box(
     std::string message, 
     box_type box = box_type::user_box, 
     buttonset_type buttonset = buttonset_type::default_buttonset, 
     default_button_type default_button = default_button_type::default_default_button,
     icon_type icon = icon_type::default_icon
-  ) ;
+    ) ;
 } ;
 
 /**
- * Error for any non-handled return value from Session.write_message().
- */
+* Error for any non-handled return value from Session.write_message().
+*/
 struct unexpected_return_value_from_message_box
   : std::logic_error
 {
