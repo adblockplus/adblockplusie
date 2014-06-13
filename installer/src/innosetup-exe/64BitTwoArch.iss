@@ -1,7 +1,7 @@
 [Setup]
 AppName=Adblock Plus IE
-AppVersion=1.2
-DefaultDirName=Adblock Plus IE
+AppVersion={#version}
+CreateAppDir=No
 DisableStartupPrompt=Yes
 DisableDirPage=Yes
 DisableProgramGroupPage=Yes
