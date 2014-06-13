@@ -72,10 +72,13 @@ MSBuild_Output_x64 = $(Build_Dir_x64)adblockplusie-FINAL-x64.msi
 # invocation of MSBuild because its targets are absent. The last step of the
 # MSBuild process is a file copy, so it's not expensive to clean and build.  
 #
-$(MSBuild_Output_ia32): 
+$(Build_Dir_ia32)installer.sln $(Build_Dir_x64)installer.sln:
+    createsolutions.bat
+
+$(MSBuild_Output_ia32): $(Build_Dir_ia32)installer.sln
     msbuild /p:Configuration=Release $(Build_Dir_ia32)installer.sln
 
-$(MSBuild_Output_x64): 
+$(MSBuild_Output_x64): $(Build_Dir_x64)installer.sln
     msbuild /p:Configuration=Release $(Build_Dir_x64)installer.sln
 
 $(Installer_ia32_msi): $(MSBuild_Output_ia32)
