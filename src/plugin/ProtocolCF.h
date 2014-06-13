@@ -28,7 +28,7 @@ namespace PassthroughAPP
     // the protocol class to either derive from CComCoClass or explicitly
     // specify DECLARE_*AGGREGATABLE macro. If the class does it, the declared
     // behavior is used, otherwise the default behavior is as if
-    // DECLARE_NOT_AGGREGATABLE is specified
+    // DECLARE_AGGREGATABLE is specified
 
     // If T has a typedef _CreatorClass, Derived would pick it from its base.
     // If T does not define _CreatorClass, the definition is picked from the next

@@ -27,21 +27,12 @@ namespace PassthroughAPP
 
   namespace Detail
   {
-#ifdef WIN64
     struct PassthroughItfData
     {
       DWORD_PTR offsetItf;
       DWORD_PTR offsetUnk;
       const IID* piidBase;
     };
-#else
-    struct PassthroughItfData
-    {
-      DWORD offsetItf;
-      DWORD offsetUnk;
-      const IID* piidBase;
-    };
-#endif
 
     template <class itf, class impl, DWORD_PTR offsetUnk, const IID* piidBase>
     struct PassthroughItfHelper
@@ -99,24 +90,17 @@ namespace PassthroughAPP
     template <class T>
     struct QIPassthrough
     {
-#ifdef WIN64
       static HRESULT WINAPI QueryInterfacePassthroughT(void* pv, REFIID riid,
         LPVOID* ppv, DWORD_PTR dw);
       static HRESULT WINAPI QueryInterfaceDebugT(void* pv, REFIID riid,
         LPVOID* ppv, DWORD_PTR dw);
-#else
-      static HRESULT WINAPI QueryInterfacePassthroughT(void* pv, REFIID riid,
-        LPVOID* ppv, DWORD_PTR dw);
-      static HRESULT WINAPI QueryInterfaceDebugT(void* pv, REFIID riid,
-        LPVOID* ppv, DWORD_PTR dw);
-#endif
     };
 
     HRESULT WINAPI QueryInterfacePassthrough(void* pv, REFIID riid,
-      LPVOID* ppv, DWORD dw, IUnknown* punkTarget, IUnknown* punkWrapper);
+      LPVOID* ppv, DWORD_PTR dw, IUnknown* punkTarget, IUnknown* punkWrapper);
 
     HRESULT WINAPI QueryInterfaceDebug(void* pv, REFIID riid,
-      LPVOID* ppv, DWORD dw, IUnknown* punkTarget);
+      LPVOID* ppv, DWORD_PTR dw, IUnknown* punkTarget);
 
     HRESULT QueryServicePassthrough(REFGUID guidService,
       IUnknown* punkThis, REFIID riid, void** ppv,
@@ -253,7 +237,7 @@ namespace PassthroughAPP
   {
   public:
     HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-      IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved,
+      IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
       IInternetProtocol* pTargetProtocol);
     void ReleaseAll();
 
@@ -306,30 +290,40 @@ namespace PassthroughAPP
     CComPtr<IInternetProtocol> m_spTargetProtocol;
   };
 
-  template <class ThreadModel = CComSingleThreadModel>
+  template <class ThreadModel>
   class CInternetProtocolSinkTM :
     public CComObjectRootEx<ThreadModel>,
     public IInternetProtocolSinkImpl
   {
+  private:
+	static HRESULT WINAPI OnDelegateIID(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR dw)
+	{
+		IInternetProtocolSink* pSink = ((CInternetProtocolSinkTM<ThreadModel> *) pv)->m_spInternetProtocolSink;
+		ATLASSERT(pSink != 0);
+		return pSink ? pSink->QueryInterface(riid, ppv) : E_UNEXPECTED;
+	}
+
   public:
     BEGIN_COM_MAP(CInternetProtocolSinkTM)
       COM_INTERFACE_ENTRY(IInternetProtocolSink)
       COM_INTERFACE_ENTRY_PASSTHROUGH(IServiceProvider,
       m_spServiceProvider.p)
+	  COM_INTERFACE_ENTRY_FUNC_BLIND(0, OnDelegateIID)
       COM_INTERFACE_ENTRY_PASSTHROUGH_DEBUG()
     END_COM_MAP()
+
   };
 
-  typedef CInternetProtocolSinkTM<> CInternetProtocolSink;
+  //typedef CInternetProtocolSinkTM<> CInternetProtocolSink;
 
-  template <class T, class ThreadModel = CComSingleThreadModel>
+  template <class T, class ThreadModel = CComMultiThreadModel>
   class CInternetProtocolSinkWithSP :
     public CInternetProtocolSinkTM<ThreadModel>
   {
     typedef CInternetProtocolSinkTM<ThreadModel> BaseClass;
   public:
     HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-      IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved,
+      IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
       IInternetProtocol* pTargetProtocol);
 
     STDMETHODIMP QueryService(REFGUID guidService, REFIID riid, void** ppv);
@@ -350,75 +344,20 @@ namespace PassthroughAPP
   GetUnknown(), riid, ppvObject, GetClientServiceProvider()); \
   }
 
-  // A sink policy class should have a constructor accepting IUnknown*
-  // It should forward all AddRef and Release calls to this unknown pointer,
-  // but otherwise keep it non-AddRef'ed (in particular, don't AddRef in
-  // constructor)
-  // It should implement OnStart with the prototype shown
-  // below, presumably by eventually forwarding to pTargetProtocol->Start
-
-  class NoSinkStartPolicy
-  {
-  public:
-    NoSinkStartPolicy(IUnknown*) {}
-
-    HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-      IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved,
-      IInternetProtocol* pTargetProtocol);
-  };
-
-  template <class Base>
-  class CComObjectSharedRef : public Base
-  {
-  public:
-    CComObjectSharedRef(IUnknown* punkOuter);
-
-    STDMETHODIMP QueryInterface(REFIID iid, void** ppvObject);
-
-    template <class Q>
-    HRESULT STDMETHODCALLTYPE QueryInterface(Q** pp)
-    {
-      return QueryInterface(__uuidof(Q), (void**)pp);
-    }
-
-    STDMETHODIMP_(ULONG) AddRef();
-    STDMETHODIMP_(ULONG) Release();
-
-#ifdef _ATL_DEBUG_INTERFACES
-    ~CComObjectSharedRef()
-    {
-      _Module.DeleteNonAddRefThunk(_GetRawUnknown());
-    }
-#endif
-
-  private:
-    IUnknown* m_punkOuter;
-  };
-
-  template <class Sink>
-  class CustomSinkStartPolicy
-  {
-  public:
-    CustomSinkStartPolicy(IUnknown* punkOuter);
-
-    HRESULT OnStart(LPCWSTR szUrl,
-      IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
-      DWORD grfPI, DWORD dwReserved, IInternetProtocol* pTargetProtocol);
-
-    HRESULT Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead);
-
-    CComObjectSharedRef<Sink> m_internetSink;
-  };
-
-  template <class StartPolicy, class ThreadModel = CComSingleThreadModel>
+  template <class StartPolicy, class ThreadModel = CComMultiThreadModel>
   class ATL_NO_VTABLE CInternetProtocol :
     public CComObjectRootEx<ThreadModel>,
     public IInternetProtocolImpl,
     public StartPolicy
   {
+  private:
+    static HRESULT WINAPI OnDelegateIID(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR dw)
+    {
+      IInternetProtocol* pProtocol = ((CInternetProtocol<StartPolicy, ThreadModel> *) pv)->m_spInternetProtocol;
+      ATLASSERT(pProtocol != 0);
+      return pProtocol ? pProtocol->QueryInterface(riid, ppv) : E_UNEXPECTED;
+    }
   public:
-    CInternetProtocol();
-
     BEGIN_COM_MAP(CInternetProtocol)
       COM_INTERFACE_ENTRY(IPassthroughObject)
       COM_INTERFACE_ENTRY(IInternetProtocolRoot)
@@ -432,6 +371,7 @@ namespace PassthroughAPP
       COM_INTERFACE_ENTRY_PASSTHROUGH(IWinInetInfo, m_spWinInetInfo.p)
       COM_INTERFACE_ENTRY_PASSTHROUGH2(IWinInetHttpInfo,
       m_spWinInetHttpInfo.p, IWinInetInfo)
+      COM_INTERFACE_ENTRY_FUNC_BLIND(0, OnDelegateIID)
       COM_INTERFACE_ENTRY_PASSTHROUGH_DEBUG()
     END_COM_MAP()
 
@@ -439,11 +379,12 @@ namespace PassthroughAPP
     STDMETHODIMP Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
       IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved);
 
-    STDMETHODIMP Read(	/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead);
   };
 
 } // end namespace PassthroughAPP
 
 #include "ProtocolImpl.inl"
+
+#include "SinkPolicy.h"
 
 #endif // PASSTHROUGHAPP_PROTOCOLIMPL_H

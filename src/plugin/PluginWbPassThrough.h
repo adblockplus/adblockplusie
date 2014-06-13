@@ -5,10 +5,10 @@
 #define IE_MAX_URL_LENGTH 2048
 
 class WBPassthruSink :
-	public PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink>,
+	public PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink, CComMultiThreadModel>,
 	public IHttpNegotiate
 {
-	typedef PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink> BaseClass;
+	typedef PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink, CComMultiThreadModel> BaseClass;
 
 public:
 
@@ -30,8 +30,6 @@ public:
 		SERVICE_ENTRY(IID_IHttpNegotiate)
 	END_SERVICE_MAP()
 
-	WBPassthruSink();
-
 	STDMETHODIMP BeginningTransaction(
 		/* [in] */ LPCWSTR szURL,
 		/* [in] */ LPCWSTR szHeaders,
@@ -45,7 +43,7 @@ public:
 		/* [out] */ LPWSTR *pszAdditionalRequestHeaders);
 
 	HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-		IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved,
+		IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
 		IInternetProtocol* pTargetProtocol);
 	HRESULT Read(void *pv, ULONG cb, ULONG* pcbRead);
 
@@ -57,8 +55,9 @@ public:
 		/* [in] */ PROTOCOLDATA *pProtocolData);
 };
 
-typedef PassthroughAPP::CustomSinkStartPolicy<WBPassthruSink> TestStartPolicy;
+class WBPassthru;
+typedef PassthroughAPP::CustomSinkStartPolicy<WBPassthru, WBPassthruSink> WBStartPolicy;
 
-class WBPassthru : public PassthroughAPP::CInternetProtocol<TestStartPolicy>
+class WBPassthru : public PassthroughAPP::CInternetProtocol<WBStartPolicy>
 {
 };
