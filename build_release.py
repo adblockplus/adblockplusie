@@ -60,10 +60,11 @@ for arch in ("ia32", "x64"):
 installerParams = os.environ.copy()
 installerParams["VERSION"] = version
 subprocess.check_call(["nmake", "/A", "ia32", "x64"], env=installerParams, cwd=os.path.join(basedir, "installer"))
-sign(os.path.join(basedir, "build", "ia32", "adblockplusie-%s-multilanguage-ia32.msi" % version),
-    os.path.join(basedir, "build", "x64", "adblockplusie-%s-multilanguage-x64.msi" % version))
+sign(os.path.join(basedir, "build", "ia32", "adblockplusie-%s-FINAL-ia32.msi" % version),
+    os.path.join(basedir, "build", "x64", "adblockplusie-%s-FINAL-x64.msi" % version))
 
-subprocess.check_call(["nmake", "/A", "setup"], env=installerParams, cwd=os.path.join(basedir, "installer"))
+# If this fails, please check if InnoSetup is installed and added to you PATH 
+subprocess.check_call(["iscc", "/A", os.path.join(basedir, "installer", "src", "innosetup-exe", "64BitTwoArch.iss"), "/Dversion=%s" % version], env=installerParams, cwd=os.path.join(basedir, "installer"))
 
 # Do the signing dance described on http://wix.sourceforge.net/manual-wix3/insignia.htm
 bundle = os.path.join(basedir, "build", "adblockplusie-%s.exe" % version)
