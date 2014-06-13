@@ -23,6 +23,19 @@ Visual Studio and build the solution there. Alternatively you can use the
 `msbuild` command line tool, e.g. run `msbuild /m build\ia32\adblockplus.sln`
 from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
 
+Building the installer
+----------------------
+* Execture Installer\createsolutions.bat to generate installer project files,
+this will create a bunch of project files in installer\build\ia32 and
+installer\build\x64 folders. 
+* Open 'installer\build\ia32\installer.sln' and then 'installer\build\x64\installer.sln'
+in Visual Studio and build both solutions. Alternatively you can use the 'msbuild'
+command line tool, e.g. run 'msibuild /m installer\build\ia32\adblockplus.sln' and
+'msibuild /m installer\build\x64\adblockplus.sln'
+* Make sure you have InnoSetup installed. Either open and compile 
+'installer\src\innosetup-exe\64BitTwoArch.iss' in InnoSetup or run
+'iscc.exe installer\src\innosetup-exe\64bitTwoArch.iss'
+
 Development environment
 -----------------------
 
