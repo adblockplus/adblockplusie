@@ -6,7 +6,7 @@
 {
   'variables': 
   {
-    'googletest': '../../libadblockplus/third_party/googletest'
+    'googletest': '../libadblockplus/third_party/googletest'
   },
   'target_defaults': 
   {
