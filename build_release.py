@@ -18,15 +18,18 @@ if not build_type in ["release", "devbuild"]:
 
 key = sys.argv[2]
 
-def sign(*argv):
-  subprocess.check_call([
-    "signtool",
+def sign_command(*argv):
+  return [
+    "signtool.exe",
     "sign", "/v",
     "/d", "Adblock Plus",
-    "/du", "http://adblockplus.org/",
+    "/du", "https://adblockplus.org/",
     "/f", key,
     "/tr", "http://www.startssl.com/timestamp"
-  ] + list(argv))
+  ] + list(argv)
+
+def sign(*argv):
+  subprocess.check_call(sign_command(*argv))
 
 def read_macro_value(file, macro):
   handle = open(file, 'rb')
@@ -64,12 +67,5 @@ sign(os.path.join(basedir, "installer", "build", "ia32", "adblockplusie-%s-multi
     os.path.join(basedir, "installer", "build", "x64", "adblockplusie-%s-multilanguage-x64.msi" % version))
 
 # If this fails, please check if InnoSetup is installed and added to you PATH
-subprocess.check_call(["iscc", "/A", os.path.join(basedir, "installer", "src", "innosetup-exe", "64BitTwoArch.iss"), "/Dversion=%s" % version], env=installerParams, cwd=os.path.join(basedir, "installer"))
-
-# Do the signing dance described on http://wix.sourceforge.net/manual-wix3/insignia.htm
-bundle = os.path.join(basedir, "build", "adblockplusie-%s.exe" % version)
-engine = os.path.join(basedir, "build", "engine-%s.exe" % version)
-subprocess.check_call(["insignia", "-ib", bundle, "-o", engine])
-sign(engine)
-subprocess.check_call(["insignia", "-ab", engine, bundle, "-o", bundle])
-sign(bundle)
+signparam = " ".join(map(lambda p: "$q%s$q" % p if " " in p else p, sign_command("$f")))
+subprocess.check_call(["iscc", "/A", "/Ssigntool=%s" % signparam, "/Dversion=%s" % version, os.path.join(basedir, "installer", "src", "innosetup-exe", "64BitTwoArch.iss")])

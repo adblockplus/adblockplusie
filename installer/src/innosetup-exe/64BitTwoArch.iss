@@ -12,6 +12,7 @@ Uninstallable=No
 ArchitecturesInstallIn64BitMode=x64
 OutputDir=..\..\build
 OutputBaseFilename=adblockplusie-{#version}
+SignTool=signtool
 
 [Files]
 ; Install adblockplusie-FINAL-x64.msi if running in 64-bit mode,
@@ -21,4 +22,4 @@ Source: "..\..\build\ia32\adblockplusie-{#version}-multilanguage-ia32.msi"; Dest
 
 [Run]
 Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\adblockplusie-{#version}-multilanguage-x64.msi"""; Check: Is64BitInstallMode
-Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\adblockplusie-{#version}-multilanguage-ia32.msi"""; Check: not Is64BitInstallMode 
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\adblockplusie-{#version}-multilanguage-ia32.msi"""; Check: not Is64BitInstallMode
