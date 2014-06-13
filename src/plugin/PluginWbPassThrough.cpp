@@ -15,10 +15,7 @@
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 
-WBPassthruSink::WBPassthruSink()
-{
-  m_pTargetProtocol = NULL;
-}
+
 int WBPassthruSink::GetContentTypeFromMimeType(CString mimeType)
 {
   if (mimeType.Find(L"image/") >= 0)
@@ -117,7 +114,7 @@ int WBPassthruSink::GetContentType(CString mimeType, CString domain, CString src
 //WB makes, including images, sounds, scripts, etc
 ////////////////////////////////////////////////////////////////////////////////////////
 HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-                                IInternetBindInfo *pOIBindInfo, DWORD grfPI, DWORD dwReserved,
+                                IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
                                 IInternetProtocol* pTargetProtocol)
 {
 

@@ -28,17 +28,9 @@ namespace PassthroughAPP
 
   namespace Detail
   {
-
-#ifdef WIN64
     template <class T>
     inline HRESULT WINAPI QIPassthrough<T>::
       QueryInterfacePassthroughT(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR dw)
-#else
-
-    template <class T>
-    inline HRESULT WINAPI QIPassthrough<T>::
-      QueryInterfacePassthroughT(void* pv, REFIID riid, LPVOID* ppv, DWORD dw)
-#endif
     {
       ATLASSERT(pv != 0);
       T* pT = static_cast<T*>(pv);
@@ -57,15 +49,10 @@ namespace PassthroughAPP
       return QueryInterfacePassthrough(
         pv, riid, ppv, dw, punkTarget, punkWrapper);
     }
-#ifdef WIN64
+
     template <class T>
     inline HRESULT WINAPI QIPassthrough<T>::
       QueryInterfaceDebugT(void* pv, REFIID riid, LPVOID* ppv, DWORD_PTR dw)
-#else
-    template <class T>
-    inline HRESULT WINAPI QIPassthrough<T>::
-      QueryInterfaceDebugT(void* pv, REFIID riid, LPVOID* ppv, DWORD dw)
-#endif
     {
       ATLASSERT(pv != 0);
       T* pT = static_cast<T*>(pv);
@@ -82,13 +69,9 @@ namespace PassthroughAPP
 
       return QueryInterfaceDebug(pv, riid, ppv, dw, punkTarget);
     }
-#ifdef WIN64
+
     inline HRESULT WINAPI QueryInterfacePassthrough(void* pv, REFIID riid,
       LPVOID* ppv, DWORD_PTR dw, IUnknown* punkTarget, IUnknown* punkWrapper)
-#else
-    inline HRESULT WINAPI QueryInterfacePassthrough(void* pv, REFIID riid,
-      LPVOID* ppv, DWORD dw, IUnknown* punkTarget, IUnknown* punkWrapper)
-#endif
     {
       ATLASSERT(pv != 0);
       ATLASSERT(ppv != 0);
@@ -459,7 +442,7 @@ namespace PassthroughAPP
 
   inline HRESULT IInternetProtocolSinkImpl::OnStart(LPCWSTR szUrl,
     IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
-    DWORD grfPI, DWORD dwReserved, IInternetProtocol* pTargetProtocol)
+    DWORD grfPI, HANDLE_PTR dwReserved, IInternetProtocol* pTargetProtocol)
   {
     ATLASSERT(pOIProtSink != 0);
     ATLASSERT(pOIBindInfo != 0);
@@ -588,7 +571,7 @@ namespace PassthroughAPP
   template <class T, class ThreadModel>
   inline HRESULT CInternetProtocolSinkWithSP<T, ThreadModel>::OnStart(
     LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-    IInternetBindInfo *pOIBindInfo,	DWORD grfPI, DWORD dwReserved,
+    IInternetBindInfo *pOIBindInfo,	DWORD grfPI, HANDLE_PTR dwReserved,
     IInternetProtocol* pTargetProtocol)
   {
     ATLASSERT(m_spServiceProvider == 0);
@@ -625,109 +608,9 @@ namespace PassthroughAPP
     return hr;
   }
 
-  // ===== NoSinkStartPolicy =====
-
-  inline HRESULT NoSinkStartPolicy::OnStart(LPCWSTR szUrl,
-    IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
-    DWORD grfPI, DWORD dwReserved, IInternetProtocol* pTargetProtocol)
-  {
-    ATLASSERT(pTargetProtocol != 0);
-    return pTargetProtocol->Start(szUrl, pOIProtSink, pOIBindInfo,
-      grfPI, dwReserved);
-  }
-
-  // ===== CComObjectSharedRef =====
-
-  template<class Base>
-  inline CComObjectSharedRef<Base>::CComObjectSharedRef(IUnknown* punkOuter) :
-  m_punkOuter(punkOuter)
-  {
-    ATLASSERT(m_punkOuter != 0);
-  }
-
-  template<class Base>
-  inline STDMETHODIMP CComObjectSharedRef<Base>::QueryInterface(REFIID iid,
-    void** ppvObject)
-  {
-    HRESULT hr = _InternalQueryInterface(iid, ppvObject);
-
-    return hr;
-
-  }
-
-  template<class Base>
-  inline STDMETHODIMP_(ULONG) CComObjectSharedRef<Base>::AddRef()
-  {
-    if (m_punkOuter)
-    {
-      m_punkOuter->AddRef();
-    }
-    return InternalAddRef();
-  }
-
-  template<class Base>
-  inline STDMETHODIMP_(ULONG) CComObjectSharedRef<Base>::Release()
-  {
-    ULONG l = InternalRelease();
-    if (!l)
-    {
-      ReleaseAll();
-    }
-    if (m_punkOuter)
-    {
-      m_punkOuter->Release();
-    }
-    return l;
-  }
-
-  // ===== CustomSinkStartPolicy =====
-
-  template <class Sink>
-  inline CustomSinkStartPolicy<Sink>::
-    CustomSinkStartPolicy(IUnknown* punkOuter) :
-    m_internetSink(punkOuter)
-  {
-  }
-
-  template <class Sink>
-  inline HRESULT CustomSinkStartPolicy<Sink>::OnStart(LPCWSTR szUrl,
-    IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
-    DWORD grfPI, DWORD dwReserved, IInternetProtocol* pTargetProtocol)
-  {
-    ATLASSERT(pTargetProtocol);
-    HRESULT hr = m_internetSink.OnStart(szUrl, pOIProtSink, pOIBindInfo,
-      grfPI, dwReserved, pTargetProtocol);
-
-    //We return INET_E_REDIRECT_FAILED in case we have iframe blocking.
-    if (hr == INET_E_REDIRECT_FAILED)
-    {
-      return S_OK;
-    }
-    CComPtr<IInternetProtocolSink> spSink;
-    if (SUCCEEDED(hr))
-    {
-      hr = m_internetSink.QueryInterface(&spSink);
-      ATLASSERT(SUCCEEDED(hr) && spSink != 0);
-    }
-    if (SUCCEEDED(hr))
-    {
-      hr = pTargetProtocol->Start(szUrl, spSink, pOIBindInfo, grfPI, dwReserved);
-    }
-    return hr;
-  }
-  template <class Sink>
-  inline HRESULT CustomSinkStartPolicy<Sink>::Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead)
-  {
-    return m_internetSink.Read(pv, cb, pcbRead);
-  }
 
   // ===== CInternetProtocol =====
 
-  template <class StartPolicy, class ThreadModel>
-  inline CInternetProtocol<StartPolicy, ThreadModel>::CInternetProtocol() :
-  StartPolicy(GetUnknown())
-  {
-  }
 
   // IInternetProtocolRoot
   template <class StartPolicy, class ThreadModel>
@@ -743,14 +626,6 @@ namespace PassthroughAPP
 
     return StartPolicy::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI,
       dwReserved, m_spInternetProtocol);
-  }
-  template <class StartPolicy, class ThreadModel>
-  inline STDMETHODIMP CInternetProtocol<StartPolicy, ThreadModel>::Read(
-    /* [in, out] */ void *pv,
-    /* [in] */ ULONG cb,
-    /* [out] */ ULONG *pcbRead)
-  {
-    return StartPolicy::Read(pv, cb, pcbRead);
   }
 } // end namespace PassthroughAPP
 

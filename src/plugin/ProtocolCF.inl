@@ -107,10 +107,6 @@ inline HRESULT CComClassFactoryProtocol::SetTargetClassFactory(
 	HRESULT hr = (pCF ? pCF->LockServer(TRUE) : S_OK);
 	if (SUCCEEDED(hr))
 	{
-
-#if _ATL_VER > 0x0700
-		this->_AtlInitialConstruct();
-#endif
 		ObjectLock lock(this);
 		if (m_spTargetCF)
 		{
@@ -174,9 +170,15 @@ inline HRESULT CMetaFactory<Factory, Protocol, FactoryComObject>::
 	{
 		p->SetVoid(pv);
 		p->InternalFinalConstructAddRef();
-		//In ATL8, we need to call this
-//		hr = p->_AtlInitialConstruct();
-		hr = p->FinalConstruct();
+#if _ATL_VER >= 0x800
+		hr = p->_AtlInitialConstruct();
+		if (SUCCEEDED(hr))
+#endif
+			hr = p->FinalConstruct();
+#if _ATL_VER >= 0x800
+		if (SUCCEEDED(hr))
+			hr = p->_AtlFinalConstruct();
+#endif
 		p->InternalFinalConstructRelease();
 		if (FAILED(hr))
 		{
@@ -203,6 +205,7 @@ inline HRESULT CMetaFactory<Factory, Protocol, FactoryComObject>::
 	ATLASSERT(SUCCEEDED(hr) && pObj != 0);
 	if (SUCCEEDED(hr))
 	{
+		pObj->_AtlInitialConstruct();
 		pObj->AddRef();
 
 		hr = pObj->SetTargetClassFactory(pTargetCF);
@@ -235,6 +238,7 @@ inline HRESULT CMetaFactory<Factory, Protocol, FactoryComObject>::
 	ATLASSERT(SUCCEEDED(hr) && pObj != 0);
 	if (SUCCEEDED(hr))
 	{
+		//pObj->_AtlInitialConstruct();
 		pObj->AddRef();
 
 		hr = pObj->SetTargetCLSID(clsidTarget);
