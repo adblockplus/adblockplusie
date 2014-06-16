@@ -41,8 +41,8 @@ namespace
     }
 
     BOOL createProcRes = 0;
-    // Running inside AppContainer?
-    if (acs != NULL && acs->TokenAppContainer != NULL)
+    // Running inside AppContainer or in Windows XP
+    if ((acs != NULL && acs->TokenAppContainer != NULL) || (!IsWindowsVistaOrLater()))
     {
       // We need to break out from AppContainer. Launch with default security - registry entry will eat the user prompt
       // See http://msdn.microsoft.com/en-us/library/bb250462(v=vs.85).aspx#wpm_elebp
