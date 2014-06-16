@@ -177,7 +177,6 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
   pipe = INVALID_HANDLE_VALUE;
   if (mode == MODE_CREATE)
   {
-
     SECURITY_ATTRIBUTES securityAttributes = {};
     securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
     securityAttributes.bInheritHandle = TRUE;
@@ -186,16 +185,24 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
 
     AutoHandle token;
     OpenProcessToken(GetCurrentProcess(), TOKEN_READ, token);
-    std::auto_ptr<SID> logonSid = GetLogonSid(token);
-    // Create a SECURITY_DESCRIPTOR that has both Low Integrity and allows access to all AppContainers
-    // This is needed since IE likes to jump out of Enhanced Protected Mode for specific pages (bing.com)
-    std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor = CreateSecurityDescriptor(logonSid.get());
-    securityAttributes.lpSecurityDescriptor = securityDescriptor.release();
-    sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor));
+    
+    if (IsWindowsVistaOrLater())
+    {
+      std::auto_ptr<SID> logonSid = GetLogonSid(token);
+      // Create a SECURITY_DESCRIPTOR that has both Low Integrity and allows access to all AppContainers
+      // This is needed since IE likes to jump out of Enhanced Protected Mode for specific pages (bing.com)
+      std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor = CreateSecurityDescriptor(logonSid.get());
+      securityAttributes.lpSecurityDescriptor = securityDescriptor.release();
+      sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor));
 
-    pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-      PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
-
+      pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+        PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
+    }
+    else
+    {
+      pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+        PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
+    }
   }
   else
   {
