@@ -314,7 +314,7 @@ namespace PassthroughAPP
 
   };
 
-  //typedef CInternetProtocolSinkTM<> CInternetProtocolSink;
+  typedef CInternetProtocolSinkTM<CComMultiThreadModel> CInternetProtocolSink;
 
   template <class T, class ThreadModel = CComMultiThreadModel>
   class CInternetProtocolSinkWithSP :
@@ -344,6 +344,8 @@ namespace PassthroughAPP
   GetUnknown(), riid, ppvObject, GetClientServiceProvider()); \
   }
 
+  struct __declspec(uuid("C7A98E66-1010-492c-A1C8-C809E1F75905")) IInternetProtocolEx;
+
   template <class StartPolicy, class ThreadModel = CComMultiThreadModel>
   class ATL_NO_VTABLE CInternetProtocol :
     public CComObjectRootEx<ThreadModel>,
@@ -355,6 +357,8 @@ namespace PassthroughAPP
     {
       IInternetProtocol* pProtocol = ((CInternetProtocol<StartPolicy, ThreadModel> *) pv)->m_spInternetProtocol;
       ATLASSERT(pProtocol != 0);
+      // TODO: don't need this once we support IInternetProtocolEx
+      if (InlineIsEqualGUID(riid, __uuidof(IInternetProtocolEx))) return E_NOINTERFACE;
       return pProtocol ? pProtocol->QueryInterface(riid, ppv) : E_UNEXPECTED;
     }
   public:
@@ -374,11 +378,6 @@ namespace PassthroughAPP
       COM_INTERFACE_ENTRY_FUNC_BLIND(0, OnDelegateIID)
       COM_INTERFACE_ENTRY_PASSTHROUGH_DEBUG()
     END_COM_MAP()
-
-    // IInternetProtocolRoot
-    STDMETHODIMP Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-      IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved);
-
   };
 
 } // end namespace PassthroughAPP

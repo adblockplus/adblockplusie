@@ -377,3 +377,24 @@ STDMETHODIMP WBPassthruSink::ReportProgress(ULONG ulStatusCode, LPCWSTR szStatus
 {
   return m_spInternetProtocolSink ? m_spInternetProtocolSink->ReportProgress(ulStatusCode, szStatusText) : S_OK;
 }
+
+
+STDMETHODIMP WBPassthru::Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
+    IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved)
+{
+  ATLASSERT(m_spInternetProtocol != 0);
+  if (!m_spInternetProtocol)
+  {
+    return E_UNEXPECTED;
+  }
+
+  return OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI,
+    dwReserved, m_spInternetProtocol);
+}
+
+ STDMETHODIMP WBPassthru::Read(	/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead)
+ {
+   
+   WBPassthruSink* pSink = GetSink();
+   return pSink->Read(pv, cb, pcbRead);
+ }
