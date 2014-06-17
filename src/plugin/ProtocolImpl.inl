@@ -607,26 +607,6 @@ namespace PassthroughAPP
     }
     return hr;
   }
-
-
-  // ===== CInternetProtocol =====
-
-
-  // IInternetProtocolRoot
-  template <class StartPolicy, class ThreadModel>
-  inline STDMETHODIMP CInternetProtocol<StartPolicy, ThreadModel>::Start(
-    LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-    IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved)
-  {
-    ATLASSERT(m_spInternetProtocol != 0);
-    if (!m_spInternetProtocol)
-    {
-      return E_UNEXPECTED;
-    }
-
-    return StartPolicy::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI,
-      dwReserved, m_spInternetProtocol);
-  }
 } // end namespace PassthroughAPP
 
 #endif // PASSTHROUGHAPP_PROTOCOLIMPL_INL

@@ -60,4 +60,11 @@ typedef PassthroughAPP::CustomSinkStartPolicy<WBPassthru, WBPassthruSink> WBStar
 
 class WBPassthru : public PassthroughAPP::CInternetProtocol<WBStartPolicy>
 {
+public:
+  // IInternetProtocolRoot
+  STDMETHODIMP Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
+    IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved);
+
+  //IInternetProtocol
+  STDMETHODIMP Read(	/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead);
 };
