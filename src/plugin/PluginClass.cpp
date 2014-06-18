@@ -48,8 +48,6 @@ CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
 std::map<UINT,CString> CPluginClass::s_menuDomains;
 #endif
 
-CPluginTab* CPluginClass::s_activeTab = NULL;
-
 
 CPluginClass::CPluginClass()
 {
