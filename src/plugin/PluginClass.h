@@ -45,8 +45,6 @@ private:
 
   CPluginTab* m_tab;
 
-  static CPluginTab* s_activeTab;
-
 public:
 
   DECLARE_REGISTRY_RESOURCEID(IDR_PLUGIN_CLASS)
