@@ -424,7 +424,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
       // It works now in most cases because the browser waits for the response in the pipe, and the
       // thread has time to finish while this response is being processed and the browser is
       // disposing all its stuff.
-      std::thread([pipe](){
+      std::thread([pipe]()
+      {
         ClientThread(pipe.get());
       }).detach();
     }
