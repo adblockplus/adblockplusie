@@ -15,6 +15,7 @@
 #include "PluginUserSettings.h"
 #include "../shared/Utils.h"
 #include "../shared/Dictionary.h"
+#include <thread>
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -278,13 +279,17 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
           {
             m_isAdviced = true;
 
-            DWORD id;
-            HANDLE handle = ::CreateThread(NULL, 0, StartInitObject, (LPVOID)this, NULL, &id);
-            if (handle == NULL)
+            try
             {
-              DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, "Class::Thread - Failed to create main thread");
+              std::thread startInitObjectThread(StartInitObject, this);
+              startInitObjectThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
             }
-
+            catch (const std::system_error& ex)
+            {
+              auto errDescription = std::string("Class::Thread - Failed to create StartInitObject thread, ") +
+                ex.code().message() + ex.what();
+              DEBUG_ERROR_LOG(ex.code().value(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, errDescription.c_str());
+            }
           }
           else
           {

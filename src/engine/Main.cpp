@@ -1,6 +1,7 @@
 #include <AdblockPlus.h>
 #include <functional>
 #include <vector>
+#include <thread>
 #include <Windows.h>
 
 #include "../shared/AutoHandle.h"
@@ -303,10 +304,8 @@ namespace
     return response;
   }
 
-  DWORD WINAPI ClientThread(LPVOID param)
+  void ClientThread(Communication::Pipe* pipe)
   {
-    std::auto_ptr<Communication::Pipe> pipe(static_cast<Communication::Pipe*>(param));
-
     std::stringstream stream;
     stream << GetCurrentThreadId();
     std::string threadId = stream.str();
@@ -350,7 +349,6 @@ namespace
       }
     }
 
-    return 0;
   }
 
   void OnUpdateAvailable(AdblockPlus::JsValueList& params)
@@ -420,18 +418,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   {
     try
     {
-      Communication::Pipe* pipe = new Communication::Pipe(Communication::pipeName,
-            Communication::Pipe::MODE_CREATE);
+      auto pipe = std::make_shared<Communication::Pipe>(Communication::pipeName, Communication::Pipe::MODE_CREATE);
 
-      AutoHandle thread(CreateThread(0, 0, ClientThread, static_cast<LPVOID>(pipe), 0, 0));
-      if (!thread)
-      {
-        delete pipe;
-        DebugLastError("CreateThread failed");
-        return 1;
-      }
+      // TODO: we should wait for the finishing of the thread before exiting from this function.
+      // It works now in most cases because the browser waits for the response in the pipe, and the
+      // thread has time to finish while this response is being processed and the browser is
+      // disposing all its stuff.
+      std::thread([pipe](){
+        ClientThread(pipe.get());
+      }).detach();
     }
-    catch (std::runtime_error e)
+    catch(const std::system_error& ex)
+    {
+      DebugException(ex);
+      return 1;
+    }
+    catch (const std::runtime_error& e)
     {
       DebugException(e);
       return 1;
