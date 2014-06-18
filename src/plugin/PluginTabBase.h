@@ -55,7 +55,7 @@ private:
   static int s_configVersion;
 #endif
 
-  static DWORD WINAPI ThreadProc(LPVOID pParam);
+  void ThreadProc();
 
 #ifdef SUPPORT_FRAME_CACHING
   CComAutoCriticalSection m_criticalSectionCache;
