@@ -26,7 +26,10 @@ int CPluginTabBase::s_configVersion = 0;
 #endif
 
 
-CPluginTabBase::CPluginTabBase(CPluginClass* plugin) : m_plugin(plugin), m_isActivated(false)
+CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
+  : m_plugin(plugin)
+  , m_isActivated(false)
+  , m_continueThreadRunning(true)
 {
   m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
   m_filter->hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
@@ -37,16 +40,15 @@ CPluginTabBase::CPluginTabBase(CPluginClass* plugin) : m_plugin(plugin), m_isAct
     m_isActivated = true;
   }
 
-  DWORD id;
-  m_hThread = ::CreateThread(NULL, 0, ThreadProc, (LPVOID)this, CREATE_SUSPENDED, &id);
-  if (m_hThread)
+  try
   {
-    m_isThreadDone = false;
-    ::ResumeThread(m_hThread);
+    m_thread = std::thread(ThreadProc, this);
   }
-  else
+  catch (const std::system_error& ex)
   {
-    DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_TAB_THREAD_CREATE_PROCESS, "Tab::Thread - Failed to create tab thread");
+    auto errDescription = std::string("Tab::Thread - Failed to create tab thread") +
+                ex.code().message() + ex.what();
+    DEBUG_ERROR_LOG(ex.code().value(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_TAB_THREAD_CREATE_PROCESS, errDescription.c_str());
   }
 
 #ifdef SUPPORT_DOM_TRAVERSER
@@ -62,13 +64,9 @@ CPluginTabBase::~CPluginTabBase()
   m_traverser = NULL;
 #endif // SUPPORT_DOM_TRAVERSER
 
-  // Close down thread
-  if (m_hThread != NULL)
-  {
-    m_isThreadDone = true;
-
-    ::WaitForSingleObject(m_hThread, INFINITE);
-    ::CloseHandle(m_hThread);
+  m_continueThreadRunning = false;
+  if (m_thread.joinable()) {
+    m_thread.join();
   }
 }
 
@@ -102,7 +100,17 @@ void CPluginTabBase::OnNavigate(const CString& url)
 
   std::wstring domainString = GetDocumentDomain();
   ResetEvent(m_filter->hideFiltersLoadedEvent);
-  CreateThread(NULL, NULL, &FilterLoader, this, NULL, NULL);
+  try
+  {
+    std::thread filterLoaderThread(FilterLoader, this);
+    filterLoaderThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
+  }
+  catch (const std::system_error& ex)
+  {
+    auto errDescription = std::string("Class::Thread - Failed to start filter loader thread, ") +
+      ex.code().message() + ex.what();
+    DEBUG_ERROR_LOG(ex.code().value(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, errDescription.c_str());
+  }
 
 #ifdef SUPPORT_DOM_TRAVERSER
   m_traverser->ClearCache();
@@ -342,7 +350,7 @@ DWORD WINAPI CPluginTabBase::ThreadProc(LPVOID pParam)
   DWORD loopCount = 0;
   DWORD tabLoopIteration = 1;
 
-  while (!tab->m_isThreadDone)
+  while (tab->m_continueThreadRunning)
   {
 #ifdef ENABLE_DEBUG_THREAD
     CStringA sTabLoopIteration;
@@ -369,7 +377,7 @@ DWORD WINAPI CPluginTabBase::ThreadProc(LPVOID pParam)
       // --------------------------------------------------------------------
 
       // Sleep loop
-      while (!tab->m_isThreadDone && !tab->m_isActivated && (++loopCount % (TIMER_THREAD_SLEEP_TAB_LOOP / 50)) != 0)
+      while (tab->m_continueThreadRunning && !tab->m_isActivated && (++loopCount % (TIMER_THREAD_SLEEP_TAB_LOOP / 50)) != 0)
       {
         // Post async plugin error
         CPluginError pluginError;
