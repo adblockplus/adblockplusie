@@ -25,10 +25,6 @@
 
 CComModule _Module;
 
-BEGIN_OBJECT_MAP(ObjectMap)
-  OBJECT_ENTRY(CLSID_PluginClass, CPluginClass)
-END_OBJECT_MAP()
-
 //Dll Entry Point
 BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD fdwReason, LPVOID reserved)
 {
