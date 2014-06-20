@@ -92,10 +92,10 @@ struct file_name_set
 //-------------------------------------------------------
 //-------------------------------------------------------
 /**
- * Filter by process name. Comparison is case-insensitive. With ABP module loaded
+ * Filter by process name. Comparison is case-insensitive. Windows Store app processes excluded
  */
-class process_by_any_exe_with_any_module
-  : public std::binary_function< PROCESSENTRY32W, file_name_set, bool >
+class process_by_any_exe_not_immersive
+  : public std::unary_function<PROCESSENTRY32W, bool>
 {
   /**
    * Set of file names from which to match candidate process names.
@@ -106,13 +106,10 @@ class process_by_any_exe_with_any_module
    *   and so also is this class.
    * Hence the lifetimes are coterminous, and the reference is not problematic.
    */
-  const file_name_set & processNames ;
-  const file_name_set & moduleNames;
+  const file_name_set & processNames;
 public:
-  bool operator()( const PROCESSENTRY32W & ) ;
-  process_by_any_exe_with_any_module( const file_name_set & names, const file_name_set & moduleNames )
-    : processNames( names ), moduleNames( moduleNames )
-  {}
+  bool operator()( const PROCESSENTRY32W & );
+  process_by_any_exe_not_immersive(const file_name_set & names) : processNames( names ) {}
 } ;
 
 
@@ -608,12 +605,7 @@ class Process_Closer
    */
   file_name_set process_names ;
 
-  /**
-   * Set of module (DLL) names by which to filter.
-   */
-  file_name_set module_names ;
-
-  process_by_any_exe_with_any_module filter ;
+  process_by_any_exe_not_immersive filter ;
 
   /**
    * Copy function object copies just the process ID.
@@ -664,15 +656,9 @@ class Process_Closer
   } ;
 
 public:
-  template <size_t n_file_names, size_t n_module_names>
-  Process_Closer(Process_Snapshot & snapshot, const wchar_t* (&file_name_list)[n_file_names], const wchar_t* (&module_name_list)[n_module_names])
-    : snapshot(snapshot), process_names(file_name_list), module_names(module_name_list), filter(process_names, module_names)
-  {
-    update() ;
-  }
   template <size_t n_file_names>
   Process_Closer(Process_Snapshot & snapshot, const wchar_t * (&file_name_list)[n_file_names])
-    : snapshot(snapshot), process_names(file_name_list), module_names(), filter(process_names, module_names)
+    : snapshot(snapshot), process_names(file_name_list), filter(process_names)
   {
     update() ;
   }
