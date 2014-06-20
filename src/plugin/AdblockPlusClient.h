@@ -55,8 +55,6 @@ public:
   bool IsWhitelistedUrl(const std::wstring& url);
   bool IsElemhideWhitelistedOnDomain(const std::wstring& url);
 
-  int GetIEVersion();
-
   bool Matches(const std::wstring& url, const std::wstring& contentType, const std::wstring& domain);
   std::vector<std::wstring> GetElementHidingSelectors(const std::wstring& domain);
   std::vector<SubscriptionDescription> FetchAvailableSubscriptions();

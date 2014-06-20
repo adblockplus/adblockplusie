@@ -38,6 +38,10 @@
       'src/shared/Communication.cpp',
       'src/shared/Dictionary.cpp',
       'src/shared/Utils.cpp',
+      'src/shared/Registry.h',
+      'src/shared/Registry.cpp',
+      'src/shared/IE_version.h',
+      'src/shared/IE_version.cpp',
       ]
   },
   
@@ -205,6 +209,7 @@
     'sources': [
       'test/CommunicationTest.cpp',
       'test/DictionaryTest.cpp',
+      'test/RegistryTest.cpp',
     ],
     'defines': ['WINVER=0x0501'],
     'link_settings': {

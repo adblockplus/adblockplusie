@@ -287,27 +287,6 @@ bool CAdblockPlusClient::IsElemhideWhitelistedOnDomain(const std::wstring& url)
   return isWhitelisted;
 }
 
-int CAdblockPlusClient::GetIEVersion()
-{
-  //HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer
-  HKEY hKey;
-  LSTATUS status = RegOpenKey(HKEY_LOCAL_MACHINE, L"Software\\Microsoft\\Internet Explorer", &hKey);
-  if (status != 0)
-  {
-    return 0;
-  }
-  DWORD type, cbData;
-  BYTE version[50];
-  cbData = 50;
-  status = RegQueryValueEx(hKey, L"Version", NULL, &type, (BYTE*)version, &cbData);
-  if (status != 0)
-  {
-    return 0;
-  }
-  RegCloseKey(hKey);
-  return (int)(version[0] - 48);
-}
-
 bool CAdblockPlusClient::Matches(const std::wstring& url, const std::wstring& contentType, const std::wstring& domain)
 {
   Communication::OutputBuffer request;

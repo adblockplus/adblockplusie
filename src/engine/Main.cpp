@@ -10,6 +10,7 @@
 #include "../shared/Utils.h"
 #include "../shared/Version.h"
 #include "../shared/CriticalSection.h"
+#include "../shared/IE_version.h"
 #include "AdblockPlus.h"
 #include "Debug.h"
 #include "Updater.h"
@@ -422,7 +423,7 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
 #else
   appInfo.application = "msie32";
 #endif
-  // TODO: Set applicationVersion parameter
+  appInfo.applicationVersion = ToUtf8String(AdblockPlus::IE::InstalledVersionString());
   appInfo.locale = ToUtf8String(locale);
 #ifdef ADBLOCK_PLUS_TEST_MODE
   appInfo.developmentBuild = true;

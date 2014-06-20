@@ -13,6 +13,7 @@
 #include "PluginUserSettings.h"
 #include "../shared/Utils.h"
 #include "../shared/Dictionary.h"
+#include "../shared/IE_version.h"
 #include <thread>
 #include <array>
 
@@ -661,7 +662,7 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
       }
       else
       {
-        if (CPluginClient::GetInstance()->GetIEVersion() > 6)
+      if (AdblockPlus::IE::InstalledMajorVersion() > 6)
         {
           RECT rect;
           BOOL rectRes = GetClientRect(m_hStatusBarWnd, &rect);
@@ -828,8 +829,7 @@ bool CPluginClass::InitObject(bool bBHO)
     }
   }
 
-
-  int ieVersion = CPluginClient::GetInstance()->GetIEVersion();
+  int ieVersion = AdblockPlus::IE::InstalledMajorVersion();
   // Create status pane
   if (bBHO && ieVersion > 6 && !CreateStatusBarPane())
   {

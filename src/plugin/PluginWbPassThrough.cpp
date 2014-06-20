@@ -10,6 +10,7 @@
 #include <WinInet.h>
 #include "wtypes.h"
 #include "../shared/Utils.h"
+#include "../shared/IE_version.h"
 
 namespace
 {
@@ -154,7 +155,7 @@ int WBPassthruSink::GetContentType(const CString& mimeType, const std::wstring& 
 {
   // No referer or mime type
   // BINDSTRING_XDR_ORIGIN works only for IE v8+
-  if (mimeType.IsEmpty() && domain.empty() && CPluginClient::GetInstance()->GetIEVersion() >= 8)
+  if (mimeType.IsEmpty() && domain.empty() && AdblockPlus::IE::InstalledMajorVersion() >= 8)
   {
     return CFilter::contentTypeXmlHttpRequest;
   }
