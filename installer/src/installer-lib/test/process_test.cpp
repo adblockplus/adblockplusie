@@ -48,10 +48,10 @@ struct our_process_by_name_CI
 
 
 struct our_process_by_name_subclassed
-  : public process_by_any_exe_with_any_module
+  : public process_by_any_exe_not_immersive
 {
   our_process_by_name_subclassed()
-    : process_by_any_exe_with_any_module( file_name_set( multiple_exe_names ), file_name_set() )
+    : process_by_any_exe_not_immersive( file_name_set( multiple_exe_names ))
   {}
 } ;
 
@@ -113,8 +113,6 @@ file_name_set multiple_name_set( multiple_exe_names ) ;
 file_name_set multiple_name_set_modules( multiple_module_names ) ;
 file_name_set non_existent_name_set_modules( non_existent_module_names ) ;
 process_by_any_file_name_CI find_in_set( multiple_name_set ) ;
-process_by_any_exe_with_any_module find_in_set_w_kernel32( multiple_name_set, multiple_name_set_modules ) ;
-process_by_any_exe_with_any_module find_in_set_w_non_existent( multiple_name_set, non_existent_name_set_modules ) ;
 
 TEST( file_name_set, validate_setup )
 {
@@ -296,21 +294,4 @@ TEST( pid_set, find_our_process_in_set )
   size_t size( s.size() ) ;
   EXPECT_EQ( size, 1u );
   ASSERT_GE( size, 1u );
-}
-
-TEST( pid_set, find_our_process_in_set_w_kernel32 )
-{
-  std::set< DWORD > s ;
-  initialize_process_set( s, find_in_set_w_kernel32, copy_PID() ) ;
-  size_t size( s.size() ) ;
-  EXPECT_EQ( size, 1u );
-  ASSERT_GE( size, 1u );
-}
-TEST( pid_set, find_our_process_in_set_w_non_existant )
-{
-  std::set< DWORD > s ;
-  initialize_process_set( s, find_in_set_w_non_existent, copy_PID() ) ;
-  size_t size( s.size() ) ;
-  EXPECT_EQ( size, 0u );
-  ASSERT_GE( size, 0u );
 }
