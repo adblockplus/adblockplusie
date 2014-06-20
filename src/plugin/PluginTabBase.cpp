@@ -7,6 +7,7 @@
 #include "PluginClass.h"
 #include "PluginTabBase.h"
 #include "PluginUtil.h"
+#include "../shared/IE_version.h"
 #include <dispex.h>
 #include <Mshtmhst.h>
 
@@ -24,7 +25,7 @@ CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
   m_filter->hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
 
   CPluginClient* client = CPluginClient::GetInstance();
-  if (client->GetIEVersion() < 10)
+  if (AdblockPlus::IE::InstalledMajorVersion() < 10)
   {
     m_isActivated = true;
   }
