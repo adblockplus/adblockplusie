@@ -36,7 +36,7 @@ OPENTHEMEDATA pfnOpenThemeData = NULL;
 
 ATOM CPluginClass::s_atomPaneClass = NULL;
 HINSTANCE CPluginClass::s_hUxtheme = NULL;
-CSimpleArray<CPluginClass*> CPluginClass::s_instances;
+std::set<CPluginClass*> CPluginClass::s_instances;
 std::map<DWORD, CPluginClass*> CPluginClass::s_threadInstances;
 
 CComAutoCriticalSection CPluginClass::s_criticalSectionLocal;
@@ -285,7 +285,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       // Always register on startup, then check if we need to unregister in a separate thread
       s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
       s_asyncWebBrowser2 = unknownSite;
-      s_instances.Add(this);
+      s_instances.insert(this);
     }
     s_criticalSectionLocal.Unlock();
 
@@ -389,14 +389,14 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
     s_criticalSectionLocal.Lock();
     {
-      s_instances.Remove(this);
+      s_instances.erase(this);
 
       std::map<DWORD,CPluginClass*>::iterator it = s_threadInstances.find(::GetCurrentThreadId());
       if (it != s_threadInstances.end())
       {
         s_threadInstances.erase(it);
       }
-      if (s_instances.GetSize() == 0)
+      if (s_instances.empty())
       {
         CPluginClientFactory::ReleaseMimeFilterClientInstance();
       }
@@ -933,11 +933,10 @@ bool CPluginClass::CreateStatusBarPane()
 
           s_criticalSectionLocal.Lock();
           {
-            for (int i = 0; i < s_instances.GetSize(); i++)
+            for (auto instance : s_instances)
             {
-              if (s_instances[i]->m_hTabWnd == hTabWnd2)
+              if (instance->m_hTabWnd == hTabWnd2)
               {
-
                 bExistingTab = true;
                 break;
               }
@@ -1102,22 +1101,22 @@ void CPluginClass::UpdateTheme()
 
 CPluginClass* CPluginClass::FindInstance(HWND hStatusBarWnd)
 {
-  CPluginClass* instance = NULL;
+  CPluginClass* result = nullptr;
 
   s_criticalSectionLocal.Lock();
   {
-    for (int i = 0; i < s_instances.GetSize(); i++)
+    for (auto instance : s_instances)
     {
-      if (s_instances[i]->m_hStatusBarWnd == hStatusBarWnd)
+      if (instance->m_hStatusBarWnd == hStatusBarWnd)
       {
-        instance = s_instances[i];
+        result = instance;
         break;
       }
     }
   }
   s_criticalSectionLocal.Unlock();
 
-  return instance;
+  return result;
 }
 
 CPluginTab* CPluginClass::GetTab()
@@ -1989,9 +1988,9 @@ HWND CPluginClass::GetTabHWND() const
           s_criticalSectionLocal.Lock();
 
           {
-            for (int i = 0; i < s_instances.GetSize(); i++)
+            for (auto instance : s_instances)
             {
-              if (s_instances[i]->m_hTabWnd == hTabWnd2)
+              if (instance->m_hTabWnd == hTabWnd2)
               {
                 bExistingTab = true;
                 break;

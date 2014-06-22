@@ -12,6 +12,7 @@
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
+#include <set>
 
 #include "NotificationMessage.h"
 
@@ -166,7 +167,7 @@ private:
 
 
   static HINSTANCE s_hUxtheme;
-  static CSimpleArray<CPluginClass*> s_instances;
+  static std::set<CPluginClass*> s_instances;
   static std::map<DWORD,CPluginClass*> s_threadInstances;
 
 #ifdef SUPPORT_WHITELIST
