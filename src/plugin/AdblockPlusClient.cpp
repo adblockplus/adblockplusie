@@ -513,6 +513,7 @@ bool CAdblockPlusClient::TogglePluginEnabled()
   response >> currentEnabledState;
   return currentEnabledState;
 }
+
 std::wstring CAdblockPlusClient::GetHostFromUrl(const std::wstring& url)
 {
   DEBUG_GENERAL("GetHostFromUrl");

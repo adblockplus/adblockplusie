@@ -9,9 +9,6 @@
 // Comparison objects
 //-------------------------------------------------------
 
-const wchar_t * multiple_module_names[] = { L"kernel32.dll", L"non-matching-name" } ;
-const wchar_t * non_existent_module_names[] = { L"non-matching-name" } ;
-
 const wchar_t exact_exe_name[] = L"installer-ca-tests.exe" ;
 const std::wstring exact_exe_string( exact_exe_name ) ;
 const wstring_ci exact_exe_string_ci( exact_exe_name ) ;
@@ -45,16 +42,6 @@ struct our_process_by_name_CI
     return wstring_ci( process.szExeFile ) == mixedcase_exe_string_ci ;
   } ;
 } ;
-
-
-struct our_process_by_name_subclassed
-  : public process_by_any_exe_not_immersive
-{
-  our_process_by_name_subclassed()
-    : process_by_any_exe_not_immersive( file_name_set( multiple_exe_names ))
-  {}
-} ;
-
 
 //-------------------------------------------------------
 //-------------------------------------------------------
@@ -110,9 +97,9 @@ PROCESSENTRY32 process_explorer = process_with_name( L"explorer.exe" ) ;
 PROCESSENTRY32 process_absent = process_with_name( L"no_such_name" ) ;
 
 file_name_set multiple_name_set( multiple_exe_names ) ;
-file_name_set multiple_name_set_modules( multiple_module_names ) ;
-file_name_set non_existent_name_set_modules( non_existent_module_names ) ;
 process_by_any_file_name_CI find_in_set( multiple_name_set ) ;
+process_by_any_exe_not_immersive find_in_set_not_immersive( multiple_name_set ) ;
+
 
 TEST( file_name_set, validate_setup )
 {
@@ -291,6 +278,15 @@ TEST( pid_set, find_our_process_in_set )
 {
   std::set< DWORD > s ;
   initialize_process_set( s, find_in_set, copy_PID() ) ;
+  size_t size( s.size() ) ;
+  EXPECT_EQ( size, 1u );
+  ASSERT_GE( size, 1u );
+}
+
+TEST( pid_set, find_our_process_in_set_not_immersive )
+{
+  std::set< DWORD > s ;
+  initialize_process_set( s, find_in_set_not_immersive, copy_PID() ) ;
   size_t size( s.size() ) ;
   EXPECT_EQ( size, 1u );
   ASSERT_GE( size, 1u );

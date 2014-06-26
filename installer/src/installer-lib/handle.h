@@ -272,5 +272,6 @@ public:
 // Common instantiations of handle
 //-------------------------------------------------------
 typedef handle< HANDLE, Disallow_Null, Windows_Generic_Destruction > Windows_Handle ;
+typedef handle< HMODULE, Disallow_Null, Windows_Generic_Destruction > Windows_Module_Handle ;
 
 #endif

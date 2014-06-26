@@ -6,6 +6,8 @@
 
 #include "installer-lib.h"
 #include "process.h"
+#include "handle.h"
+#include "session.h"
 
 //-------------------------------------------------------
 //-------------------------------------------------------
@@ -15,7 +17,7 @@ bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & proce
   if (processNames.find(process.szExeFile) != processNames.end())
   {   
     // Make sure the process is still alive
-    HANDLE procHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process.th32ProcessID);
+    Windows_Handle procHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process.th32ProcessID);
     if ((procHandle == NULL) || (procHandle == INVALID_HANDLE_VALUE)) return false;
 
     DWORD exitCode;
@@ -24,14 +26,13 @@ bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & proce
     if (exitCode != STILL_ACTIVE) return false;
 
     // Check if this is a Windows Store app process (we don't care for IE in Modern UI)
-    HINSTANCE user32Dll = LoadLibrary(L"user32.dll");
+    Windows_Module_Handle user32Dll(LoadLibrary(L"user32.dll"));
     if (!user32Dll) return true;
 
     IsImmersiveDynamicFunc IsImmersiveDynamicCall = (IsImmersiveDynamicFunc)GetProcAddress(user32Dll, "IsImmersiveProcess");
     if (!IsImmersiveDynamicCall) return true;
 
     BOOL retValue = !IsImmersiveDynamicCall(procHandle);
-    CloseHandle(procHandle);
 
     return retValue;
   }
