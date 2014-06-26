@@ -134,6 +134,9 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   if (pOIBindInfo)
   {
     ULONG resLen = 0;
+
+    // Apparently IE will report random mime type if there's more then 1 in the list.
+    // So we get the whole list and just use the first one (top priority one)
     pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, mime, 10, &resLen);
     if (mime && resLen > 0)
     {
