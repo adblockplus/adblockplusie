@@ -194,15 +194,9 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
       std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor = CreateSecurityDescriptor(logonSid.get());
       securityAttributes.lpSecurityDescriptor = securityDescriptor.release();
       sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor));
-
-      pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-        PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
     }
-    else
-    {
-      pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-        PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
-    }
+    pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+      PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
   }
   else
   {
