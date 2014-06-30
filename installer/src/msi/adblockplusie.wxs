@@ -188,14 +188,6 @@
     </Feature>
 
     <!--
-      Remove the "Modify" button from our control panel entry.
-      Since we only have a single feature, there's only a single way of installing the plugin,
-        and thus modifying the installation can't possibly do anything.
-      This is currently set by the WiXUI property WIXUI_INSTALLDIR, so it's commented out now.
-      <Property Id="ARPNOMODIFY" Value="1"/>
-     -->
-
-    <!--
       The application data folder has to vary by operating system version.
       With Vista and later, we have to use an application data folder suitable for low-integrity applications.
       XP and earlier don't have UAC and we use the regular application data folder.

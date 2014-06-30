@@ -64,7 +64,16 @@ Patch dialog sequence:
             <Publish Dialog="MaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
             <Publish Dialog="MaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">1</Publish>
 
-            <Property Id="ARPNOMODIFY" Value="1" />
+          <!--
+      Remove the "Modify" and "Repair" buttons from our control panel entry.
+      Since we only have a single feature, there's only a single way of installing the plugin,
+        and thus modifying the installation can't possibly do anything.
+      This is currently set by the WiXUI property WIXUI_INSTALLDIR, so it's commented out now.
+-->
+          <Property Id="ARPNOMODIFY" Value="1"/>
+          <Property Id="ARPNOREPAIR" Value="1"/>
+
+
         </UI>
 
         <UIRef Id="WixUI_Common" />
