@@ -36,6 +36,7 @@ bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & proce
 
     return retValue;
   }
+  return false;
 }
 
 //-------------------------------------------------------
