@@ -262,7 +262,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
       return INET_E_REDIRECT_FAILED;
     } 
-    if (((contentType == CFilter::contentTypeScript))&& (isBlocked)) 
+    if (((contentType == CFilter::contentTypeScript)) && (isBlocked)) 
     {
       m_shouldBlock = true;
       BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
@@ -270,13 +270,15 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       m_spInternetProtocolSink->ReportResult(INET_E_REDIRECTING, 301, L"data:");
       return INET_E_REDIRECT_FAILED;
     }
+    if ((contentType == CFilter::contentTypeXmlHttpRequest) && (isBlocked)) 
+    {
+      m_shouldBlock = true;
+      BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+      m_spInternetProtocolSink->ReportResult(INET_E_REDIRECTING, 301, L"data:");
+      return INET_E_REDIRECT_FAILED;
+    }
     if ((isBlocked)) 
     {
-/*      WCHAR tmp[256];
-      wsprintf(tmp, L"URL: %s, domain: %s, mime: %s, type: %d", szUrl, boundDomain, mimeType, contentType); 
-      MessageBox(NULL, tmp, L"", MB_OK);
-      contentType = GetContentType(mimeType, boundDomain, src);
-*/
       m_shouldBlock = true;
       BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
       m_spInternetProtocolSink->ReportResult(S_FALSE, 0, L"");
