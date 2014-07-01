@@ -73,8 +73,6 @@ namespace
       explicitAccess[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
       explicitAccess[0].Trustee.ptstrName  = static_cast<LPWSTR>(logonSid);
 
-      std::tr1::shared_ptr<SID> sharedAllAppContainersSid;
-
       // Create a well-known SID for the all appcontainers group.
       // We need to allow access to all AppContainers, since, apparently,
       // giving access to specific AppContainer (for example AppContainer of IE) 
@@ -90,7 +88,7 @@ namespace
               SECURITY_BUILTIN_PACKAGE_ANY_PACKAGE,
               0, 0, 0, 0, 0, 0,
               &allAppContainersSid);
-      sharedAllAppContainersSid.reset(static_cast<SID*>(allAppContainersSid), FreeSid); // Just to simplify cleanup
+      std::tr1::shared_ptr<SID> sharedAllAppContainersSid(static_cast<SID*>(allAppContainersSid), FreeSid); // Just to simplify cleanup
 
       explicitAccess[1].grfAccessPermissions = STANDARD_RIGHTS_ALL | SPECIFIC_RIGHTS_ALL;
       explicitAccess[1].grfAccessMode = SET_ACCESS;
@@ -99,32 +97,46 @@ namespace
       explicitAccess[1].Trustee.TrusteeType = TRUSTEE_IS_GROUP;
       explicitAccess[1].Trustee.ptstrName = static_cast<LPWSTR>(allAppContainersSid);
 
+      // Will be released later
       PACL acl = 0;
       if (SetEntriesInAcl(2, explicitAccess, 0, &acl) != ERROR_SUCCESS)
         return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
-      std::tr1::shared_ptr<ACL> sharedAcl(static_cast<ACL*>(acl), LocalFree); // Just to simplify cleanup
 
+      // NOTE: This only references the acl, not copies it. 
+      // DO NOT release the ACL before it's actually used
       if (!SetSecurityDescriptorDacl(securityDescriptor.get(), TRUE, acl, FALSE))
         return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
-
     }
 
-    // Create a dummy security descriptor with low integrirty preset and copy its SACL into ours
+    // Create a dummy security descriptor with low integrirty preset and reference its SACL in ours
     LPCWSTR accessControlEntry = L"S:(ML;;NW;;;LW)";
     PSECURITY_DESCRIPTOR dummySecurityDescriptorLow;
     ConvertStringSecurityDescriptorToSecurityDescriptorW(accessControlEntry, SDDL_REVISION_1, &dummySecurityDescriptorLow, 0);
     std::tr1::shared_ptr<SECURITY_DESCRIPTOR> sharedDummySecurityDescriptor(static_cast<SECURITY_DESCRIPTOR*>(dummySecurityDescriptorLow), LocalFree); // Just to simplify cleanup
-    BOOL saclPresent = FALSE;
-    BOOL saclDefaulted = FALSE;
-    PACL sacl;
-    GetSecurityDescriptorSacl(dummySecurityDescriptorLow, &saclPresent, &sacl, &saclDefaulted);
-    if (saclPresent)
+
+    DWORD sdSize(0), saclSize(0), daclSize(0), ownerSize(0), primaryGroupSize(0);
+    MakeAbsoluteSD(dummySecurityDescriptorLow, 0, &sdSize, 0, &daclSize, 0, &saclSize, 0, &ownerSize, 0, &primaryGroupSize);
+    if (saclSize == 0 || sdSize == 0)
     {
-      if (!SetSecurityDescriptorSacl(securityDescriptor.get(), TRUE, sacl, FALSE))
-      {
-        DWORD err = GetLastError();
         return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
-      }
+    }
+    // Will be released later
+    PACL sacl = static_cast<PACL>(malloc(saclSize));
+    std::auto_ptr<SECURITY_DESCRIPTOR> absoluteDummySecurityDescriptorLow(static_cast<SECURITY_DESCRIPTOR*>(malloc(sdSize)));
+    daclSize = 0;
+    ownerSize = 0;
+    primaryGroupSize = 0;
+    BOOL res = MakeAbsoluteSD(dummySecurityDescriptorLow, absoluteDummySecurityDescriptorLow.get(), &sdSize, 0, &daclSize, sacl, &saclSize, 0, &ownerSize, 0, &primaryGroupSize);
+    if (res == 0 || absoluteDummySecurityDescriptorLow.get() == 0 || saclSize == 0)
+    {
+        return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
+    }
+
+    // NOTE: This only references the acl, not copies it. 
+    // DO NOT release the ACL before it's actually used
+    if (!SetSecurityDescriptorSacl(securityDescriptor.get(), TRUE, sacl, FALSE))
+    {
+      return std::auto_ptr<SECURITY_DESCRIPTOR>(0);
     }
 
     return securityDescriptor;
@@ -172,6 +184,27 @@ Communication::PipeDisconnectedError::PipeDisconnectedError()
 {
 }
 
+void FreeAbsoluteSecurityDescriptor(SECURITY_DESCRIPTOR* securityDescriptor)
+{
+  BOOL aclPresent = FALSE;
+  BOOL aclDefaulted = FALSE;
+  PACL acl = 0;
+  GetSecurityDescriptorDacl(securityDescriptor, &aclPresent, &acl, &aclDefaulted);
+  if (aclPresent)
+  {
+    LocalFree(acl);
+  }
+  aclPresent = FALSE;
+  aclDefaulted = FALSE;
+  acl = 0;
+  GetSecurityDescriptorSacl(securityDescriptor, &aclPresent, &acl, &aclDefaulted);
+  if (aclPresent)
+  {
+    free(acl);
+  }
+  free(securityDescriptor);
+}
+
 Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mode mode)
 {
   pipe = INVALID_HANDLE_VALUE;
@@ -182,7 +215,6 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
     securityAttributes.bInheritHandle = TRUE;
 
     std::tr1::shared_ptr<SECURITY_DESCRIPTOR> sharedSecurityDescriptor; // Just to simplify cleanup
-
     AutoHandle token;
     OpenProcessToken(GetCurrentProcess(), TOKEN_READ, token);
     
@@ -192,8 +224,9 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
       // Create a SECURITY_DESCRIPTOR that has both Low Integrity and allows access to all AppContainers
       // This is needed since IE likes to jump out of Enhanced Protected Mode for specific pages (bing.com)
       std::auto_ptr<SECURITY_DESCRIPTOR> securityDescriptor = CreateSecurityDescriptor(logonSid.get());
+
       securityAttributes.lpSecurityDescriptor = securityDescriptor.release();
-      sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor));
+      sharedSecurityDescriptor.reset(static_cast<SECURITY_DESCRIPTOR*>(securityAttributes.lpSecurityDescriptor), FreeAbsoluteSecurityDescriptor);
     }
     pipe = CreateNamedPipeW(pipeName.c_str(),  PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
       PIPE_UNLIMITED_INSTANCES, bufferSize, bufferSize, 0, &securityAttributes);
@@ -215,12 +248,12 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
 
   DWORD pipeMode = PIPE_READMODE_MESSAGE | PIPE_WAIT;
   if (!SetNamedPipeHandleState(pipe, &pipeMode, 0, 0))
-    throw std::runtime_error("SetNamedPipeHandleState failed: error " + GetLastError());
+    throw std::runtime_error(AppendErrorCode("SetNamedPipeHandleState failed"));
 
   if (mode == MODE_CREATE && !ConnectNamedPipe(pipe, 0))
   {
     DWORD err = GetLastError();
-    throw std::runtime_error("Client failed to connect: error " + GetLastError());
+    throw std::runtime_error(AppendErrorCode("Client failed to connect"));
   }
 }
 
