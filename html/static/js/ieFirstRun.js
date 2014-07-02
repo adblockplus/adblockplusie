@@ -1,50 +1,44 @@
-var AdblockPlus = {
-    require: function(param)
-    {
-        if (param == "prefs")
-        {
-            return {
-                Prefs: 
-                {
-                    documentation_link: ""
-                }
-            }
-        }
-        if (param == "utils")
-        {
-            return {
-                Utils: 
-                {
-                    appLocale: ""
-                }
-            }
-        }
-        if (param == "filterClasses")
-        {
-            return {
-                Filter: 
-                {
-                    fromText: function(param) 
-                    { 
-                        return {
-                            matches: function(param) {
-                                return true; 
-                            } 
-                        }
-                    } 
-                }
-            }
-        }
-        return {};
-    }
-}
-
-function initWrappers()
+var AdblockPlus = (function()
 {
-    AdblockPlus.getMessage = function(section, param)
+  var scopes =
+  {
+    prefs:
     {
-        return window.Settings.GetMessage(section, param);
+      Prefs: {documentation_link: ""}
+    },
+    utils:
+    {
+      Utils: {appLocale: ""}
+    },
+    filterClasses:
+    {
+      Filter:
+      {
+        fromText:
+        {
+          matches: function(param) {return true}
+        }
+      }
     }
-    Prefs.documentation_link = window.Settings.GetDocumentationLink();
-    Utils.appLocale = window.Settings.GetAppLocale();
-}
+  };
+
+  var result = 
+  {
+    require: function(module)
+    {
+      return scopes[module];
+    }
+  };
+
+  window.addEventListener("load", function()
+  {
+    result.getMessage = function(section, param) 
+    {
+      return Settings.GetMessage(section, param);
+    }
+    scopes.prefs.Prefs.documentation_link = Settings.GetDocumentationLink();
+    scopes.utils.Utils.appLocale = Settings.GetAppLocale();
+  }, false);
+
+  return result;
+})();

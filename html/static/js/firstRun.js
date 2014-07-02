@@ -20,29 +20,6 @@ var Prefs = require("prefs").Prefs;
 var Utils = require("utils").Utils;
 var Filter = require("filterClasses").Filter;
 
-function addListener(object, type, listener)
-{
-  // all IE versions require the use of attachEvent for message event to work
-  if (type != "message" && "addEventListener" in object)
-    object.addEventListener(type, listener, false);
-  else
-  {
-    object.attachEvent("on" + type, function()
-    {
-      listener(event);
-    });
-  }
-}
-
-function removeListener(object, type, listener)
-{
-  // all IE versions require the use of detachEvent for message event to work
-  if (type != "message" && "removeEventListener" in object)
-    object.removeEventListener(type, listener);
-  else
-    object.detachEvent("on" + type, listener);
-}
-
 function openSharePopup(url)
 {
   var iframe = document.getElementById("share-popup");
@@ -146,7 +123,6 @@ function initTranslations()
 
 function init()
 {
-  initWrappers();
   // Choose a share text variant randomly
   var variant = Math.floor(Math.random() * 2) + 1;
   var classList = document.documentElement.className.split(" ");
@@ -160,4 +136,4 @@ function init()
   donateLink.href = getDocLink("donate") + "&variant=" + variant;
 }
 
-addListener(window, "load", init);
+window.addEventListener("load", init);
