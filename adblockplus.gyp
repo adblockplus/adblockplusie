@@ -104,7 +104,6 @@
     # http://msdn.microsoft.com/en-us/library/windows/desktop/bb773175%28v=vs.85%29.aspx#using_manifests
     'defines': ['PRODUCT_ADBLOCKPLUS', 'ISOLATION_AWARE_ENABLED'],
     'libraries': [
-      '-latlthunk',
       '-lwinhttp',
       '-lshell32',
       '-lComctl32',
