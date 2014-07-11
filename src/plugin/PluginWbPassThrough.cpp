@@ -126,7 +126,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   src.Append(szUrl);
   DEBUG_GENERAL(src);
   CPluginClient::UnescapeUrl(src);
-  m_url = szUrl;
 
   CString boundDomain;
   CString mimeType;

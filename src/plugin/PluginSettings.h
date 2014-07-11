@@ -51,10 +51,6 @@ class CPluginIniFileW;
 class CPluginSettings
 {
 
-public:
-
-  typedef std::map<CString, CString> TProperties;
-
 private:
 
   DWORD m_dwWorkingThreadId;
