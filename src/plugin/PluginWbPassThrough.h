@@ -15,7 +15,6 @@ public:
 	bool m_shouldBlock;
 	bool m_lastDataReported;
 	CComPtr<IInternetProtocol> m_pTargetProtocol;
-	CString m_url;
 
   int GetContentTypeFromMimeType(CString mimeType);
   int GetContentTypeFromURL(CString src);

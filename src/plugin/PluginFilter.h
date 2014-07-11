@@ -109,7 +109,6 @@ public:
 
   int m_contentType;
   enum EFilterType m_filterType;
-  std::vector<CString> m_stringElements;
   bool m_isMatchCase;
   bool m_isFirstParty;
   bool m_isThirdParty;
@@ -153,10 +152,6 @@ private:
   TFilterMapDefault m_filterMapDefault[2];
 
   void ClearFilters();
-
-  int FindMatch(const CString& src, CString filterPart, int startPos=0) const;
-  bool IsSpecialChar(TCHAR testChar) const;
-  bool IsSubdomain(const CString& subdomain, const CString& domain) const;
 
 public:
 
