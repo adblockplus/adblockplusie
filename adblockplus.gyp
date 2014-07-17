@@ -4,12 +4,6 @@
   'variables': {
     'build_type%': 'devbuild',
     'build_version%': '',
-    'shared_files': [
-      'src/shared/AutoHandle.cpp',
-      'src/shared/Communication.cpp',
-      'src/shared/Dictionary.cpp',
-      'src/shared/Utils.cpp',
-    ]
   },
 
   'target_defaults': {
@@ -37,9 +31,21 @@
   },
 
   'targets': [{
+    'target_name': 'shared',
+    'type': 'static_library',
+    'sources': [
+      'src/shared/AutoHandle.cpp',
+      'src/shared/Communication.cpp',
+      'src/shared/Dictionary.cpp',
+      'src/shared/Utils.cpp',
+      ]
+  },
+  
+  {
     'target_name': 'AdblockPlusEngine',
     'type': 'executable',
     'dependencies': [
+      'shared',
       'libadblockplus/libadblockplus.gyp:libadblockplus',
     ],
     'sources': [
@@ -48,7 +54,6 @@
       'src/engine/UpdateInstallDialog.cpp',
       'src/engine/Updater.cpp',
       'src/engine/engine.rc',
-      '<@(shared_files)',
     ],
     'libraries': [
       '-ladvapi32',
@@ -68,6 +73,9 @@
   {
     'target_name': 'AdblockPlus',
     'type': 'shared_library',
+    'dependencies': [
+      'shared'
+    ],
     'sources': [
       'src/plugin/AdblockPlusClient.cpp',
       'src/plugin/AdblockPlusDomTraverser.cpp',
@@ -92,7 +100,6 @@
       'src/plugin/AdblockPlus.idl',
       'src/plugin/AdblockPlus.rc',
       'src/plugin/AdblockPlus.rgs',
-      '<@(shared_files)',
     ],
     'include_dirs': [
       '$(WindowsSDK_IncludePath)',
@@ -151,12 +158,12 @@
     'target_name': 'tests',
     'type': 'executable',
     'dependencies': [
+      'shared',
       'libadblockplus/third_party/googletest.gyp:googletest_main',
     ],
     'sources': [
       'test/CommunicationTest.cpp',
       'test/DictionaryTest.cpp',
-      '<@(shared_files)',
     ],
     'defines': ['WINVER=0x0501'],
     'link_settings': {
