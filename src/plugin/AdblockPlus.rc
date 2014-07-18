@@ -39,7 +39,7 @@ BEGIN
             VALUE "FileDescription", "Adblock Plus Module"
             VALUE "FileVersion", VERSIONINFO_VERSION_STR
             VALUE "InternalName", "Adblock Plus"
-            VALUE "LegalCopyright", "Copyright 2014"
+            VALUE "LegalCopyright", "Copyright 2013"
             VALUE "OriginalFilename", "AdblockPlus.dll"
             VALUE "ProductName", "Adblock Plus"
             VALUE "ProductVersion", VERSIONINFO_VERSION_STR
@@ -71,11 +71,12 @@ IDR_MENU1 MENU
 BEGIN
     POPUP "Popup"
     BEGIN
-        MENUITEM "Check for updates",           ID_MENU_UPDATE
-        MENUITEM "Settings",                    ID_MENU_SETTINGS
+        MENUITEM "Check for updates",                     ID_MENU_UPDATE
+        MENUITEM "Settings",                              ID_MENU_SETTINGS
+        MENUITEM "Allow some non-intrusive advertising",  ID_MENU_ACCEPTABLE_ADS
         MENUITEM SEPARATOR
-        MENUITEM "Disable everywhere",          ID_MENU_DISABLE
-        MENUITEM "Disable on ?1?",              ID_MENU_DISABLE_ON_SITE
+        MENUITEM "Disable everywhere",                    ID_MENU_DISABLE
+        MENUITEM "Disable on ?1?",                        ID_MENU_DISABLE_ON_SITE
     END
 END
 

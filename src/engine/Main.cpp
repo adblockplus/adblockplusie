@@ -118,11 +118,40 @@ namespace
         std::string url;
         request >> url;
 
+        AdblockPlus::JsValuePtr valuePtr = filterEngine->GetPref("subscriptions_exceptionsurl");
+        std::string aaUrl = "";
+        if (!valuePtr->IsNull())
+        {
+          aaUrl = valuePtr->AsString();
+        }
         std::vector<AdblockPlus::SubscriptionPtr> subscriptions = filterEngine->GetListedSubscriptions();
+
+        // Remove all subscriptions, besides the Acceptable Ads
         for (size_t i = 0, count = subscriptions.size(); i < count; i++)
-          subscriptions[i]->RemoveFromList();
+        {
+          if (subscriptions[i]->GetProperty("url")->AsString() != aaUrl)
+          {
+            subscriptions[i]->RemoveFromList();
+          }
+        }
 
         filterEngine->GetSubscription(url)->AddToList();
+        break;
+      }
+      case Communication::PROC_ADD_SUBSCRIPTION:
+      {
+        std::string url;
+        request >> url;
+
+        filterEngine->GetSubscription(url)->AddToList();
+        break;
+      }
+      case Communication::PROC_REMOVE_SUBSCRIPTION:
+      {
+        std::string url;
+        request >> url;
+
+        filterEngine->GetSubscription(url)->RemoveFromList();
         break;
       }
       case Communication::PROC_UPDATE_ALL_SUBSCRIPTIONS:

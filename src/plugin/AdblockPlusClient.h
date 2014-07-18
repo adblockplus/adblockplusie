@@ -60,7 +60,10 @@ public:
   std::vector<std::wstring> GetElementHidingSelectors(const std::wstring& domain);
   std::vector<SubscriptionDescription> FetchAvailableSubscriptions();
   std::vector<SubscriptionDescription> GetListedSubscriptions();
+  bool IsAcceptableAdsEnabled();
   void SetSubscription(const std::wstring& url);
+  void AddSubscription(const std::wstring& url);
+  void RemoveSubscription(const std::wstring& url);
   void UpdateAllSubscriptions();
   std::vector<std::wstring> GetExceptionDomains();
   void AddFilter(const std::wstring& text);
