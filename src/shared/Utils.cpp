@@ -16,22 +16,24 @@ namespace
 
 }
 
+std::unique_ptr<OSVERSIONINFOEX> GetWindowsVersion()
+{
+  std::unique_ptr<OSVERSIONINFOEX> osvi(new OSVERSIONINFOEX());
+  osvi->dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+  GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(osvi.get()));
+  return osvi;
+}
+
 bool IsWindowsVistaOrLater()
 {
-  OSVERSIONINFOEX osvi;
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-  GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(&osvi));
-  return osvi.dwMajorVersion >= 6;
+  std::unique_ptr<OSVERSIONINFOEX> osvi = GetWindowsVersion();
+  return osvi->dwMajorVersion >= 6;
 }
 
 bool IsWindows8OrLater()
 {
-  OSVERSIONINFOEX osvi;
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-  GetVersionEx(reinterpret_cast<LPOSVERSIONINFO>(&osvi));
-  return osvi.dwMajorVersion >= 6 && osvi.dwMinorVersion >= 2;
+  std::unique_ptr<OSVERSIONINFOEX> osvi = GetWindowsVersion();
+  return (osvi->dwMajorVersion == 6 && osvi->dwMinorVersion >= 2) || osvi->dwMajorVersion > 6;
 }
 
 std::string ToUtf8String(const std::wstring& str)
