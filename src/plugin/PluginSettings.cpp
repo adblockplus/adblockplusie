@@ -319,10 +319,16 @@ void CPluginSettings::SetSubscription(const std::wstring& url)
 CString CPluginSettings::GetSubscription()
 {
   std::vector<SubscriptionDescription> subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
-  if (subscriptions.size() > 0)
-    return CString(subscriptions.front().url.c_str());
-  else
-    return CString(L"");
+  std::wstring aaUrl = CPluginClient::GetInstance()->GetPref(L"subscriptions_exceptionsurl", L"");
+
+  for (std::vector<SubscriptionDescription>::iterator subscription = subscriptions.begin(); subscription != subscriptions.end(); subscription++)
+  {
+    if (subscription->url != aaUrl)
+    {
+      return CString(subscription->url.c_str());
+    }
+  }
+  return CString(L"");
 }
 
 CString CPluginSettings::GetAppLocale()

@@ -343,12 +343,42 @@ std::vector<SubscriptionDescription> CAdblockPlusClient::GetListedSubscriptions(
   return ReadSubscriptions(response);
 }
 
+// Returns true if Acceptable Ads are enabled, false otherwise.
+bool CAdblockPlusClient::IsAcceptableAdsEnabled()
+{
+  std::vector<SubscriptionDescription> subscriptions = GetListedSubscriptions();
+  std::wstring aaUrl = GetPref(L"subscriptions_exceptionsurl", L"");
+  for (std::vector<SubscriptionDescription>::iterator subscription = subscriptions.begin(); subscription != subscriptions.end(); subscription++)
+  {
+    if (subscription->url == aaUrl)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
 void CAdblockPlusClient::SetSubscription(const std::wstring& url)
 {
   Communication::OutputBuffer request;
   request << Communication::PROC_SET_SUBSCRIPTION << ToUtf8String(url);
   CallEngine(request);
 }
+
+void CAdblockPlusClient::AddSubscription(const std::wstring& url)
+{
+  Communication::OutputBuffer request;
+  request << Communication::PROC_ADD_SUBSCRIPTION << ToUtf8String(url);
+  CallEngine(request);
+}
+
+void CAdblockPlusClient::RemoveSubscription(const std::wstring& url)
+{
+  Communication::OutputBuffer request;
+  request << Communication::PROC_REMOVE_SUBSCRIPTION << ToUtf8String(url);
+  CallEngine(request);
+}
+
 
 void CAdblockPlusClient::UpdateAllSubscriptions()
 {

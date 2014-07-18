@@ -27,8 +27,8 @@
 #define ID_MENU_SETTINGS                35003
 #define ID_MENU_DISABLE                 35004
 #define ID_MENU_UPDATE                  35005
+#define ID_MENU_ACCEPTABLE_ADS          35006
 #define ID_MENU_DISABLE_ON_SITE         35014
-
 #define IDT_TIMER                       35100
 
 // Next default values for new objects
