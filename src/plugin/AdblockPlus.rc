@@ -39,7 +39,7 @@ BEGIN
             VALUE "FileDescription", "Adblock Plus Module"
             VALUE "FileVersion", VERSIONINFO_VERSION_STR
             VALUE "InternalName", "Adblock Plus"
-            VALUE "LegalCopyright", "Copyright 2013"
+            VALUE "LegalCopyright", "Copyright 2014"
             VALUE "OriginalFilename", "AdblockPlus.dll"
             VALUE "ProductName", "Adblock Plus"
             VALUE "ProductVersion", VERSIONINFO_VERSION_STR
