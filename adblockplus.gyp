@@ -114,6 +114,7 @@
       '-lwinhttp',
       '-lshell32',
       '-lComctl32',
+      '-lGdi32',
     ],
     'configurations': {
       # 'libraries' is not allowed under 'configurations' :-(

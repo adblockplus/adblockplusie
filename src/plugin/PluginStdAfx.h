@@ -27,7 +27,6 @@
 extern CComModule _Module;
 #include <comutil.h>
 #include <atlcom.h>
-#include <atlhost.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdexcept>
