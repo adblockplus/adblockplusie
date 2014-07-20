@@ -12,6 +12,7 @@
 #include "PluginTabBase.h"
 #include "PluginUtil.h"
 #include <dispex.h>
+#include <Mshtmhst.h>
 
 int CPluginTabBase::s_dictionaryVersion = 0;
 int CPluginTabBase::s_settingsVersion = 1;
