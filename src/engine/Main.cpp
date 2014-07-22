@@ -10,6 +10,7 @@
 #include "../shared/Utils.h"
 #include "../shared/Version.h"
 #include "../shared/CriticalSection.h"
+#include "AdblockPlus.h"
 #include "Debug.h"
 #include "Updater.h"
 
@@ -75,6 +76,7 @@ namespace
   CriticalSection firstRunLock;
   CriticalSection updateCheckLock;
   bool firstRunActionExecuted = false;
+  AdblockPlus::ReferrerMapping referrerMapping;
   Communication::OutputBuffer HandleRequest(Communication::InputBuffer& request)
   {
     Communication::OutputBuffer response;
@@ -89,7 +91,8 @@ namespace
         std::string type;
         std::string documentUrl;
         request >> url >> type >> documentUrl;
-        AdblockPlus::FilterPtr filter = filterEngine->Matches(url, type, documentUrl);
+        referrerMapping.Add(url, documentUrl); 
+        AdblockPlus::FilterPtr filter = filterEngine->Matches(url, type, referrerMapping.BuildReferrerChain(url));
         response << (filter && filter->GetType() != AdblockPlus::Filter::TYPE_EXCEPTION);
         break;
       }
