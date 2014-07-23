@@ -25,6 +25,12 @@ function setElementText(id, key)
   }
 }
 
+function acceptableAdsChange()
+{
+  var aaCheckbox = document.getElementById("acceptableAdsCheckbox");
+  UserSettings().SetAcceptableAdsEnabled(aaCheckbox.checked);  
+}
+
 function initLanguageSettings()
 {
   setElementText("title", "settings-title");
@@ -40,7 +46,16 @@ function initLanguageSettings()
   setElementText("removeDomains", "settings-exceptions-remove-label");
 
   setElementText("localeWorthSharing", "settings-share-label");
+
+  setElementText("acceptableAdsLabel", "settings-acceptable-ads");
    
+  var aaCheckbox = document.getElementById("acceptableAdsCheckbox");
+  if (aaCheckbox)
+  {
+    aaCheckbox.checked = UserSettings().IsAcceptableAdsEnabled();
+    addListener(aaCheckbox, "change", acceptableAdsChange, false);
+  }
+
   var optionsLanguage = document.getElementById("language");
 
   var languageCount = UserSettings().GetLanguageCount();

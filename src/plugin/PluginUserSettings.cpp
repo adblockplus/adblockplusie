@@ -16,8 +16,9 @@ static const CString s_AddWhitelistDomain = L"AddWhitelistDomain";
 static const CString s_RemoveWhitelistDomain = L"RemoveWhitelistDomain";
 static const CString s_GetAppLocale = L"GetAppLocale";
 static const CString s_GetDocumentationLink = L"GetDocumentationLink";
-
-static const CString s_Methods[] = {s_GetMessage, s_GetLanguageCount, s_GetLanguageByIndex, s_GetLanguageTitleByIndex, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain, s_GetAppLocale, s_GetDocumentationLink};
+static const CString s_IsAcceptableAdsEnabled = L"IsAcceptableAdsEnabled";
+static const CString s_SetAcceptableAdsEnabled = L"SetAcceptableAdsEnabled";
+static const CString s_Methods[] = {s_GetMessage, s_GetLanguageCount, s_GetLanguageByIndex, s_GetLanguageTitleByIndex, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain, s_GetAppLocale, s_GetDocumentationLink, s_IsAcceptableAdsEnabled, s_SetAcceptableAdsEnabled};
 
 CPluginUserSettings::CPluginUserSettings()
 {
@@ -322,6 +323,35 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
     pVarResult->vt = VT_BSTR;
     pVarResult->bstrVal = SysAllocString(settings->GetDocumentationLink());
+  }
+  else if (s_IsAcceptableAdsEnabled == method)
+  {
+    if (0 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    pVarResult->vt = VT_BOOL;
+    pVarResult->boolVal = CPluginClient::GetInstance()->IsAcceptableAdsEnabled();
+  }
+  else if (s_SetAcceptableAdsEnabled == method)
+  {
+    if (1 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    if (VT_BOOL != pDispparams->rgvarg[0].vt)
+      return DISP_E_TYPEMISMATCH;
+
+    bool enable = pDispparams->rgvarg[0].boolVal;
+
+    if (enable)
+    {
+      CPluginClient* client = CPluginClient::GetInstance();
+      client->AddSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
+    }
+    else
+    {
+      CPluginClient* client = CPluginClient::GetInstance();
+      client->RemoveSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
+    }
   }
   else
     return DISP_E_MEMBERNOTFOUND;

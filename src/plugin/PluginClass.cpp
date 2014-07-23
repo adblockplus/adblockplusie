@@ -1343,17 +1343,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
       }
       GetBrowser()->Refresh();
     }
-  case ID_MENU_ACCEPTABLE_ADS:
-    {
-      if (client->IsAcceptableAdsEnabled())
-      {
-        client->RemoveSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
-      }
-      else
-      {
-        client->AddSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
-      }
-    }
   default:
     break;
   }
@@ -1450,22 +1439,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
   fmii.cch = static_cast<UINT>(ctext.size());
   ::SetMenuItemInfoW(hMenu, ID_MENU_SETTINGS, FALSE, &fmii);
-
-  ctext = dictionary->Lookup("menu", "menu-acceptable-ads");
-  if (client->IsAcceptableAdsEnabled())
-  {
-    fmii.fState = MFS_CHECKED | MFS_ENABLED;
-  }
-  else
-  {
-    fmii.fState = MFS_UNCHECKED | MFS_ENABLED;
-  }
-  fmii.fMask = MIIM_STRING | MIIM_STATE;
-  fmii.dwTypeData = const_cast<LPWSTR>(ctext.c_str());
-  fmii.cch = static_cast<UINT>(ctext.size());
-
-  ::SetMenuItemInfoW(hMenu, ID_MENU_ACCEPTABLE_ADS, FALSE, &fmii);
-
 
   return true;
 }
