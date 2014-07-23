@@ -53,7 +53,7 @@ function initLanguageSettings()
   if (aaCheckbox)
   {
     aaCheckbox.checked = UserSettings().IsAcceptableAdsEnabled();
-    addListener(aaCheckbox, "change", acceptableAdsChange, false);
+    aaCheckbox.addEventListener("change", acceptableAdsChange, false);
   }
 
   var optionsLanguage = document.getElementById("language");
@@ -68,7 +68,7 @@ function initLanguageSettings()
     optionsLanguage.add(el, 0);
   }
   
-  addListener(optionsLanguage, "change", function ()
+  optionsLanguage.addEventListener("change", function ()
   {
     UserSettings().SetLanguage(optionsLanguage[optionsLanguage.selectedIndex].value);
   }, false);
@@ -102,7 +102,7 @@ function initDomainSettings()
   }
 
   var addDomain = document.getElementById("addDomain");
-  addListener(addDomain, "click", function()
+  addDomain.addEventListener("click", function()
   {
     var newDomain = document.getElementById("newDomain");
     
@@ -139,7 +139,7 @@ function initDomainSettings()
   }, false);
   
   var removeDomains = document.getElementById("removeDomains");
-  addListener(removeDomains, "click", function()
+  removeDomains.addEventListener("click", function()
   {
     var removeOptions = [];
     var domains = optionsDomain.options;
