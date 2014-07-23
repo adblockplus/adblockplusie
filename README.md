@@ -23,6 +23,18 @@ Visual Studio and build the solution there. Alternatively you can use the
 `msbuild` command line tool, e.g. run `msbuild /m build\ia32\adblockplus.sln`
 from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
 
+Running
+-------
+
+In order to test the extension, you need to register the Browser
+Helper Object with IE. You can do this by locating _AdblockPlus.dll_
+(e.g. in _build\ia32\Debug_) and running (with elevated privileges):
+
+    regsvr32 AdblockPlus.dll
+
+For the UI to work, you also need to copy the _html_ and _locale_
+directories to the same directory _AdblockPlus.dll_ is in.
+
 Building the installer
 ----------------------
 
@@ -40,8 +52,3 @@ the `msbuild` command line tool, i.e. run
 Developer Command Prompt.
 * Either open and compile `installer\src\innosetup-exe\64BitTwoArch.iss` in
 InnoSetup or run `iscc.exe installer\src\innosetup-exe\64bitTwoArch.iss`.
-
-Development environment
------------------------
-
-TODO: Describe how to test your build
