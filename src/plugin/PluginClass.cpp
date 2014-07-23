@@ -49,6 +49,30 @@ CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
 std::map<UINT,CString> CPluginClass::s_menuDomains;
 #endif
 
+/*
+ * Without namespace declaration, the identifier "Rectangle" is ambiguous
+ * See http://msdn.microsoft.com/en-us/library/windows/desktop/dd162898(v=vs.85).aspx
+ */
+namespace AdblockPlus
+{
+  /**
+    * Replacement for ATL type CRect.
+    */
+  class Rectangle
+    : public RECT
+  {
+  public:
+    int Height() const
+    {
+      return bottom - top;
+    }
+
+    int Width() const
+    {
+      return right - left;
+    }
+  };
+}
 
 CPluginClass::CPluginClass()
 {
@@ -945,7 +969,7 @@ bool CPluginClass::CreateStatusBarPane()
   }
 
   // Calculate pane height
-  CRect rcStatusBar;
+  AdblockPlus::Rectangle rcStatusBar;
   ::GetClientRect(hWndStatusBar, &rcStatusBar);
 
   if (rcStatusBar.Height() > 0)
@@ -1576,10 +1600,10 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
       }
       LRESULT hRet = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, (LPARAM)lpParts);
 
-      CRect rcPane;
+      AdblockPlus::Rectangle rcPane;
       ::SendMessage(hWnd, SB_GETRECT, STATUSBAR_PANE_NUMBER, (LPARAM)&rcPane);
 
-      CRect rcClient;
+      AdblockPlus::Rectangle rcClient;
       ::GetClientRect(hWnd, &rcClient);
 
       ::MoveWindow(
@@ -1666,7 +1690,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
       PAINTSTRUCT ps;
       HDC hDC = ::BeginPaint(hWnd, &ps);
 
-      CRect rcClient;
+      AdblockPlus::Rectangle rcClient;
       ::GetClientRect(hWnd, &rcClient);
 
       int nDrawEdge = 0;
@@ -1688,7 +1712,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         // Draw background
         if (pfnDrawThemeBackground)
         {
-          CRect rc = rcClient;
+          AdblockPlus::Rectangle rc = rcClient;
           rc.right -= 2;
           pfnDrawThemeBackground(pClass->m_hTheme, hDC, 0, 0, &rc, NULL);
         }
@@ -1728,7 +1752,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         HFONT hFont = (HFONT)::SendMessage(pClass->m_hStatusBarWnd, WM_GETFONT, 0, 0);
         HGDIOBJ hOldFont = ::SelectObject(hDC,hFont);
 
-        CRect rcText = rcClient;
+        AdblockPlus::Rectangle rcText = rcClient;
         rcText.left += offx;
         ::SetBkMode(hDC, TRANSPARENT);
         ::DrawTextW(hDC, IEPLUGIN_VERSION, -1, &rcText, DT_WORD_ELLIPSIS|DT_LEFT|DT_SINGLELINE|DT_VCENTER);
