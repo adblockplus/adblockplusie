@@ -36,9 +36,9 @@ function openSharePopup(url)
     iframe.width = data.width;
     iframe.height = data.height;
     popupMessageReceived = true;
-    removeListener(window, "message", popupMessageListener);
+    window.removeEventListener("message", popupMessageListener);
   };
-  addListener(window, "message", popupMessageListener);
+  window.addEventListener("message", popupMessageListener);
 
   var listenCount = 0;
   var popupLoadListener = function()
@@ -50,9 +50,9 @@ function openSharePopup(url)
       var popupCloseListener = function()
       {
         iframe.className = glassPane.className = "";
-        removeListener(document, "click", popupCloseListener);
+        document.removeEventListener("click", popupCloseListener);
       };
-      addListener(document, "click", popupCloseListener);
+      document.addEventListener("click", popupCloseListener);
     }
     else
     {
@@ -60,15 +60,15 @@ function openSharePopup(url)
       if (++listenCount > 20)
       {
         glassPane.className = "";
-        removeListener(window, "message", popupMessageListener);
+        window.removeEventListener("message", popupMessageListener);
       }
       else
         setTimeout(popupLoadListener, 250);
     }
 
-    removeListener(iframe, "load", popupLoadListener);
+    iframe.removeEventListener("load", popupLoadListener);
   };
-  addListener(iframe, "load", popupLoadListener);
+  iframe.addEventListener("load", popupLoadListener);
 
   iframe.src = url;
   glassPane.className = "visible";
@@ -84,7 +84,7 @@ function initSocialLinks(variant)
   networks.forEach(function(network)
   {
     var link = document.getElementById("share-" + network + "-" + variant);
-    addListener(link, "click", function(e)
+    link.addEventListener("click", function(e)
     {
       e.preventDefault();
       openSharePopup(getDocLink("share-" + network) + "&variant=" + variant);
