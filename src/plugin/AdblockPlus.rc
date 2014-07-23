@@ -73,7 +73,6 @@ BEGIN
     BEGIN
         MENUITEM "Check for updates",                     ID_MENU_UPDATE
         MENUITEM "Settings",                              ID_MENU_SETTINGS
-        MENUITEM "Allow some non-intrusive advertising",  ID_MENU_ACCEPTABLE_ADS
         MENUITEM SEPARATOR
         MENUITEM "Disable everywhere",                    ID_MENU_DISABLE
         MENUITEM "Disable on ?1?",                        ID_MENU_DISABLE_ON_SITE
