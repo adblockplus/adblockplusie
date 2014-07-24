@@ -103,10 +103,9 @@ function initTranslations()
 {
   // Map message ID to HTML element ID
   var mapping = {
+    "aa-title": "first-run-aa-title",
+    "aa-text": "first-run-aa-text",
     "title-main": "first-run-title-install",
-    "i18n-features-heading": "first-run-features-heading",
-    "i18n-feature-betterSurfing": "first-run-feature-betterSurfing",
-    "i18n-feature-videoAds": "first-run-feature-videoAds",
     "share-text1": "first-run-share1",
     "share-text2": "first-run-share2",
     "share-donate": "first-run-share2-donate",
@@ -117,7 +116,7 @@ function initTranslations()
   for (var i in mapping)
   {
     var element = document.getElementById(i);
-    element.innerText = AdblockPlus.getMessage("first-run", mapping[i]);
+    setElementText(element, AdblockPlus.getMessage("first-run", mapping[i]));
   }
 }
 
@@ -131,9 +130,64 @@ function init()
 
   initTranslations();
   initSocialLinks(variant);
+  setLinks("aa-text", getDocLink("acceptable_ads_criteria"), "index.html");
 
   var donateLink = document.getElementById("share-donate");
   donateLink.href = getDocLink("donate") + "&variant=" + variant;
+}
+
+// Inserts i18n strings into matching elements. Any inner HTML already in the 
+// element is parsed as JSON and used as parameters to substitute into 
+// placeholders in the i18n message.
+setElementText = function(element, elementHtml)
+{
+  function processString(str, element)
+  {
+    var match = /^(.*?)<(a|strong)>(.*?)<\/\2>(.*)$/.exec(str);
+    if (match)
+    {
+      processString(match[1], element);
+
+      var e = document.createElement(match[2]);
+      processString(match[3], e);
+      element.appendChild(e);
+
+      processString(match[4], element);
+    }
+    else
+      element.appendChild(document.createTextNode(str));
+  }
+
+  while (element.lastChild)
+    element.removeChild(element.lastChild);
+  processString(elementHtml, element);
+}
+
+
+function setLinks(id)
+{
+  var element = document.getElementById(id);
+  if (!element)
+  {
+    return;
+  }
+
+  var links = element.getElementsByTagName("a");
+
+  for (var i = 0; i < links.length && i < arguments.length - 1; i++)
+  {
+    var curArg = arguments[i + 1];
+    if (typeof curArg == "string")
+    {
+      links[i].href = curArg;
+      links[i].setAttribute("target", "_blank");
+    }
+    else if (typeof curArg == "function")
+    {
+      links[i].href = "javascript:void(0);";
+      links[i].addEventListener("click", curArg, false);
+    }
+  }
 }
 
 window.addEventListener("load", init);
