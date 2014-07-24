@@ -14,9 +14,9 @@ var AdblockPlus = (function()
     {
       Filter:
       {
-        fromText:
+        fromText: function(param)
         {
-          matches: function(param) {return true}
+          return {matches: function(param) {return true;}}
         }
       }
     }
