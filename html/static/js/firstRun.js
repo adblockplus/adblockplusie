@@ -32,7 +32,7 @@ function openSharePopup(url)
     if (!originFilter.matches(event.origin, "OTHER", null, null))
       return;
 
-    var data = JSON.parse(event.data);
+    var data = event.data;
     iframe.width = data.width;
     iframe.height = data.height;
     popupMessageReceived = true;
