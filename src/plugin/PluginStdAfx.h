@@ -20,13 +20,9 @@
 #define _ATL_APARTMENT_THREADED
 
 //#define _CRT_SECURE_NO_DEPRECATE 1
-#include <atlbase.h>
-#include <atlstr.h>
-#include <atltypes.h>
+#include "ATL_Deprecate.h"
 
 extern CComModule _Module;
-#include <comutil.h>
-#include <atlcom.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdexcept>

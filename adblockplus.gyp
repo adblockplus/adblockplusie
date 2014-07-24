@@ -89,6 +89,7 @@
       'src/plugin/AdblockPlusGuids.h',
       'src/plugin/AdblockPlusTab.cpp',
       'src/plugin/AdblockPlusTab.h',
+      'src/plugin/ATL_Deprecate.h',
       'src/plugin/BuildVariant.h',
       'src/plugin/Config.h',
       'src/plugin/Console.h',
