@@ -25,16 +25,21 @@ from the Visual Studio Developer Command Prompt to create a 32 bit debug build.
 
 Building the installer
 ----------------------
-* Execture Installer\createsolutions.bat to generate installer project files,
-this will create a bunch of project files in installer\build\ia32 and
-installer\build\x64 folders. 
-* Open 'installer\build\ia32\installer.sln' and then 'installer\build\x64\installer.sln'
-in Visual Studio and build both solutions. Alternatively you can use the 'msbuild'
-command line tool, e.g. run 'msibuild /m installer\build\ia32\adblockplus.sln' and
-'msibuild /m installer\build\x64\adblockplus.sln'
-* Make sure you have InnoSetup installed. Either open and compile 
-'installer\src\innosetup-exe\64BitTwoArch.iss' in InnoSetup or run
-'iscc.exe installer\src\innosetup-exe\64bitTwoArch.iss'
+
+You need [WiX 3.8](http://wixtoolset.org) (make sure `%WIX%\bin` is in `%PATH%`)
+and [InnoSetup 5.5](http://www.jrsoftware.org/isinfo.php).
+
+* Execute `installer\createsolutions.bat` to generate the installer project
+files, this will create a bunch of project files in the _installer\build\ia32_
+and _installer\build\x64_ directories.
+* Open and build `installer\build\ia32\installer.sln` and
+`installer\build\x64\installer.sln` in Visual Studio. Alternatively you can use
+the `msbuild` command line tool, i.e. run
+`msibuild /m installer\build\ia32\adblockplus.sln` and
+`msibuild /m installer\build\x64\adblockplus.sln` from the Visual Studio
+Developer Command Prompt.
+* Either open and compile `installer\src\innosetup-exe\64BitTwoArch.iss` in
+InnoSetup or run `iscc.exe installer\src\innosetup-exe\64bitTwoArch.iss`.
 
 Development environment
 -----------------------
