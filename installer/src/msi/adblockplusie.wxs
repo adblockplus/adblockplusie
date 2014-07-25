@@ -360,6 +360,7 @@
       <ComponentRef Id="html_static_img_social_twitter_old.png"/>
       <ComponentRef Id="html_static_js_firstRun.js"/>
       <ComponentRef Id="html_static_js_IESettings.js"/>
+      <ComponentRef Id="html_static_js_ieEventListenerPolyfill.js"/>
       <ComponentRef Id="html_static_js_ieFirstRun.js"/>
       <ComponentRef Id="html_static_js_settings.js"/>
       <ComponentRef Id="html_static_js_vendor_DD.belatedPNG.js"/>
@@ -444,6 +445,9 @@
             </Component>
             <Component Id="html_static_js_ieFirstRun.js" Guid="f2a86685-d713-11e2-8b8b-0800200c9a66">
               <File Name="ieFirstRun.js"/>
+            </Component>
+            <Component Id="html_static_js_ieEventListenerPolyfill.js" Guid="a2a86688-1713-11e2-8b8b-0800200c9a54">
+              <File Name="ieEventListenerPolyfill.js"/>
             </Component>
             <Component Id="html_static_js_IESettings.js" Guid="9e851b10-d713-11e2-8b8b-0800200c9a66">
               <File Name="IESettings.js"/>
