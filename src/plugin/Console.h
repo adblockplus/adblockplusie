@@ -35,7 +35,7 @@ inline void WritelnToConsole(int code, int count, const char* format, va_list ar
 
 			    HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE); 
 
-			    TCHAR buf[128];
+			    wchar_t buf[128];
 			    DWORD nRead = 0;
 			    ReadConsole(hInput, buf, countof(buf), &nRead, 0);
 			}
@@ -153,7 +153,7 @@ inline void CONSOLE_WAIT(const char* format = "", ...)
 	}
 
 	CONSOLE("Hit 'ENTER' to continue");
-	TCHAR buf[128];
+	wchar_t buf[128];
 	DWORD nRead = 0;
 	ReadConsole(GetStdHandle(STD_INPUT_HANDLE), buf, countof(buf), &nRead, 0);
 }

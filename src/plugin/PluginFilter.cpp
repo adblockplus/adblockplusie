@@ -52,7 +52,7 @@ CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText
   // Find tag name, class or any (*)
   CString filterString = filterText;
 
-  TCHAR firstTag = filterString.GetAt(0);
+  wchar_t firstTag = filterString.GetAt(0);
   // Any tag
   if (firstTag == '*')
   {
@@ -85,7 +85,7 @@ CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText
 
   if (!filterString.IsEmpty())
   {
-    TCHAR firstId = filterString.GetAt(0);
+    wchar_t firstId = filterString.GetAt(0);
 
     // Id
     if (firstId == '#')
@@ -450,7 +450,7 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
     std::auto_ptr<CFilterElementHide> filter;
 
     CString wholeFilterString = filterString;
-    TCHAR separatorChar;
+    wchar_t separatorChar;
     do
     {
       int chunkEnd = filterText.FindOneOf(L"+>");

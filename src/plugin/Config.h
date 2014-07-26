@@ -141,7 +141,7 @@
 
 // Status bar pane name
 #if (defined PRODUCT_ADBLOCKPLUS)
-#define STATUSBAR_PANE_NAME "AdblockPlusStatusBarPane"
+#define STATUSBAR_PANE_NAME L"AdblockPlusStatusBarPane"
 #endif
 
 // Status bar pane number
