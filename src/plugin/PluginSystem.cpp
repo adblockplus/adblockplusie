@@ -6,9 +6,9 @@
 std::wstring GetBrowserLanguage()
 {
   LANGID lcid = GetUserDefaultLangID();
-  TCHAR language[128];
+  wchar_t language[128];
   memset(language, 0, sizeof(language));
-  TCHAR country[128];
+  wchar_t country[128];
   memset(language, 0, sizeof(country));
 
   std::wstring lang;

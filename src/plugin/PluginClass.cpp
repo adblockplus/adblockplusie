@@ -779,7 +779,7 @@ bool CPluginClass::InitObject(bool bBHO)
   {
     if (!s_hUxtheme)
     {
-      s_hUxtheme = ::GetModuleHandle(_T("uxtheme.dll"));
+      s_hUxtheme = ::GetModuleHandle(L"uxtheme.dll");
       if (s_hUxtheme)
       {
         pfnClose = (CLOSETHEMEDATA)::GetProcAddress(s_hUxtheme, "CloseThemeData");
@@ -823,7 +823,7 @@ bool CPluginClass::InitObject(bool bBHO)
     wcex.hCursor = NULL;
     wcex.hbrBackground = NULL;
     wcex.lpszMenuName = NULL;
-    wcex.lpszClassName = _T(STATUSBAR_PANE_NAME);
+    wcex.lpszClassName = STATUSBAR_PANE_NAME;
     wcex.hIconSm = NULL;
 
     s_criticalSectionLocal.Lock();
@@ -889,7 +889,7 @@ bool CPluginClass::CreateStatusBarPane()
 
   CPluginClient* client = CPluginClient::GetInstance();
 
-  TCHAR szClassName[MAX_PATH];
+  wchar_t szClassName[MAX_PATH];
   // Get browser window and url
   HWND hBrowserWnd = GetBrowserHWND();
   if (!hBrowserWnd)
@@ -910,13 +910,13 @@ bool CPluginClass::CreateStatusBarPane()
     memset(szClassName, 0, MAX_PATH);
     GetClassName(hTabWnd, szClassName, MAX_PATH);
 
-    if (_tcscmp(szClassName, _T("TabWindowClass")) == 0 || _tcscmp(szClassName,_T("Frame Tab")) == 0)
+    if (wcscmp(szClassName, L"TabWindowClass") == 0 || wcscmp(szClassName,L"Frame Tab") == 0)
     {
       // IE8 support
       HWND hTabWnd2 = hTabWnd;
-      if (_tcscmp(szClassName,_T("Frame Tab")) == 0)
+      if (wcscmp(szClassName,L"Frame Tab") == 0)
       {
-        hTabWnd2 = ::FindWindowEx(hTabWnd2, NULL, _T("TabWindowClass"), NULL);
+        hTabWnd2 = ::FindWindowEx(hTabWnd2, NULL, L"TabWindowClass", NULL);
       }
 
       if (hTabWnd2)
@@ -964,7 +964,7 @@ bool CPluginClass::CreateStatusBarPane()
     memset(szClassName, 0, MAX_PATH);
     ::GetClassName(hWnd, szClassName, MAX_PATH);
 
-    if (_tcscmp(szClassName,_T("msctls_statusbar32")) == 0)
+    if (wcscmp(szClassName,L"msctls_statusbar32") == 0)
     {
       hWndStatusBar = hWnd;
       break;
@@ -1003,7 +1003,7 @@ bool CPluginClass::CreateStatusBarPane()
   HWND hWndNewPane = ::CreateWindowEx(
     NULL,
     MAKEINTATOM(GetAtomPaneClass()),
-    _T(""),
+    L"",
     WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
     rcStatusBar.Width() - 500,0,m_nPaneWidth,rcStatusBar.Height(),
     hWndStatusBar,
@@ -1280,7 +1280,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
   HWND hMenuWnd = ::CreateWindowEx(
     NULL,
     MAKEINTATOM(GetAtomPaneClass()),
-    _T(""),
+    L"",
     0,
     0,0,0,0,
     NULL,
@@ -1941,8 +1941,7 @@ ATOM CPluginClass::GetAtomPaneClass()
 
 HWND CPluginClass::GetTabHWND() const
 {
-
-  TCHAR szClassName[MAX_PATH];
+  wchar_t szClassName[MAX_PATH];
   // Get browser window and url
   HWND hBrowserWnd = GetBrowserHWND();
   if (!hBrowserWnd)
@@ -1961,13 +1960,13 @@ HWND CPluginClass::GetTabHWND() const
     memset(szClassName, 0, MAX_PATH);
     GetClassName(hTabWnd, szClassName, MAX_PATH);
 
-    if (_tcscmp(szClassName, _T("TabWindowClass")) == 0 || _tcscmp(szClassName,_T("Frame Tab")) == 0)
+    if (wcscmp(szClassName, L"TabWindowClass") == 0 || wcscmp(szClassName, L"Frame Tab") == 0)
     {
       // IE8 support
       HWND hTabWnd2 = hTabWnd;
-      if (_tcscmp(szClassName,_T("Frame Tab")) == 0)
+      if (wcscmp(szClassName, L"Frame Tab") == 0)
       {
-        hTabWnd2 = ::FindWindowEx(hTabWnd2, NULL, _T("TabWindowClass"), NULL);
+        hTabWnd2 = ::FindWindowEx(hTabWnd2, NULL, L"TabWindowClass", NULL);
       }
 
       if (hTabWnd2)

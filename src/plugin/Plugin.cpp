@@ -35,11 +35,11 @@ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD fdwReason, LPVOID reserved)
   switch( fdwReason )
   {
   case DLL_PROCESS_ATTACH:
-    TCHAR szFilename[MAX_PATH];
+    wchar_t szFilename[MAX_PATH];
     GetModuleFileName(NULL, szFilename, MAX_PATH);
-    _tcslwr_s(szFilename);
+    _wcslwr_s(szFilename);
 
-    if (_tcsstr(szFilename, _T("explorer.exe")))
+    if (wcsstr(szFilename, L"explorer.exe"))
     {
       return FALSE;
     }
