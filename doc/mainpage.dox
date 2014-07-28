@@ -1,0 +1,20 @@
+/*!
+
+\mainpage Adblock Plus for IE Code Documentation
+
+\section Macros Defined for Doxygen
+
+The following macros defined in the Doxyfile.
+This is a work-around for a deficiency in the Doxygen preprocessor
+Apparently doxygen doesn't understand <tt>defined ...</tt> (in config.h),
+    so we've defined the other macros accordingly.
+
+\code
+  PRODUCT_ADBLOCKPLUS
+  SUPPORT_FILTER
+  SUPPORT_WHITELIST
+  SUPPORT_DOM_TRAVERSER
+  SUPPORT_FRAME_CACHING
+\endcode 
+
+*/
