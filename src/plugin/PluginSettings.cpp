@@ -99,10 +99,9 @@ bool CPluginSettings::HasInstance()
   return hasInstance;
 }
 
-CString CPluginSettings::GetDataPath(const CString& filename)
+std::wstring GetDataPath(const std::wstring& filename)
 {
-  std::wstring path = ::GetAppDataPath() + L"\\" + static_cast<LPCWSTR>(filename);
-  return CString(path.c_str());
+  return GetAppDataPath() + L"\\" + filename;
 }
 
 bool CPluginSettings::IsPluginEnabled() const
