@@ -14,7 +14,7 @@ private:
 
 public:
 
-  CPluginDebugLock() : CPluginMutex("DebugFile", PLUGIN_ERROR_MUTEX_DEBUG_FILE)
+  CPluginDebugLock() : CPluginMutex(L"DebugFile", PLUGIN_ERROR_MUTEX_DEBUG_FILE)
   {
     s_criticalSectionDebugLock.Lock();
   }

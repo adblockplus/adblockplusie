@@ -10,11 +10,11 @@ private:
   HANDLE m_hMutex;
   bool m_isLocked;
   int m_errorSubidBase;
-  CString m_name;
+  std::wstring system_name;
 
 public:
 
-  CPluginMutex(const CString& name, int errorSubidBase);
+  CPluginMutex(const std::wstring& name, int errorSubidBase);
   ~CPluginMutex();
 
   bool IsLocked() const;
