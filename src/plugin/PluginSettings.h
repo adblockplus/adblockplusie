@@ -70,8 +70,6 @@ public:
   static bool HasInstance();
   static CPluginSettings* GetInstance();
 
-  static CString GetDataPath(const CString& filename=L"");
-
   bool IsPluginEnabled() const;
 
   std::map<CString, CString> GetFilterLanguageTitleList() const;
@@ -115,5 +113,6 @@ public:
   CString GetDocumentationLink();
 };
 
+std::wstring GetDataPath(const std::wstring& filename=L"");
 
 #endif // _PLUGIN_SETTINGS_H_

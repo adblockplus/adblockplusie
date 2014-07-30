@@ -43,13 +43,13 @@ void CPluginDebug::Debug(const CString& text, DWORD dwProcessId, DWORD dwThreadI
 
     bool isWorkingThread = settings->IsWorkingThread(dwThreadId);
 
-    CString processor;
+    std::wstring processor;
     wchar_t tmp[10];
     _itow_s(::GetCurrentProcessId(), tmp, 10);
     if (isWorkingThread)
-      processor = L"tab" + CString(tmp) + L"_thread";
+      processor = L"tab" + std::wstring(tmp) + L"_thread";
     else
-      processor = L"tab" + CString(tmp) + L"_ui";
+      processor = L"tab" + std::wstring(tmp) + L"_ui";
 #else
     if (dwProcessId == 0)
     {
@@ -75,9 +75,9 @@ void CPluginDebug::Debug(const CString& text, DWORD dwProcessId, DWORD dwThreadI
       std::ofstream debugFile;
 
 #ifdef ENABLE_DEBUG_SPLIT_FILE
-      debugFile.open(CPluginSettings::GetDataPath(L"debug_" + processor + L".txt"), std::ios::app);
+      debugFile.open(GetDataPath(L"debug_" + processor + L".txt"), std::ios::app);
 #else
-      debugFile.open(CPluginSettings::GetDataPath(L"debug.txt"), std::ios::app);
+      debugFile.open(GetDataPath(L"debug.txt"), std::ios::app);
 #endif
       int pos = 0;
       CStringA line = text.Tokenize(L"\n\r", pos);
@@ -104,17 +104,15 @@ void CPluginDebug::DebugClear()
   CPluginDebugLock lock;
   if (lock.IsLocked())
   {
-    ::DeleteFile(CPluginSettings::GetDataPath(L"debug.txt"));
-    ::DeleteFile(CPluginSettings::GetDataPath(L"debug_main_ui.txt"));
-    ::DeleteFile(CPluginSettings::GetDataPath(L"debug_main_thread.txt"));
+    DeleteFileW(GetDataPath(L"debug.txt").c_str());
+    DeleteFileW(GetDataPath(L"debug_main_ui.txt").c_str());
+    DeleteFileW(GetDataPath(L"debug_main_thread.txt").c_str());
 
     for (int i = 1; i <= 10; i++)
     {
-      CString x;
-      x.Format(L"%d", i);
-
-      ::DeleteFile(CPluginSettings::GetDataPath(L"debug_tab" + x + L"_ui.txt"));
-      ::DeleteFile(CPluginSettings::GetDataPath(L"debug_tab" + x + L"_thread.txt"));
+      std::wstring x = std::to_wstring(i);
+      DeleteFileW(GetDataPath(L"debug_tab" + x + L"_ui.txt").c_str());
+      DeleteFileW(GetDataPath(L"debug_tab" + x + L"_thread.txt").c_str());
     }
   }
 }
@@ -169,7 +167,7 @@ void CPluginDebug::DebugResult(const CString& text)
   {
     std::ofstream debugFile;
 
-    debugFile.open(CPluginSettings::GetDataPath("debug_result.txt"), std::ios::app);
+    debugFile.open(GetDataPath(L"debug_result.txt"), std::ios::app);
     debugFile.write(sysTime.GetBuffer(), sysTime.GetLength());
     debugFile.write(LPCSTR(textA), textA.GetLength());
     debugFile.write("\n", 1);
@@ -220,7 +218,7 @@ void CPluginDebug::DebugResultClear()
   CPluginDebugLock lock;
   if (lock.IsLocked())
   {
-    ::DeleteFile(CPluginSettings::GetDataPath("debug_result.txt"));
+    DeleteFileW(GetDataPath(L"debug_result.txt").c_str());
   }
 }
 
