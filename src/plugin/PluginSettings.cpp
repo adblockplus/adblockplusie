@@ -99,42 +99,16 @@ bool CPluginSettings::HasInstance()
   return hasInstance;
 }
 
-
-
 CString CPluginSettings::GetDataPath(const CString& filename)
 {
   std::wstring path = ::GetAppDataPath() + L"\\" + static_cast<LPCWSTR>(filename);
   return CString(path.c_str());
 }
 
-CString CPluginSettings::GetSystemLanguage()
-{
-  CString language;
-  CString country;
-
-  DWORD bufSize = 256;
-  int ccBuf = GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SISO639LANGNAME, language.GetBufferSetLength(bufSize), bufSize);
-  ccBuf = GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SISO3166CTRYNAME, country.GetBufferSetLength(bufSize), bufSize);
-
-  if ((country.IsEmpty()) || (language.IsEmpty()))
-  {
-    return CString();
-  }
-  CString lang;
-  lang.Append(language);
-  lang.Append(L"-");
-  lang.Append(country);
-
-  return lang;
-
-}
-
-
 bool CPluginSettings::IsPluginEnabled() const
 {
   return GetPluginEnabled();
 }
-
 
 std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
 {
@@ -316,7 +290,7 @@ CString CPluginSettings::GetSubscription()
 
 CString CPluginSettings::GetAppLocale()
 {
-  return CPluginSystem::GetInstance()->GetBrowserLanguage();
+  return to_CString(GetBrowserLanguage());
 }
 
 CString CPluginSettings::GetDocumentationLink()
