@@ -5,25 +5,26 @@
 #include "sddl.h"
 
 
-CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked(false), m_errorSubidBase(errorSubidBase), m_name(name)
+CPluginMutex::CPluginMutex(const std::wstring& name, int errorSubidBase) 
+  : m_isLocked(false), m_errorSubidBase(errorSubidBase), system_name(L"Global\\AdblockPlus" + name)
 {
   if (m_errorSubidBase != PLUGIN_ERROR_MUTEX_DEBUG_FILE)
   {
-    DEBUG_MUTEX("Mutex::Create name:" + name)
+    DEBUG_MUTEX(L"Mutex::Create name:" + name)
   }
-
-  m_hMutex = ::CreateMutex(NULL, FALSE, "Global\\AdblockPlus" + name);
+  m_hMutex = CreateMutexW(NULL, FALSE, system_name.c_str());
 
   if (m_hMutex == NULL)
   {
     DWORD error = GetLastError();
-    m_hMutex = OpenMutex(MUTEX_ALL_ACCESS, FALSE, "Global\\AdblockPlus" + name);
+    m_hMutex = OpenMutexW(MUTEX_ALL_ACCESS, FALSE, system_name.c_str());
     if (m_hMutex == NULL)
     {
-      m_hMutex = ::CreateMutex(NULL, FALSE, "Local\\AdblockPlus" + name);
+      system_name = L"Local\\AdblockPlus" + name;
+      m_hMutex = CreateMutexW(NULL, FALSE, system_name.c_str());
       if (m_hMutex == NULL)
       {
-        m_hMutex = OpenMutex(NULL, FALSE, "Local\\AdblockPlus" + name);
+        m_hMutex = OpenMutexW(NULL, FALSE, system_name.c_str());
         if (m_hMutex == NULL)
         {
           DWORD error = GetLastError();
@@ -31,6 +32,7 @@ CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked
         }
       }
       else
+      // TODO: Combine this block with identical one below.
       {
         switch (::WaitForSingleObject(m_hMutex, 3000))
         {
@@ -53,6 +55,7 @@ CPluginMutex::CPluginMutex(const CString& name, int errorSubidBase) : m_isLocked
     }
   }
   else
+  // TODO: Combine this block with identical one above.
   {
     switch (::WaitForSingleObject(m_hMutex, 3000))
     {
@@ -77,7 +80,7 @@ CPluginMutex::~CPluginMutex()
 {
   if (m_errorSubidBase != PLUGIN_ERROR_MUTEX_DEBUG_FILE)
   {
-    DEBUG_MUTEX("Mutex::Release name:" + m_name)
+    DEBUG_MUTEX(L"Mutex::Release name:" + system_name)
   }
 
   if (m_isLocked)

@@ -33,29 +33,12 @@ class TSettings
   char sPluginId[44];
 };
 
-
-class CPluginSettingsLock : public CPluginMutex
-{
-public:
-  CPluginSettingsLock() : CPluginMutex("SettingsFile", PLUGIN_ERROR_MUTEX_SETTINGS_FILE) {}
-  ~CPluginSettingsLock() {}
-
-};
-
-
-class CPluginSettingsTabLock : public CPluginMutex
-{
-public:
-  CPluginSettingsTabLock() : CPluginMutex("SettingsFileTab", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_TAB) {}
-  ~CPluginSettingsTabLock() {}
-};
-
 #ifdef SUPPORT_WHITELIST
 
 class CPluginSettingsWhitelistLock : public CPluginMutex
 {
 public:
-  CPluginSettingsWhitelistLock() : CPluginMutex("SettingsFileWhitelist", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_WHITELIST) {}
+  CPluginSettingsWhitelistLock() : CPluginMutex(L"SettingsFileWhitelist", PLUGIN_ERROR_MUTEX_SETTINGS_FILE_WHITELIST) {}
   ~CPluginSettingsWhitelistLock() {}
 };
 
