@@ -80,7 +80,6 @@ public:
   void SetWorkingThreadId(DWORD id);
   bool IsWorkingThread(DWORD dwThread=0) const;
 
-  static CString GetSystemLanguage();
   DWORD m_WindowsBuildNumber;
 
 public:

@@ -92,10 +92,7 @@ CPluginClass::CPluginClass()
 
   m_tab = new CPluginTab(this);
 
-  CPluginSystem* system = CPluginSystem::GetInstance();
-
-  std::wstring locale((LPCWSTR)system->GetBrowserLanguage());
-  Dictionary::Create(locale);
+  Dictionary::Create(GetBrowserLanguage());
 }
 
 CPluginClass::~CPluginClass()
@@ -255,7 +252,6 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
   CPluginSettings* settings = CPluginSettings::GetInstance();
-  CPluginSystem* system = CPluginSystem::GetInstance();
 
   MULTIPLE_VERSIONS_CHECK();
 
@@ -1280,8 +1276,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 {
   CPluginClient* client = CPluginClient::GetInstance();
 
-  CPluginSystem* system = CPluginSystem::GetInstance();
-
   // Create menu parent window
   HWND hMenuWnd = ::CreateWindowEx(
     NULL,
@@ -1688,8 +1682,6 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
   {
     return ::DefWindowProc(hWnd, message, wParam, lParam);
   }
-
-  CPluginSystem* system = CPluginSystem::GetInstance();
 
   // Process message
   switch (message)
