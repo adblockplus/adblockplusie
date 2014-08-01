@@ -105,14 +105,14 @@ function initTranslations()
   var mapping = {
     "aa-title": "first-run-aa-title",
     "aa-text": "first-run-aa-text",
-    "title-main": "first-run-title-install",
+    "title-main": AdblockPlus.isUpdate() ? "first-run-title-update" : "first-run-title-install",
     "share-text1": "first-run-share1",
     "share-text2": "first-run-share2",
     "share-donate": "first-run-share2-donate",
     "share2-connection": "first-run-share2-or"
   };
 
-  document.title = AdblockPlus.getMessage("first-run", "first-run-title-install");
+  document.title = AdblockPlus.getMessage("first-run", mapping['title-main']);
   for (var i in mapping)
   {
     var element = document.getElementById(i);

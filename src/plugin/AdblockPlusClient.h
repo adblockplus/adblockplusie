@@ -80,6 +80,7 @@ public:
   std::wstring GetDocumentationLink();
   bool TogglePluginEnabled();
   std::wstring GetHostFromUrl(const std::wstring& url);
+  int CompareVersions(const std::wstring& v1, const std::wstring& v2);
 
   bool IsFirstRun();
 };
