@@ -402,6 +402,7 @@ bool CAdblockPlusClient::IsFirstRun()
   response >> res;
   return res;
 }
+
 void CAdblockPlusClient::AddFilter(const std::wstring& text)
 {
   Communication::OutputBuffer request;
@@ -556,4 +557,17 @@ std::wstring CAdblockPlusClient::GetHostFromUrl(const std::wstring& url)
   std::string host;
   response >> host;
   return ToUtf16String(host);
+}
+
+int CAdblockPlusClient::CompareVersions(const std::wstring& v1, const std::wstring& v2)
+{
+  DEBUG_GENERAL("CompareVersions");
+  Communication::OutputBuffer request;
+  request << Communication::PROC_COMPARE_VERSIONS << ToUtf8String(v1) << ToUtf8String(v2);
+  Communication::InputBuffer response;
+  if (!CallEngine(request, response))
+    return 0;
+  int result;
+  response >> result;
+  return result;
 }

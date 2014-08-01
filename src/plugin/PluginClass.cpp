@@ -851,8 +851,20 @@ bool CPluginClass::InitObject(bool bBHO)
     return false;
   }
   
-  if (CPluginClient::GetInstance()->IsFirstRun())
+  s_criticalSectionLocal.Lock();
+  int versionCompRes = CPluginClient::GetInstance()->CompareVersions(CPluginClient::GetInstance()->GetPref(L"currentVersion", L"0.0"), L"1.2");
+
+  bool isFirstRun = CPluginClient::GetInstance()->IsFirstRun();
+  CPluginClient::GetInstance()->SetPref(L"currentVersion", std::wstring(IEPLUGIN_VERSION));
+  // This is the first time ABP was installed
+  // Or ABP was updated from the version that did not support Acceptable Ads (<1.2)
+  if (isFirstRun || versionCompRes < 0)
   {   
+    if (!isFirstRun)
+    {
+      CPluginClient::GetInstance()->SetPref(L"displayUpdatePage", true);
+    }
+
     // IE6 can't be accessed from another thread, execute in current thread
     if (ieVersion < 7)
     {
@@ -862,12 +874,16 @@ bool CPluginClass::InitObject(bool bBHO)
     {
       CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)CPluginClass::FirstRunThread, NULL, NULL, NULL);
     }
-    if ((m_hPaneWnd == NULL) || (!IsStatusBarEnabled()))
+    if (((m_hPaneWnd == NULL) || !IsStatusBarEnabled()) && isFirstRun)
     {
       ShowStatusBar();
     }
 
+    // Enable acceptable ads by default
+    std::wstring aaUrl = CPluginClient::GetInstance()->GetPref(L"subscriptions_exceptionsurl", L"");
+    CPluginClient::GetInstance()->AddSubscription(aaUrl);
   }
+  s_criticalSectionLocal.Unlock();
   return true;
 }
 

@@ -36,6 +36,10 @@ var AdblockPlus = (function()
     {
       return Settings.GetMessage(section, param);
     }
+    result.isUpdate = function() 
+    {
+      return Settings.IsUpdate();
+    }
     scopes.prefs.Prefs.documentation_link = Settings.GetDocumentationLink();
     scopes.utils.Utils.appLocale = Settings.GetAppLocale();
   }, false);

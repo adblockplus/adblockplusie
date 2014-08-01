@@ -306,6 +306,14 @@ namespace
         }
         break;
       }
+      case Communication::PROC_COMPARE_VERSIONS:
+      {
+        std::string v1, v2;
+        request >> v1 >> v2;
+
+        response << filterEngine->CompareVersions(v1, v2);
+        break;
+      }
       case Communication::PROC_GET_DOCUMENTATION_LINK:
       {
         response << ToUtf16String(filterEngine->GetPref("documentation_link")->AsString());

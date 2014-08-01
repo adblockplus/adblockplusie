@@ -18,7 +18,8 @@ static const CString s_GetAppLocale = L"GetAppLocale";
 static const CString s_GetDocumentationLink = L"GetDocumentationLink";
 static const CString s_IsAcceptableAdsEnabled = L"IsAcceptableAdsEnabled";
 static const CString s_SetAcceptableAdsEnabled = L"SetAcceptableAdsEnabled";
-static const CString s_Methods[] = {s_GetMessage, s_GetLanguageCount, s_GetLanguageByIndex, s_GetLanguageTitleByIndex, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain, s_GetAppLocale, s_GetDocumentationLink, s_IsAcceptableAdsEnabled, s_SetAcceptableAdsEnabled};
+static const CString s_IsUpdate = L"IsUpdate";
+static const CString s_Methods[] = {s_GetMessage, s_GetLanguageCount, s_GetLanguageByIndex, s_GetLanguageTitleByIndex, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain, s_GetAppLocale, s_GetDocumentationLink, s_IsAcceptableAdsEnabled, s_SetAcceptableAdsEnabled, s_IsUpdate};
 
 CPluginUserSettings::CPluginUserSettings()
 {
@@ -352,6 +353,14 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       CPluginClient* client = CPluginClient::GetInstance();
       client->RemoveSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
     }
+  }
+  else if (s_IsUpdate == method)
+  {
+    if (0 != pDispparams->cArgs)
+      return DISP_E_BADPARAMCOUNT;
+
+    pVarResult->vt = VT_BOOL;
+    pVarResult->boolVal = CPluginClient::GetInstance()->GetPref(L"displayUpdatePage", false);
   }
   else
     return DISP_E_MEMBERNOTFOUND;
