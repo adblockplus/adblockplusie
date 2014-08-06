@@ -18,9 +18,9 @@
 
 namespace
 {
-  std::wstring CreateDomainWhitelistingFilter(const CString domain)
+  std::wstring CreateDomainWhitelistingFilter(const CString& domain)
   {
-    return std::wstring(L"@@||") + domain.GetString() + std::wstring(L"^$document");
+    return L"@@||" + to_wstring(domain) + L"^$document";
   }
 }
 

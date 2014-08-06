@@ -157,7 +157,7 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
 void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
 {
   CPluginClient* client = CPluginClient::GetInstance();
-  std::wstring url = std::wstring(GetDocumentUrl());
+  std::wstring url = to_wstring(GetDocumentUrl());
   if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
   {
     m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
