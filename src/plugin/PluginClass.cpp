@@ -3,9 +3,7 @@
 #include "PluginClass.h"
 #include "PluginSettings.h"
 #include "PluginSystem.h"
-#ifdef SUPPORT_FILTER
 #include "PluginFilter.h"
-#endif
 #include "PluginMimeFilterClient.h"
 #include "PluginClient.h"
 #include "PluginClientFactory.h"
@@ -44,10 +42,7 @@ CComAutoCriticalSection CPluginClass::s_criticalSectionBrowser;
 CComAutoCriticalSection CPluginClass::s_criticalSectionWindow;
 
 CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
-
-#ifdef SUPPORT_WHITELIST
 std::map<UINT,CString> CPluginClass::s_menuDomains;
-#endif
 
 /*
  * Without namespace declaration, the identifier "Rectangle" is ambiguous
@@ -589,10 +584,7 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
   else
   {
     DEBUG_NAVI(L"Navi::Begin navigation url:" + url)
-
-#ifdef SUPPORT_FRAME_CACHING
-      m_tab->CacheFrame(url);
-#endif
+    m_tab->CacheFrame(url);
   }
 }
 STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
@@ -1393,12 +1385,9 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 
   s_criticalSectionLocal.Lock();
   {
-#ifdef SUPPORT_WHITELIST
     s_menuDomains.clear();
-#endif
   }
   s_criticalSectionLocal.Unlock();
-
 
   Dictionary* dictionary = Dictionary::GetInstance();
 
@@ -1413,10 +1402,7 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   miiSep.fType = MFT_SEPARATOR;
 
   CPluginClient* client = CPluginClient::GetInstance();
-
   CPluginSettings* settings = CPluginSettings::GetInstance();
-
-#ifdef SUPPORT_WHITELIST
   {
     ctext = dictionary->Lookup("menu", "menu-disable-on-site");
     // Is domain in white list?
@@ -1435,11 +1421,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 
     ::SetMenuItemInfoW(hMenu, ID_MENU_DISABLE_ON_SITE, FALSE, &fmii);
   }
-#else
-  {
-    ::DeleteMenu(hMenu, ID_MENU_DISABLE_ON_SITE, FALSE);
-  }
-#endif // SUPPORT_WHITELIST
 
   // Plugin update
   ctext = dictionary->Lookup("menu", "menu-update");
@@ -1650,26 +1631,19 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
   if (tab)
   {
     CPluginClient* client = CPluginClient::GetInstance();
-
-#ifdef PRODUCT_ADBLOCKPLUS
     if (!CPluginSettings::GetInstance()->IsPluginEnabled())
     {
     }
-#ifdef SUPPORT_WHITELIST
     else if (client->IsWhitelistedUrl(std::wstring(url)))
     {
       hIcon = GetIcon(ICON_PLUGIN_DISABLED);
     }
-#endif // SUPPORT_WHITELIST
     else
     {
       CPluginSettings* settings = CPluginSettings::GetInstance();
       hIcon = GetIcon(ICON_PLUGIN_ENABLED);
     }
-
-#endif // PRODUCT_ADBLOCKPLUS
   }
-
   return hIcon;
 }
 

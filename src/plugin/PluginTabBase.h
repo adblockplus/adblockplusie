@@ -1,10 +1,7 @@
 #ifndef _PLUGIN_TAB_BASE_H_
 #define _PLUGIN_TAB_BASE_H_
 
-
-#ifdef SUPPORT_DOM_TRAVERSER
 class CPluginDomTraverser;
-#endif
 
 #include "PluginUserSettings.h"
 #include "PluginFilter.h"
@@ -35,34 +32,19 @@ protected:
 
   std::thread m_thread;
   std::atomic<bool> m_continueThreadRunning;
-
-#ifdef SUPPORT_DOM_TRAVERSER
   CPluginDomTraverser* m_traverser;
-#endif
-
   static int s_dictionaryVersion;
   static int s_settingsVersion;
-#ifdef SUPPORT_FILTER
   static int s_filterVersion;
 public:
   std::auto_ptr<CPluginFilter> m_filter;
 private:
-#endif
-#ifdef SUPPORT_WHITELIST
   static int s_whitelistVersion;
-#endif
-#ifdef SUPPORT_CONFIG
-  static int s_configVersion;
-#endif
 
   void ThreadProc();
-
-#ifdef SUPPORT_FRAME_CACHING
   CComAutoCriticalSection m_criticalSectionCache;
   std::set<CString> m_cacheFrames;
   std::wstring m_cacheDomain;
-#endif
-
   void SetDocumentUrl(const CString& url);
   void InjectABP(IWebBrowser2* browser);
 public:
@@ -72,20 +54,15 @@ public:
 
   std::wstring GetDocumentDomain();
   CString GetDocumentUrl();
-
   virtual void OnActivate();
   virtual void OnUpdate();
   virtual void OnNavigate(const CString& url);
   virtual void OnDownloadComplete(IWebBrowser2* browser);
   virtual void OnDocumentComplete(IWebBrowser2* browser, const CString& url, bool isDocumentBrowser);
-
   static DWORD WINAPI TabThreadProc(LPVOID pParam);
-
-#ifdef SUPPORT_FRAME_CACHING
   void CacheFrame(const CString& url);
   bool IsFrameCached(const CString& url);
   void ClearFrameCache(const std::wstring& domain=L"");
-#endif
 
 };
 

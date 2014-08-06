@@ -1,13 +1,9 @@
 #include "PluginStdAfx.h"
 
 #include "PluginFilter.h"
-
-#if (defined PRODUCT_ADBLOCKPLUS)
 #include "PluginSettings.h"
 #include "PluginClient.h"
 #include "PluginClientFactory.h"
-#endif
-
 #include "PluginMutex.h"
 #include "PluginSettings.h"
 #include "PluginSystem.h"
@@ -618,18 +614,12 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
 
 bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
 {
-
   ClearFilters();
-
   bool isRead = false;
-
-#ifdef PRODUCT_ADBLOCKPLUS
   CPluginClient* client = CPluginClient::GetInstance();
-#endif
 
   // Parse hide string
   int pos = 0;
-
   CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
   {
     for (std::vector<std::wstring>::iterator it = filters.begin(); it < filters.end(); ++it)

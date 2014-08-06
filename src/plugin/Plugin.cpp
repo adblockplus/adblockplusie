@@ -13,13 +13,7 @@
 #include "PluginSettings.h"
 #include "PluginMimeFilterClient.h"
 #include "Msiquery.h"
-
-#ifdef SUPPORT_FILTER
 #include "PluginFilter.h"
-#endif
-#ifdef SUPPORT_CONFIG
-#include "PluginConfig.h"
-#endif
 
 #include "../shared/Dictionary.h"
 

@@ -3,9 +3,7 @@
 #include "PluginWbPassThrough.h"
 #include "PluginClient.h"
 #include "PluginClientFactory.h"
-#ifdef SUPPORT_FILTER
 #include "PluginFilter.h"
-#endif
 #include "PluginSettings.h"
 #include "PluginClass.h"
 #include "PluginSystem.h"
@@ -159,7 +157,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   ULONG len1 = 2048;
   ULONG len2 = 2048;
 
-#ifdef SUPPORT_FILTER
   int contentType = CFilter::contentTypeAny;
 
   CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
@@ -177,17 +174,15 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(std::wstring(documentUrl)))
     {
       boundDomain = to_wstring(tab->GetDocumentUrl());
-
       contentType = CFilter::contentTypeAny;
-
-#ifdef SUPPORT_FRAME_CACHING
       if ((tab != 0) && (tab->IsFrameCached(src)))
       {
         contentType = CFilter::contentTypeSubdocument;
       }
       else
-#endif // SUPPORT_FRAME_CACHING
-      contentType = GetContentType(mimeType, boundDomain, src);
+      {
+        contentType = GetContentType(mimeType, boundDomain, src);
+      }
       if (client->ShouldBlock(to_wstring(src), contentType, boundDomain, true))
       {
         isBlocked = true;
@@ -284,8 +279,6 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       return INET_E_REDIRECT_FAILED;
     }
   }
-#endif // SUPPORT_FILTER
-
   return isBlocked ? S_FALSE : BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
 }
 
