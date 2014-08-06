@@ -5,9 +5,7 @@
 #include "PluginSettings.h"
 #include "PluginClient.h"
 #include "PluginSystem.h"
-#ifdef SUPPORT_FILTER
 #include "PluginFilter.h"
-#endif
 #include "PluginMutex.h"
 #include "../shared/Utils.h"
 #include <memory>
@@ -33,8 +31,6 @@ class TSettings
   char sPluginId[44];
 };
 
-#ifdef SUPPORT_WHITELIST
-
 class CPluginSettingsWhitelistLock : public CPluginMutex
 {
 public:
@@ -42,30 +38,20 @@ public:
   ~CPluginSettingsWhitelistLock() {}
 };
 
-#endif
-
 CPluginSettings* CPluginSettings::s_instance = NULL;
-
 CComAutoCriticalSection CPluginSettings::s_criticalSectionLocal;
-
 
 CPluginSettings::CPluginSettings() : m_dwWorkingThreadId(0)
 {
   s_instance = NULL;
-
   m_WindowsBuildNumber = 0;
-
-#ifdef SUPPORT_WHITELIST
   ClearWhitelist();
-#endif
 }
-
 
 CPluginSettings::~CPluginSettings()
 {
   s_instance = NULL;
 }
-
 
 CPluginSettings* CPluginSettings::GetInstance()
 {
@@ -161,8 +147,6 @@ void CPluginSettings::AddError(const CString& error, const CString& errorCode)
 // Whitelist settings
 // ============================================================================
 
-#ifdef SUPPORT_WHITELIST
-
 void CPluginSettings::ClearWhitelist()
 {
   s_criticalSectionLocal.Lock();
@@ -171,7 +155,6 @@ void CPluginSettings::ClearWhitelist()
   }
   s_criticalSectionLocal.Unlock();
 }
-
 
 bool CPluginSettings::ReadWhitelist(bool isDebug)
 {
@@ -201,7 +184,6 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
     return isRead;
 }
 
-
 void CPluginSettings::AddWhiteListedDomain(const CString& domain)
 {
   DEBUG_SETTINGS("SettingsWhitelist::AddWhiteListedDomain domain:" + domain)
@@ -226,7 +208,6 @@ int CPluginSettings::GetWhiteListedDomainCount() const
 
   return count;
 }
-
 
 std::vector<std::wstring> CPluginSettings::GetWhiteListedDomainList()
 {
@@ -296,7 +277,3 @@ CString CPluginSettings::GetDocumentationLink()
 {
   return CString(CPluginClient::GetInstance()->GetDocumentationLink().c_str());
 }
-
-
-
-#endif // SUPPORT_WHITELIST

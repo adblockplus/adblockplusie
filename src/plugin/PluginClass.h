@@ -22,12 +22,7 @@
 #define ICON_MAX 3
 
 #define WM_LAUNCH_INFO					(WM_APP + 10)
-
-#ifdef SUPPORT_WHITELIST
 #define WM_WHITELIST_DOMAIN		        (WM_LAUNCH_INFO + 1)
-#else
-#define WM_GROUP2_START                    (WM_LAUNCH_INFO + 1)
-#endif
 
 class CPluginMimeFilterClient;
 
@@ -165,27 +160,18 @@ private:
   static HANDLE GetMainThreadHandle();
   static bool IsMainThreadDone(HANDLE mainThread);
 
-
   static HINSTANCE s_hUxtheme;
   static std::set<CPluginClass*> s_instances;
   static std::map<DWORD,CPluginClass*> s_threadInstances;
-
-#ifdef SUPPORT_WHITELIST
   static std::map<UINT, CString> s_menuDomains;
-#endif
-
   static CComAutoCriticalSection s_criticalSectionLocal;
   static CComAutoCriticalSection s_criticalSectionBrowser;
   static CComAutoCriticalSection s_criticalSectionWindow;
-#ifdef SUPPORT_WHITELIST
   static CComAutoCriticalSection s_criticalSectionWhiteList;
-#endif
 
   // Async browser
   static CComQIPtr<IWebBrowser2> s_asyncWebBrowser2;
-
   static CComQIPtr<IWebBrowser2> GetAsyncBrowser();
-
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(PluginClass), CPluginClass)

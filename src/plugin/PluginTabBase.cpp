@@ -2,13 +2,9 @@
 
 #include "PluginClient.h"
 #include "PluginSettings.h"
-#ifdef SUPPORT_CONFIG
-#include "PluginConfig.h"
-#endif
 #include "PluginTab.h"
 #include "PluginDomTraverser.h"
 #include "PluginClass.h"
-
 #include "PluginTabBase.h"
 #include "PluginUtil.h"
 #include <dispex.h>
@@ -16,16 +12,8 @@
 
 int CPluginTabBase::s_dictionaryVersion = 0;
 int CPluginTabBase::s_settingsVersion = 1;
-#ifdef SUPPORT_FILTER
 int CPluginTabBase::s_filterVersion = 0;
-#endif
-#ifdef SUPPORT_WHITELIST
 int CPluginTabBase::s_whitelistVersion = 0;
-#endif
-#ifdef SUPPORT_CONFIG
-int CPluginTabBase::s_configVersion = 0;
-#endif
-
 
 CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
   : m_plugin(plugin)
@@ -51,20 +39,14 @@ CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
                 ex.code().message() + ex.what();
     DEBUG_ERROR_LOG(ex.code().value(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_TAB_THREAD_CREATE_PROCESS, errDescription.c_str());
   }
-
-#ifdef SUPPORT_DOM_TRAVERSER
   m_traverser = new CPluginDomTraverser(static_cast<CPluginTab*>(this));
-#endif // SUPPORT_DOM_TRAVERSER
 }
 
 
 CPluginTabBase::~CPluginTabBase()
 {
-#ifdef SUPPORT_DOM_TRAVERSER
   delete m_traverser;
   m_traverser = NULL;
-#endif // SUPPORT_DOM_TRAVERSER
-
   m_continueThreadRunning = false;
   if (m_thread.joinable()) {
     m_thread.join();
@@ -94,12 +76,7 @@ namespace
 void CPluginTabBase::OnNavigate(const CString& url)
 {
   SetDocumentUrl(url);
-
-
-#ifdef SUPPORT_FRAME_CACHING
   ClearFrameCache(GetDocumentDomain());
-#endif
-
   std::wstring domainString = GetDocumentDomain();
   ResetEvent(m_filter->hideFiltersLoadedEvent);
   try
@@ -113,10 +90,7 @@ void CPluginTabBase::OnNavigate(const CString& url)
       ex.code().message() + ex.what();
     DEBUG_ERROR_LOG(ex.code().value(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, errDescription.c_str());
   }
-
-#ifdef SUPPORT_DOM_TRAVERSER
   m_traverser->ClearCache();
-#endif
 }
 
 void CPluginTabBase::InjectABP(IWebBrowser2* browser)
@@ -182,15 +156,12 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
 
 void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
 {
-#ifdef SUPPORT_DOM_TRAVERSER
   CPluginClient* client = CPluginClient::GetInstance();
   std::wstring url = std::wstring(GetDocumentUrl());
   if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
   {
     m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
   }
-#endif // SUPPORT_DOM_TRAVERSER
-
   InjectABP(browser);
 }
 
@@ -206,8 +177,6 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
     }
     InjectABP(browser);
   }
-
-#ifdef SUPPORT_DOM_TRAVERSER
   if (url.Left(6) != "res://")
   {
     // Get document
@@ -243,7 +212,6 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
     pDoc.Release();
     pDocDispatch.Release();
   }
-#endif
 }
 
 std::wstring CPluginTabBase::GetDocumentDomain()
@@ -286,9 +254,6 @@ CString CPluginTabBase::GetDocumentUrl()
 // ============================================================================
 // Frame caching
 // ============================================================================
-
-#ifdef SUPPORT_FRAME_CACHING
-
 bool CPluginTabBase::IsFrameCached(const CString& url)
 {
   bool isFrame;
@@ -323,9 +288,6 @@ void CPluginTabBase::ClearFrameCache(const std::wstring& domain)
   }
   m_criticalSectionCache.Unlock();
 }
-
-#endif // SUPPORT_FRAME_CACHING
-
 
 void CPluginTabBase::ThreadProc()
 {

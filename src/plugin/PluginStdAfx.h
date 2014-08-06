@@ -54,22 +54,14 @@ extern CComModule _Module;
 #include "PluginDebugMacros.h"
 #include "PluginErrorCodes.h"
 
-
-#if (defined PRODUCT_ADBLOCKPLUS)
 #include "Config.h"
-#endif
 
-#if (defined PRODUCT_ADBLOCKPLUS)
 #if (defined ENTERPRISE)
 #define CONFIG_IN_REGISTRY
 #endif
 #include "Resource.h"
-#endif
 
-#if (defined PRODUCT_ADBLOCKPLUS)
 #include "PluginDebug.h"
-#endif
-
 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>

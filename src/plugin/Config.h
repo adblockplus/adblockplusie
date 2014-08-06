@@ -115,17 +115,6 @@
 #define DEBUG_ERROR_LOG(err, id, subid, description) CPluginClient::LogPluginError(err, id, subid, description);
 
 // ----------------------------------------------------------------------------
-// Features
-// ----------------------------------------------------------------------------
-
-#if (defined PRODUCT_ADBLOCKPLUS)
-#define SUPPORT_FILTER
-#define SUPPORT_WHITELIST
-#define SUPPORT_DOM_TRAVERSER
-#define SUPPORT_FRAME_CACHING
-#endif
-
-// ----------------------------------------------------------------------------
 // Miscellaneous
 // ----------------------------------------------------------------------------
 
@@ -140,14 +129,10 @@
 #undef THROW_ON_ERROR
 
 // Status bar pane name
-#if (defined PRODUCT_ADBLOCKPLUS)
 #define STATUSBAR_PANE_NAME L"AdblockPlusStatusBarPane"
-#endif
 
 // Status bar pane number
-#if (defined PRODUCT_ADBLOCKPLUS)
 #define STATUSBAR_PANE_NUMBER 2
-#endif
 
 #define ENGINE_STARTUP_TIMEOUT 10000
 

@@ -150,7 +150,7 @@
     # See "Adding Visual Style Support to an Extension, Plug-in, MMC Snap-in or a DLL
     # That Is Brought into a Process" on the link here:
     # http://msdn.microsoft.com/en-us/library/windows/desktop/bb773175%28v=vs.85%29.aspx#using_manifests
-    'defines': ['PRODUCT_ADBLOCKPLUS', 'ISOLATION_AWARE_ENABLED'],
+    'defines': ['ISOLATION_AWARE_ENABLED'],
     'libraries': [
       '-lwinhttp',
       '-lshell32',

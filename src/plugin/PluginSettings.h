@@ -7,7 +7,6 @@
 #ifndef _PLUGIN_SETTINGS_H_
 #define _PLUGIN_SETTINGS_H_
 
-
 #include "PluginTypedef.h"
 #include "AdblockPlusClient.h"
 
@@ -18,10 +17,6 @@
 #define SETTING_PLUGIN_UPDATE_VERSION   L"pluginupdateversion"
 #define SETTING_PLUGIN_SELFTEST         L"pluginselftest"
 #define SETTING_LANGUAGE                L"language"
-
-#ifdef SUPPORT_CONFIG
-#define SETTING_CONFIG_VERSION          L"configversion"
-#endif
 #define SETTING_DICTIONARY_VERSION      L"dictionaryversion"
 
 // Tab settings
@@ -33,26 +28,14 @@
 #define SETTING_TAB_UPDATE_ON_START_REMOVE  L"updateonstartremove"
 #define SETTING_TAB_DICTIONARY_VERSION      L"dictionaryversion"
 #define SETTING_TAB_SETTINGS_VERSION        L"settingsversion"
-#ifdef SUPPORT_FILTER
 #define SETTING_TAB_FILTER_VERSION          L"filterversion"
-#endif
-
-#ifdef SUPPORT_WHITELIST
 #define SETTING_TAB_WHITELIST_VERSION       L"whitelistversion"
-#endif
-#ifdef SUPPORT_CONFIG
-#define SETTING_TAB_CONFIG_VERSION          L"configversion"
-#endif
-
 
 class CPluginIniFileW;
 
-
 class CPluginSettings
 {
-
 private:
-
   DWORD m_dwWorkingThreadId;
 
   static CComAutoCriticalSection s_criticalSectionLocal;
@@ -61,8 +44,8 @@ private:
 
   // Private constructor used by the singleton pattern
   CPluginSettings();
-public:
 
+public:
   ~CPluginSettings();
 
   static CPluginSettings* s_instance;
@@ -88,11 +71,8 @@ public:
   void AddError(const CString& error, const CString& errorCode);
 
   // Settings whitelist
-#ifdef SUPPORT_WHITELIST
-
 private:
   std::vector<std::wstring> m_whitelistedDomains;
-
   void ClearWhitelist();
   bool ReadWhitelist(bool bDebug=true);
 
@@ -101,7 +81,6 @@ public:
   void RemoveWhiteListedDomain(const CString& domain);
   int GetWhiteListedDomainCount() const;
   std::vector<std::wstring> GetWhiteListedDomainList();
-#endif //SUPPORT_WHITELIST
 
   bool RefreshWhitelist();
   DWORD GetWindowsBuildNumber();
