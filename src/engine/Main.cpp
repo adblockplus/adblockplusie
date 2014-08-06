@@ -92,7 +92,7 @@ namespace
         std::string documentUrl;
         request >> url >> type >> documentUrl;
         referrerMapping.Add(url, documentUrl); 
-        AdblockPlus::FilterPtr filter = filterEngine->Matches(url, type, referrerMapping.BuildReferrerChain(url));
+        AdblockPlus::FilterPtr filter = filterEngine->Matches(url, type, referrerMapping.BuildReferrerChain(documentUrl));
         response << (filter && filter->GetType() != AdblockPlus::Filter::TYPE_EXCEPTION);
         break;
       }
