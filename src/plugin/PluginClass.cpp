@@ -1358,13 +1358,13 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
     {
       CPluginSettings* settings = CPluginSettings::GetInstance();
       CString urlString = GetTab()->GetDocumentUrl();
-      if (client->IsWhitelistedUrl(std::wstring(urlString)))
+      if (client->IsWhitelistedUrl(to_wstring(urlString)))
       {
-        settings->RemoveWhiteListedDomain(client->GetHostFromUrl(urlString.GetString()).c_str());
+        settings->RemoveWhiteListedDomain(to_CString(client->GetHostFromUrl(to_wstring(urlString))));
       }
       else
       {
-        settings->AddWhiteListedDomain(client->GetHostFromUrl(urlString.GetString()).c_str());
+        settings->AddWhiteListedDomain(to_CString(client->GetHostFromUrl(to_wstring(urlString))));
       }
       GetBrowser()->Refresh();
     }
@@ -1406,8 +1406,8 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   {
     ctext = dictionary->Lookup("menu", "menu-disable-on-site");
     // Is domain in white list?
-    ReplaceString(ctext, L"?1?", client->GetHostFromUrl(url.GetString()));
-    if (client->IsWhitelistedUrl(std::wstring(GetTab()->GetDocumentUrl())))
+    ReplaceString(ctext, L"?1?", client->GetHostFromUrl(to_wstring(url)));
+    if (client->IsWhitelistedUrl(to_wstring(GetTab()->GetDocumentUrl())))
     {
       fmii.fState = MFS_CHECKED | MFS_ENABLED;
     }
@@ -1634,7 +1634,7 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
     if (!CPluginSettings::GetInstance()->IsPluginEnabled())
     {
     }
-    else if (client->IsWhitelistedUrl(std::wstring(url)))
+    else if (client->IsWhitelistedUrl(to_wstring(url)))
     {
       hIcon = GetIcon(ICON_PLUGIN_DISABLED);
     }
