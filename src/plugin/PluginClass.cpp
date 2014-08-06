@@ -389,6 +389,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       }
       if (s_instances.empty())
       {
+        // TODO: Explicitly releasing a resource when a container becomes empty looks like a job better suited for shared_ptr
         CPluginClientFactory::ReleaseMimeFilterClientInstance();
       }
     }
@@ -522,6 +523,11 @@ void CPluginClass::ShowStatusBar()
   DEBUG_GENERAL("ShowStatusBar end");
 }
 
+/*
+ * #1163 This class is the implementation for method DISPID_BEFORENAVIGATE2 in CPluginClass::Invoke.
+ * - It validates and convertes its own arguments, rather than unifying them in the Invoke body.
+ * - It's declared void and not HRESULT, so DISPID_BEFORENAVIGATE2 can only return S_OK.
+ */
 void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 {
 
@@ -587,6 +593,13 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
     m_tab->CacheFrame(url);
   }
 }
+
+/*
+ * #1163 implements behavior for method DISPID_WINDOWSTATECHANGED in CPluginClass::Invoke
+ * - should validate and convert arguments in Invoke, not here
+ * - does not validate number of arguments before indexing into 'rgvarg'
+ * - does not validate type of argument before using its value
+ */
 STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
 {
   DEBUG_GENERAL("Tab changed");
@@ -597,163 +610,169 @@ STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
     if (it == s_threadInstances.end())
     {
       s_threadInstances[::GetCurrentThreadId()] = this;
-
-
       if (!m_isInitializedOk)
       {
         m_isInitializedOk = true;
-        if (!InitObject(true))
-        {
-          //					Unadvice();
-        }
+        InitObject(true);
         UpdateStatusBar();
       }
     }
   }
   notificationMessage.Hide();
   DEBUG_GENERAL("Tab change end");
-  return VARIANT_TRUE;
+  return S_OK;
 }
 
 // This gets called whenever there's a browser event
+// ENTRY POINT
 STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pvarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr)
 {
-  WCHAR tmp[256];
-  wsprintf(tmp, L"Invoke: %d\n", dispidMember);
-  DEBUG_GENERAL(tmp);
-  switch (dispidMember)
+  try
   {
-
-  case DISPID_WINDOWSTATECHANGED:
-    return OnTabChanged(pDispParams, wFlags);
-    break;
-  case DISPID_HTMLDOCUMENTEVENTS2_ONBEFOREUPDATE:
-    return VARIANT_TRUE;
-    break;
-
-  case DISPID_HTMLDOCUMENTEVENTS2_ONCLICK:
-    return VARIANT_TRUE;
-    break;
-
-  case DISPID_EVMETH_ONLOAD:
-    DEBUG_NAVI("Navi::OnLoad")
-      return VARIANT_TRUE;
-    break;
-
-  case DISPID_EVMETH_ONCHANGE:
-    return VARIANT_TRUE;
-
-  case DISPID_EVMETH_ONMOUSEDOWN:
-    return VARIANT_TRUE;
-
-  case DISPID_EVMETH_ONMOUSEENTER:
-    return VARIANT_TRUE;
-
-  case DISPID_IHTMLIMGELEMENT_START:
-    return VARIANT_TRUE;
-
-  case STDDISPID_XOBJ_ERRORUPDATE:
-    return VARIANT_TRUE;
-
-  case STDDISPID_XOBJ_ONPROPERTYCHANGE:
-    return VARIANT_TRUE;
-
-  case DISPID_READYSTATECHANGE:
-    DEBUG_NAVI("Navi::ReadyStateChange")
-      return VARIANT_TRUE;
-
-  case DISPID_BEFORENAVIGATE:
-    DEBUG_NAVI("Navi::BeforeNavigate")
-      return VARIANT_TRUE;
-  case DISPID_COMMANDSTATECHANGE:
-    if (m_hPaneWnd == NULL)
+    WCHAR tmp[256];
+    wsprintf(tmp, L"Invoke: %d\n", dispidMember);
+    DEBUG_GENERAL(tmp);
+    switch (dispidMember)
     {
-      CreateStatusBarPane();
-    }
-    else
-    {
-      if (CPluginClient::GetInstance()->GetIEVersion() > 6)
+    case DISPID_WINDOWSTATECHANGED:
       {
-        RECT rect;
-        BOOL rectRes = GetClientRect(m_hStatusBarWnd, &rect);
-        if (rectRes == TRUE)
-        {
-          MoveWindow(m_hPaneWnd, rect.right - 200, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
-        }
-      }      
-    }
-    break;
-  case DISPID_STATUSTEXTCHANGE:
-    break;
-
-  case DISPID_BEFORENAVIGATE2:
-    BeforeNavigate2(pDispParams);
-    break;
-
-  case DISPID_DOWNLOADBEGIN:
-    {
-      DEBUG_NAVI("Navi::Download Begin")
-    }
-    break;
-
-  case DISPID_DOWNLOADCOMPLETE:
-    {
-      DEBUG_NAVI("Navi::Download Complete")
-
-        CComQIPtr<IWebBrowser2> browser = GetBrowser();
-      if (browser)
-      {
-        m_tab->OnDownloadComplete(browser);
+        // #1163 should validate and convert arguments here
+        return OnTabChanged(pDispParams, wFlags);
       }
-    }
-    break;
 
-  case DISPID_DOCUMENTCOMPLETE:
-    {
-      DEBUG_NAVI("Navi::Document Complete")
+    case DISPID_HTMLDOCUMENTEVENTS2_ONBEFOREUPDATE:
+      break;
 
-        CComQIPtr<IWebBrowser2> browser = GetBrowser();
+    case DISPID_HTMLDOCUMENTEVENTS2_ONCLICK:
+      break;
 
-      if (browser && pDispParams->cArgs >= 2 && pDispParams->rgvarg[1].vt == VT_DISPATCH)
+    case DISPID_EVMETH_ONLOAD:
+      DEBUG_NAVI("Navi::OnLoad")
+      break;
+
+    case DISPID_EVMETH_ONCHANGE:
+      break;
+
+    case DISPID_EVMETH_ONMOUSEDOWN:
+      break;
+
+    case DISPID_EVMETH_ONMOUSEENTER:
+      break;
+
+    case DISPID_IHTMLIMGELEMENT_START:
+      break;
+
+    case STDDISPID_XOBJ_ERRORUPDATE:
+      break;
+
+    case STDDISPID_XOBJ_ONPROPERTYCHANGE:
+      break;
+
+    case DISPID_READYSTATECHANGE:
+      DEBUG_NAVI("Navi::ReadyStateChange");
+      break;
+
+    case DISPID_BEFORENAVIGATE:
+      DEBUG_NAVI("Navi::BeforeNavigate");
+      break;
+
+    case DISPID_COMMANDSTATECHANGE:
+      if (m_hPaneWnd == NULL)
       {
-        CComQIPtr<IWebBrowser2> pBrowser = pDispParams->rgvarg[1].pdispVal;
-        if (pBrowser)
+        CreateStatusBarPane();
+      }
+      else
+      {
+        if (CPluginClient::GetInstance()->GetIEVersion() > 6)
         {
-          CString url;
-          CComBSTR bstrUrl;
-          if (SUCCEEDED(pBrowser->get_LocationURL(&bstrUrl)) && ::SysStringLen(bstrUrl) > 0)
+          RECT rect;
+          BOOL rectRes = GetClientRect(m_hStatusBarWnd, &rect);
+          if (rectRes == TRUE)
           {
-            url = bstrUrl;
+            MoveWindow(m_hPaneWnd, rect.right - 200, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
+          }
+        }      
+      }
+      break;
 
-            CPluginClient::UnescapeUrl(url);
+    case DISPID_STATUSTEXTCHANGE:
+      break;
 
-            m_tab->OnDocumentComplete(browser, url, browser.IsEqualObject(pBrowser));
+    case DISPID_BEFORENAVIGATE2:
+      {
+        // #1163 should validate and convert parameters here
+        BeforeNavigate2(pDispParams);
+      }
+      break;
+
+    case DISPID_DOWNLOADBEGIN:
+      {
+        DEBUG_NAVI("Navi::Download Begin")
+      }
+      break;
+
+    case DISPID_DOWNLOADCOMPLETE:
+      {
+        DEBUG_NAVI("Navi::Download Complete");
+        CComQIPtr<IWebBrowser2> browser = GetBrowser();
+        if (browser)
+        {
+          m_tab->OnDownloadComplete(browser);
+        }
+      }
+      break;
+
+    case DISPID_DOCUMENTCOMPLETE:
+      {
+        DEBUG_NAVI("Navi::Document Complete");
+        CComQIPtr<IWebBrowser2> browser = GetBrowser();
+        if (browser && pDispParams->cArgs >= 2 && pDispParams->rgvarg[1].vt == VT_DISPATCH)
+        {
+          CComQIPtr<IWebBrowser2> pBrowser = pDispParams->rgvarg[1].pdispVal;
+          if (pBrowser)
+          {
+            CString url;
+            CComBSTR bstrUrl;
+            if (SUCCEEDED(pBrowser->get_LocationURL(&bstrUrl)) && ::SysStringLen(bstrUrl) > 0)
+            {
+              url = bstrUrl;
+              CPluginClient::UnescapeUrl(url);
+              m_tab->OnDocumentComplete(browser, url, browser.IsEqualObject(pBrowser));
+            }
           }
         }
       }
+      break;
+
+    case DISPID_ONQUIT:
+    case DISPID_QUIT:
+      {
+        Unadvice();
+      }
+      break;
+
+    default:
+      {
+        CString did;
+        did.Format(L"DispId:%u", dispidMember);
+
+        DEBUG_NAVI(L"Navi::Default " + did)
+      }
+      /*
+       * Ordinarily a method not dispatched should return DISP_E_MEMBERNOTFOUND.
+       * As a conservative initial change, we leave it behaving as before,
+       *   which is to do nothing and return S_OK.
+       */
+      // do nothing
+      break;
     }
-    break;
-
-  case DISPID_ONQUIT:
-  case DISPID_QUIT:
-    {
-      Unadvice();
-    }
-    break;
-
-  default:
-    {
-      CString did;
-      did.Format(L"DispId:%u", dispidMember);
-
-      DEBUG_NAVI(L"Navi::Default " + did)
-    }
-
-    // do nothing
-    break;
   }
-
-  return VARIANT_TRUE;
+  catch(...)
+  {
+    DEBUG_GENERAL( "Caught unknown exception in CPluginClass::Invoke" );
+    return E_FAIL;
+  }
+  return S_OK;
 }
 
 bool CPluginClass::InitObject(bool bBHO)
@@ -1514,7 +1533,7 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
     CPluginClient* client = CPluginClient::GetInstance();
     if (CPluginSettings::GetInstance()->IsPluginEnabled())
     {
-      if (client->IsWhitelistedUrl(url))
+      if (client->IsWhitelistedUrl(ToWstring(url)))
       {
         hIcon = GetIcon(ICON_PLUGIN_DISABLED);
       }
