@@ -216,5 +216,88 @@
         'EntryPointSymbol': 'mainCRTStartup',
       },
     },
+  },
+
+  {
+    'target_name': 'tests_plugin',
+    'type': 'executable',
+    'dependencies': [
+      'shared',
+      'libadblockplus/third_party/googletest.gyp:googletest_main',
+    ],
+    'sources': [
+      'src/plugin/PluginUserSettings.cpp',
+      'src/plugin/PluginUserSettings.h',
+      'test/plugin/UserSettingsTest.cpp',
+      #
+      # required only for linking
+      #
+      'src/plugin/AdblockPlusClient.cpp',
+      'src/plugin/AdblockPlusDomTraverser.cpp',
+      'src/plugin/AdblockPlusTab.cpp',
+      'src/plugin/ATL_Deprecate.cpp',
+      'src/plugin/NotificationMessage.cpp',
+      'src/plugin/Plugin.cpp',
+      'src/plugin/PluginClientBase.cpp',
+      'src/plugin/PluginClientFactory.cpp',
+      'src/plugin/PluginClass.cpp',
+      'src/plugin/PluginDebug.cpp',
+      'src/plugin/PluginFilter.cpp',
+      'src/plugin/PluginMimeFilterClient.cpp',
+      'src/plugin/PluginMutex.cpp',
+      'src/plugin/PluginSettings.cpp',
+      'src/plugin/PluginSystem.cpp',
+      'src/plugin/PluginTabBase.cpp',
+      'src/plugin/PluginUtil.cpp',
+      'src/plugin/PluginWbPassthrough.cpp',
+    ],
+    'include_dirs': [
+      '$(WINDDKDIR)/inc/atl71',
+    ],
+    'defines': [
+      'WINVER=0x0501',
+      'PRODUCT_ADBLOCKPLUS'
+    ],
+    'link_settings': {
+      'libraries': ['-ladvapi32', '-lshell32', '-lole32', '-lComctl32', '-lGdi32'],
+    },
+    'msvs_settings': {
+      'VCLinkerTool': {
+        'SubSystem': '1',   # Console
+        'EntryPointSymbol': 'mainCRTStartup',
+        'conditions': [[
+          'target_arch=="ia32"', {
+            'AdditionalLibraryDirectories': [
+              '$(VCInstallDir)atlmfc/lib',
+              '$(WindowsSDK_LibraryPath_x86)',
+              '$(WINDDKDIR)/lib/ATL/i386',
+            ],
+          }, {
+            'AdditionalLibraryDirectories': [
+              '$(VCInstallDir)atlmfc/lib/amd64',
+              '$(WindowsSDK_LibraryPath_x64)',
+              '$(WINDDKDIR)/lib/ATL/amd64',
+            ],
+          }
+        ]],
+      },
+    },
+    'configurations': {
+      # 'libraries' is not allowed under 'configurations' :-(
+      'Debug': {
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'AdditionalDependencies': ['atlsd.lib'],
+          },
+        },
+      },
+      'Release': {
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'AdditionalDependencies': ['atls.lib'],
+          },
+        },
+      },
+    },
   }]
 }
