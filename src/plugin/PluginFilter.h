@@ -162,10 +162,10 @@ public:
   bool AddFilterElementHide(CString filter);
 
 
-  bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent) const;
+  bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent) const;
 
 
-  bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false) const;
+  bool ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug=false) const;
 
   HANDLE hideFiltersLoadedEvent;
 };
