@@ -92,11 +92,11 @@ int WBPassthruSink::GetContentTypeFromURL(CString src)
 
 }
 
-int WBPassthruSink::GetContentType(CString mimeType, CString domain, CString src)
+int WBPassthruSink::GetContentType(CString mimeType, std::wstring domain, CString src)
 {
   // No referer or mime type
   // BINDSTRING_XDR_ORIGIN works only for IE v8+
-  if (mimeType.IsEmpty() && domain.IsEmpty() && CPluginClient::GetInstance()->GetIEVersion() >= 8)
+  if (mimeType.IsEmpty() && domain.empty() && CPluginClient::GetInstance()->GetIEVersion() >= 8)
   {
     return CFilter::contentTypeXmlHttpRequest;
   }
@@ -127,7 +127,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   DEBUG_GENERAL(src);
   CPluginClient::UnescapeUrl(src);
 
-  CString boundDomain;
+  std::wstring boundDomain;
   CString mimeType;
   LPOLESTR mime[10];
   if (pOIBindInfo)
@@ -143,14 +143,14 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     }
     LPOLESTR bindToObject = 0;
     pOIBindInfo->GetBindString(BINDSTRING_FLAG_BIND_TO_OBJECT, &bindToObject, 1, &resLen);
-    LPOLESTR domainRetrieved = 0;
+    wchar_t* domainRetrieved = 0;
     if (resLen == 0 || wcscmp(bindToObject, L"FALSE") == 0)
-    {   
+    {
       HRESULT hr = pOIBindInfo->GetBindString(BINDSTRING_XDR_ORIGIN, &domainRetrieved, 1, &resLen);
       
       if ((hr == S_OK) && domainRetrieved && (resLen > 0))
       {
-        boundDomain.SetString(domainRetrieved);
+        boundDomain = std::wstring(domainRetrieved);
       }
     }
   }
@@ -176,7 +176,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     }
     else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(std::wstring(documentUrl)))
     {
-      boundDomain = tab->GetDocumentUrl();
+      boundDomain = to_wstring(tab->GetDocumentUrl());
 
       contentType = CFilter::contentTypeAny;
 
@@ -188,7 +188,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       else
 #endif // SUPPORT_FRAME_CACHING
       contentType = GetContentType(mimeType, boundDomain, src);
-      if (client->ShouldBlock(to_wstring(src), contentType, to_wstring(boundDomain), true))
+      if (client->ShouldBlock(to_wstring(src), contentType, boundDomain, true))
       {
         isBlocked = true;
         DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
@@ -204,7 +204,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   if (tab == NULL)
   {
     contentType = GetContentType(mimeType, boundDomain, src);
-    if (client->ShouldBlock(to_wstring(src), contentType, to_wstring(boundDomain), true))
+    if (client->ShouldBlock(to_wstring(src), contentType, boundDomain, true))
     {
       isBlocked = true;
     }

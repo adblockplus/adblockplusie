@@ -27,8 +27,8 @@ public:
 
   void TraverseHeader(bool isHeaderTraversed);
 
-  void TraverseDocument(IWebBrowser2* pBrowser, const CString& domain, const CString& documentName);
-  void TraverseSubdocument(IWebBrowser2* pBrowser, const CString& domain, const CString& documentName);
+  void TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName);
+  void TraverseSubdocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName);
 
   virtual void ClearCache();
 
@@ -48,7 +48,7 @@ protected:
 
   CComAutoCriticalSection m_criticalSection;
 
-  CString m_domain;
+  std::wstring m_domain;
   CString m_documentName;
 
   bool m_isHeaderTraversed;
@@ -88,7 +88,7 @@ void CPluginDomTraverserBase<T>::TraverseHeader(bool isHeaderTraversed)
 }
 
 template <class T>
-void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, const CString& domain, const CString& documentName)
+void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName)
 {
   m_domain = domain;
 
@@ -97,7 +97,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, const 
 
 
 template <class T>
-void CPluginDomTraverserBase<T>::TraverseSubdocument(IWebBrowser2* pBrowser, const CString& domain, const CString& documentName)
+void CPluginDomTraverserBase<T>::TraverseSubdocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName)
 {
   m_domain = domain;
 
@@ -278,7 +278,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
             // eg. http://w3schools.com/html/html_examples.asp
             else if (src.Left(4) != L"http" && src.Left(6) != L"res://")
             {
-              src = L"http://" + m_domain + src;
+              src = L"http://" + to_CString(m_domain) + src;
             }
 
             CPluginClient::UnescapeUrl(src);

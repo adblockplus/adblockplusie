@@ -17,7 +17,7 @@ bool CPluginDomTraverser::OnIFrame(IHTMLElement* pEl, const CString& url, CStrin
   CPluginClient* client = CPluginClient::GetInstance();
 
   // If src should be blocked, set style display:none on iframe
-  bool isBlocked = client->ShouldBlock(to_wstring(url), CFilter::contentTypeSubdocument, to_wstring(m_domain));
+  bool isBlocked = client->ShouldBlock(to_wstring(url), CFilter::contentTypeSubdocument, m_domain);
   if (isBlocked)
   {
     HideElement(pEl, "iframe", url, true, indent);
@@ -37,7 +37,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
   // Check if element is hidden
   CPluginClient* client = CPluginClient::GetInstance();
 
-  cache->m_isHidden = client->IsElementHidden(to_wstring(tag), pEl, to_wstring(m_domain), to_wstring(indent), m_tab->m_filter.get());
+  cache->m_isHidden = client->IsElementHidden(to_wstring(tag), pEl, m_domain, to_wstring(indent), m_tab->m_filter.get());
   if (cache->m_isHidden)
   {
     HideElement(pEl, tag, "", false, indent);
@@ -55,7 +55,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
       CPluginClient::UnescapeUrl(src);
 
       // If src should be blocked, set style display:none on image
-      cache->m_isHidden = client->ShouldBlock(to_wstring(src), CFilter::contentTypeImage, to_wstring(m_domain));
+      cache->m_isHidden = client->ShouldBlock(to_wstring(src), CFilter::contentTypeImage, m_domain);
       if (cache->m_isHidden)
       {
         HideElement(pEl, "image", src, true, indent);
@@ -111,7 +111,7 @@ bool CPluginDomTraverser::IsEnabled()
 { 
   CPluginClient* client = CPluginClient::GetInstance();
 
-  return client && CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(std::wstring(m_domain));
+  return client && CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(m_domain);
 }
 
 

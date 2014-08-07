@@ -67,7 +67,6 @@ public:
 
   static void SetLocalization();
 
-  static bool IsValidDomain(const CString& domain);
   static CString& UnescapeUrl(CString& url);
 
   static void LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description="", bool isAsync=false, DWORD dwProcessId=0, DWORD dwThreadId=0);
