@@ -524,8 +524,6 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
 
   CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
   {
-    CString domainTest = to_CString(domain);
-
     // Search tag/id filters
     if (!id.IsEmpty())
     {

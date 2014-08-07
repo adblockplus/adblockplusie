@@ -25,7 +25,7 @@ protected:
   CComAutoCriticalSection m_criticalSection;
   CriticalSection m_csInject;
 
-  CString m_documentDomain;
+  std::wstring m_documentDomain;
   CString m_documentUrl;
   CPluginUserSettings m_pluginUserSettings;
 public:
@@ -60,7 +60,7 @@ private:
 #ifdef SUPPORT_FRAME_CACHING
   CComAutoCriticalSection m_criticalSectionCache;
   std::set<CString> m_cacheFrames;
-  CString m_cacheDomain;
+  std::wstring m_cacheDomain;
 #endif
 
   void SetDocumentUrl(const CString& url);
@@ -70,7 +70,7 @@ public:
   CPluginTabBase(CPluginClass* plugin);
   ~CPluginTabBase();
 
-  CString GetDocumentDomain();
+  std::wstring GetDocumentDomain();
   CString GetDocumentUrl();
 
   virtual void OnActivate();
@@ -84,7 +84,7 @@ public:
 #ifdef SUPPORT_FRAME_CACHING
   void CacheFrame(const CString& url);
   bool IsFrameCached(const CString& url);
-  void ClearFrameCache(const CString& domain="");
+  void ClearFrameCache(const std::wstring& domain=L"");
 #endif
 
 };

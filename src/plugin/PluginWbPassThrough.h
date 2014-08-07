@@ -18,7 +18,7 @@ public:
 
   int GetContentTypeFromMimeType(CString mimeType);
   int GetContentTypeFromURL(CString src);
-  int GetContentType(CString mimeType, CString domain, CString src);
+  int GetContentType(CString mimeType, std::wstring domain, CString src);
 public:
 	BEGIN_COM_MAP(WBPassthruSink)
 		COM_INTERFACE_ENTRY(IHttpNegotiate)

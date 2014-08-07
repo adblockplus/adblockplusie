@@ -40,15 +40,6 @@ CPluginClientBase::~CPluginClientBase()
 }
 
 
-bool CPluginClientBase::IsValidDomain(const CString& domain)
-{
-  return domain != L"about:blank" &&
-    domain != L"about:tabs" &&
-    domain.Find(L"javascript:") != 0 &&
-    !domain.IsEmpty();
-}
-
-
 CString& CPluginClientBase::UnescapeUrl(CString& url)
 {
   CString unescapedUrl;

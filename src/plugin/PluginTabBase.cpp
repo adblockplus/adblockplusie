@@ -86,7 +86,7 @@ namespace
 {
   void FilterLoader(CPluginTabBase* tabBase)
   {
-    tabBase->m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(tabBase->GetDocumentDomain().GetString()));
+    tabBase->m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(tabBase->GetDocumentDomain()));
     SetEvent(tabBase->m_filter->hideFiltersLoadedEvent);
   }
 }
@@ -246,9 +246,9 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
 #endif
 }
 
-CString CPluginTabBase::GetDocumentDomain()
+std::wstring CPluginTabBase::GetDocumentDomain()
 {
-  CString domain;
+  std::wstring domain;
 
   m_criticalSection.Lock();
   {
@@ -264,7 +264,7 @@ void CPluginTabBase::SetDocumentUrl(const CString& url)
   m_criticalSection.Lock();
   {
     m_documentUrl = url;
-    m_documentDomain = CString(CAdblockPlusClient::GetInstance()->GetHostFromUrl(url.GetString()).c_str());
+    m_documentDomain = CAdblockPlusClient::GetInstance()->GetHostFromUrl(to_wstring(url));
   }
   m_criticalSection.Unlock();
 }
@@ -311,11 +311,11 @@ void CPluginTabBase::CacheFrame(const CString& url)
   m_criticalSectionCache.Unlock();
 }
 
-void CPluginTabBase::ClearFrameCache(const CString& domain)
+void CPluginTabBase::ClearFrameCache(const std::wstring& domain)
 {
   m_criticalSectionCache.Lock();
   {
-    if (domain.IsEmpty() || domain != m_cacheDomain)
+    if (domain.empty() || domain != m_cacheDomain)
     {
       m_cacheFrames.clear();
       m_cacheDomain = domain;
