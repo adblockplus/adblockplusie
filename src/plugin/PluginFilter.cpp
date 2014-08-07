@@ -504,8 +504,10 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
   return true;
 }
 
-bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent) const
+bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent) const
 {
+  CString tagCString = to_CString(tag);
+
   CString id;
   CComBSTR bstrId;
   if (SUCCEEDED(pEl->get_id(&bstrId)) && bstrId)
@@ -522,20 +524,20 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
 
   CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
   {
-    CString domainTest = domain;
+    CString domainTest = to_CString(domain);
 
     // Search tag/id filters
     if (!id.IsEmpty())
     {
       std::pair<TFilterElementHideTagsNamed::const_iterator, TFilterElementHideTagsNamed::const_iterator> idItEnum =
-        m_elementHideTagsId.equal_range(std::make_pair(tag, id));
+        m_elementHideTagsId.equal_range(std::make_pair(tagCString, id));
       for (TFilterElementHideTagsNamed::const_iterator idIt = idItEnum.first; idIt != idItEnum.second; idIt ++)
       {
         if (idIt->second.IsMatchFilterElementHide(pEl))
         {
 #ifdef ENABLE_DEBUG_RESULT
           DEBUG_HIDE_EL(indent + "HideEl::Found (tag/id) filter:" + idIt->second.m_filterText)
-            CPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText);
+            CPluginDebug::DebugResultHiding(tagCString, "id:" + id, idIt->second.m_filterText);
 #endif
           return true;
         }
@@ -549,7 +551,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
         {
 #ifdef ENABLE_DEBUG_RESULT
           DEBUG_HIDE_EL(indent + "HideEl::Found (?/id) filter:" + idIt->second.m_filterText)
-            CPluginDebug::DebugResultHiding(tag, "id:" + id, idIt->second.m_filterText);
+            CPluginDebug::DebugResultHiding(tagCString, "id:" + id, idIt->second.m_filterText);
 #endif
           return true;
         }
@@ -564,7 +566,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
       while (pos >= 0)
       {
         std::pair<TFilterElementHideTagsNamed::const_iterator, TFilterElementHideTagsNamed::const_iterator> classItEnum = 
-          m_elementHideTagsClass.equal_range(std::make_pair(tag, className));
+          m_elementHideTagsClass.equal_range(std::make_pair(tagCString, className));
 
         for (TFilterElementHideTagsNamed::const_iterator classIt = classItEnum.first; classIt != classItEnum.second; ++classIt)
         {
@@ -572,7 +574,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
           {
 #ifdef ENABLE_DEBUG_RESULT
             DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
-              CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
+              CPluginDebug::DebugResultHiding(tagCString, "class:" + className, classIt->second.m_filterText);
 #endif
             return true;
           }
@@ -586,7 +588,7 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
           {
 #ifdef ENABLE_DEBUG_RESULT
             DEBUG_HIDE_EL(indent + "HideEl::Found (?/class) filter:" + classIt->second.m_filterText)
-              CPluginDebug::DebugResultHiding(tag, "class:" + className, classIt->second.m_filterText);
+              CPluginDebug::DebugResultHiding(tagCString, "class:" + className, classIt->second.m_filterText);
 #endif
             return true;
           }
@@ -599,14 +601,14 @@ bool CPluginFilter::IsElementHidden(const CString& tag, IHTMLElement* pEl, const
 
     // Search tag filters
     std::pair<TFilterElementHideTags::const_iterator, TFilterElementHideTags::const_iterator> tagItEnum 
-      = m_elementHideTags.equal_range(tag);
+      = m_elementHideTags.equal_range(tagCString);
     for (TFilterElementHideTags::const_iterator tagIt = tagItEnum.first; tagIt != tagItEnum.second; ++ tagIt)
     {
       if (tagIt->second.IsMatchFilterElementHide(pEl))
       {
 #ifdef ENABLE_DEBUG_RESULT
         DEBUG_HIDE_EL(indent + "HideEl::Found (tag) filter:" + tagIt->second.m_filterText)
-          CPluginDebug::DebugResultHiding(tag, "-", tagIt->second.m_filterText);
+          CPluginDebug::DebugResultHiding(tagCString, "-", tagIt->second.m_filterText);
 #endif
         return true;
       }
@@ -679,11 +681,13 @@ void CPluginFilter::ClearFilters()
   }
 }
 
-bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug) const
+bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug) const
 {
+  CString srcCString = to_CString(src);
+
   // We should not block the empty string, so all filtering does not make sense
   // Therefore we just return
-  if (src.Trim().IsEmpty())
+  if (srcCString.Trim().IsEmpty())
   {
     return false;
   }
@@ -703,14 +707,14 @@ bool CPluginFilter::ShouldBlock(CString src, int contentType, const CString& dom
   }
 
   CPluginClient* client = CPluginClient::GetInstance();
-  if (client->Matches(std::wstring(src), std::wstring(type), std::wstring(domain)))
+  if (client->Matches(to_wstring(srcCString), to_wstring(type), domain))
   {
     if (addDebug)
     {
       DEBUG_FILTER("Filter::ShouldBlock " + type + " YES")
 
 #ifdef ENABLE_DEBUG_RESULT
-        CPluginDebug::DebugResultBlocking(type, src, domain);
+        CPluginDebug::DebugResultBlocking(type, srcCString, to_CString(domain));
 #endif
     }
     return true;

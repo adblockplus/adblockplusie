@@ -28,7 +28,7 @@ private:
   CComAutoCriticalSection m_criticalSectionFilter;
   CComAutoCriticalSection m_criticalSectionCache;
 
-  std::map<CString,bool> m_cacheBlockedSources;
+  std::map<std::wstring, bool> m_cacheBlockedSources;
 
   std::shared_ptr<Communication::Pipe> enginePipe;
   CriticalSection enginePipeLock;
@@ -49,9 +49,9 @@ public:
 
   // Removes the url from the list of whitelisted urls if present
   // Only called from ui thread
-  bool ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug=false);
+  bool ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug=false);
 
-  bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent, CPluginFilter* filter);
+  bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent, CPluginFilter* filter);
   bool IsWhitelistedUrl(const std::wstring& url);
   bool IsElemhideWhitelistedOnDomain(const std::wstring& url);
 

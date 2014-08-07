@@ -208,18 +208,13 @@ CAdblockPlusClient* CAdblockPlusClient::GetInstance()
   return instance;
 }
 
-
-bool CAdblockPlusClient::ShouldBlock(CString src, int contentType, const CString& domain, bool addDebug)
+bool CAdblockPlusClient::ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug)
 {
   bool isBlocked = false;
-
   bool isCached = false;
-
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-
   m_criticalSectionCache.Lock();
   {
-    std::map<CString,bool>::iterator it = m_cacheBlockedSources.find(src);
+    auto it = m_cacheBlockedSources.find(src);
 
     isCached = it != m_cacheBlockedSources.end();
     if (isCached)
@@ -237,7 +232,6 @@ bool CAdblockPlusClient::ShouldBlock(CString src, int contentType, const CString
     }
     m_criticalSectionFilter.Unlock();
 
-
     // Cache result, if content type is defined
     if (contentType != CFilter::contentTypeAny)
     {
@@ -248,12 +242,10 @@ bool CAdblockPlusClient::ShouldBlock(CString src, int contentType, const CString
       m_criticalSectionCache.Unlock();
     }
   }
-
-
   return isBlocked;
 }
 
-bool CAdblockPlusClient::IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent, CPluginFilter* filter)
+bool CAdblockPlusClient::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent, CPluginFilter* filter)
 {
   bool isHidden;
   m_criticalSectionFilter.Lock();

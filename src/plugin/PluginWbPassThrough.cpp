@@ -188,10 +188,9 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       else
 #endif // SUPPORT_FRAME_CACHING
       contentType = GetContentType(mimeType, boundDomain, src);
-      if (client->ShouldBlock(src, contentType, boundDomain, true))
+      if (client->ShouldBlock(to_wstring(src), contentType, to_wstring(boundDomain), true))
       {
         isBlocked = true;
-
         DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
       }
     }
@@ -205,7 +204,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
   if (tab == NULL)
   {
     contentType = GetContentType(mimeType, boundDomain, src);
-    if (client->ShouldBlock(src, contentType, boundDomain, true))
+    if (client->ShouldBlock(to_wstring(src), contentType, to_wstring(boundDomain), true))
     {
       isBlocked = true;
     }
