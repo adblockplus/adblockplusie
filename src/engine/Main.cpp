@@ -196,6 +196,14 @@ namespace
         response << (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION);
         break;
       }
+      case Communication::PROC_IS_ELEMHIDE_WHITELISTED_ON_URL:
+      {
+        std::string url;
+        request >> url;
+        AdblockPlus::FilterPtr match = filterEngine->Matches(url, "ELEMHIDE", url);
+        response << (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION);
+        break;
+      }
       case Communication::PROC_ADD_FILTER:
       {
         std::string text;
