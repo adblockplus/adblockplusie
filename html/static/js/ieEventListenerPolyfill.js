@@ -13,3 +13,13 @@ if (typeof window.removeEventListener != "function")
     this.detachEvent("on" + type, handler)
   };
 }
+
+if (typeof Element.prototype.addEventListener != "function")
+{
+  Element.prototype.addEventListener = window.addEventListener;
+}
+
+if (typeof Element.prototype.removeEventListener != "function")
+{
+  Element.prototype.removeEventListener = window.removeEventListener;
+}
