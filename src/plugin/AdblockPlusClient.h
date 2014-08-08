@@ -53,6 +53,7 @@ public:
 
   bool IsElementHidden(const CString& tag, IHTMLElement* pEl, const CString& domain, const CString& indent, CPluginFilter* filter);
   bool IsWhitelistedUrl(const std::wstring& url);
+  bool IsElemhideWhitelistedOnDomain(const std::wstring& url);
 
   int GetIEVersion();
 

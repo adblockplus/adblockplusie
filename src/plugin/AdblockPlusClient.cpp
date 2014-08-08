@@ -281,6 +281,20 @@ bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url)
   return isWhitelisted;
 }
 
+bool CAdblockPlusClient::IsElemhideWhitelistedOnDomain(const std::wstring& url)
+{
+  Communication::OutputBuffer request;
+  request << Communication::PROC_IS_ELEMHIDE_WHITELISTED_ON_URL << ToUtf8String(url);
+
+  Communication::InputBuffer response;
+  if (!CallEngine(request, response)) 
+    return false;
+
+  bool isWhitelisted;
+  response >> isWhitelisted;
+  return isWhitelisted;
+}
+
 int CAdblockPlusClient::GetIEVersion()
 {
   //HKEY_LOCAL_MACHINE\Software\Microsoft\Internet Explorer
