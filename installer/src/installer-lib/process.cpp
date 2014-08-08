@@ -17,8 +17,10 @@ bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & proce
   if (processNames.find(process.szExeFile) != processNames.end())
   {   
     // Make sure the process is still alive
-    Windows_Handle procHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process.th32ProcessID);
-    if ((procHandle == NULL) || (procHandle == INVALID_HANDLE_VALUE)) return false;
+    HANDLE tmpHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process.th32ProcessID);
+    if (tmpHandle == NULL)
+      return false;
+    Windows_Handle procHandle(tmpHandle);
 
     DWORD exitCode;
     if (!GetExitCodeProcess(procHandle, &exitCode)) return false;
@@ -26,7 +28,10 @@ bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & proce
     if (exitCode != STILL_ACTIVE) return false;
 
     // Check if this is a Windows Store app process (we don't care for IE in Modern UI)
-    Windows_Module_Handle user32Dll(LoadLibrary(L"user32.dll"));
+    HMODULE tmpModule = LoadLibrary(L"user32.dll");
+    if (tmpModule == NULL)
+      return true;
+    Windows_Module_Handle user32Dll(tmpModule);
     if (!user32Dll) return true;
 
     IsImmersiveDynamicFunc IsImmersiveDynamicCall = (IsImmersiveDynamicFunc)GetProcAddress(user32Dll, "IsImmersiveProcess");
