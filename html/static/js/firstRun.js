@@ -189,5 +189,3 @@ function setLinks(id)
     }
   }
 }
-
-window.addEventListener("load", init);
