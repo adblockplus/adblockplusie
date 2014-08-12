@@ -256,7 +256,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
       //For some reason on that environment the next line causes IE to crash
       if (CPluginSettings::GetInstance()->GetWindowsBuildNumber() != 8250)
       {
-        m_spInternetProtocolSink->ReportResult(INET_E_REDIRECTING, 301, L"res://mshtml.dll/blank.htm");
+        m_spInternetProtocolSink->ReportResult(INET_E_REDIRECT_FAILED, 0, szUrl);
       }
 
       return INET_E_REDIRECT_FAILED;
