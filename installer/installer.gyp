@@ -171,7 +171,7 @@
         '<(installer_object_file)'
       ],
       'action':
-        [ 'candle -nologo -arch <(candle_arch) -dNoDefault -dVersion=91.0 -dConfiguration=Release', '-out', '<@(_outputs)', '<(installer_source_top_file)' ]
+        [ 'candle -nologo -arch <(candle_arch) -dNoDefault -dVersion=<(version) -dConfiguration=Release', '-out', '<@(_outputs)', '<(installer_source_top_file)' ]
     } ]
   },
 

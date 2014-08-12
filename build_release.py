@@ -49,6 +49,7 @@ if build_type == "devbuild":
   version += ".%s" % buildnum
 
 subprocess.check_call([os.path.join(basedir, "createsolution.bat"), version, build_type])
+subprocess.check_call([os.path.join(basedir, "installer", "createsolutions.bat"), version])
 
 for arch in ("ia32", "x64"):
   subprocess.check_call([
