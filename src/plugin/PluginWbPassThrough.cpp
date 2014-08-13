@@ -81,8 +81,15 @@ int WBPassthruSink::GetContentTypeFromURL(CString src)
   {
     return CFilter::contentTypeObject;
   }
+  else if (ext == L".jsp" || ext == L".php" || ext == L".html")
+  {
+    return CFilter::contentTypeSubdocument;
+  }
+  else
+  {
+    return CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
+  }
 
-  return CFilter::contentTypeSubdocument;
 }
 
 int WBPassthruSink::GetContentType(CString mimeType, CString domain, CString src)
