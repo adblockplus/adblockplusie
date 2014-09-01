@@ -331,7 +331,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       return DISP_E_BADPARAMCOUNT;
 
     pVarResult->vt = VT_BOOL;
-    pVarResult->boolVal = CPluginClient::GetInstance()->IsAcceptableAdsEnabled();
+    pVarResult->boolVal = CPluginClient::GetInstance()->IsAcceptableAdsEnabled() ? VARIANT_TRUE : VARIANT_FALSE;
   }
   else if (s_SetAcceptableAdsEnabled == method)
   {
@@ -341,7 +341,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
     if (VT_BOOL != pDispparams->rgvarg[0].vt)
       return DISP_E_TYPEMISMATCH;
 
-    bool enable = pDispparams->rgvarg[0].boolVal;
+    bool enable = VARIANT_FALSE != pDispparams->rgvarg[0].boolVal;
 
     if (enable)
     {
