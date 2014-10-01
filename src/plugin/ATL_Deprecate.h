@@ -166,9 +166,11 @@ namespace OLD_ATL {
  * The argument cannot be declared 'const' because of the CString API.
  * Reference argument usually does not require explicit temporaries.
  */
+std::wstring ToWstring(const ATL::CString& s);
 std::wstring to_wstring(const ATL::CString& s);
 
 /**
  * Conversion function from std::wstring to ATL::CString
  */
+ATL::CString ToCString(const std::wstring& s);
 ATL::CString to_CString(const std::wstring& s);
