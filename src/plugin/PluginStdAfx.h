@@ -53,14 +53,8 @@ extern CComModule _Module;
 
 #include "PluginDebugMacros.h"
 #include "PluginErrorCodes.h"
-
 #include "Config.h"
-
-#if (defined ENTERPRISE)
-#define CONFIG_IN_REGISTRY
-#endif
 #include "Resource.h"
-
 #include "PluginDebug.h"
 
 #define _CRTDBG_MAP_ALLOC
