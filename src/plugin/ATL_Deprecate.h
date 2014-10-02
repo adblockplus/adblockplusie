@@ -128,9 +128,6 @@ namespace ATL {
 #else 
 namespace OLD_ATL {
 #endif
-#pragma deprecated( CComBSTR )
-#pragma deprecated( CRect )
-#pragma deprecated( CSimpleArray )
 }
 
 /*

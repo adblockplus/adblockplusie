@@ -22,7 +22,6 @@
 #define ICON_MAX 3
 
 #define WM_LAUNCH_INFO					(WM_APP + 10)
-#define WM_WHITELIST_DOMAIN		        (WM_LAUNCH_INFO + 1)
 
 class CPluginMimeFilterClient;
 
@@ -163,11 +162,9 @@ private:
   static HINSTANCE s_hUxtheme;
   static std::set<CPluginClass*> s_instances;
   static std::map<DWORD,CPluginClass*> s_threadInstances;
-  static std::map<UINT, CString> s_menuDomains;
   static CComAutoCriticalSection s_criticalSectionLocal;
   static CComAutoCriticalSection s_criticalSectionBrowser;
   static CComAutoCriticalSection s_criticalSectionWindow;
-  static CComAutoCriticalSection s_criticalSectionWhiteList;
 
   // Async browser
   static CComQIPtr<IWebBrowser2> s_asyncWebBrowser2;

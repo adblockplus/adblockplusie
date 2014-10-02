@@ -43,7 +43,6 @@ CComAutoCriticalSection CPluginClass::s_criticalSectionBrowser;
 CComAutoCriticalSection CPluginClass::s_criticalSectionWindow;
 
 CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
-std::map<UINT,CString> CPluginClass::s_menuDomains;
 
 /*
  * Without namespace declaration, the identifier "Rectangle" is ambiguous
@@ -1274,13 +1273,6 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   DEBUG_GENERAL("SetMenuBar");
 
   std::wstring ctext;
-
-  s_criticalSectionLocal.Lock();
-  {
-    s_menuDomains.clear();
-  }
-  s_criticalSectionLocal.Unlock();
-
   Dictionary* dictionary = Dictionary::GetInstance();
 
   MENUITEMINFOW fmii = {};
@@ -1520,17 +1512,17 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
   if (tab)
   {
     CPluginClient* client = CPluginClient::GetInstance();
-    if (!CPluginSettings::GetInstance()->IsPluginEnabled())
+    if (CPluginSettings::GetInstance()->IsPluginEnabled())
     {
-    }
-    else if (client->IsWhitelistedUrl(to_wstring(url)))
-    {
-      hIcon = GetIcon(ICON_PLUGIN_DISABLED);
-    }
-    else
-    {
-      CPluginSettings* settings = CPluginSettings::GetInstance();
-      hIcon = GetIcon(ICON_PLUGIN_ENABLED);
+      if (client->IsWhitelistedUrl(url))
+      {
+        hIcon = GetIcon(ICON_PLUGIN_DISABLED);
+      }
+      else
+      {
+        CPluginSettings* settings = CPluginSettings::GetInstance();
+        hIcon = GetIcon(ICON_PLUGIN_ENABLED);
+      }
     }
   }
   return hIcon;
