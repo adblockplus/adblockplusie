@@ -78,12 +78,12 @@ public:
   /**
   * Write a message to the installation log, regular string version.
   */
-  void log( std::string message ) ;
+  void Log( std::string message ) ;
 
   /**
   * Write a message to the installation log, wide string version.
   */
-  void log( std::wstring message ) ;
+  void Log( std::wstring message ) ;
 
   /**
   * Write a message to the installation log without raising an exception.
@@ -96,12 +96,12 @@ public:
   * The session must be in scope in the catch-block to allow logging error messages.
   * In all other cases, use the exception mechanism.
   */
-  void log_noexcept( std::string message ) ;
+  void LogNoexcept( std::string message ) ;
 
   /**
   * Write to a MessageBox dialog.
   */
-  int write_message( Message & ) ;
+  int WriteMessage( Message & ) ;
 
 protected:
   /**
@@ -166,14 +166,14 @@ private:
 };
 
 //-----------------------------------------------------------------------------------------
-// Immediate_Session
+// ImmediateSession
 //-----------------------------------------------------------------------------------------
 /**
 * Session for immediate custom actions.
 *
 * Access to the installer database is by passing a reference to a class of this subtype to a Database constructor.
 */
-class Immediate_Session : public Session
+class ImmediateSession : public Session
 {
 public:
   /**
@@ -186,13 +186,13 @@ public:
   * 
   * **noexcept** declaration to be added for C++11.
   */
-  Immediate_Session( MSIHANDLE handle, std::string name ) ;
+  ImmediateSession( MSIHANDLE handle, std::string name ) ;
 
 private:
   /*
   * Allow helper function for Installation_Database constructor to have access to the handle.
   */
-  friend msi_handle get_active_database( Immediate_Session & session ) ;
+  friend msi_handle get_active_database( ImmediateSession & session ) ;
 };
 
 

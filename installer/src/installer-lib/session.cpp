@@ -31,12 +31,12 @@ Session::Session( MSIHANDLE handle, std::string name )
 {
   log_prefix_w.assign( name.begin(), name.end() ) ;
   log_prefix_w += L": " ;
-  log_noexcept( "Entering custom action" ) ;
+  LogNoexcept( "Entering custom action" ) ;
 }
 
 Session::~Session()
 {
-  log_noexcept( "Exiting custom action" ) ;
+  LogNoexcept( "Exiting custom action" ) ;
 }
 
 /**
@@ -58,22 +58,22 @@ struct Log_Message
   {}
 } ;
 
-void Session::log( std::string message )
+void Session::Log( std::string message )
 {
-  write_message( Log_Message( log_prefix + message ) ) ;
+  WriteMessage( Log_Message( log_prefix + message ) ) ;
 }
 
-void Session::log( std::wstring message )
+void Session::Log( std::wstring message )
 {
-  write_message( Log_Message( log_prefix_w + message ) ) ;
+  WriteMessage( Log_Message( log_prefix_w + message ) ) ;
 }
 
-void Session::log_noexcept( std::string message )
+void Session::LogNoexcept( std::string message )
 {
   write_message_noexcept( Log_Message( log_prefix + message ) ) ;
 }
 
-int Session::write_message( Message & m )
+int Session::WriteMessage( Message & m )
 {
   int x = write_message_noexcept( m ) ;
   if ( x == -1 )
@@ -89,8 +89,8 @@ int Session::write_message_noexcept( Message & m )
 }
 
 //-----------------------------------------------------------------------------------------
-// Immediate_Session
+// ImmediateSession
 //-----------------------------------------------------------------------------------------
-Immediate_Session::Immediate_Session( MSIHANDLE handle, std::string name )
+ImmediateSession::ImmediateSession( MSIHANDLE handle, std::string name )
   : Session( handle, name )
 {}

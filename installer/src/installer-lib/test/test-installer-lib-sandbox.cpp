@@ -24,10 +24,10 @@
 //-------------------------------------------------------
 class log_single_window_handle
 {
-  Immediate_Session & session ;
+  ImmediateSession & session ;
 
 public:
-  log_single_window_handle( Immediate_Session & session )
+  log_single_window_handle( ImmediateSession & session )
     : session( session )
   {
   }
@@ -36,14 +36,14 @@ public:
   {
     std::stringstream s ;
     s << "Window handle 0x" << std::hex << window ;
-    session.log( s.str() ) ;
+    session.Log( s.str() ) ;
     return true ;
   }
 } ;
 
-void log_all_window_handles( Immediate_Session & session )
+void log_all_window_handles( ImmediateSession & session )
 {
-  session.log( "log_all_window_handles" ) ;
+  session.Log( "log_all_window_handles" ) ;
   log_single_window_handle lp( session ) ;
   enumerate_windows( lp ) ;
 }
@@ -53,12 +53,12 @@ void log_all_window_handles( Immediate_Session & session )
 //-------------------------------------------------------
 class log_single_window_handle_only_if_IE
 {
-  Immediate_Session & session ;
+  ImmediateSession & session ;
 
-  Process_Closer & pc ;
+  ProcessCloser & pc ;
 
 public:
-  log_single_window_handle_only_if_IE( Immediate_Session & session, Process_Closer & pc )
+  log_single_window_handle_only_if_IE( ImmediateSession & session, ProcessCloser & pc )
     : session( session ), pc( pc )
   {
   }
@@ -70,18 +70,18 @@ public:
     {
       std::stringstream s ;
       s << "Window handle 0x" << std::hex << window ;
-      session.log( s.str() ) ;
+      session.Log( s.str() ) ;
     }
     return true ;
   }
 } ;
 
-void log_IE_window_handles( Immediate_Session & session )
+void log_IE_window_handles( ImmediateSession & session )
 {
-  session.log( "log_IE_window_handles" ) ;
+  session.Log( "log_IE_window_handles" ) ;
   const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
-  Process_Snapshot snapshot ;
-  Process_Closer iec(snapshot, IE_names) ;
+  ProcessSnapshot snapshot ;
+  ProcessCloser iec(snapshot, IE_names) ;
   log_single_window_handle_only_if_IE lp( session, iec ) ;
   enumerate_windows( lp ) ;
 }
@@ -89,12 +89,12 @@ void log_IE_window_handles( Immediate_Session & session )
 //-------------------------------------------------------
 // log_only_window_handle_in_closer
 //-------------------------------------------------------
-void log_only_window_handle_in_closer( Immediate_Session & session )
+void log_only_window_handle_in_closer( ImmediateSession & session )
 {
-  session.log( "log_only_window_handle_in_closer" ) ;
+  session.Log( "log_only_window_handle_in_closer" ) ;
   const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
-  Process_Snapshot snapshot ;
-  Process_Closer iec( snapshot, IE_names) ;
+  ProcessSnapshot snapshot ;
+  ProcessCloser iec( snapshot, IE_names) ;
   iec.iterate_our_windows( log_single_window_handle( session ) ) ;
 }
 
@@ -117,21 +117,21 @@ void log_only_window_handle_in_closer( Immediate_Session & session )
 extern "C" UINT __stdcall 
 sandbox( MSIHANDLE session_handle )
 {
-  Immediate_Session session( session_handle, "sandbox" ) ;
+  ImmediateSession session( session_handle, "sandbox" ) ;
    
   try
   {
-    session.log( "Sandbox timestamp " __TIMESTAMP__ ) ;
+    session.Log( "Sandbox timestamp " __TIMESTAMP__ ) ;
     log_only_window_handle_in_closer( session ) ;
   }
   catch( std::exception & e )
   {
-    session.log_noexcept( "terminated by exception: " + std::string( e.what() ) ) ;
+    session.LogNoexcept( "terminated by exception: " + std::string( e.what() ) ) ;
     return ERROR_INSTALL_FAILURE ;
   }
   catch( ... )
   {
-    session.log_noexcept( "Caught an exception" ) ;
+    session.LogNoexcept( "Caught an exception" ) ;
     return ERROR_INSTALL_FAILURE ;
   }
 

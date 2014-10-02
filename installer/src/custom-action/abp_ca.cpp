@@ -7,7 +7,7 @@
 /**
  * DllMain is the standard entry point call when the DLL is loaded or unloaded.
  *
- * \param[in] module_handle 
+ * \param[in] moduleHandle 
  *    Handle for this instance of the DLL; same as the module handle.
  *    This handle allows us to get the DLL file name for logging.
  * \param[in] reason 
@@ -20,7 +20,7 @@
  * Documentation on DLL entry points in Windows.
  */
 extern "C" BOOL WINAPI DllMain(
-  IN HINSTANCE module_handle,
+  IN HINSTANCE moduleHandle,
   IN ULONG reason,
   IN LPVOID reserved )
 {
@@ -32,7 +32,7 @@ extern "C" BOOL WINAPI DllMain(
   case DLL_PROCESS_ATTACH:
     try
     {
-      DLL_Module::attach( module_handle );
+      DllModule::Attach( moduleHandle );
       return TRUE;
     }
     catch(...)
@@ -46,7 +46,7 @@ extern "C" BOOL WINAPI DllMain(
   case DLL_PROCESS_DETACH:
     try
     {
-      DLL_Module::detach();
+      DllModule::Detach();
       return TRUE;
     }
     catch(...)

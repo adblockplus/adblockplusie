@@ -84,13 +84,13 @@ private:
 /**
 * A Windows Installer database in an installation context.
 */
-class Installation_Database : public Database
+class InstallationDatabase : public Database
 {
 public:
   /**
   * The constructor of a database in an installation context has no arguments because the database is a part of that context.
   */
-  Installation_Database( Immediate_Session & session ) ;
+  InstallationDatabase( ImmediateSession & session ) ;
 } ;
 
 //-------------------------------------------------------

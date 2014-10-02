@@ -15,23 +15,23 @@
 * The choice to use a singleton reflects the design of the Windows API, which treats the module handle as a global for the DLL instance,
 * only appearing during the calls that manage the lifetime of the DLL.
 */
-class DLL_Module
+class DllModule
 {
 public:
   /**
   * Accessor function for the singleton.
   */
-  static DLL_Module & module();
+  static DllModule & module();
 
   /**
   * Hook function to call on DLL attach.
   */
-  static void attach( HINSTANCE handle );
+  static void Attach( HINSTANCE handle );
 
   /**
   * Hook function to call on DLL detach.
   */
-  static void detach();
+  static void Detach();
 
   /**
   * Textual name of the DLL as an OS module.
@@ -42,12 +42,12 @@ private:
   /**
   * The singleton value.
   */
-  static std::shared_ptr< DLL_Module > singleton;
+  static std::shared_ptr< DllModule > singleton;
 
   /**
   * Private constructor ensures use of accessor function only.
   */
-  DLL_Module( HINSTANCE handle );
+  DllModule( HINSTANCE handle );
 
   /**
   * Windows handle for the instance of the DLL.

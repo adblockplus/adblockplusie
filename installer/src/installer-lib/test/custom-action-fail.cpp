@@ -24,6 +24,6 @@ extern "C" UINT __stdcall
 fail( MSIHANDLE session_handle )
 {
   // Instantiate the session object in order to get begin/end log entries.
-  Immediate_Session session( session_handle, "fail" ) ;
+  ImmediateSession session( session_handle, "fail" ) ;
   return ERROR_INSTALL_FAILURE ;
 }
