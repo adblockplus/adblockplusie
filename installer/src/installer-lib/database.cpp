@@ -24,17 +24,17 @@ msi_handle Database::open_view( const wchar_t * query )
 }
 
 //-----------------------------------------------------------------------------------------
-// Installation_Database
+// InstallationDatabase
 //-----------------------------------------------------------------------------------------
 
 /**
-* Helper function for Installation_Database constructor.
+* Helper function for InstallationDatabase constructor.
 *
 * \par Resource Allocator
 *    Return value of this function, a handle, must be released in order to avoid a resource leak.
 *    Passing it as an argument to the Database constructor is adequate.
 */
-msi_handle get_active_database( Immediate_Session & session )
+msi_handle get_active_database( ImmediateSession & session )
 {
   MSIHANDLE h( MsiGetActiveDatabase( session.handle ) ) ;
   if ( h == 0 )
@@ -48,7 +48,7 @@ msi_handle get_active_database( Immediate_Session & session )
 * \par Implementation Notes
 *    The only thing this constructor needs to do is to initialize the base class.
 */
-Installation_Database::Installation_Database( Immediate_Session & session )
+InstallationDatabase::InstallationDatabase( ImmediateSession & session )
   : Database( get_active_database( session ) )
 {
   // empty body

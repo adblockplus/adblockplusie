@@ -17,17 +17,17 @@
  * The WiX definition of that table is in the file "custom_i18n.wxi".
  * Each custom action has the responsibility for defining its own rows within this table.
  */
-class custom_message_text
+class CustomMessageText
 {
   Database & db ;
   const std::wstring component ;
 
 public:
-  custom_message_text( Database & db, const std::wstring component )
+  CustomMessageText( Database & db, const std::wstring component )
     : db( db ), component( component )
   {}
 
-  std::wstring text( const std::wstring id )
+  std::wstring Text( const std::wstring id )
   {
     try {
       View v( db, L"SELECT `content` FROM `AbpUIText` WHERE `component`=? and `id`=?" ) ;

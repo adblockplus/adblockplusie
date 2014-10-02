@@ -4,35 +4,35 @@
 #include "DLL.h"
 #include <stdexcept>
 
-std::shared_ptr< DLL_Module > DLL_Module::singleton = 0 ;
+std::shared_ptr< DllModule > DllModule::singleton = 0 ;
 
-DLL_Module & DLL_Module::module()
+DllModule & DllModule::module()
 { 
   if ( singleton )
   {
     return * singleton;
   }
-  throw std::runtime_error( "DLL_Module::module() called when DLL module was not attached." );
+  throw std::runtime_error( "DllModule::module() called when DLL module was not attached." );
 }
 
 /**
 * The attachment function is the _de facto_ equivalent of initialization. Under ordinary circumstances, this should 
 * only be called once, and called before everything else.
 */
-void DLL_Module::attach( HINSTANCE handle )
+void DllModule::Attach( HINSTANCE handle )
 {
   if ( singleton )
   {
-    throw std::runtime_error( "May not call DLL_Module::attach() in an attached state." );
+    throw std::runtime_error( "May not call DllModule::attach() in an attached state." );
   }
-  singleton = std::shared_ptr< DLL_Module >( new DLL_Module( handle ) ) ;
+  singleton = std::shared_ptr< DllModule >( new DllModule( handle ) ) ;
 }
 
 /**
 * The detachment function is the _de facto_ equivalent of finalization. Under ordinary circumstances, this should 
 * only be called once, and called after everything else.
 */
-void DLL_Module::detach()
+void DllModule::Detach()
 {
   singleton.reset();
 }
@@ -40,12 +40,12 @@ void DLL_Module::detach()
 /**
 * Since this class is mostly a replacement for a global variable, it's no surprising the constructor is almost trivial.
 */
-DLL_Module::DLL_Module( HINSTANCE handle )
+DllModule::DllModule( HINSTANCE handle )
   : handle( handle )
 {
 }
 
-std::wstring DLL_Module::name() 
+std::wstring DllModule::name() 
 {
   if ( _name )
     return *_name ;

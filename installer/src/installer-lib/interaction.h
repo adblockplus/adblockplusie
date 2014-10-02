@@ -1,6 +1,6 @@
 /**
-* \file interaction.h User interaction classes. Message boxes and translations.
-*/
+ * \file interaction.h User interaction classes. Message boxes and translations.
+ */
 
 #ifndef INTERACTION_H
 #define INTERACTION_H
@@ -14,89 +14,85 @@
 #include <MsiQuery.h>
 
 /**
-* A modal dialog box as displayable from within a custom action.
-*
-* The only fully user interface element that the Windows Installer supports for use within custom actions is a small set of modal dialog boxes.
-* The Windows Installer provides the call MsiProcessMessage, overloaded by a set of message type constants.
-* This class represents those messages with user-provided messages; these ultimately call MessageBox.
-*
-* \sa 
-*    * MSDN [MsiProcessMessage function](http://msdn.microsoft.com/en-us/library/windows/desktop/aa370354%28v=vs.85%29.aspx)
-*    * MSDN [Sending Messages to Windows Installer Using MsiProcessMessage](http://msdn.microsoft.com/en-us/library/windows/desktop/aa371614%28v=vs.85%29.aspx)
-*/
-class Installer_Message_Box
+ * A modal dialog box as displayable from within a custom action.
+ *
+ * The only fully user interface element that the Windows Installer supports for use within custom actions is a small set of modal dialog boxes.
+ * The Windows Installer provides the call MsiProcessMessage, overloaded by a set of message type constants.
+ * This class represents those messages with user-provided messages; these ultimately call MessageBox.
+ *
+ * \sa 
+ *    * MSDN [MsiProcessMessage function](http://msdn.microsoft.com/en-us/library/windows/desktop/aa370354%28v=vs.85%29.aspx)
+ *    * MSDN [Sending Messages to Windows Installer Using MsiProcessMessage](http://msdn.microsoft.com/en-us/library/windows/desktop/aa371614%28v=vs.85%29.aspx)
+ */
+class InstallerMessageBox
   : public Message
 {
 public:
-  typedef enum 
+  enum class Box : long
   {
-    default_box = 0,
-    error_box = INSTALLMESSAGE::INSTALLMESSAGE_ERROR,
-    warning_box = INSTALLMESSAGE::INSTALLMESSAGE_WARNING,
-    user_box = INSTALLMESSAGE::INSTALLMESSAGE_USER
-  }
-  box_type ;
+    defaultBox = 0,
+    error = INSTALLMESSAGE::INSTALLMESSAGE_ERROR,
+    warning = INSTALLMESSAGE::INSTALLMESSAGE_WARNING,
+    user = INSTALLMESSAGE::INSTALLMESSAGE_USER
+  } ;
 
-  typedef enum
+  enum class ButtonSet : long
   {
-    default_buttonset = 0,
+    defaultButtonSet = 0,
     ok = MB_OK, 
-    ok_cancel = MB_OKCANCEL, 
-    abort_retry_ignore = MB_ABORTRETRYIGNORE, 
-    yes_no_cancel = MB_YESNOCANCEL, 
-    yes_no = MB_YESNO, 
-    retry_cancel = MB_RETRYCANCEL
-  }
-  buttonset_type ;
+    okCancel = MB_OKCANCEL, 
+    abortRetryIgnore = MB_ABORTRETRYIGNORE, 
+    yesNoCancel = MB_YESNOCANCEL, 
+    yesNo = MB_YESNO, 
+    retryCancel = MB_RETRYCANCEL
+  } ;
 
-  typedef enum
+  enum class DefaultButton : long
   {
-    default_default_button = 0,	    ///< use the default button
-    default_button_one = MB_DEFBUTTON1,
-    default_button_two = MB_DEFBUTTON2,
-    default_button_three = MB_DEFBUTTON3
-  }
-  default_button_type ;
+    defaultButton = 0, ///< use the default button
+    one = MB_DEFBUTTON1,
+    two = MB_DEFBUTTON2,
+    three = MB_DEFBUTTON3
+  } ;
 
-  typedef enum
+  enum class Icon : long
   {
-    default_icon = 0,			    ///< use the default icon associated with the box_type
-    warning_icon = MB_ICONWARNING,	    ///< exclamation point
-    information_icon = MB_ICONINFORMATION,  ///< lowercase letter "i" in a circle
-    error_icon = MB_ICONERROR		    ///< stop sign
-  }
-  icon_type ;
+    defaultIcon = 0,                        ///< use the default icon associated with the box_type
+    warningIcon = MB_ICONWARNING,           ///< exclamation point
+    informationIcon = MB_ICONINFORMATION,   ///< lowercase letter "i" in a circle
+    errorIcon = MB_ICONERROR                ///< stop sign
+  } ;
 
   /**
-  * Ordinary constructor, wide string
-  */
-  Installer_Message_Box(
+   * Ordinary constructor, wide string
+   */
+  InstallerMessageBox(
     std::wstring message, 
-    box_type box = box_type::user_box, 
-    buttonset_type buttonset = buttonset_type::default_buttonset, 
-    default_button_type default_button = default_button_type::default_default_button,
-    icon_type icon = icon_type::default_icon
+    Box box = Box::user, 
+    ButtonSet buttonset = ButtonSet::defaultButtonSet, 
+    DefaultButton defaultButton = DefaultButton::defaultButton,
+    Icon icon = Icon::defaultIcon
     ) ;
 
   /**
-  * Ordinary constructor, regular string
-  */
-  Installer_Message_Box(
+   * Ordinary constructor, regular string
+   */
+  InstallerMessageBox(
     std::string message, 
-    box_type box = box_type::user_box, 
-    buttonset_type buttonset = buttonset_type::default_buttonset, 
-    default_button_type default_button = default_button_type::default_default_button,
-    icon_type icon = icon_type::default_icon
+    Box box = Box::user, 
+    ButtonSet buttonset = ButtonSet::defaultButtonSet, 
+    DefaultButton defaultButton = DefaultButton::defaultButton,
+    Icon icon = Icon::defaultIcon
     ) ;
 } ;
 
 /**
-* Error for any non-handled return value from Session.write_message().
-*/
-struct unexpected_return_value_from_message_box
+ * Error for any non-handled return value from Session.write_message().
+ */
+struct UnexpectedReturnValueFromMessageBox
   : std::logic_error
 {
-  unexpected_return_value_from_message_box()
+  UnexpectedReturnValueFromMessageBox()
     : std::logic_error( "Unexpected return value from message box." )
   {}
 } ;

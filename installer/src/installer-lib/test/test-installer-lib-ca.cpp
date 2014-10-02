@@ -32,7 +32,7 @@ extern "C" BOOL WINAPI DllMain(
   case DLL_PROCESS_ATTACH:
     try
     {
-      DLL_Module::attach( module_handle );
+      DllModule::Attach( module_handle );
       return TRUE;
     }
     catch(...)
@@ -46,7 +46,7 @@ extern "C" BOOL WINAPI DllMain(
   case DLL_PROCESS_DETACH:
     try
     {
-      DLL_Module::detach();
+      DllModule::Detach();
       return TRUE;
     }
     catch(...)

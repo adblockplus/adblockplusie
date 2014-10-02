@@ -197,7 +197,7 @@ struct endsession_accumulator :
 } ;
 
 //-------------------------------------------------------
-// Process_Closer
+// ProcessCloser
 //-------------------------------------------------------
 /**
 * Shut down all the processes in the pid_list.
@@ -216,12 +216,12 @@ struct endsession_accumulator :
 *   - MSDN [WM_QUERYENDSESSION message](http://msdn.microsoft.com/en-us/library/windows/desktop/aa376890%28v=vs.85%29.aspx)
 *   - MSDN [WM_ENDSESSION message](http://msdn.microsoft.com/en-us/library/windows/desktop/aa376889%28v=vs.85%29.aspx)
 */
-bool Process_Closer::shut_down()
+bool ProcessCloser::ShutDown()
 {
   /*
   * If we're not running, we don't need to shut down.
   */
-  if ( ! is_running() )
+  if ( ! IsRunning() )
   {
     return true ;
   }
@@ -291,8 +291,8 @@ bool Process_Closer::shut_down()
     for ( unsigned int j = 0 ; j < 50 ; ++ j )
     {
       std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) ) ;
-      refresh() ;
-      if ( ! is_running() )
+      Refresh() ;
+      if ( ! IsRunning() )
       {
         return true ;
       }

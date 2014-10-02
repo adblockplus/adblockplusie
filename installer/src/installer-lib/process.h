@@ -102,7 +102,7 @@ class process_by_any_exe_not_immersive
    *
    * This is a reference to, not a copy of, the set.
    * The lifetime of this object must be subordinate to that of its referent.
-   * The set used to instantiate this class is a member of Process_Closer,
+   * The set used to instantiate this class is a member of ProcessCloser,
    *   and so also is this class.
    * Hence the lifetimes are coterminous, and the reference is not problematic.
    */
@@ -327,7 +327,7 @@ public:
    * This function uses reinitialization assignment in the Windows_Handle class,
    *   which takes care of closing the old handle.
    */
-  void refresh()
+  void Refresh()
   {
     handle = make_handle();
   }
@@ -373,10 +373,10 @@ public:
 /**
  * A snapshot of all processes running on the system.
  */
-struct Process_Snapshot
+struct ProcessSnapshot
   : public Snapshot< Process_Snapshot_Traits >
 {
-  Process_Snapshot()
+  ProcessSnapshot()
     : Snapshot( 0 ) 
   {}
 } ;
@@ -405,7 +405,7 @@ struct Module_Snapshot
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
 template<class T, class Admittance, class Extractor>
-void initialize_process_list(std::vector<T>& v, Process_Snapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
+void initialize_process_list(std::vector<T>& v, ProcessSnapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
   const PROCESSENTRY32W* p = snap.first();
   while (p != 0)
@@ -435,7 +435,7 @@ void initialize_process_list(std::vector<T>& v, Process_Snapshot &snap, Admittan
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
 template<class T, class Admittance, class Extractor>
-void initialize_process_set(std::set< T > & set, Process_Snapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
+void initialize_process_set(std::set< T > & set, ProcessSnapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
   const PROCESSENTRY32W* p = snap.first();
   while (p != 0)
@@ -588,9 +588,9 @@ bool enumerate_windows( F f )
 }
 
 //-------------------------------------------------------
-// Process_Closer
+// ProcessCloser
 //-------------------------------------------------------
-class Process_Closer
+class ProcessCloser
 {
   /**
    * Set of process identifiers matching one of the executable names.
@@ -615,7 +615,7 @@ class Process_Closer
   /** 
    * Snapshot of running processes.
    */
-  Process_Snapshot & snapshot ;
+  ProcessSnapshot & snapshot ;
 
   void update()
   {
@@ -625,12 +625,12 @@ class Process_Closer
   template< class F >
   class only_our_processes
   {
-    Process_Closer & self ;
+    ProcessCloser & self ;
 
     F f ;
 
   public:
-    only_our_processes( Process_Closer & self, F f )
+    only_our_processes( ProcessCloser & self, F f )
       : f( f ), self( self )
     {}
 
@@ -657,7 +657,7 @@ class Process_Closer
 
 public:
   template <size_t n_file_names>
-  Process_Closer(Process_Snapshot & snapshot, const wchar_t * (&file_name_list)[n_file_names])
+  ProcessCloser(ProcessSnapshot & snapshot, const wchar_t * (&file_name_list)[n_file_names])
     : snapshot(snapshot), process_names(file_name_list), filter(process_names)
   {
     update() ;
@@ -666,13 +666,13 @@ public:
   /**
    * Refresh our state to match the snapshot state.
    */
-  void refresh()
+  void Refresh()
   {
     pid_set.clear() ;
     update() ;
   }
 
-  bool is_running() { return ! pid_set.empty() ; } ;
+  bool IsRunning() { return ! pid_set.empty() ; } ;
 
   bool contains( DWORD pid ) const { return pid_set.find( pid ) != pid_set.end() ; } ;
 
@@ -686,7 +686,7 @@ public:
   /*
    * Shut down every process in the pid_set.
    */
-  bool shut_down() ;
+  bool ShutDown() ;
 
 } ;
 

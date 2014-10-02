@@ -8,6 +8,6 @@ EXPORTS
 ; test-installer-lib-sandbox.cpp
     sandbox
 ; close_application.cpp
-    abp_close_ie
+    AbpCloseIe
 ; custom-action-fail.cpp
     fail

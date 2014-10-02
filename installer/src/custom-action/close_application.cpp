@@ -11,45 +11,45 @@
 #include "interaction.h"
 #include "custom-i18n.h"
 
-const wchar_t * ie_names[] = { L"IExplore.exe" } ;
-const wchar_t * engine_names[] = { L"AdblockPlusEngine.exe" } ;
+const wchar_t * browserNames[] = { L"IExplore.exe" } ;
+const wchar_t * engineNames[] = { L"AdblockPlusEngine.exe" } ;
 
 //-------------------------------------------------------
 //-------------------------------------------------------
-class IE_Closer
+class InternetExplorerCloser
 {
-  Process_Snapshot snapshot ;
+  ProcessSnapshot snapshot ;
 
-  Process_Closer ie_closer ;
+  ProcessCloser browserCloser ;
 
-  Process_Closer engine_closer ;
+  ProcessCloser engineCloser ;
 
 public:
-  IE_Closer()
-    : snapshot(), ie_closer( snapshot, ie_names), engine_closer( snapshot, engine_names )
+  InternetExplorerCloser()
+    : snapshot(), browserCloser( snapshot, browserNames ), engineCloser( snapshot, engineNames )
   {}
 
-  void refresh()
+  void Refresh()
   {
-    snapshot.refresh() ;
-    ie_closer.refresh() ;
-    engine_closer.refresh() ;
+    snapshot.Refresh() ;
+    browserCloser.Refresh() ;
+    engineCloser.Refresh() ;
   }
 
-  bool is_running()
+  bool IsRunning()
   {
-    return ie_closer.is_running() || engine_closer.is_running() ;
+    return browserCloser.IsRunning() || engineCloser.IsRunning() ;
   }
 
-  bool shut_down()
+  bool ShutDown()
   {
-    if ( ie_closer.is_running() && ! ie_closer.shut_down() )
+    if ( browserCloser.IsRunning() && ! browserCloser.ShutDown() )
     {
       // Assert IE is still running
       // This is after we've tried to shut it down, so we fail
       return false ;
     }
-    if ( engine_closer.is_running() && ! engine_closer.shut_down() )
+    if ( engineCloser.IsRunning() && ! engineCloser.ShutDown() )
     {
       // Assert the engine is still running
       // This is after IE has shut down itself and after we've tried to shut down the engine. Whatever.
@@ -61,7 +61,7 @@ public:
 
 
 //-------------------------------------------------------
-// abp_close_ie
+// AbpCloseIe
 //-------------------------------------------------------
 /**
  * Exposed DLL entry point for custom action. 
@@ -85,7 +85,7 @@ public:
  * In a silent installation, this is the only way getting a stance other than the default.
  * In an interactive installation, AVOIDREBOOT skips the dialogs.
  *
- * \param[in] session_handle
+ * \param[in] sessionHandle
  *     Windows installer session handle
  *
  * \return 
@@ -107,35 +107,35 @@ public:
  *   - MSDN [Custom Action Return Values](http://msdn.microsoft.com/en-us/library/aa368072%28v=vs.85%29.aspx)
  */
 extern "C" UINT __stdcall 
-abp_close_ie( MSIHANDLE session_handle )
+AbpCloseIe( MSIHANDLE sessionHandle )
 {
   // Utility typedef to shorten the class name.
-  typedef Installer_Message_Box IMB ;
+  typedef InstallerMessageBox IMB ;
 
   /*
-   * Immediate_Session cannot throw, so it can go outside the try-block.
+   * ImmediateSession cannot throw, so it can go outside the try-block.
    * It's needed in the catch-all block to write an error message to the log.
    */
-  Immediate_Session session( session_handle, "abp_close_ie" ) ;
+  ImmediateSession session( sessionHandle, "AbpCloseIe" ) ;
     
   // The body of an entry point function must have a catch-all.
   try {
 
     // MSI property BROWSERRUNNING is one of the return values of this function.
-    Property browser_running( session, L"BROWSERRUNNING" ) ;
-    Property browser_closed( session, L"BROWSERCLOSED" ) ;
+    Property browserRunning( session, L"BROWSERRUNNING" ) ;
+    Property browserClosed( session, L"BROWSERCLOSED" ) ;
 
-    // Instantiation of Process_Closer takes a snapshot.
-    IE_Closer iec ;
+    // Instantiation of ProcessCloser takes a snapshot.
+    InternetExplorerCloser iec ;
 
     /*
      * We take the short path through this function if neither IE nor engine is not running at the outset.
      */
-    if ( ! iec.is_running() )
+    if ( ! iec.IsRunning() )
     {
-      browser_running = L"0" ;	    // The browser is not running.
-      browser_closed = L"0" ;	    // We didn't close the browser (and we couldn't have).
-      session.log( "IE not running. No issue with reboot policy." ) ;
+      browserRunning = L"0" ;	    // The browser is not running.
+      browserClosed = L"0" ;	    // We didn't close the browser (and we couldn't have).
+      session.Log( "IE not running. No issue with reboot policy." ) ;
       return ERROR_SUCCESS ;
     }
 
@@ -143,10 +143,10 @@ abp_close_ie( MSIHANDLE session_handle )
      * As a (potentially) user-driven function, a state machine manages control flow.
      * The states are organized around the policy stances.
      */
-    enum Policy_State {
+    enum PolicyState {
       // Non-terminal states
-      not_known,	  // We don't know the user's stance at all
-      part_known,	  // The user has indicated either ACTIVE or AUTOMATIC
+      notKnown,	  // We don't know the user's stance at all
+      partKnown,	  // The user has indicated either ACTIVE or AUTOMATIC
       active,		  // Actively avoid reboot
       automatic,          // Automatically avoid reboot
       // Terminal states
@@ -157,32 +157,32 @@ abp_close_ie( MSIHANDLE session_handle )
       allow = success,	  // Allow reboot. 
       passive = abort,	  // Passively avoid reboot, that is, don't try to close IE.
     };
-    Policy_State state ;
+    PolicyState state ;
 
     /*
      * Use the AVOIDREBOOT property, if present, to set an initial state.
      */
-    std::wstring avoid_reboot = Property( session, L"AVOIDREBOOT" ) ;
-    std::transform( avoid_reboot.begin(), avoid_reboot.end(), avoid_reboot.begin(), ::towupper ) ;
-    if ( avoid_reboot == L"" )
+    std::wstring avoidReboot = Property( session, L"AVOIDREBOOT" ) ;
+    std::transform( avoidReboot.begin(), avoidReboot.end(), avoidReboot.begin(), ::towupper ) ;
+    if ( avoidReboot == L"" )
     {
-      state = not_known ;
+      state = notKnown ;
     }
-    else if ( avoid_reboot == L"NO" )
+    else if ( avoidReboot == L"NO" )
     {
       state = allow ;
-      session.log( "Reboot allowed on command line." ) ;
+      session.Log( "Reboot allowed on command line." ) ;
     }
-    else if ( avoid_reboot == L"PASSIVE" )
+    else if ( avoidReboot == L"PASSIVE" )
     {
       state = passive ;
-      session.log( "Reboot avoided on command line." ) ;
+      session.Log( "Reboot avoided on command line." ) ;
     }
-    else if ( avoid_reboot == L"ACTIVE" )
+    else if ( avoidReboot == L"ACTIVE" )
     {
       state = active ;
     }
-    else if ( avoid_reboot == L"AUTOMATIC" )
+    else if ( avoidReboot == L"AUTOMATIC" )
     {
       state = automatic ;
     }
@@ -209,13 +209,13 @@ abp_close_ie( MSIHANDLE session_handle )
     if ( uilevel == L"5" || uilevel == L"4" )
     {
       interactive = true ;
-      // Assert state is one of { not_known, allow, passive, active, automatic }
+      // Assert state is one of { notKnown, allow, passive, active, automatic }
     }
     else if ( uilevel == L"3" || uilevel == L"2" )
     {
       // Assert installer is running without user interaction.
       interactive = false ;
-      if ( state == not_known )
+      if ( state == notKnown )
       {
 	// Assert AVOIDREBOOT was not specified
 	/*
@@ -223,7 +223,7 @@ abp_close_ie( MSIHANDLE session_handle )
 	 * The choice of "allow" makes it act like other installers, which is to make no effort to avoid a reboot after installation.
 	 */
 	state = allow ;
-	session.log( "Reboot allowed by default in non-interactive session." ) ;
+	session.Log( "Reboot allowed by default in non-interactive session." ) ;
       }
       else if ( state == active )
       {
@@ -238,64 +238,70 @@ abp_close_ie( MSIHANDLE session_handle )
 
     /*
      * Now that preliminaries are over, we set up the accessors for UI text.
-     * We only use the object 'message_text' for interactive sessions, but it's cheap to set up and a hassle to conditionalize.
+     * We only use the object 'messageText' for interactive sessions, but it's cheap to set up and a hassle to conditionalize.
      *
      * The key "close_ie" is the component name within the file "close_ie.wxi" that defines rows in the localization table.
-     * The identifiers for the message_text.text() function are defined within that file.
+     * The identifiers for the messageText.text() function are defined within that file.
      */
-    Installation_Database db( session ) ;
-    custom_message_text message_text( db, L"close_ie" ) ;
+    InstallationDatabase db( session ) ;
+    CustomMessageText messageText( db, L"close_ie" ) ;
 
     /*
      * State machine: Loop through non-terminal states.
      *
-     * Loop invariant: IE was running at last check, that is, iec.is_running() would return true.
+     * Loop invariant: IE was running at last check, that is, iec.IsRunning() would return true.
      */
     while ( state <= automatic )	  // "automatic" is the non-terminal state with the highest value
     {
       switch ( state )
       {
-      case not_known:
+      case notKnown:
 	/*
 	 * Precondition: interactive session
 	 *
 	 * Ask the user "Would you like to close IE and avoid reboot?"
-	 * Yes -> Close IE somehow. Goto part_known.
+	 * Yes -> Close IE somehow. Goto partKnown.
 	 * No -> Install with reboot. Goto allow.
 	 * Cancel -> terminate installation. Goto abort.
 	 */
-	{
-	  int x = session.write_message( IMB( message_text.text( L"dialog_unknown" ), IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
+        {
+          int x = session.WriteMessage(IMB( 
+            messageText.Text(L"dialog_unknown"), 
+            IMB::Box::warning, IMB::ButtonSet::yesNoCancel, IMB::DefaultButton::three
+            )) ;
 	  switch ( x )
 	  {
 	  case IDYES:
-	    state = part_known ;
+	    state = partKnown ;
 	    break ;
 	  case IDNO:
 	    state = allow ;
-	    session.log( "User chose to allow reboot" ) ;
+	    session.Log( "User chose to allow reboot" ) ;
 	    break ;
 	  case IDCANCEL:
 	    state = abort ;
-	    session.log( "User cancelled installation" ) ;
+	    session.Log( "User cancelled installation" ) ;
 	    break ;
 	  default:
-	    throw unexpected_return_value_from_message_box() ;
+	    throw UnexpectedReturnValueFromMessageBox() ;
 	  }
 	}
 	break ;
 
-      case part_known:
+      case partKnown:
 	/*
 	 * Precondition: interactive session
 	 *
 	 * Ask the user "Would you like the installer to close IE for you?"
 	 * Yes -> Goto automatic
 	 * No -> Goto active
-	 * Cancel -> Goto not_known
+	 * Cancel -> Goto notKnown
 	 */
 	{
-	  int x = session.write_message( IMB( message_text.text( L"dialog_part_known" ), IMB::warning_box, IMB::yes_no_cancel, IMB::default_button_three ) ) ;
+	  int x = session.WriteMessage(IMB(
+            messageText.Text(L"dialog_part_known"), 
+            IMB::Box::warning, IMB::ButtonSet::yesNoCancel, IMB::DefaultButton::three
+            )) ;
 	  switch ( x )
 	  {
 	  case IDYES:
@@ -305,10 +311,10 @@ abp_close_ie( MSIHANDLE session_handle )
 	    state = active ;
 	    break ;
 	  case IDCANCEL:
-	    state = not_known ;
+	    state = notKnown ;
 	    break ;
 	  default:
-	    throw unexpected_return_value_from_message_box() ;
+	    throw UnexpectedReturnValueFromMessageBox() ;
 	  }
 	}
 	break ;
@@ -321,10 +327,13 @@ abp_close_ie( MSIHANDLE session_handle )
 	 * IE is still running ->
 	 *   Ask the user to close IE manually
 	 *   OK -> re-enter this state
-	 *   Cancel -> Goto not_known
+	 *   Cancel -> Goto notKnown
 	 */
 	{
-	  int x = session.write_message( IMB( message_text.text( L"dialog_active_retry" ), IMB::warning_box, IMB::ok_cancel, IMB::default_button_one ) ) ;
+	  int x = session.WriteMessage(IMB(
+            messageText.Text(L"dialog_active_retry"), 
+            IMB::Box::warning, IMB::ButtonSet::okCancel, IMB::DefaultButton::one
+            )) ;
 	  switch ( x )
 	  {
 	  case IDOK:
@@ -333,18 +342,18 @@ abp_close_ie( MSIHANDLE session_handle )
 	     * If it is, we display the dialog again. The state doesn't change, so we just iterate again.
 	     * If it's not, then the user has closed IE and we're done.
 	     */
-	    iec.refresh() ;
-	    if ( ! iec.is_running() )
+	    iec.Refresh() ;
+	    if ( ! iec.IsRunning() )
 	    {
 	      state = success ;
-	      session.log( "User shut down IE manually." ) ;
+	      session.Log( "User shut down IE manually." ) ;
 	    }
 	    break ;
 	  case IDCANCEL:
-	    state = not_known ;
+	    state = notKnown ;
 	    break ;
 	  default:
-	    throw unexpected_return_value_from_message_box() ;
+	    throw UnexpectedReturnValueFromMessageBox() ;
 	  }
 	}
 	break ;
@@ -359,42 +368,45 @@ abp_close_ie( MSIHANDLE session_handle )
 	 * Failed && interactive ->
 	 *   Ask user if they would like to try again
 	 *   Retry -> re-enter this state
-	 *   Cancel -> Goto not_known
+	 *   Cancel -> Goto notKnown
 	 * Failed && not interactive -> Goto abort
 	 */
 	{
-	  bool IE_was_closed = iec.shut_down() ;
-	  if ( iec.is_running() )
+	  bool ieWasClosed = iec.ShutDown() ;
+	  if ( iec.IsRunning() )
 	  {
-	    session.log( "Attempt to shut down IE automatically failed." ) ;
+	    session.Log( "Attempt to shut down IE automatically failed." ) ;
 	    if ( interactive )
 	    {
 	      // Assert Interactive session and IE did not shut down.
-	      int x = session.write_message( IMB( message_text.text( L"dialog_automatic_retry" ), IMB::warning_box, IMB::retry_cancel, IMB::default_button_one ) ) ;
+	      int x = session.WriteMessage(IMB(
+                messageText.Text(L"dialog_automatic_retry"),
+                IMB::Box::warning, IMB::ButtonSet::retryCancel, IMB::DefaultButton::one
+                )) ;
 	      switch ( x )
 	      {
 	      case IDRETRY:
 		// Don't change the state. Iterate again.
 		break ;
 	      case IDCANCEL:
-		state = not_known ;
+		state = notKnown ;
 		break ;
 	      default:
-		throw unexpected_return_value_from_message_box() ;
+		throw UnexpectedReturnValueFromMessageBox() ;
 	      }
 	    }
 	    else
 	    {
 	      // Assert Non-interactive session and IE did not shut down.
 	      state = abort ;
-	      session.log( "Failed to shut down IE automatically." ) ;
+	      session.Log( "Failed to shut down IE automatically." ) ;
 	    }
 	  }
 	  else
 	  {
-	    // Assert IE is not running, so shut_down() succeeded.
+	    // Assert IE is not running, so ShutDown() succeeded.
 	    state = success ;
-	    session.log( "Automatically shut down IE." ) ;
+	    session.Log( "Automatically shut down IE." ) ;
 	  }
 	}
 	break;
@@ -406,15 +418,15 @@ abp_close_ie( MSIHANDLE session_handle )
     switch ( state )
     {
       case success:
-	if ( iec.is_running() )
+	if ( iec.IsRunning() )
 	{
-	  browser_running = L"1" ;
-	  browser_closed = L"0" ;
+	  browserRunning = L"1" ;
+	  browserClosed = L"0" ;
 	}
 	else
 	{
-	  browser_running = L"0" ;
-	  browser_closed = L"1" ;
+	  browserRunning = L"0" ;
+	  browserClosed = L"1" ;
 	}
 	return ERROR_SUCCESS ;
 	break;
@@ -425,34 +437,14 @@ abp_close_ie( MSIHANDLE session_handle )
   }
   catch( std::exception & e )
   {
-    session.log_noexcept( "terminated by exception: " + std::string( e.what() ) ) ;
+    session.LogNoexcept( "terminated by exception: " + std::string( e.what() ) ) ;
     return ERROR_INSTALL_FAILURE ;
   }
   catch( ... )
   {
-    session.log_noexcept( "terminated by unknown exception" ) ;
+    session.LogNoexcept( "terminated by unknown exception" ) ;
     return ERROR_INSTALL_FAILURE ;
   }
   // Should be unreachable.
   return ERROR_INSTALL_FAILURE ;
 }
-
-/*
- * EnumWindows system call: http://msdn.microsoft.com/en-us/library/windows/desktop/ms633497%28v=vs.85%29.aspx
- */
-/**
- * 
- * Callback function for EnumWindows.
- */
-BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
-{
-  return TRUE ;
-}
-
-/**
- * Windows_List
- */
-class Window_List {
-public:
-  void enumerate_top_level();
-};
