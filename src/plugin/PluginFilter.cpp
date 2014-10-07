@@ -712,7 +712,7 @@ bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const 
       DEBUG_FILTER("Filter::ShouldBlock " + type + " YES")
 
 #ifdef ENABLE_DEBUG_RESULT
-        CPluginDebug::DebugResultBlocking(type, srcCString, to_CString(domain));
+        CPluginDebug::DebugResultBlocking(type, srcCString, domain);
 #endif
     }
     return true;
