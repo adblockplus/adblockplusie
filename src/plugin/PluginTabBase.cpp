@@ -3,7 +3,7 @@
 #include "PluginClient.h"
 #include "PluginSettings.h"
 #include "PluginTab.h"
-#include "PluginDomTraverser.h"
+#include "AdblockPlusDomTraverser.h"
 #include "PluginClass.h"
 #include "PluginTabBase.h"
 #include "PluginUtil.h"

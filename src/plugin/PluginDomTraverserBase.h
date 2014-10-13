@@ -32,8 +32,6 @@ public:
 
   virtual void ClearCache();
 
-  void ShowNotification(CPluginTab* tab);
-
 protected:
 
   virtual bool OnIFrame(IHTMLElement* pEl, const CString& url, CString& indent) { return true; }
@@ -453,16 +451,6 @@ void CPluginDomTraverserBase<T>::ClearCache()
     m_cacheDocumentHasIframes.clear();
   }
   m_criticalSection.Unlock();
-}
-template <class T>
-void CPluginDomTraverserBase<T>::ShowNotification(CPluginTab* tab)
-{
-  if (tab->m_plugin->GetTabHWND() == NULL)
-  {
-    return;
-  }
-
-
 }
 
 
