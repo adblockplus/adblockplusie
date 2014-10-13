@@ -108,7 +108,6 @@
       'src/plugin/PluginDebug.cpp',
       'src/plugin/PluginDebug.h',
       'src/plugin/PluginDebugMacros.h',
-      'src/plugin/PluginDomTraverser.h',
       'src/plugin/PluginDomTraverserBase.h',
       'src/plugin/PluginErrorCodes.h',
       'src/plugin/PluginFilter.cpp',
