@@ -29,12 +29,12 @@ public:
 
 protected:
 
-  bool OnIFrame(IHTMLElement* pEl, const CString& url, CString& indent);
+  bool OnIFrame(IHTMLElement* pEl, const std::wstring& url, CString& indent);
   bool OnElement(IHTMLElement* pEl, const CString& tag, CPluginDomTraverserCache* cache, bool isDebug, CString& indent);
 
   bool IsEnabled();
 
-  void HideElement(IHTMLElement* pEl, const CString& type, const CString& url, bool isDebug, CString& indent);
+  void HideElement(IHTMLElement* pEl, const CString& type, const std::wstring& url, bool isDebug, CString& indent);
 
 };
 

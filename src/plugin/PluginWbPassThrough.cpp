@@ -110,14 +110,15 @@ int WBPassthruSink::GetContentTypeFromMimeType(const CString& mimeType)
   return CFilter::contentTypeAny;
 }
 
-int WBPassthruSink::GetContentTypeFromURL(const CString& src)
+int WBPassthruSink::GetContentTypeFromURL(const std::wstring& src)
 {
-  CString srcExt = src;
+  CString srcLegacy = ToCString(src);
+  CString srcExt = srcLegacy;
 
   int pos = 0;
-  if ((pos = src.Find('?')) > 0)
+  if ((pos = srcLegacy.Find('?')) > 0)
   {
-    srcExt = src.Left(pos);
+    srcExt = srcLegacy.Left(pos);
   }
 
   int lastDotIndex = srcExt.ReverseFind('.');
@@ -151,7 +152,7 @@ int WBPassthruSink::GetContentTypeFromURL(const CString& src)
   return CFilter::contentTypeAny;
 }
 
-int WBPassthruSink::GetContentType(const CString& mimeType, const std::wstring& domain, const CString& src)
+int WBPassthruSink::GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src)
 {
   // No referer or mime type
   // BINDSTRING_XDR_ORIGIN works only for IE v8+
@@ -306,15 +307,15 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
 
   if (tab && client)
   {
-    CString documentUrl = tab->GetDocumentUrl();
+    std::wstring documentUrl = tab->GetDocumentUrl();
     // Page is identical to document => don't block
-    if (documentUrl == ToCString(src))
+    if (documentUrl == src)
     {
       return nativeHr;
     }
-    else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(std::wstring(documentUrl)))
+    else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(documentUrl))
     {
-      if (tab->IsFrameCached(ToCString(src)))
+      if (tab->IsFrameCached(src))
       {
         m_contentType = CFilter::contentTypeSubdocument;
       }

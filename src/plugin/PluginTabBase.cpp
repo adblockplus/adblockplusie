@@ -74,7 +74,7 @@ namespace
   }
 }
 
-void CPluginTabBase::OnNavigate(const CString& url)
+void CPluginTabBase::OnNavigate(const std::wstring& url)
 {
   SetDocumentUrl(url);
   ClearFrameCache(GetDocumentDomain());
@@ -97,7 +97,7 @@ void CPluginTabBase::OnNavigate(const CString& url)
 void CPluginTabBase::InjectABP(IWebBrowser2* browser)
 {
   CriticalSection::Lock lock(m_csInject);
-  CString url = GetDocumentUrl();
+  CString url = ToCString(GetDocumentUrl());
   CString log;
   log.Format(L"InjectABP. Current URL: %s, settings URL: %s", url, UserSettingsFileUrl().c_str());
   DEBUG_GENERAL(log);
@@ -158,7 +158,7 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
 void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
 {
   CPluginClient* client = CPluginClient::GetInstance();
-  std::wstring url = to_wstring(GetDocumentUrl());
+  std::wstring url = GetDocumentUrl();
   if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
   {
     m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
@@ -166,9 +166,9 @@ void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
   InjectABP(browser);
 }
 
-void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& url, bool isDocumentBrowser)
+void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const std::wstring& url, bool isDocumentBrowser)
 {
-  CString documentUrl = GetDocumentUrl();
+  std::wstring documentUrl = GetDocumentUrl();
 
   if (isDocumentBrowser)
   {
@@ -178,7 +178,8 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
     }
     InjectABP(browser);
   }
-  if (url.Left(6) != "res://")
+  CString urlLegacy = ToCString(url);
+  if (urlLegacy.Left(6) != "res://")
   {
     // Get document
     CComPtr<IDispatch> pDocDispatch;
@@ -225,19 +226,19 @@ std::wstring CPluginTabBase::GetDocumentDomain()
   return domain;
 }
 
-void CPluginTabBase::SetDocumentUrl(const CString& url)
+void CPluginTabBase::SetDocumentUrl(const std::wstring& url)
 {
   m_criticalSection.Lock();
   {
     m_documentUrl = url;
-    m_documentDomain = CAdblockPlusClient::GetInstance()->GetHostFromUrl(to_wstring(url));
+    m_documentDomain = CAdblockPlusClient::GetInstance()->GetHostFromUrl(url);
   }
   m_criticalSection.Unlock();
 }
 
-CString CPluginTabBase::GetDocumentUrl()
+std::wstring CPluginTabBase::GetDocumentUrl()
 {
-  CString url;
+  std::wstring url;
 
   m_criticalSection.Lock();
   {
@@ -252,7 +253,7 @@ CString CPluginTabBase::GetDocumentUrl()
 // ============================================================================
 // Frame caching
 // ============================================================================
-bool CPluginTabBase::IsFrameCached(const CString& url)
+bool CPluginTabBase::IsFrameCached(const std::wstring& url)
 {
   bool isFrame;
 
@@ -265,7 +266,7 @@ bool CPluginTabBase::IsFrameCached(const CString& url)
   return isFrame;
 }
 
-void CPluginTabBase::CacheFrame(const CString& url)
+void CPluginTabBase::CacheFrame(const std::wstring& url)
 {
   m_criticalSectionCache.Lock();
   {

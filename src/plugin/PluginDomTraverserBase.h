@@ -27,14 +27,14 @@ public:
 
   void TraverseHeader(bool isHeaderTraversed);
 
-  void TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName);
+  void TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentName);
   void TraverseSubdocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName);
 
   virtual void ClearCache();
 
 protected:
 
-  virtual bool OnIFrame(IHTMLElement* pEl, const CString& url, CString& indent) { return true; }
+  virtual bool OnIFrame(IHTMLElement* pEl, const std::wstring& url, CString& indent) { return true; }
   virtual bool OnElement(IHTMLElement* pEl, const CString& tag, T* cache, bool isDebug, CString& indent) { return true; }
 
   virtual bool IsEnabled();
@@ -86,7 +86,7 @@ void CPluginDomTraverserBase<T>::TraverseHeader(bool isHeaderTraversed)
 }
 
 template <class T>
-void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName)
+void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentName)
 {
   m_domain = domain;
 
@@ -220,16 +220,14 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
         CComQIPtr<IWebBrowser2> pFrameBrowser = pFrameDispatch;
         if (pFrameBrowser)
         {
+          std::wstring src;
           CComBSTR bstrSrc;
-          CString src;
-
-          if (SUCCEEDED(pFrameBrowser->get_LocationURL(&bstrSrc)))
+          if (SUCCEEDED(pFrameBrowser->get_LocationURL(&bstrSrc)) && bstrSrc)
           {
-            src = bstrSrc;
-            CPluginClient::UnescapeUrl(src);
+            src = std::wstring(bstrSrc,SysStringLen(bstrSrc));
+            UnescapeUrl(src);
           }
-
-          if (!src.IsEmpty())
+          if (!src.empty())
           {
             TraverseDocument(pFrameBrowser, false, indent);
           }
@@ -264,22 +262,22 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
 
           if (SUCCEEDED(pFrameEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
           {
-            CString src = vAttr.bstrVal;
+            CString srcLegacy = vAttr.bstrVal;
 
             // Some times, domain is missing. Should this be added on image src's as well?''
 
             // eg. gadgetzone.com.au
-            if (src.Left(2) == L"//")
+            if (srcLegacy.Left(2) == L"//")
             {
-              src = L"http:" + src;
+              srcLegacy = L"http:" + srcLegacy;
             }
             // eg. http://w3schools.com/html/html_examples.asp
-            else if (src.Left(4) != L"http" && src.Left(6) != L"res://")
+            else if (srcLegacy.Left(4) != L"http" && srcLegacy.Left(6) != L"res://")
             {
-              src = L"http://" + to_CString(m_domain) + src;
+              srcLegacy = L"http://" + to_CString(m_domain) + srcLegacy;
             }
-
-            CPluginClient::UnescapeUrl(src);
+            std::wstring src(ToWstring(srcLegacy));
+            UnescapeUrl(src);
 
             // Check if Iframe should be traversed
             if (OnIFrame(pFrameEl, src, indent))

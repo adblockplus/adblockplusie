@@ -181,26 +181,23 @@ CComQIPtr<IWebBrowser2> CPluginClass::GetAsyncBrowser()
   return browser;
 }
 
-CString CPluginClass::GetBrowserUrl() const
+std::wstring CPluginClass::GetBrowserUrl() const
 {
-  CString url;
-
+  std::wstring url;
   CComQIPtr<IWebBrowser2> browser = GetBrowser();
   if (browser)
   {
     CComBSTR bstrURL;
-
-    if (SUCCEEDED(browser->get_LocationURL(&bstrURL)))
+    if (SUCCEEDED(browser->get_LocationURL(&bstrURL)) && bstrURL)
     {
-      url = bstrURL;
-      CPluginClient::UnescapeUrl(url);
+      url = std::wstring(bstrURL, SysStringLen(bstrURL));
+      UnescapeUrl(url);
     }
   }
   else
   {
     url = m_tab->GetDocumentUrl();
   }
-
   return url;
 }
 
@@ -534,13 +531,16 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
   }
 
   // Get the URL
-  CString url;
-  vt = pDispParams->rgvarg[5].vt;
-  if (vt == VT_BYREF + VT_VARIANT)
+  std::wstring url;
+  const auto& arg = pDispParams->rgvarg[5];
+  vt = arg.vt;
+  if (vt == (VT_BYREF | VT_VARIANT) && arg.pvarVal->vt == VT_BSTR)
   {
-    url = pDispParams->rgvarg[5].pvarVal->bstrVal;
-
-    CPluginClient::UnescapeUrl(url);
+    BSTR b = arg.pvarVal->bstrVal;
+    if (b) {
+      url = std::wstring(b, SysStringLen(b));
+      UnescapeUrl(url);
+    }
   }
   else
   {
@@ -550,25 +550,25 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 
   // If webbrowser2 is equal to top level browser (as set in SetSite), we are navigating new page
   CPluginClient* client = CPluginClient::GetInstance();
-
-  if (url.Find(L"javascript") == 0)
+  CString urlLegacy = ToCString(url);
+  if (urlLegacy.Find(L"javascript") == 0)
   {
   }
   else if (GetBrowser().IsEqualObject(WebBrowser2Ptr))
   {
     m_tab->OnNavigate(url);
 
-    DEBUG_GENERAL(L"================================================================================\nBegin main navigation url:" + url + "\n================================================================================")
+    DEBUG_GENERAL(L"================================================================================\nBegin main navigation url:" + urlLegacy + "\n================================================================================")
 
 #ifdef ENABLE_DEBUG_RESULT
-      CPluginDebug::DebugResultDomain(url);
+      CPluginDebug::DebugResultDomain(urlLegacy);
 #endif
 
     UpdateStatusBar();
   }
   else
   {
-    DEBUG_NAVI(L"Navi::Begin navigation url:" + url)
+    DEBUG_NAVI(L"Navi::Begin navigation url:" + urlLegacy)
     m_tab->CacheFrame(url);
   }
 }
@@ -710,12 +710,11 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
           CComQIPtr<IWebBrowser2> pBrowser = pDispParams->rgvarg[1].pdispVal;
           if (pBrowser)
           {
-            CString url;
             CComBSTR bstrUrl;
-            if (SUCCEEDED(pBrowser->get_LocationURL(&bstrUrl)) && ::SysStringLen(bstrUrl) > 0)
+            if (SUCCEEDED(pBrowser->get_LocationURL(&bstrUrl)) && bstrUrl && ::SysStringLen(bstrUrl) > 0)
             {
-              url = bstrUrl;
-              CPluginClient::UnescapeUrl(url);
+              std::wstring url = std::wstring(bstrUrl, SysStringLen(bstrUrl));
+              UnescapeUrl(url);
               m_tab->OnDocumentComplete(browser, url, browser.IsEqualObject(pBrowser));
             }
           }
@@ -1138,7 +1137,7 @@ STDMETHODIMP CPluginClass::QueryStatus(const GUID* pguidCmdGroup, ULONG cCmds, O
   return S_OK;
 }
 
-HMENU CPluginClass::CreatePluginMenu(const CString& url)
+HMENU CPluginClass::CreatePluginMenu(const std::wstring& url)
 {
   DEBUG_GENERAL("CreatePluginMenu");
   HINSTANCE hInstance = _AtlBaseModule.GetModuleInstance();
@@ -1246,14 +1245,14 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
   case ID_MENU_DISABLE_ON_SITE:
     {
       CPluginSettings* settings = CPluginSettings::GetInstance();
-      CString urlString = GetTab()->GetDocumentUrl();
-      if (client->IsWhitelistedUrl(to_wstring(urlString)))
+      std::wstring urlString = GetTab()->GetDocumentUrl();
+      if (client->IsWhitelistedUrl(urlString))
       {
-        settings->RemoveWhiteListedDomain(to_CString(client->GetHostFromUrl(to_wstring(urlString))));
+        settings->RemoveWhiteListedDomain(to_CString(client->GetHostFromUrl(urlString)));
       }
       else
       {
-        settings->AddWhiteListedDomain(to_CString(client->GetHostFromUrl(to_wstring(urlString))));
+        settings->AddWhiteListedDomain(to_CString(client->GetHostFromUrl(urlString)));
       }
       GetBrowser()->Refresh();
     }
@@ -1266,7 +1265,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
 }
 
 
-bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
+bool CPluginClass::SetMenuBar(HMENU hMenu, const std::wstring& url)
 {
   DEBUG_GENERAL("SetMenuBar");
 
@@ -1286,8 +1285,8 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
   {
     ctext = dictionary->Lookup("menu", "menu-disable-on-site");
     // Is domain in white list?
-    ReplaceString(ctext, L"?1?", client->GetHostFromUrl(to_wstring(url)));
-    if (client->IsWhitelistedUrl(to_wstring(GetTab()->GetDocumentUrl())))
+    ReplaceString(ctext, L"?1?", client->GetHostFromUrl(url));
+    if (client->IsWhitelistedUrl(GetTab()->GetDocumentUrl()))
     {
       fmii.fState = MFS_CHECKED | MFS_ENABLED;
     }
@@ -1501,7 +1500,7 @@ LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wPa
 }
 
 
-HICON CPluginClass::GetStatusBarIcon(const CString& url)
+HICON CPluginClass::GetStatusBarIcon(const std::wstring& url)
 {
   // use the disable icon as defualt, if the client doesn't exists
   HICON hIcon = GetIcon(ICON_PLUGIN_DEACTIVATED);
@@ -1512,7 +1511,7 @@ HICON CPluginClass::GetStatusBarIcon(const CString& url)
     CPluginClient* client = CPluginClient::GetInstance();
     if (CPluginSettings::GetInstance()->IsPluginEnabled())
     {
-      if (client->IsWhitelistedUrl(ToWstring(url)))
+      if (client->IsWhitelistedUrl(url))
       {
         hIcon = GetIcon(ICON_PLUGIN_DISABLED);
       }
@@ -1630,14 +1629,14 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
   case WM_LBUTTONUP:
   case WM_RBUTTONUP:
     {
-      CString strURL = pClass->GetBrowserUrl();
-      if (strURL != pClass->GetTab()->GetDocumentUrl())
+      std::wstring url = pClass->GetBrowserUrl();
+      if (url != pClass->GetTab()->GetDocumentUrl())
       {
-        pClass->GetTab()->SetDocumentUrl(strURL);
+        pClass->GetTab()->SetDocumentUrl(url);
       }
 
       // Create menu
-      HMENU hMenu = pClass->CreatePluginMenu(strURL);
+      HMENU hMenu = pClass->CreatePluginMenu(url);
       if (!hMenu)
       {
         return 0;

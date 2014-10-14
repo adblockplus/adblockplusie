@@ -39,24 +39,6 @@ CPluginClientBase::~CPluginClientBase()
 {
 }
 
-
-CString& CPluginClientBase::UnescapeUrl(CString& url)
-{
-  CString unescapedUrl;
-  DWORD cb = 2048;
-
-  if (SUCCEEDED(::UrlUnescape(url.GetBuffer(), unescapedUrl.GetBufferSetLength(cb), &cb, 0)))
-  {
-    unescapedUrl.ReleaseBuffer();
-    unescapedUrl.Truncate(cb);
-
-    url.ReleaseBuffer();
-    url = unescapedUrl;
-  }
-
-  return url;
-}
-
 void UnescapeUrl(std::wstring& url)
 {
   try

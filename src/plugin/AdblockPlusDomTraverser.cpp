@@ -12,12 +12,12 @@ CPluginDomTraverser::CPluginDomTraverser(CPluginTab* tab) : CPluginDomTraverserB
 }
 
 
-bool CPluginDomTraverser::OnIFrame(IHTMLElement* pEl, const CString& url, CString& indent)
+bool CPluginDomTraverser::OnIFrame(IHTMLElement* pEl, const std::wstring& url, CString& indent)
 {
   CPluginClient* client = CPluginClient::GetInstance();
 
   // If src should be blocked, set style display:none on iframe
-  bool isBlocked = client->ShouldBlock(to_wstring(url), CFilter::contentTypeSubdocument, m_domain);
+  bool isBlocked = client->ShouldBlock(url, CFilter::contentTypeSubdocument, m_domain);
   if (isBlocked)
   {
     HideElement(pEl, "iframe", url, true, indent);
@@ -40,7 +40,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
   cache->m_isHidden = client->IsElementHidden(to_wstring(tag), pEl, m_domain, to_wstring(indent), m_tab->m_filter.get());
   if (cache->m_isHidden)
   {
-    HideElement(pEl, tag, "", false, indent);
+    HideElement(pEl, tag, L"", false, indent);
     return false;
   }
 
@@ -51,11 +51,11 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
 
     if (SUCCEEDED(pEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
     {
-      CString src = vAttr.bstrVal;
-      CPluginClient::UnescapeUrl(src);
+      std::wstring src(vAttr.bstrVal, SysStringLen(vAttr.bstrVal));
+      UnescapeUrl(src);
 
       // If src should be blocked, set style display:none on image
-      cache->m_isHidden = client->ShouldBlock(to_wstring(src), CFilter::contentTypeImage, m_domain);
+      cache->m_isHidden = client->ShouldBlock(src, CFilter::contentTypeImage, m_domain);
       if (cache->m_isHidden)
       {
         HideElement(pEl, "image", src, true, indent);
@@ -92,7 +92,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
         {
           if (cache->m_isHidden)
           {
-            HideElement(pEl, "object", src, true, indent);
+            HideElement(pEl, "object", ToWstring(src), true, indent);
             return false;
           }
         }
@@ -114,7 +114,7 @@ bool CPluginDomTraverser::IsEnabled()
 }
 
 
-void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const CString& type, const CString& url, bool isDebug, CString& indent)
+void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const CString& type, const std::wstring& url, bool isDebug, CString& indent)
 {
   CComPtr<IHTMLStyle> pStyle;
 
@@ -131,12 +131,12 @@ void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const CString& type, co
 
     if (SUCCEEDED(pStyle->put_display(sbstrNone)))
     {
-      DEBUG_HIDE_EL(indent + L"HideEl::Hiding " + type + L" url:" + url)
+      DEBUG_HIDE_EL(indent + L"HideEl::Hiding " + type + L" url:" + ToCString(url))
 
 #ifdef ENABLE_DEBUG_RESULT
         if (isDebug)
         {
-          CPluginDebug::DebugResultHiding(type, url, "-");
+          CPluginDebug::DebugResultHiding(type, ToCString(url), "-");
         }
 #endif // ENABLE_DEBUG_RESULT
     }
