@@ -81,8 +81,8 @@ public:
 
 private:
 
-  bool SetMenuBar(HMENU hMenu, const CString& url);
-  HMENU CreatePluginMenu(const CString& url);
+  bool SetMenuBar(HMENU hMenu, const std::wstring& url);
+  HMENU CreatePluginMenu(const std::wstring& url);
 
   void DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags);
   bool CreateStatusBarPane();
@@ -100,15 +100,14 @@ public:
 
 private:
 
-  CString GetBrowserUrl() const;
-
+  std::wstring GetBrowserUrl() const;
 
   static DWORD WINAPI StartInitObject(LPVOID thisPtr);
   bool InitObject(bool bBHO);
   void CloseTheme();
   void UpdateTheme();
 
-  static HICON GetStatusBarIcon(const CString& url);
+  static HICON GetStatusBarIcon(const std::wstring& url);
   static CPluginClass* FindInstance(HWND hStatusBarWnd);
   static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
   static LRESULT CALLBACK PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

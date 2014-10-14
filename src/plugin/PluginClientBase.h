@@ -67,8 +67,6 @@ public:
 
   static void SetLocalization();
 
-  static CString& UnescapeUrl(CString& url);
-
   static void LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description="", bool isAsync=false, DWORD dwProcessId=0, DWORD dwThreadId=0);
 
   static void PostPluginError(int errorId, int errorSubid, DWORD errorCode, const CString& errorDescription);

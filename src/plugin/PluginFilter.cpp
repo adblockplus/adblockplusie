@@ -565,7 +565,7 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
         {
 #ifdef ENABLE_DEBUG_RESULT
           DEBUG_HIDE_EL(indent + "HideEl::Found (tag/id) filter:" + idIt->second.m_filterText)
-            CPluginDebug::DebugResultHiding(tagCString, "id:" + id, idIt->second.m_filterText);
+            CPluginDebug::DebugResultHiding(tagCString, L"id:" + id, idIt->second.m_filterText);
 #endif
           return true;
         }
@@ -579,7 +579,7 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
         {
 #ifdef ENABLE_DEBUG_RESULT
           DEBUG_HIDE_EL(indent + "HideEl::Found (?/id) filter:" + idIt->second.m_filterText)
-            CPluginDebug::DebugResultHiding(tagCString, "id:" + id, idIt->second.m_filterText);
+            CPluginDebug::DebugResultHiding(tagCString, L"id:" + id, idIt->second.m_filterText);
 #endif
           return true;
         }
@@ -602,7 +602,7 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
           {
 #ifdef ENABLE_DEBUG_RESULT
             DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
-              CPluginDebug::DebugResultHiding(tagCString, "class:" + className, classIt->second.m_filterText);
+              CPluginDebug::DebugResultHiding(tagCString, L"class:" + className, classIt->second.m_filterText);
 #endif
             return true;
           }
@@ -705,15 +705,14 @@ void CPluginFilter::ClearFilters()
 
 bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug) const
 {
-  CString srcCString = to_CString(src);
+  std::wstring srcTrimmed = TrimString(src);
 
   // We should not block the empty string, so all filtering does not make sense
   // Therefore we just return
-  if (srcCString.Trim().IsEmpty())
+  if (srcTrimmed.empty())
   {
     return false;
   }
-
   CPluginSettings* settings = CPluginSettings::GetInstance();
 
   CString type;
@@ -729,20 +728,20 @@ bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const 
   }
 
   CPluginClient* client = CPluginClient::GetInstance();
-  if (client->Matches(to_wstring(srcCString), to_wstring(type), domain))
+  if (client->Matches(srcTrimmed, to_wstring(type), domain))
   {
     if (addDebug)
     {
       DEBUG_FILTER("Filter::ShouldBlock " + type + " YES")
 
 #ifdef ENABLE_DEBUG_RESULT
-        CPluginDebug::DebugResultBlocking(type, srcCString, domain);
+        CPluginDebug::DebugResultBlocking(type, srcTrimmed, domain);
 #endif
     }
     return true;
   }
 #ifdef ENABLE_DEBUG_RESULT
-  CPluginDebug::DebugResultIgnoring(type, srcCString, domain);
+  CPluginDebug::DebugResultIgnoring(type, srcTrimmed, domain);
 #endif
   return false;
 }

@@ -23,7 +23,7 @@ protected:
   CriticalSection m_csInject;
 
   std::wstring m_documentDomain;
-  CString m_documentUrl;
+  std::wstring m_documentUrl;
   CPluginUserSettings m_pluginUserSettings;
 public:
   CPluginClass* m_plugin;
@@ -43,9 +43,9 @@ private:
 
   void ThreadProc();
   CComAutoCriticalSection m_criticalSectionCache;
-  std::set<CString> m_cacheFrames;
+  std::set<std::wstring> m_cacheFrames;
   std::wstring m_cacheDomain;
-  void SetDocumentUrl(const CString& url);
+  void SetDocumentUrl(const std::wstring& url);
   void InjectABP(IWebBrowser2* browser);
 public:
 
@@ -53,15 +53,15 @@ public:
   ~CPluginTabBase();
 
   std::wstring GetDocumentDomain();
-  CString GetDocumentUrl();
+  std::wstring GetDocumentUrl();
   virtual void OnActivate();
   virtual void OnUpdate();
-  virtual void OnNavigate(const CString& url);
+  virtual void OnNavigate(const std::wstring& url);
   virtual void OnDownloadComplete(IWebBrowser2* browser);
-  virtual void OnDocumentComplete(IWebBrowser2* browser, const CString& url, bool isDocumentBrowser);
+  virtual void OnDocumentComplete(IWebBrowser2* browser, const std::wstring& url, bool isDocumentBrowser);
   static DWORD WINAPI TabThreadProc(LPVOID pParam);
-  void CacheFrame(const CString& url);
-  bool IsFrameCached(const CString& url);
+  void CacheFrame(const std::wstring& url);
+  bool IsFrameCached(const std::wstring& url);
   void ClearFrameCache(const std::wstring& domain=L"");
 
 };

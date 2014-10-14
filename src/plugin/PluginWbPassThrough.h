@@ -20,8 +20,8 @@ public:
 	bool m_isCustomResponse;
 
 	int GetContentTypeFromMimeType(const CString& mimeType);
-	int GetContentTypeFromURL(const CString& src);
-	int GetContentType(const CString& mimeType, const std::wstring& domain, const CString& src);
+  int GetContentTypeFromURL(const std::wstring& src);
+  int GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src);
 	bool IsFlashRequest(const wchar_t* const* additionalHeaders);
 public:
 	BEGIN_COM_MAP(WBPassthruSink)

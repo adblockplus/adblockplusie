@@ -183,12 +183,12 @@ void CPluginDebug::DebugResultDomain(const CString& domain)
 }
 
 
-void CPluginDebug::DebugResultBlocking(const CString& type, const CString& src, const std::wstring& domain)
+void CPluginDebug::DebugResultBlocking(const CString& type, const std::wstring& src, const std::wstring& domain)
 {
-  CString srcTrunc = src;
-  if (srcTrunc.GetLength() > 100)
+  CString srcTrunc = ToCString(src);
+  if (src.length() > 100)
   {
-    srcTrunc = src.Left(67) + L"..." + src.Right(30);
+    srcTrunc = srcTrunc.Left(67) + L"..." + srcTrunc.Right(30);
   }
 
   CString blocking;
@@ -198,12 +198,12 @@ void CPluginDebug::DebugResultBlocking(const CString& type, const CString& src, 
 }
 
 
-void CPluginDebug::DebugResultHiding(const CString& tag, const CString& src, const CString& filter)
+void CPluginDebug::DebugResultHiding(const CString& tag, const CString& id, const CString& filter)
 {
-  CString srcTrunc = src;
+  CString srcTrunc = id;
   if (srcTrunc.GetLength() > 100)
   {
-    srcTrunc = src.Left(67) + L"..." + src.Right(30);
+    srcTrunc = srcTrunc.Left(67) + L"..." + srcTrunc.Right(30);
   }
 
   CString blocking;
@@ -227,12 +227,12 @@ void CPluginDebug::DebugResultClear()
 
 #ifdef ENABLE_DEBUG_RESULT_IGNORED
 
-void CPluginDebug::DebugResultIgnoring(const CString& type, const CString& src, const std::wstring& domain)
+void CPluginDebug::DebugResultIgnoring(const CString& type, const std::wstring& src, const std::wstring& domain)
 {
-  CString srcTrunc = src;
-  if (srcTrunc.GetLength() > 100)
+  CString srcTrunc = ToCString(src);
+  if (src.length() > 100)
   {
-    srcTrunc = src.Left(67) + L"..." + src.Right(30);
+    srcTrunc = srcTrunc.Left(67) + L"..." + srcTrunc.Right(30);
   }
 
   CString blocking;
