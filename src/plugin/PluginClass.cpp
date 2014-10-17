@@ -14,6 +14,7 @@
 #include "../shared/Utils.h"
 #include "../shared/Dictionary.h"
 #include <thread>
+#include <array>
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -415,17 +416,17 @@ bool CPluginClass::IsStatusBarEnabled()
   HKEY pHkey;
   HKEY pHkeySub;
   RegOpenCurrentUser(KEY_QUERY_VALUE, &pHkey);
-  DWORD trueth = 1;
-  DWORD truethSize = sizeof(DWORD);
+  DWORD truth = 1;
+  DWORD truthSize = sizeof(truth);
   RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\Main", &pHkeySub);
-  LONG res = RegQueryValueEx(pHkeySub, L"StatusBarWeb", NULL, NULL, (BYTE*)&trueth, &truethSize);
+  LONG res = RegQueryValueEx(pHkeySub, L"StatusBarWeb", NULL, NULL, (BYTE*)&truth, &truthSize);
   RegCloseKey(pHkey);
   if (res != ERROR_SUCCESS)
   {
     res = RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkeySub);
     if (res == ERROR_SUCCESS)
     {
-      LONG res = RegQueryValueEx(pHkeySub, L"ShowStatusBar", NULL, NULL, (BYTE*)&trueth, &truethSize);
+      LONG res = RegQueryValueEx(pHkeySub, L"ShowStatusBar", NULL, NULL, (BYTE*)&truth, &truthSize);
       if (res == ERROR_SUCCESS)
       {
         RegCloseKey(pHkey);
@@ -433,7 +434,7 @@ bool CPluginClass::IsStatusBarEnabled()
     }
   }
   DEBUG_GENERAL("IsStatusBarEnabled end");
-  return trueth == 1;
+  return truth == 1;
 }
 
 void CPluginClass::ShowStatusBar()
@@ -478,12 +479,12 @@ void CPluginClass::ShowStatusBar()
             MB_YESNO);
         if (res == IDYES)
         {
-          DWORD trueth = 1;
+          DWORD truth = 1;
           regRes = RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\MINIE", &pHkeySub);
-          regRes = RegSetValueEx(pHkeySub, L"ShowStatusBar", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
+          regRes = RegSetValueEx(pHkeySub, L"ShowStatusBar", 0, REG_DWORD, (BYTE*)&truth, sizeof(truth));
           regRes = RegCloseKey(pHkeySub);
           regRes = RegOpenKey(pHkey, L"Software\\Microsoft\\Internet Explorer\\Main", &pHkeySub);
-          regRes = RegSetValueEx(pHkeySub, L"StatusBarWeb", 0, REG_DWORD, (BYTE*)&trueth, sizeof(DWORD));
+          regRes = RegSetValueEx(pHkeySub, L"StatusBarWeb", 0, REG_DWORD, (BYTE*)&truth, sizeof(truth));
           regRes = RegCloseKey(pHkeySub);
           hr = browser->put_StatusBar(TRUE);
           if (FAILED(hr))
@@ -805,7 +806,7 @@ bool CPluginClass::InitObject(bool bBHO)
   {
     WNDCLASSEX wcex;
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.cbSize = sizeof(wcex);
     wcex.style = 0;
     wcex.lpfnWndProc = (WNDPROC)PaneWindowProc;
     wcex.cbClsExtra = 0;
@@ -881,7 +882,7 @@ bool CPluginClass::CreateStatusBarPane()
 
   CPluginClient* client = CPluginClient::GetInstance();
 
-  wchar_t szClassName[MAX_PATH];
+  std::array<wchar_t, MAX_PATH> className;
   // Get browser window and url
   HWND hBrowserWnd = GetBrowserHWND();
   if (!hBrowserWnd)
@@ -899,14 +900,15 @@ bool CPluginClass::CreateStatusBarPane()
   HWND uniqueNewTab = NULL;
   while (hTabWnd)
   {
-    memset(szClassName, 0, MAX_PATH);
-    GetClassName(hTabWnd, szClassName, MAX_PATH);
+    className[0] = L'\0';
+    // GetClassNameW returns the number of characters without '\0'
+    int classNameLength = GetClassNameW(hTabWnd, className.data(), className.size());
 
-    if (wcscmp(szClassName, L"TabWindowClass") == 0 || wcscmp(szClassName,L"Frame Tab") == 0)
+    if (classNameLength && (wcscmp(className.data(), L"TabWindowClass") == 0 || wcscmp(className.data(), L"Frame Tab") == 0))
     {
       // IE8 support
       HWND hTabWnd2 = hTabWnd;
-      if (wcscmp(szClassName,L"Frame Tab") == 0)
+      if (wcscmp(className.data(), L"Frame Tab") == 0)
       {
         hTabWnd2 = ::FindWindowEx(hTabWnd2, NULL, L"TabWindowClass", NULL);
       }
@@ -953,10 +955,10 @@ bool CPluginClass::CreateStatusBarPane()
   HWND hWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
   while (hWnd)
   {
-    memset(szClassName, 0, MAX_PATH);
-    ::GetClassName(hWnd, szClassName, MAX_PATH);
+    className[0] = L'\0';
+    int classNameLength = GetClassNameW(hWnd, className.data(), className.size());
 
-    if (wcscmp(szClassName,L"msctls_statusbar32") == 0)
+    if (classNameLength && wcscmp(className.data(), L"msctls_statusbar32") == 0)
     {
       hWndStatusBar = hWnd;
       break;
@@ -1281,13 +1283,11 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const CString& url)
 
   Dictionary* dictionary = Dictionary::GetInstance();
 
-  MENUITEMINFOW fmii;
-  memset(&fmii, 0, sizeof(MENUITEMINFO));
-  fmii.cbSize = sizeof(MENUITEMINFO);
+  MENUITEMINFOW fmii = {};
+  fmii.cbSize = sizeof(fmii);
 
-  MENUITEMINFOW miiSep;
-  memset(&miiSep, 0, sizeof(MENUITEMINFO));
-  miiSep.cbSize = sizeof(MENUITEMINFO);
+  MENUITEMINFOW miiSep = {};
+  miiSep.cbSize = sizeof(miiSep);
   miiSep.fMask = MIIM_TYPE | MIIM_FTYPE;
   miiSep.fType = MFT_SEPARATOR;
 
@@ -1382,8 +1382,7 @@ STDMETHODIMP CPluginClass::Exec(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, V
 
     if (nButton > 0)
     {
-      TBBUTTON pTBBtn;
-      memset(&pTBBtn, 0, sizeof(TBBUTTON));
+      TBBUTTON pTBBtn = {};
 
       if (SendMessage(hWndToolBar, TB_GETBUTTON, nButton, (LPARAM)&pTBBtn))
       {
@@ -1805,7 +1804,7 @@ ATOM CPluginClass::GetAtomPaneClass()
 
 HWND CPluginClass::GetTabHWND() const
 {
-  wchar_t szClassName[MAX_PATH];
+  std::array<wchar_t, MAX_PATH> className;
   // Get browser window and url
   HWND hBrowserWnd = GetBrowserHWND();
   if (!hBrowserWnd)
@@ -1821,14 +1820,14 @@ HWND CPluginClass::GetTabHWND() const
   HWND hTabWnd = ::GetWindow(hBrowserWnd, GW_CHILD);
   while (hTabWnd)
   {
-    memset(szClassName, 0, MAX_PATH);
-    GetClassName(hTabWnd, szClassName, MAX_PATH);
+    className[0] = L'\0';
+    int classNameLength = GetClassNameW(hTabWnd, className.data(), className.size());
 
-    if (wcscmp(szClassName, L"TabWindowClass") == 0 || wcscmp(szClassName, L"Frame Tab") == 0)
+    if (classNameLength && (wcscmp(className.data(), L"TabWindowClass") == 0 || wcscmp(className.data(), L"Frame Tab") == 0))
     {
       // IE8 support
       HWND hTabWnd2 = hTabWnd;
-      if (wcscmp(szClassName, L"Frame Tab") == 0)
+      if (wcscmp(className.data(), L"Frame Tab") == 0)
       {
         hTabWnd2 = ::FindWindowEx(hTabWnd2, NULL, L"TabWindowClass", NULL);
       }

@@ -16,7 +16,7 @@ void NotificationMessage::InitializeCommonControls()
   if (!commonControlsInitialized)
   {
     INITCOMMONCONTROLSEX commControls;
-    commControls.dwSize = sizeof(INITCOMMONCONTROLSEX);
+    commControls.dwSize = sizeof(commControls);
     commControls.dwICC = ICC_BAR_CLASSES;
     InitCommonControlsEx(&commControls);
     commonControlsInitialized = true;
@@ -39,7 +39,7 @@ bool NotificationMessage::Show(std::wstring message, std::wstring title, int ico
   SetWindowPos(toolTipWindow, HWND_TOPMOST,0, 0, 0, 0,
           SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
   TOOLINFOW ti = {};
-  ti.cbSize = sizeof(TOOLINFOW);
+  ti.cbSize = sizeof(ti);
   ti.uFlags = TTF_IDISHWND | TTF_TRACK | TTF_TRANSPARENT;
   ti.hwnd = parentWindow;
   ti.hinst = NULL;
@@ -77,7 +77,7 @@ void NotificationMessage::Move(short x, short y)
 bool NotificationMessage::SetTextAndIcon(std::wstring text, std::wstring title, int icon)
 {
   TOOLINFOW ti = {};
-  ti.cbSize = sizeof(TOOLINFOW);
+  ti.cbSize = sizeof(ti);
   ti.hwnd = parentWindow;
   ti.hinst = NULL;
   ti.uId = (UINT_PTR)parentWindow;

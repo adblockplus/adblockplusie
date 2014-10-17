@@ -64,7 +64,7 @@ namespace
       tml.Label.Sid = integritySid;
 
       // Set the process integrity level
-      SetTokenInformation(newToken, TokenIntegrityLevel, &tml, sizeof(TOKEN_MANDATORY_LABEL) + GetLengthSid(integritySid));
+      SetTokenInformation(newToken, TokenIntegrityLevel, &tml, sizeof(tml));
 
       STARTUPINFO startupInfo = {};
       PROCESS_INFORMATION processInformation = {};
