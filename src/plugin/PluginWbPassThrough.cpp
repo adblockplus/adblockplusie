@@ -7,14 +7,27 @@
 #include "PluginSettings.h"
 #include "PluginClass.h"
 #include "PluginSystem.h"
-
+#include <WinInet.h>
 #include "wtypes.h"
 
-EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+namespace
+{
+  std::string g_blockedByABPPage = "<!DOCTYPE html>"
+    "<html>"
+        "<body>"
+          "<!-- blocked by AdblockPlus -->"
+        "</body>"
+    "</html>";
+}
 
+WBPassthruSink::WBPassthruSink()
+  : m_currentPositionOfSentPage(0)
+  , m_contentType(CFilter::EContentType::contentTypeAny)
+  , m_blockedInTransaction(false)
+{
+}
 
-
-int WBPassthruSink::GetContentTypeFromMimeType(CString mimeType)
+int WBPassthruSink::GetContentTypeFromMimeType(const CString& mimeType)
 {
   if (mimeType.Find(L"image/") >= 0)
   {
@@ -45,7 +58,7 @@ int WBPassthruSink::GetContentTypeFromMimeType(CString mimeType)
   return CFilter::contentTypeAny;
 }
 
-int WBPassthruSink::GetContentTypeFromURL(CString src)
+int WBPassthruSink::GetContentTypeFromURL(const CString& src)
 {
   CString srcExt = src;
 
@@ -83,14 +96,10 @@ int WBPassthruSink::GetContentTypeFromURL(CString src)
   {
     return CFilter::contentTypeSubdocument;
   }
-  else
-  {
-    return CFilter::contentTypeAny & ~CFilter::contentTypeSubdocument;
-  }
-
+  return CFilter::contentTypeAny;
 }
 
-int WBPassthruSink::GetContentType(CString mimeType, std::wstring domain, CString src)
+int WBPassthruSink::GetContentType(const CString& mimeType, const std::wstring& domain, const CString& src)
 {
   // No referer or mime type
   // BINDSTRING_XDR_ORIGIN works only for IE v8+
@@ -113,55 +122,56 @@ int WBPassthruSink::GetContentType(CString mimeType, std::wstring domain, CStrin
 ////////////////////////////////////////////////////////////////////////////////////////
 HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
                                 IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
-                                IInternetProtocol* pTargetProtocol)
+                                IInternetProtocol* pTargetProtocol, bool& handled)
 {
-
   m_pTargetProtocol = pTargetProtocol;
   bool isBlocked = false;
-  m_shouldBlock = false;
-  m_lastDataReported = false;
-  CString src;
-  src.Append(szUrl);
+  CString src = szUrl;
   DEBUG_GENERAL(src);
   CPluginClient::UnescapeUrl(src);
 
-  std::wstring boundDomain;
+  // call the impl of the base class as soon as possible because it initializes the base class
+  // members, used by this method. It queries for the required interfaces.
+  HRESULT hr = BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+  if (FAILED(hr))
+  {
+    return hr;
+  }
+
   CString mimeType;
-  LPOLESTR mime[10];
   if (pOIBindInfo)
   {
     ULONG resLen = 0;
 
     // Apparently IE will report random mime type if there's more then 1 in the list.
     // So we get the whole list and just use the first one (top priority one)
+    LPOLESTR mime[10];
     pOIBindInfo->GetBindString(BINDSTRING_ACCEPT_MIMES, mime, 10, &resLen);
     if (mime && resLen > 0)
     {
       mimeType.SetString(mime[0]);
     }
-    LPOLESTR bindToObject = 0;
-    pOIBindInfo->GetBindString(BINDSTRING_FLAG_BIND_TO_OBJECT, &bindToObject, 1, &resLen);
-    wchar_t* domainRetrieved = 0;
-    if (resLen == 0 || wcscmp(bindToObject, L"FALSE") == 0)
+    LPOLESTR bindString = nullptr;
+    pOIBindInfo->GetBindString(BINDSTRING_FLAG_BIND_TO_OBJECT, &bindString, 1, &resLen);
+    LPOLESTR domainRetrieved = nullptr;
+    if (resLen == 0 || wcscmp(bindString, L"FALSE") == 0)
     {
       HRESULT hr = pOIBindInfo->GetBindString(BINDSTRING_XDR_ORIGIN, &domainRetrieved, 1, &resLen);
-      
       if ((hr == S_OK) && domainRetrieved && (resLen > 0))
       {
-        boundDomain = std::wstring(domainRetrieved);
+        m_boundDomain = domainRetrieved;
       }
     }
+    // We can obtain IBindCtx* here, but IEnumString obtained via IBindCtx::EnumObjectParam
+    // does not return any parameter, so it's useless.
   }
 
   CString cookie;
   ULONG len1 = 2048;
   ULONG len2 = 2048;
 
-  int contentType = CFilter::contentTypeAny;
-
   CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
   CPluginClient* client = CPluginClient::GetInstance();
-
 
   if (tab && client)
   {
@@ -171,150 +181,133 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
     {
       // fall through
     }
-    else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(to_wstring(documentUrl)))
+    else if (CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(std::wstring(documentUrl)))
     {
-      boundDomain = to_wstring(tab->GetDocumentUrl());
-      contentType = CFilter::contentTypeAny;
-      if ((tab != 0) && (tab->IsFrameCached(src)))
+      m_boundDomain = tab->GetDocumentUrl();
+      m_contentType = CFilter::contentTypeAny;
+      if (tab != nullptr && tab->IsFrameCached(src))
       {
-        contentType = CFilter::contentTypeSubdocument;
+        m_contentType = CFilter::contentTypeSubdocument;
       }
       else
       {
-        contentType = GetContentType(mimeType, boundDomain, src);
+        m_contentType = GetContentType(mimeType, m_boundDomain, src);
       }
-      if (client->ShouldBlock(to_wstring(src), contentType, boundDomain, true))
+    }
+  }
+
+  if (tab == nullptr)
+  {
+    m_contentType = GetContentType(mimeType, m_boundDomain, src);
+  }
+
+  {
+    // Here is the heuristic which detects the requests issued by Flash.ocx.
+    // It turned out that the implementation from ''Flash.ocx'' (tested version is 15.0.0.152)
+    // returns quite minimal configuration in comparison with the implementation from Microsofts'
+    // libraries (see grfBINDF and bindInfo.dwOptions). The impl from MS often includes something
+    // else.
+    ATL::CComPtr<IBindStatusCallback> bscb;
+    if (SUCCEEDED(QueryServiceFromClient(&bscb)) && !!bscb)
+    {
+      DWORD grfBINDF = 0;
+      BINDINFO bindInfo = {};
+      bindInfo.cbSize = sizeof(bindInfo);
+      if (SUCCEEDED(bscb->GetBindInfo(&grfBINDF, &bindInfo))
+        && (BINDF_ASYNCHRONOUS | BINDF_ASYNCSTORAGE| BINDF_PULLDATA) == grfBINDF
+        && (BINDINFO_OPTIONS_ENABLE_UTF8 | BINDINFO_OPTIONS_USE_IE_ENCODING) == bindInfo.dwOptions
+        )
       {
-        isBlocked = true;
-        DEBUG_BLOCKER("Blocker::Blocking Http-request:" + src);
+        m_contentType = CFilter::EContentType::contentTypeObjectSubrequest;
       }
     }
-    if (!isBlocked)
+  }
+
+  // The descision about EContentType::contentTypeAny is made later in
+  // WBPassthruSink::BeginningTransaction. Sometimes here we cannot detect the request type, but
+  // in WBPassthruSink::BeginningTransaction the header Accept is available which allows to
+  // obtain the "request type" in our terminology.
+  if (nullptr != client
+    && CFilter::EContentType::contentTypeAny != m_contentType
+    && client->ShouldBlock(static_cast<const wchar_t*>(src), m_contentType, m_boundDomain, true))
+  {
+    isBlocked = true;
+  }
+
+  // For IE6 and earlier there is iframe back button issue, so avoid it.
+  if (isBlocked && client->GetIEVersion() > 6)
+  {
+    handled = true;
+    if (CFilter::EContentType::contentTypeImage == m_contentType)
     {
-      DEBUG_BLOCKER("Blocker::Ignoring Http-request:" + src)
-    }
-  }
-
-
-  if (tab == NULL)
-  {
-    contentType = GetContentType(mimeType, boundDomain, src);
-    if (client->ShouldBlock(to_wstring(src), contentType, boundDomain, true))
-    {
-      isBlocked = true;
-    }
-  }
-
-#ifdef _DEBUG
-  CString type;
-
-  if (contentType == CFilter::contentTypeDocument) type = "DOCUMENT";
-  else if (contentType == CFilter::contentTypeObject) type = "OBJECT";
-  else if (contentType == CFilter::contentTypeImage) type = "IMAGE";
-  else if (contentType == CFilter::contentTypeScript) type = "SCRIPT";
-  else if (contentType == CFilter::contentTypeOther) type = "OTHER";
-  else if (contentType == CFilter::contentTypeUnknown) type = "OTHER";
-  else if (contentType == CFilter::contentTypeSubdocument) type = "SUBDOCUMENT";
-  else if (contentType == CFilter::contentTypeStyleSheet) type = "STYLESHEET";
-  else type = "OTHER";
-
-  if (isBlocked)
-  {
-    CPluginDebug::DebugResultBlocking(type, src, boundDomain);
-  }
-  else
-  {
-    CPluginDebug::DebugResultIgnoring(type, src, boundDomain);
-  }
-#endif
-
-  //Fixes the iframe back button issue
-  if (client->GetIEVersion() > 6)
-  {
-    if ((contentType == CFilter::contentTypeImage) && (isBlocked))
-    {
-      m_shouldBlock = true;
-      BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
-
+      // IE shows a cross that img is not loaded
       return INET_E_REDIRECT_FAILED;
-
     }
-    if (((contentType == CFilter::contentTypeSubdocument))&& (isBlocked)) 
+    if (CFilter::EContentType::contentTypeSubdocument == m_contentType)
     {
-      m_shouldBlock = true;
-      BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
-
+      PassthroughAPP::CustomSinkStartPolicy<WBPassthru, WBPassthruSink>::GetProtocol(this)->m_shouldSupplyCustomContent = true;
       m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
-
-      //Here we check if we are running on Windows 8 Consumer Preview. 
-      //For some reason on that environment the next line causes IE to crash
-      if (CPluginSettings::GetInstance()->GetWindowsBuildNumber() != 8250)
-      {
-        m_spInternetProtocolSink->ReportResult(INET_E_REDIRECT_FAILED, 0, szUrl);
-      }
-
-      return INET_E_REDIRECT_FAILED;
+      m_spInternetProtocolSink->ReportData(BSCF_FIRSTDATANOTIFICATION, 0, static_cast<ULONG>(g_blockedByABPPage.size()));
+      return S_OK;
     } 
-    if (((contentType == CFilter::contentTypeScript)) && (isBlocked)) 
+    if (CFilter::EContentType::contentTypeScript == m_contentType)
     {
-      m_shouldBlock = true;
-      BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
       m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/javascript");
       m_spInternetProtocolSink->ReportResult(INET_E_REDIRECTING, 301, L"data:");
       return INET_E_REDIRECT_FAILED;
     }
-    if ((contentType == CFilter::contentTypeXmlHttpRequest) && (isBlocked)) 
+    if (CFilter::EContentType::contentTypeXmlHttpRequest == m_contentType)
     {
-      m_shouldBlock = true;
-      BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
       m_spInternetProtocolSink->ReportResult(INET_E_REDIRECTING, 301, L"data:");
       return INET_E_REDIRECT_FAILED;
     }
-    if ((isBlocked)) 
+    if (CFilter::EContentType::contentTypeAny != m_contentType)
     {
-      m_shouldBlock = true;
-      BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
-      m_spInternetProtocolSink->ReportResult(S_FALSE, 0, L"");
-
+      m_spInternetProtocolSink->ReportResult(INET_E_REDIRECTING, 301, L"data:");
       return INET_E_REDIRECT_FAILED;
     }
   }
-  return isBlocked ? S_FALSE : BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+
+  return isBlocked ? S_FALSE : hr;
 }
 
-
-HRESULT WBPassthruSink::Read(void *pv, ULONG cb, ULONG* pcbRead)
+HRESULT WBPassthruSink::OnRead(void* pv, ULONG cb, ULONG* pcbRead)
 {
-  if (m_shouldBlock)
+  if (pv == nullptr)
   {
-    *pcbRead = 0;
-    if (!m_lastDataReported)
-    {
-      if (cb <= 1)
-      {
-        //IE must've gone nuts if this happened, but let's be cool about it and report we have no more data
-        m_spInternetProtocolSink->ReportResult(S_FALSE, 0, NULL);
-        return S_FALSE;
-      }
-      *pcbRead = 1;
-      memcpy(pv, " ", 1);
+    return E_POINTER;
+  }
+  if (pcbRead == nullptr)
+  {
+    return E_POINTER;
+  }
+  *pcbRead = 0;
 
-      if (m_spInternetProtocolSink != NULL)
-      {
-        m_spInternetProtocolSink->ReportResult(S_OK, 0, NULL);
-      }
-      m_lastDataReported = true;
-      m_shouldBlock = false;
-      return S_OK;
+  if (PassthroughAPP::CustomSinkStartPolicy<WBPassthru, WBPassthruSink>::GetProtocol(this)->m_shouldSupplyCustomContent)
+  {
+    ULONG blockedByABPPageSize = static_cast<ULONG>(g_blockedByABPPage.size());
+    auto positionGrow = std::min<ULONG>(cb, static_cast<ULONG>(blockedByABPPageSize - m_currentPositionOfSentPage));
+    if (positionGrow == 0) {
+      return S_FALSE;
+    }
+    std::copy(g_blockedByABPPage.begin(), g_blockedByABPPage.begin() + positionGrow,
+      stdext::make_checked_array_iterator(static_cast<char*>(pv), cb));
+    *pcbRead = positionGrow;
+    m_currentPositionOfSentPage += positionGrow;
+
+    if (m_spInternetProtocolSink)
+    {
+      m_spInternetProtocolSink->ReportData(BSCF_INTERMEDIATEDATANOTIFICATION,
+        static_cast<ULONG>(m_currentPositionOfSentPage), blockedByABPPageSize);
+    }
+    if (blockedByABPPageSize == m_currentPositionOfSentPage && m_spInternetProtocolSink)
+    {
+      m_spInternetProtocolSink->ReportData(BSCF_DATAFULLYAVAILABLE, blockedByABPPageSize, blockedByABPPageSize);
+      m_spInternetProtocolSink->ReportResult(S_OK, 0, nullptr);
     }
     return S_OK;
   }
-  else 
-  {
-
-    return m_pTargetProtocol->Read(pv, cb, pcbRead);
-  }
-  return S_OK;
+  return m_pTargetProtocol->Read(pv, cb, pcbRead);
 }
 STDMETHODIMP WBPassthruSink::Switch(
   /* [in] */ PROTOCOLDATA *pProtocolData)
@@ -343,14 +336,63 @@ STDMETHODIMP WBPassthruSink::Switch(
   return m_spInternetProtocolSink ? m_spInternetProtocolSink->Switch(pProtocolData) : E_UNEXPECTED;
 }
 
-
-STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeaders, DWORD dwReserved, LPWSTR *pszAdditionalHeaders)
+STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeaders, DWORD dwReserved, LPWSTR* pszAdditionalHeaders)
 {
   if (pszAdditionalHeaders)
   {
-    *pszAdditionalHeaders = 0;
+    *pszAdditionalHeaders = nullptr;
   }
 
+  CPluginClient* client = nullptr;
+  if (CFilter::EContentType::contentTypeAny == m_contentType && (client = CPluginClient::GetInstance()))
+  {
+    auto acceptHeader = [&]() -> std::string
+    {
+      // Despite there is HTTP_QUERY_ACCEPT and other query info flags, they don't work here,
+      // only HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS does dork.
+      ATL::CComPtr<IWinInetHttpInfo> winInetHttpInfo;
+      HRESULT hr = m_spTargetProtocol->QueryInterface(&winInetHttpInfo);
+      if(FAILED(hr))
+      {
+        return "";
+      }
+      DWORD size = 0;
+      DWORD flags = 0;
+      hr = winInetHttpInfo->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS,
+          /*buffer*/nullptr, /* get size */&size, &flags, /*reserved*/ 0);
+      if(FAILED(hr))
+      {
+        return "";
+      }
+      std::string buf(size, '\0');
+      hr = winInetHttpInfo->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS,
+        &buf[0], &size, &flags, 0);
+      if(FAILED(hr))
+      {
+        return "";
+      }
+      char acceptHeader[] = "Accept:";
+      auto acceptHeaderBeginsAt = buf.find(acceptHeader);
+      if (std::string::npos == acceptHeaderBeginsAt)
+      {
+        return "";
+      }
+      acceptHeaderBeginsAt += sizeof(acceptHeader);
+      auto acceptHeaderEndsAt = buf.find("\n", acceptHeaderBeginsAt);
+      if (std::string::npos == acceptHeaderEndsAt)
+      {
+        return "";
+      }
+      return buf.substr(acceptHeaderBeginsAt, acceptHeaderEndsAt - acceptHeaderBeginsAt);
+    }();
+    m_contentType = GetContentTypeFromMimeType(ATL::CString(acceptHeader.c_str()));
+    bool isBlocked = client->ShouldBlock(szURL, m_contentType, m_boundDomain, /*debug flag but must be set*/true);
+    if (isBlocked)
+    {
+      m_blockedInTransaction = true;
+      return E_ABORT;
+    }
+  }
   CComPtr<IHttpNegotiate> spHttpNegotiate;
   QueryServiceFromClient(&spHttpNegotiate);
   return spHttpNegotiate ? spHttpNegotiate->BeginningTransaction(szURL, szHeaders,dwReserved, pszAdditionalHeaders) : S_OK;
@@ -374,6 +416,24 @@ STDMETHODIMP WBPassthruSink::ReportProgress(ULONG ulStatusCode, LPCWSTR szStatus
   return m_spInternetProtocolSink ? m_spInternetProtocolSink->ReportProgress(ulStatusCode, szStatusText) : S_OK;
 }
 
+STDMETHODIMP WBPassthruSink::ReportResult(/* [in] */ HRESULT hrResult, /* [in] */ DWORD dwError, /* [in] */ LPCWSTR szResult)
+{
+  if (m_blockedInTransaction)
+  {
+    // Don't notify the client about aborting of the operation, thus don't call BaseClass::ReportResult.
+    // Current method is called by the original protocol implementation and we are intercepting the
+    // call here and eating it, we will call the proper ReportResult later by ourself.
+    return S_OK;
+  }
+  return BaseClass::ReportResult(hrResult, dwError, szResult);
+}
+
+
+WBPassthru::WBPassthru()
+  : m_shouldSupplyCustomContent(false)
+  , m_hasOriginalStartCalled(false)
+{
+}
 
 STDMETHODIMP WBPassthru::Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
     IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved)
@@ -384,13 +444,29 @@ STDMETHODIMP WBPassthru::Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink
     return E_UNEXPECTED;
   }
 
-  return OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI,
-    dwReserved, m_spInternetProtocol);
+  return OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, m_spInternetProtocol);
 }
 
- STDMETHODIMP WBPassthru::Read(	/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead)
- {
-   
-   WBPassthruSink* pSink = GetSink();
-   return pSink->Read(pv, cb, pcbRead);
- }
+STDMETHODIMP WBPassthru::Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead)
+{
+  WBPassthruSink* pSink = GetSink();
+  return pSink->OnRead(pv, cb, pcbRead);
+}
+
+STDMETHODIMP WBPassthru::LockRequest(/* [in] */ DWORD options)
+{
+  if (!m_hasOriginalStartCalled)
+  {
+    return S_OK;
+  }
+  return BaseClass::LockRequest(options);
+}
+
+STDMETHODIMP WBPassthru::UnlockRequest()
+{
+  if (!m_hasOriginalStartCalled)
+  {
+    return S_OK;
+  }
+  return BaseClass::UnlockRequest();
+}

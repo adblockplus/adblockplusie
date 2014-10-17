@@ -420,6 +420,7 @@ CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
 {
   m_contentMapText[CFilter::contentTypeDocument] = "DOCUMENT";
   m_contentMapText[CFilter::contentTypeObject] = "OBJECT";
+  m_contentMapText[CFilter::contentTypeObjectSubrequest] = "OBJECT-SUBREQUEST";
   m_contentMapText[CFilter::contentTypeImage] = "IMAGE";
   m_contentMapText[CFilter::contentTypeScript] = "SCRIPT";
   m_contentMapText[CFilter::contentTypeOther] = "OTHER";
@@ -707,5 +708,8 @@ bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const 
     }
     return true;
   }
+#ifdef ENABLE_DEBUG_RESULT
+  CPluginDebug::DebugResultIgnoring(type, src, domain);
+#endif
   return false;
 }
