@@ -155,7 +155,7 @@ public:
 	HRESULT OnStart(LPCWSTR szUrl,
 		IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
 		DWORD grfPI, HANDLE_PTR dwReserved,
-		IInternetProtocol* pTargetProtocol) const;
+		IInternetProtocol* pTargetProtocol);
 
 
 	static Sink* GetSink(const Protocol* pProtocol);

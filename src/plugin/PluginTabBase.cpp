@@ -208,9 +208,6 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const CString& ur
         docHostUIHandler->UpdateUI();
       }
     }
-
-    pDoc.Release();
-    pDocDispatch.Release();
   }
 }
 

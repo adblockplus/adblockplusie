@@ -358,32 +358,38 @@ template <class Protocol, class Sink>
 inline HRESULT CustomSinkStartPolicy<Protocol, Sink>::OnStart(LPCWSTR szUrl,
 	IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
 	DWORD grfPI, HANDLE_PTR dwReserved,
-	IInternetProtocol* pTargetProtocol) const
+	IInternetProtocol* pTargetProtocol)
 {
 	ATLASSERT(pTargetProtocol != 0);
 
+	bool handled = false;
 	Sink* pSink = GetSink(static_cast<const Protocol*>(this));
 	HRESULT hr = pSink->OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI,
-		dwReserved, pTargetProtocol);
+		dwReserved, pTargetProtocol, handled);
 
 	CComPtr<IInternetProtocolSink> spSink;
 	CComPtr<IInternetBindInfo> spBindInfo;
 	if (SUCCEEDED(hr))
 	{
-		hr = pSink->QueryInterface(IID_IInternetProtocolSink,
-			reinterpret_cast<void**>(&spSink));
+		hr = pSink->QueryInterface(IID_IInternetProtocolSink, reinterpret_cast<void**>(&spSink));
 		ATLASSERT(SUCCEEDED(hr) && spSink != 0);
 	}
 	if (SUCCEEDED(hr))
 	{
-		hr = pSink->QueryInterface(IID_IInternetBindInfo,
-			reinterpret_cast<void**>(&spBindInfo));
+		hr = pSink->QueryInterface(IID_IInternetBindInfo, reinterpret_cast<void**>(&spBindInfo));
 		ATLASSERT(SUCCEEDED(hr) && spBindInfo != 0);
 	}
-	if (SUCCEEDED(hr))
+	if (SUCCEEDED(hr) && !handled)
 	{
-		hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI,
-			dwReserved);
+		hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI, dwReserved);
+		static_cast<Protocol*>(this)->m_hasOriginalStartCalled = true;
+	}
+	if (E_ABORT == hr && pSink->m_blockedInTransaction)
+	{
+		static_cast<Protocol*>(this)->m_shouldSupplyCustomContent = true;
+		pSink->m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
+		pSink->m_spInternetProtocolSink->ReportData(BSCF_FIRSTDATANOTIFICATION, 0, static_cast<ULONG>(g_blockedByABPPage.size()));
+		return S_OK;
 	}
 	return hr;
 }

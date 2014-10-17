@@ -108,9 +108,8 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
 
 
 bool CPluginDomTraverser::IsEnabled()
-{ 
+{
   CPluginClient* client = CPluginClient::GetInstance();
-
   return client && CPluginSettings::GetInstance()->IsPluginEnabled() && !client->IsWhitelistedUrl(m_domain);
 }
 
