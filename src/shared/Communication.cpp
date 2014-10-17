@@ -211,7 +211,7 @@ Communication::Pipe::Pipe(const std::wstring& pipeName, Communication::Pipe::Mod
   if (mode == MODE_CREATE)
   {
     SECURITY_ATTRIBUTES securityAttributes = {};
-    securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
+    securityAttributes.nLength = sizeof(securityAttributes);
     securityAttributes.bInheritHandle = TRUE;
 
     std::tr1::shared_ptr<SECURITY_DESCRIPTOR> sharedSecurityDescriptor; // Just to simplify cleanup
@@ -265,7 +265,7 @@ Communication::Pipe::~Pipe()
 Communication::InputBuffer Communication::Pipe::ReadMessage()
 {
   std::stringstream stream;
-  std::auto_ptr<char> buffer(new char[bufferSize]);
+  std::unique_ptr<char[]> buffer(new char[bufferSize]);
   bool doneReading = false;
   while (!doneReading)
   {

@@ -231,17 +231,12 @@ DWORD CPluginSettings::GetWindowsBuildNumber()
 {
   if (m_WindowsBuildNumber == 0)
   {
-    OSVERSIONINFOEX osvi;
-    SYSTEM_INFO si;
-    BOOL bOsVersionInfoEx;
-
-    ZeroMemory(&si, sizeof(SYSTEM_INFO));
-    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
-
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-    bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
-
-    m_WindowsBuildNumber = osvi.dwBuildNumber;
+    OSVERSIONINFOEX osvi = {};
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    if (GetVersionExW(reinterpret_cast<OSVERSIONINFO*>(&osvi)) != 0)
+    {
+      m_WindowsBuildNumber = osvi.dwBuildNumber;
+    }
   }
 
   return m_WindowsBuildNumber;
