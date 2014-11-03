@@ -77,8 +77,8 @@ html.share-variant-2 #share2
 
 .share-image
 {
-  width: 64px;
-  height: 64px;
+  width: 82px;
+  height: 82px;
 }
 
 #share-images2
@@ -116,17 +116,17 @@ html.share-variant-2 #share2
 
 .share-facebook
 {
-  background-image: url(../img/social/facebook-old.png);
+  background-image: url(../img/social/facebook.png);
 }
 
 .share-twitter
 {
-  background-image: url(../img/social/twitter-old.png);
+  background-image: url(../img/social/twitter.png);
 }
 
 .share-gplus
 {
-  background-image: url(../img/social/gplus-old.png);
+  background-image: url(../img/social/gplus.png);
 }
 
 #glass-pane, #share-popup
