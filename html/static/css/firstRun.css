@@ -11,7 +11,7 @@ body
 #wrapper,
 #logo,
 .share-image,
-#share-images2,
+#share-images,
 #share-donate
 {
   display: inline-block;
@@ -61,18 +61,10 @@ header
   list-style-image: url(../img/checkmark.png);
 }
 
-#share1,
-#share2
+#share
 {
-  display: none;
   font-size: 120%;
   margin-top: 40px;
-}
-
-html.share-variant-1 #share1,
-html.share-variant-2 #share2
-{
-  display: block;
 }
 
 .share-image
@@ -81,7 +73,7 @@ html.share-variant-2 #share2
   height: 82px;
 }
 
-#share-images2
+#share-images
 {
   box-shadow: 0 0 4px 3px #EEEEEE;
   border-radius: 5px;
@@ -90,7 +82,7 @@ html.share-variant-2 #share2
   margin-bottom: 30px;
 }
 
-#share-images2 *
+#share-images *
 {
   vertical-align: middle;
 }
@@ -109,22 +101,22 @@ html.share-variant-2 #share2
   background-repeat: repeat-x;
 }
 
-#share2-connection
+#share-connection
 {
   margin: 0px 20px;
 }
 
-.share-facebook
+#share-facebook
 {
   background-image: url(../img/social/facebook.png);
 }
 
-.share-twitter
+#share-twitter
 {
   background-image: url(../img/social/twitter.png);
 }
 
-.share-gplus
+#share-gplus
 {
   background-image: url(../img/social/gplus.png);
 }

@@ -74,7 +74,7 @@ function openSharePopup(url)
   glassPane.className = "visible";
 }
 
-function initSocialLinks(variant)
+function initSocialLinks()
 {
   // Share popup doesn't work in <IE9 so don't show it
   if (/MSIE [6-8]/.test(navigator.appVersion))
@@ -83,11 +83,11 @@ function initSocialLinks(variant)
   var networks = ["twitter", "facebook", "gplus"];
   networks.forEach(function(network)
   {
-    var link = document.getElementById("share-" + network + "-" + variant);
+    var link = document.getElementById("share-" + network);
     link.addEventListener("click", function(e)
     {
       e.preventDefault();
-      openSharePopup(getDocLink("share-" + network) + "&variant=" + variant);
+      openSharePopup(getDocLink("share-" + network));
     });
   });
 }
@@ -106,10 +106,9 @@ function initTranslations()
     "aa-title": "first-run-aa-title",
     "aa-text": "first-run-aa-text",
     "title-main": AdblockPlus.isUpdate() ? "first-run-title-update" : "first-run-title-install",
-    "share-text1": "first-run-share1",
-    "share-text2": "first-run-share2",
     "share-donate": "first-run-share2-donate",
-    "share2-connection": "first-run-share2-or"
+    "share-text": "first-run-share2",
+    "share-connection": "first-run-share2-or"
   };
 
   document.title = AdblockPlus.getMessage("first-run", mapping['title-main']);
@@ -122,18 +121,12 @@ function initTranslations()
 
 function init()
 {
-  // Choose a share text variant randomly
-  var variant = Math.floor(Math.random() * 2) + 1;
-  var classList = document.documentElement.className.split(" ");
-  classList.push("share-variant-" + variant);
-  document.documentElement.className = classList.join(" ");
-
   initTranslations();
-  initSocialLinks(variant);
+  initSocialLinks();
   setLinks("aa-text", getDocLink("acceptable_ads_criteria"), "index.html");
 
   var donateLink = document.getElementById("share-donate");
-  donateLink.href = getDocLink("donate") + "&variant=" + variant;
+  donateLink.href = getDocLink("donate");
 }
 
 // Inserts i18n strings into matching elements. Any inner HTML already in the 
