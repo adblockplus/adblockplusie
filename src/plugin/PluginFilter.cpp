@@ -709,7 +709,7 @@ bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const 
     return true;
   }
 #ifdef ENABLE_DEBUG_RESULT
-  CPluginDebug::DebugResultIgnoring(type, src, domain);
+  CPluginDebug::DebugResultIgnoring(type, srcCString, domain);
 #endif
   return false;
 }
