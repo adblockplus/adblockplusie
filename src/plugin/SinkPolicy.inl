@@ -382,7 +382,6 @@ inline HRESULT CustomSinkStartPolicy<Protocol, Sink>::OnStart(LPCWSTR szUrl,
 	if (SUCCEEDED(hr) && !handled)
 	{
 		hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI, dwReserved);
-		static_cast<Protocol*>(this)->m_hasOriginalStartCalled = true;
 	}
 	if (E_ABORT == hr && pSink->m_blockedInTransaction)
 	{
