@@ -23,12 +23,12 @@ namespace
   template <class T>
   T ExtractHttpHeader(const T& allHeaders, const T& targetHeaderNameWithColon, const T& delimiter)
   {
-    auto targetHeaderBeginsAt = allHeaders.find(targetHeaderName);
+    auto targetHeaderBeginsAt = allHeaders.find(targetHeaderNameWithColon);
     if (targetHeaderBeginsAt == T::npos)
     {
       return T();
     }
-    targetHeaderBeginsAt += targetHeaderName.length();
+    targetHeaderBeginsAt += targetHeaderNameWithColon.length();
     auto targetHeaderEndsAt = allHeaders.find(delimiter, targetHeaderBeginsAt);
     if (targetHeaderEndsAt == T::npos)
     {
