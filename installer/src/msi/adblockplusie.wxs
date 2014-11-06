@@ -422,20 +422,11 @@
               <Component Id="html_static_img_social_facebook.png" Guid="862e7c00-d713-11e2-8b8b-0800200c9a66">
                 <File Name="facebook.png"/>
               </Component>
-              <Component Id="html_static_img_social_facebook_old.png" Guid="26386980-f074-11e2-b778-0800200c9a66">
-                <File Name="facebook-old.png"/>
-              </Component>
               <Component Id="html_static_img_social_gplus.png" Guid="8de48390-d713-11e2-8b8b-0800200c9a66">
                 <File Name="gplus.png"/>
               </Component>
-              <Component Id="html_static_img_social_gplus_old.png" Guid="2c0035a0-f074-11e2-b778-0800200c9a66">
-                <File Name="gplus-old.png"/>
-              </Component>
               <Component Id="html_static_img_social_twitter.png" Guid="948152f0-d713-11e2-8b8b-0800200c9a66">
                 <File Name="twitter.png"/>
-              </Component>
-              <Component Id="html_static_img_social_twitter_old.png" Guid="2c0035a1-f074-11e2-b778-0800200c9a66">
-                <File Name="twitter-old.png"/>
               </Component>
             </Directory>
           </Directory>
