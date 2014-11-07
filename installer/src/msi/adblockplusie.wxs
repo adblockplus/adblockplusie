@@ -353,11 +353,8 @@
       <ComponentRef Id="html_static_img_features_language.png"/>
       <ComponentRef Id="html_static_img_features_adblocking.png"/>
       <ComponentRef Id="html_static_img_social_facebook.png"/>
-      <ComponentRef Id="html_static_img_social_facebook_old.png"/>
       <ComponentRef Id="html_static_img_social_gplus.png"/>
-      <ComponentRef Id="html_static_img_social_gplus_old.png"/>
       <ComponentRef Id="html_static_img_social_twitter.png"/>
-      <ComponentRef Id="html_static_img_social_twitter_old.png"/>
       <ComponentRef Id="html_static_js_firstRun.js"/>
       <ComponentRef Id="html_static_js_IESettings.js"/>
       <ComponentRef Id="html_static_js_ieEventListenerPolyfill.js"/>
