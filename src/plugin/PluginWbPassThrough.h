@@ -78,8 +78,5 @@ public:
   //IInternetProtocol
   STDMETHODIMP Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead) override;
 
-  STDMETHODIMP LockRequest(/* [in] */ DWORD dwOptions) override;
-  STDMETHODIMP UnlockRequest() override;
-
   bool m_shouldSupplyCustomContent;
 };

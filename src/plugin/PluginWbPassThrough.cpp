@@ -13,7 +13,7 @@
 
 namespace
 {
-  std::string g_blockedByABPPage = "<!DOCTYPE html>"
+  const std::string g_blockedByABPPage = "<!DOCTYPE html>"
     "<html>"
         "<body>"
           "<!-- blocked by AdblockPlus -->"
@@ -43,7 +43,7 @@ namespace
     // only HTTP_QUERY_RAW_HEADERS_CRLF | HTTP_QUERY_FLAG_REQUEST_HEADERS does work.
     ATL::CComPtr<IWinInetHttpInfo> winInetHttpInfo;
     HRESULT hr = internetProtocol->QueryInterface(&winInetHttpInfo);
-    if (FAILED(hr))
+    if (FAILED(hr) || !winInetHttpInfo)
     {
       return "";
     }
@@ -175,11 +175,7 @@ HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSin
 
 HRESULT WBPassthruSink::OnRead(void* pv, ULONG cb, ULONG* pcbRead)
 {
-  if (pv == nullptr)
-  {
-    return E_POINTER;
-  }
-  if (pcbRead == nullptr)
+  if (!pv || !pcbRead)
   {
     return E_POINTER;
   }
@@ -272,6 +268,10 @@ bool WBPassthruSink::IsFlashRequest(const wchar_t* const* additionalHeaders)
 
 STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeaders, DWORD dwReserved, LPWSTR* pszAdditionalHeaders)
 {
+  if (!szURL)
+  {
+    return E_POINTER;
+  }
   std::wstring src = szURL;
   DEBUG_GENERAL(ToCString(src));
 
@@ -379,14 +379,4 @@ STDMETHODIMP WBPassthru::Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [o
 {
   WBPassthruSink* pSink = GetSink();
   return pSink->OnRead(pv, cb, pcbRead);
-}
-
-STDMETHODIMP WBPassthru::LockRequest(/* [in] */ DWORD options)
-{
-  return BaseClass::LockRequest(options);
-}
-
-STDMETHODIMP WBPassthru::UnlockRequest()
-{
-  return BaseClass::UnlockRequest();
 }
