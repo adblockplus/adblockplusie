@@ -22,7 +22,7 @@ public:
 	int GetContentTypeFromMimeType(const CString& mimeType);
 	int GetContentTypeFromURL(const CString& src);
 	int GetContentType(const CString& mimeType, const std::wstring& domain, const CString& src);
-	bool IsFlashRequest();
+	bool IsFlashRequest(const wchar_t* const* additionalHeaders);
 public:
 	BEGIN_COM_MAP(WBPassthruSink)
 		COM_INTERFACE_ENTRY(IHttpNegotiate)

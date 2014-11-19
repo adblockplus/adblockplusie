@@ -243,8 +243,16 @@ STDMETHODIMP WBPassthruSink::Switch(
 // returns quite minimal configuration in comparison with the implementation from Microsofts'
 // libraries (see grfBINDF and bindInfo.dwOptions). The impl from MS often includes something
 // else.
-bool WBPassthruSink::IsFlashRequest()
+bool WBPassthruSink::IsFlashRequest(const wchar_t* const* additionalHeaders)
 {
+  if (additionalHeaders && *additionalHeaders)
+  {
+    auto flashVersionHeader = ExtractHttpHeader<std::wstring>(*additionalHeaders, L"x-flash-version:", L"\n");
+    if (!TrimString(flashVersionHeader).empty())
+    {
+      return true;
+    }
+  }
   ATL::CComPtr<IBindStatusCallback> bscb;
   if (SUCCEEDED(QueryServiceFromClient(&bscb)) && !!bscb)
   {
@@ -281,9 +289,9 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
   // There doesn't seem to be any other way to get this header before the request has been made.
   HRESULT nativeHr = httpNegotiate ? httpNegotiate->BeginningTransaction(szURL, szHeaders, dwReserved, pszAdditionalHeaders) : S_OK;
 
-  if (*pszAdditionalHeaders != 0)
+  if (pszAdditionalHeaders && *pszAdditionalHeaders)
   {
-    m_boundDomain = ExtractHttpHeader<std::wstring>(*pszAdditionalHeaders, L"Referer:", L"\n").c_str();
+    m_boundDomain = ExtractHttpHeader<std::wstring>(*pszAdditionalHeaders, L"Referer:", L"\n");
   }
   m_boundDomain = TrimString(m_boundDomain);
   CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
@@ -306,7 +314,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     }
   }
 
-  if (IsFlashRequest())
+  if (IsFlashRequest(pszAdditionalHeaders))
   {
     m_contentType = CFilter::EContentType::contentTypeObjectSubrequest; 
   }
