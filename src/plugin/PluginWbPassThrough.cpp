@@ -63,6 +63,12 @@ namespace
     }
     return ExtractHttpHeader<std::string>(buf, "Accept:", "\r\n");
   }
+
+  bool IsXmlHttpRequest(const std::wstring& additionalHeaders)
+  {
+    auto requestedWithHeader = ExtractHttpHeader<std::wstring>(additionalHeaders, L"X-Requested-With:", L"\n");
+    return TrimString(requestedWithHeader) == L"XMLHttpRequest";
+  }
 }
 
 WBPassthruSink::WBPassthruSink()
@@ -316,7 +322,12 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
 
   if (IsFlashRequest(pszAdditionalHeaders))
   {
-    m_contentType = CFilter::EContentType::contentTypeObjectSubrequest; 
+    m_contentType = CFilter::EContentType::contentTypeObjectSubrequest;
+  }
+
+  if (pszAdditionalHeaders && IsXmlHttpRequest(*pszAdditionalHeaders))
+  {
+    m_contentType = CFilter::EContentType::contentTypeXmlHttpRequest;
   }
 
   m_blockedInTransaction = client->ShouldBlock(szURL, m_contentType, m_boundDomain, /*debug flag but must be set*/true);
