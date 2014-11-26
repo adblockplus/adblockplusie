@@ -129,7 +129,7 @@
     -->
     <MajorUpgrade
       Schedule="afterInstallExecute"
-      DowngradeErrorMessage="!(loc.AlreadyInstalled)"
+      AllowDowngrades="yes"
     />
     <MediaTemplate EmbedCab="yes"/>
 
