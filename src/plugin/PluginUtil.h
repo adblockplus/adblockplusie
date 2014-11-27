@@ -17,4 +17,3 @@ std::wstring HtmlFolderPath();
 std::wstring UserSettingsFileUrl();
 std::wstring FirstRunPageFileUrl();
 std::wstring FileUrl(const std::wstring& url);
-void ReplaceString(std::wstring& input, const std::wstring placeholder, const std::wstring replacement);
