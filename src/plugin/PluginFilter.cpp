@@ -319,7 +319,7 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
         attrFound = true;
       }
     }
-    else 
+    else
     {
       CComVariant vAttr;
       if (SUCCEEDED(pEl->getAttribute(attrIt->m_bstrAttr, 0, &vAttr)))
@@ -435,13 +435,9 @@ CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
 
 bool CPluginFilter::AddFilterElementHide(CString filterText)
 {
-
-
   DEBUG_FILTER("Input: " + filterText + " filterFile" + filterFile);
-
-  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
+  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
   {
-
     CString filterString  = filterText;
     // Create filter descriptor
     std::auto_ptr<CFilterElementHide> filter;
@@ -464,7 +460,7 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
       CString filterChunk = filterText.Left(chunkEnd).TrimRight();
       std::auto_ptr<CFilterElementHide> filterParent(filter);
 
-      filter.reset(new CFilterElementHide(filterChunk));       
+      filter.reset(new CFilterElementHide(filterChunk));
 
       if (filterParent.get() != 0)
       {
@@ -519,7 +515,7 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
     classNames = bstrClassNames;
   }
 
-  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
+  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
   {
     // Search tag/id filters
     if (!id.IsEmpty())
@@ -621,7 +617,7 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
 
   // Parse hide string
   int pos = 0;
-  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
+  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
   {
     for (std::vector<std::wstring>::iterator it = filters.begin(); it < filters.end(); ++it)
     {
@@ -653,7 +649,7 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
 void CPluginFilter::ClearFilters()
 {
   // Clear filter maps
-  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);    
+  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
   {
     for (int i = 0; i < 2; i++)
     {
