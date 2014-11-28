@@ -325,7 +325,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     m_contentType = CFilter::EContentType::contentTypeObjectSubrequest;
   }
 
-  if (pszAdditionalHeaders && IsXmlHttpRequest(*pszAdditionalHeaders))
+  if (pszAdditionalHeaders && *pszAdditionalHeaders && IsXmlHttpRequest(*pszAdditionalHeaders))
   {
     m_contentType = CFilter::EContentType::contentTypeXmlHttpRequest;
   }
