@@ -50,7 +50,7 @@ public:
   BEGIN_COM_MAP(CPluginClass)
     COM_INTERFACE_ENTRY(IIEPlugin)
     COM_INTERFACE_ENTRY(IDispatch)
-    COM_INTERFACE_ENTRY_IMPL(IObjectWithSite)
+    COM_INTERFACE_ENTRY(IObjectWithSite)
     COM_INTERFACE_ENTRY(IOleCommandTarget)
   END_COM_MAP()
 
