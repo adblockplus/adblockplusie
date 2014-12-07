@@ -60,6 +60,12 @@
   <?error Unsupported value of sys.BUILDARCH=$(sys.BUILDARCH)?>
 <?endif?>
 
+<?ifdef NoTransforms?>
+  <?define SupportedLanguages="9"?>
+<?else?>
+  <?define SupportedLanguages="9,1,7,12,16,19,1026,1027,1029,1030,1032,1034,1035,1037,1038,1041,1044,1045,1046,1048,1049,1050,1051,1053,1054,1055,1058,1061,2052,2070"?>
+<?endif?>
+
 <!--
   The current directory when the compiler runs is "installer/build/<arch>".
   Most assets are based in the root directory, three levels up.
@@ -112,7 +118,7 @@
       Comments="Thank you for using Adblock Plus."
       Manufacturer="Eyeo GmbH"
       InstallerVersion="$(var.Minimum_Version)"
-      Languages="9,1,7,12,16,19,1026,1027,1029,1030,1032,1034,1035,1037,1038,1041,1044,1045,1046,1048,1049,1050,1051,1053,1054,1055,1058,1061,2052,2070"
+      Languages="$(var.SupportedLanguages)"
       Compressed="yes"
       InstallScope="perMachine" InstallPrivileges="elevated"
     />

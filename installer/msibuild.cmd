@@ -32,6 +32,10 @@ if "%FLAG%"=="additional" (
   set CULTURES=-cultures:%LOCALE_NAME%
   goto Light
 )
+if "%FLAG%"=="notransforms" (
+  set CULTURES=
+  goto Light
+)
 echo First argument must be either 'initial' or 'additional'
 exit /b 1
 goto End
@@ -41,6 +45,7 @@ light -notidy -nologo -ext WixUIExtension -sval %CULTURES% -loc %LOCALE_FILE% -o
 if errorlevel 1 GOTO :Error
 @echo off
 if "%FLAG%"=="additional" goto Additional
+if "%FLAG%"=="notransforms" goto End
 :Initial
 echo on
 copy %MSI_LOCALE% %MSI_INTERIM%

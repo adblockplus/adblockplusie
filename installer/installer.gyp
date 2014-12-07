@@ -56,6 +56,7 @@
       'src/msi/dll_class.wxi',
     ],
     'installer_object_file': '<(build_dir_arch)/adblockplusie.wixobj',
+    'installer_object_file_no_transforms': '<(build_dir_arch)/adblockplusie_notransforms.wixobj',
     
     #
     # WiX installer sources for the compiler, common to all architectures
@@ -90,6 +91,8 @@
 	  # We do want a default 'msi_build_phase', because in all but the first MSI build we want the flag "additional"
 	  #
 	  'msi_build_phase%': 'additional',
+	  'installer_object': '<(installer_object_file)',
+	  'notransforms_name': ''
 	},
     'rules': 
 	[ {
@@ -113,11 +116,11 @@
       'action': 
 	  [
 	    '..\..\msibuild.cmd >(msi_build_phase) >(locale_id) >(RULE_INPUT_ROOT)', '<(RULE_INPUT_PATH)', 
-		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).msi',
-		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)-<(target_arch).mst',
+		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)>(notransforms_name)-<(target_arch).msi',
+		'<(build_dir_arch)/adblockplusie-<(RULE_INPUT_ROOT)>(notransforms_name)-<(target_arch).mst',
 		'<(build_dir_arch)/adblockplusie-BASE-<(target_arch).msi',
 		'<(build_dir_arch)/adblockplusie-INTERIM-<(target_arch).msi',
-		'<(installer_object_file)', '<(common_object_file)',
+		'>(installer_object)', '<(common_object_file)',
 	  ]
 	} ],
   },
@@ -174,6 +177,33 @@
         [ 'candle -nologo -arch <(candle_arch) -dNoDefault -dVersion=<(version) -dConfiguration=Release', '-out', '<@(_outputs)', '<(installer_source_top_file)' ]
     } ]
   },
+
+  #############
+  # Compile installer WiX source with no transforms.
+  #     Platform-specific.
+  #############
+  {
+    'target_name': 'No transforms Installer, architecture-specific WiX',
+    'type': 'none',
+    'actions':
+    [ {
+      'action_name': 'Compile WiX installer',
+      'message': 'Compiling installer WiX sources',
+      'inputs':
+      [
+        '<@(installer_source_files)'
+      ],
+      'outputs':
+      [
+        # List must contain only a single element so that "-out" argument works correctly.
+        '<(installer_object_file_no_transforms)'
+      ],
+      'action':
+        [ 'candle -nologo -arch <(candle_arch) -dNoDefault -dVersion=<(version) -dConfiguration=Release -dNoTransforms', '-out', '<@(_outputs)', '<(installer_source_top_file)' ]
+    } ]   
+  },
+
+
 
   ##################################
   # MSI targets
@@ -238,6 +268,30 @@
   #
   ##################################
   #############
+  # Link WiX objects and payloads, creating the full MSI.
+  #     Platform-specific. No transforms.
+  #     Generates the MSI with just english language and no embedded transforms.
+  #############
+  {
+    'target_name': 'MSI @ en 9 (English) [NO_TRANSFORMS]',
+    'type': 'none',
+    'dependencies' : 
+    [
+      'No transforms Installer, architecture-specific WiX',
+      'Installer, common WiX',
+      'installer-ca'
+    ],
+  'variables': {
+    'msi_build_phase': 'notransforms',
+    'locale_id': '9',
+    'installer_object': '<(installer_object_file_no_transforms)',
+    'notransforms_name': '-notransforms'
+  },
+  'sources': [ 'src/msi/locale/en.wxl' ]
+  },
+
+  ##################################
+  #############
   # Link WiX objects and payloads, creating base MSI.
   #     Platform-specific.
   #     Generates the reference MSI upon which all transforms are based.
@@ -252,7 +306,8 @@
       'installer-ca'
     ],
 	'variables': {
-	  # Only define 'msi_build_phase' once as 'initial', here in the BASE target. All others use the default value.
+    # Only define 'msi_build_phase' once as 'initial', here in the BASE target. All others use the default value. 
+    # (Except the build which doesn't embed any transforms. That one uses notransforms)
 	  'msi_build_phase': 'initial',
 	  'locale_id': '9',
 	},
