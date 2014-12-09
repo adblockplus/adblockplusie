@@ -74,7 +74,7 @@ namespace
 WBPassthruSink::WBPassthruSink()
   : m_currentPositionOfSentPage(0)
   , m_contentType(CFilter::EContentType::contentTypeAny)
-  , m_blockedInTransaction(false)
+  , m_isCustomResponse(false)
 {
 }
 
@@ -330,9 +330,13 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     m_contentType = CFilter::EContentType::contentTypeXmlHttpRequest;
   }
 
-  m_blockedInTransaction = client->ShouldBlock(szURL, m_contentType, m_boundDomain, /*debug flag but must be set*/true);
-  if (m_blockedInTransaction)
+  if (client->ShouldBlock(szURL, m_contentType, m_boundDomain, /*debug flag but must be set*/true))
   {
+    // NOTE: Feeding custom HTML to Flash, instead of original object subrequest
+    // doesn't have much sense. It also can manifest in unwanted result	
+    // like video being blocked (See https://issues.adblockplus.org/ticket/1669)	
+    // So we report blocked object subrequests as failed, not just empty HTML.
+    m_isCustomResponse = m_contentType != CFilter::contentTypeObjectSubrequest; 
     return E_ABORT;
   }
   return nativeHr;
@@ -358,7 +362,7 @@ STDMETHODIMP WBPassthruSink::ReportProgress(ULONG ulStatusCode, LPCWSTR szStatus
 
 STDMETHODIMP WBPassthruSink::ReportResult(/* [in] */ HRESULT hrResult, /* [in] */ DWORD dwError, /* [in] */ LPCWSTR szResult)
 {
-  if (m_blockedInTransaction)
+  if (m_isCustomResponse)
   {
     // Don't notify the client about aborting of the operation, thus don't call BaseClass::ReportResult.
     // Current method is called by the original protocol implementation and we are intercepting the
