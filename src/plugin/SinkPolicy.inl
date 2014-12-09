@@ -383,7 +383,7 @@ inline HRESULT CustomSinkStartPolicy<Protocol, Sink>::OnStart(LPCWSTR szUrl,
 	{
 		hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI, dwReserved);
 	}
-	if (E_ABORT == hr && pSink->m_blockedInTransaction)
+	if (E_ABORT == hr && pSink->m_isCustomResponse)
 	{
 		static_cast<Protocol*>(this)->m_shouldSupplyCustomContent = true;
 		pSink->m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");

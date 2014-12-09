@@ -17,7 +17,7 @@ public:
 	CComPtr<IInternetProtocol> m_pTargetProtocol;
 	int m_contentType;
 	std::wstring m_boundDomain;
-	bool m_blockedInTransaction;
+	bool m_isCustomResponse;
 
 	int GetContentTypeFromMimeType(const CString& mimeType);
 	int GetContentTypeFromURL(const CString& src);
