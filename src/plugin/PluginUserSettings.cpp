@@ -21,102 +21,135 @@
 #include "PluginSettings.h"
 #include "PluginClient.h"
 #include "../shared/Dictionary.h"
+#include <unordered_map>
 
-static const CString s_GetMessage = L"GetMessage";
-static const CString s_GetLanguageCount = L"GetLanguageCount";
-static const CString s_GetLanguageByIndex = L"GetLanguageByIndex";
-static const CString s_GetLanguageTitleByIndex = L"GetLanguageTitleByIndex";
-static const CString s_SetLanguage = L"SetLanguage";
-static const CString s_GetLanguage = L"GetLanguage";
-static const CString s_GetWhitelistDomains = L"GetWhitelistDomains";
-static const CString s_AddWhitelistDomain = L"AddWhitelistDomain";
-static const CString s_RemoveWhitelistDomain = L"RemoveWhitelistDomain";
-static const CString s_GetAppLocale = L"GetAppLocale";
-static const CString s_GetDocumentationLink = L"GetDocumentationLink";
-static const CString s_IsAcceptableAdsEnabled = L"IsAcceptableAdsEnabled";
-static const CString s_SetAcceptableAdsEnabled = L"SetAcceptableAdsEnabled";
-static const CString s_IsUpdate = L"IsUpdate";
-static const CString s_Methods[] = {s_GetMessage, s_GetLanguageCount, s_GetLanguageByIndex, s_GetLanguageTitleByIndex, s_SetLanguage, s_GetLanguage, s_GetWhitelistDomains, s_AddWhitelistDomain, s_RemoveWhitelistDomain, s_GetAppLocale, s_GetDocumentationLink, s_IsAcceptableAdsEnabled, s_SetAcceptableAdsEnabled, s_IsUpdate};
-
-CPluginUserSettings::CPluginUserSettings()
+namespace
 {
-}
-
-
-STDMETHODIMP CPluginUserSettings::QueryInterface(REFIID riid, void **ppvObj)
-{
-  if (IID_IUnknown == riid  ||  IID_IDispatch == riid)
+  enum UserSettingsMethods
   {
-    *ppvObj = (LPVOID)this;
-    return NOERROR;
+    dispatchID_GetMessage = 0,
+    dispatchID_GetLanguageCount,
+    dispatchID_GetLanguageByIndex,
+    dispatchID_GetLanguageTitleByIndex,
+    dispatchID_SetLanguage,
+    dispatchID_GetLanguage,
+    dispatchID_GetWhitelistDomains,
+    dispatchID_AddWhitelistDomain,
+    dispatchID_RemoveWhitelistDomain,
+    dispatchID_GetAppLocale,
+    dispatchID_GetDocumentationLink,
+    dispatchID_IsAcceptableAdsEnabled,
+    dispatchID_SetAcceptableAdsEnabled,
+    dispatchID_IsUpdate,
+  };
+
+  /**
+   * Auxiliary for static initialization
+   */
+  std::unordered_map<std::wstring, DISPID> InitMethodIndex()
+  {
+    std::unordered_map<std::wstring, DISPID> m;
+    // try-block for safety during static initialization
+    try
+    {
+      m.emplace(L"GetMessage", dispatchID_GetMessage);
+      m.emplace(L"GetLanguageCount", dispatchID_GetLanguageCount);
+      m.emplace(L"GetLanguageByIndex", dispatchID_GetLanguageByIndex);
+      m.emplace(L"GetLanguageTitleByIndex", dispatchID_GetLanguageTitleByIndex);
+      m.emplace(L"SetLanguage", dispatchID_SetLanguage);
+      m.emplace(L"GetLanguage", dispatchID_GetLanguage);
+      m.emplace(L"GetWhitelistDomains", dispatchID_GetWhitelistDomains);
+      m.emplace(L"AddWhitelistDomain", dispatchID_AddWhitelistDomain);
+      m.emplace(L"RemoveWhitelistDomain", dispatchID_RemoveWhitelistDomain);
+      m.emplace(L"GetAppLocale", dispatchID_GetAppLocale);
+      m.emplace(L"GetDocumentationLink", dispatchID_GetDocumentationLink);
+      m.emplace(L"IsAcceptableAdsEnabled", dispatchID_IsAcceptableAdsEnabled);
+      m.emplace(L"SetAcceptableAdsEnabled", dispatchID_SetAcceptableAdsEnabled);
+      m.emplace(L"IsUpdate", dispatchID_IsUpdate);
+    }
+    catch(...)
+    {
+    }
+    return m;
   }
 
+  /**
+   * Static map from method names to dispatch identifiers.
+   */
+  std::unordered_map<std::wstring, DISPID> methodIndex = InitMethodIndex();
+}
+
+// ENTRY POINT
+STDMETHODIMP CPluginUserSettings::QueryInterface(REFIID riid, void **ppvObj)
+{
+  if (!ppvObj)
+  {
+    return E_POINTER;
+  }
+  if (riid == IID_IUnknown || riid == IID_IDispatch) // GUID comparison does not throw
+  {
+    *ppvObj = static_cast<void*>(this);
+    return S_OK;
+  }
   return E_NOINTERFACE;
 }
 
-
-/*
-Since CPluginUserSettings is not allocated on the heap, 'AddRef' and 'Release' don't need reference counting,
-because CPluginUserSettings won't be deleted when reference counter == 0
-*/
-
+/**
+ * \par Limitation
+ *   CPluginUserSettings is not allocated on the heap.
+ *   It appears only as a member variable in CPluginTabBase.
+ *   'AddRef' and 'Release' don't need reference counting because they don't present COM factories.
+ */
 ULONG __stdcall CPluginUserSettings::AddRef()
 {
   return 1;
 }
-
 
 ULONG __stdcall CPluginUserSettings::Release()
 {
   return 1;
 }
 
-
 STDMETHODIMP CPluginUserSettings::GetTypeInfoCount(UINT* pctinfo)
 {
   return E_NOTIMPL;
 }
-
 
 STDMETHODIMP CPluginUserSettings::GetTypeInfo(UINT itinfo, LCID lcid, ITypeInfo** pptinfo)
 {
   return E_NOTIMPL;
 }
 
-
-STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid)
+/**
+ * \par Limitation
+ *   The specification for this method in IDispatch maps an array of names to an array of identifiers.
+ *   This version only supports single-element arrays, which is enough for IE's JavaScript interpreter.
+ */
+STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID, LPOLESTR* name, UINT count, LCID, DISPID* id)
 {
-  if (!rgszNames)
-    return E_POINTER;
-
-  if (!rgdispid)
-    return E_POINTER;
-
-  if (cNames != 1)
-    return E_FAIL;
-
-  size_t indxMethod = 0;
-  for (; indxMethod < countof(s_Methods); indxMethod++)
+  try
   {
-    if (*rgszNames == s_Methods[indxMethod])
-      break;
+    if (!name || !id)
+    {
+      return E_POINTER;
+    }
+    if (count != 1)
+    {
+      return E_FAIL;
+    }
+    auto item = methodIndex.find(*name); // unordered_map::find is not declared noexcept
+    if (item == methodIndex.end())
+    {
+      return DISP_E_UNKNOWNNAME;
+    }
+    *id = item->second;
   }
-
-  if (indxMethod == countof(s_Methods))
-    return DISP_E_MEMBERNOTFOUND;
-
-  *rgdispid = static_cast<DISPID>(indxMethod);
-
+  catch (...)
+  {
+    return E_FAIL;
+  }
   return S_OK;
 }
-
-
-static CString sGetLanguage()
-{
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-  return settings->GetSubscription();
-}
-
 
 CStringW sGetMessage(const CString& section, const CString& key)
 {
@@ -124,264 +157,299 @@ CStringW sGetMessage(const CString& section, const CString& key)
   return CStringW(dictionary->Lookup(std::string(CW2A(section)), std::string(CW2A(key))).c_str());
 }
 
-std::wstring sGetMessage(const std::string& section, const std::string& key)
-{
-  Dictionary* dictionary = Dictionary::GetInstance();
-  return dictionary->Lookup(section, key);
-}
-
-
 STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispparams, VARIANT* pVarResult,
                                          EXCEPINFO* pExcepinfo, UINT* pArgErr)
 {
-  if (!pDispparams)
-    return E_POINTER;
-
-  if (!pExcepinfo)
-    return E_POINTER;
-
-  if (pDispparams->cNamedArgs)
-    return DISP_E_NONAMEDARGS;
-
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  if (dispidMember  < 0  ||  dispidMember >= countof(s_Methods))
-    return DISP_E_BADINDEX;
-
-  const CString& method = s_Methods[dispidMember];
-
-  if (method == s_GetMessage)
+  try
   {
-    if (pDispparams->cArgs != 2)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pDispparams->rgvarg[0].vt != VT_BSTR)
-      return DISP_E_TYPEMISMATCH;
-
-    if (pVarResult)
+    if (!pDispparams)
     {
-      CComBSTR key = pDispparams->rgvarg[0].bstrVal;
-      CComBSTR section = pDispparams->rgvarg[1].bstrVal;
-      CStringW message = sGetMessage((BSTR)section, (BSTR)key);
-
-      pVarResult->vt = VT_BSTR;
-      pVarResult->bstrVal = SysAllocString(message);
+      return E_POINTER;
     }
-  }
-  else if (method == s_GetLanguageCount)
-  {
-    if (pDispparams->cArgs)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pVarResult)
+    if (pDispparams->cNamedArgs != 0)
     {
-      std::map<CString, CString> languageList = settings->GetFilterLanguageTitleList();
-
-      pVarResult->vt = VT_I4;
-      pVarResult->lVal = static_cast<LONG>(languageList.size());
+      return DISP_E_NONAMEDARGS;
     }
-  }
-  else if (method == s_GetLanguageByIndex)
-  {
-    if (pDispparams->cArgs != 1)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pDispparams->rgvarg[0].vt != VT_I4)
-      return DISP_E_TYPEMISMATCH;
-
-    if (pVarResult)
+    CPluginSettings* settings = CPluginSettings::GetInstance();
+    switch (dispidMember)
     {
-      int indx = pDispparams->rgvarg[0].lVal;
-
-      std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
-
-      if (indx < 0  ||  indx >= (int)languageTitleList.size())
-        return DISP_E_EXCEPTION;
-
-      CString language;
-
-      int curIndx = 0;
-      for(std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+    case dispatchID_GetMessage:
       {
-        if (curIndx == indx)
+        if (pDispparams->cArgs != 2)
         {
-          language = it->first;
-          break;
+          return DISP_E_BADPARAMCOUNT;
         }
+        if (pDispparams->rgvarg[0].vt != VT_BSTR || pDispparams->rgvarg[1].vt != VT_BSTR)
+        {
+          return DISP_E_TYPEMISMATCH;
+        }
+        if (pVarResult)
+        {
+          CComBSTR key = pDispparams->rgvarg[0].bstrVal;
+          CComBSTR section = pDispparams->rgvarg[1].bstrVal;
+          CStringW message = sGetMessage((BSTR)section, (BSTR)key);
 
-        curIndx++;
+          pVarResult->vt = VT_BSTR;
+          pVarResult->bstrVal = SysAllocString(message);
+        }
       }
-
-      pVarResult->vt = VT_BSTR;
-      pVarResult->bstrVal = SysAllocString(language);
-    }
-  }
-  else if (method == s_GetLanguageTitleByIndex)
-  {
-    if (pDispparams->cArgs != 1)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pDispparams->rgvarg[0].vt != VT_I4)
-      return DISP_E_TYPEMISMATCH;
-
-    if (pVarResult)
-    {
-      int indx = pDispparams->rgvarg[0].lVal;
-
-      std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
-
-      if (indx < 0  ||  indx >= (int)languageTitleList.size())
-        return DISP_E_EXCEPTION;
-
-      CString languageTitle;
-
-      int curIndx = 0;
-      for(std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+      break;
+    case dispatchID_GetLanguageCount:
       {
-        if (curIndx == indx)
+        if (pDispparams->cArgs != 0)
         {
-          languageTitle = it->second;
-          break;
+          return DISP_E_BADPARAMCOUNT;
         }
+        if (pVarResult)
+        {
+          std::map<CString, CString> languageList = settings->GetFilterLanguageTitleList();
 
-        curIndx++;
+          pVarResult->vt = VT_I4;
+          pVarResult->lVal = static_cast<LONG>(languageList.size());
+        }
       }
-
-      pVarResult->vt = VT_BSTR;
-      pVarResult->bstrVal = SysAllocString(languageTitle);
-    }
-  }
-  else if (method == s_SetLanguage)
-  {
-    if (pDispparams->cArgs != 1)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pDispparams->rgvarg[0].vt != VT_BSTR)
-      return DISP_E_TYPEMISMATCH;
-
-    CComBSTR url = pDispparams->rgvarg[0].bstrVal;
-
-    settings->SetSubscription((BSTR)url);
-  }
-  else if (method == s_GetLanguage)
-  {
-    if (pDispparams->cArgs)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pVarResult)
-    {
-      CString url = settings->GetSubscription();
-
-      pVarResult->vt = VT_BSTR;
-      pVarResult->bstrVal = SysAllocString(url);
-    }
-  }
-  else if (method == s_GetWhitelistDomains)
-  {
-    if (pDispparams->cArgs)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pVarResult)
-    {
-      std::vector<std::wstring> whiteList = settings->GetWhiteListedDomainList();
-      CString sWhiteList;
-      for (size_t i = 0; i < whiteList.size(); i++)
+      break;
+    case dispatchID_GetLanguageByIndex:
       {
-        if (!sWhiteList.IsEmpty())
+        if (pDispparams->cArgs != 1)
         {
-          sWhiteList += ',';
+          return DISP_E_BADPARAMCOUNT;
         }
-        sWhiteList += CString(whiteList[i].c_str());
+        if (pDispparams->rgvarg[0].vt != VT_I4)
+        {
+          return DISP_E_TYPEMISMATCH;
+        }
+        if (pVarResult)
+        {
+          int index = pDispparams->rgvarg[0].lVal;
+
+          std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
+
+          if (index < 0  ||  index >= static_cast<int>(languageTitleList.size()))
+            return DISP_E_EXCEPTION;
+
+          CString language;
+
+          int loopIndex = 0;
+          for (std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+          {
+            if (loopIndex == index)
+            {
+              language = it->first;
+              break;
+            }
+            ++loopIndex;
+          }
+
+          pVarResult->vt = VT_BSTR;
+          pVarResult->bstrVal = SysAllocString(language);
+        }
       }
+      break;
+    case dispatchID_GetLanguageTitleByIndex:
+      {
+        if (pDispparams->cArgs != 1)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pDispparams->rgvarg[0].vt != VT_I4)
+        {
+          return DISP_E_TYPEMISMATCH;
+        }
+        if (pVarResult)
+        {
+          int index = pDispparams->rgvarg[0].lVal;
 
-      pVarResult->vt = VT_BSTR;
-      pVarResult->bstrVal = SysAllocString(sWhiteList);
+          std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
+
+          if (index < 0  ||  index >= static_cast<int>(languageTitleList.size()))
+            return DISP_E_EXCEPTION;
+
+          CString languageTitle;
+
+          int loopIndex = 0;
+          for (std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+          {
+            if (loopIndex == index)
+            {
+              languageTitle = it->second;
+              break;
+            }
+            loopIndex++;
+          }
+
+          pVarResult->vt = VT_BSTR;
+          pVarResult->bstrVal = SysAllocString(languageTitle);
+        }
+      }
+      break;
+    case dispatchID_SetLanguage:
+      {
+        if (pDispparams->cArgs != 1)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pDispparams->rgvarg[0].vt != VT_BSTR)
+        {
+          return DISP_E_TYPEMISMATCH;
+        }
+        CComBSTR url = pDispparams->rgvarg[0].bstrVal;
+        settings->SetSubscription((BSTR)url);
+      }
+      break;
+    case dispatchID_GetLanguage:
+      {
+        if (pDispparams->cArgs != 0)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pVarResult)
+        {
+          CString url = settings->GetSubscription();
+          pVarResult->vt = VT_BSTR;
+          pVarResult->bstrVal = SysAllocString(url);
+        }
+      }
+      break;
+    case dispatchID_GetWhitelistDomains:
+      {
+        if (pDispparams->cArgs != 0)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pVarResult)
+        {
+          std::vector<std::wstring> whiteList = settings->GetWhiteListedDomainList();
+          CString sWhiteList;
+          for (size_t i = 0; i < whiteList.size(); i++)
+          {
+            if (!sWhiteList.IsEmpty())
+            {
+              sWhiteList += ',';
+            }
+            sWhiteList += CString(whiteList[i].c_str());
+          }
+          pVarResult->vt = VT_BSTR;
+          pVarResult->bstrVal = SysAllocString(sWhiteList);
+        }
+      }
+      break;
+    case dispatchID_AddWhitelistDomain:
+      {
+        if (pDispparams->cArgs != 1)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pDispparams->rgvarg[0].vt != VT_BSTR)
+        {
+          return DISP_E_TYPEMISMATCH;
+        }
+        CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
+        if (domain.Length())
+        {
+          settings->AddWhiteListedDomain((BSTR)domain);
+        }
+      }
+      break;
+    case dispatchID_RemoveWhitelistDomain:
+      {
+        if (pDispparams->cArgs != 1)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pDispparams->rgvarg[0].vt != VT_BSTR)
+        {
+          return DISP_E_TYPEMISMATCH;
+        }
+        CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
+        if (domain.Length())
+        {
+          settings->RemoveWhiteListedDomain((BSTR)domain);
+        }
+      }
+      break;
+    case dispatchID_GetAppLocale:
+      {
+        if (pDispparams->cArgs != 0)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pVarResult)
+        {
+          pVarResult->vt = VT_BSTR;
+          pVarResult->bstrVal = SysAllocString(settings->GetAppLocale());
+        }
+      }
+      break;
+    case dispatchID_GetDocumentationLink:
+      {
+        if (pDispparams->cArgs != 0)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pVarResult)
+        {
+          pVarResult->vt = VT_BSTR;
+          pVarResult->bstrVal = SysAllocString(settings->GetDocumentationLink());
+        }
+      }
+      break;
+    case dispatchID_IsAcceptableAdsEnabled:
+      {
+        if (pDispparams->cArgs != 0)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pVarResult)
+        {
+          pVarResult->vt = VT_BOOL;
+          pVarResult->boolVal = CPluginClient::GetInstance()->IsAcceptableAdsEnabled() ? VARIANT_TRUE : VARIANT_FALSE;
+        }
+      }
+      break;
+    case dispatchID_SetAcceptableAdsEnabled:
+      {
+        if (pDispparams->cArgs != 1)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pDispparams->rgvarg[0].vt != VT_BOOL)
+        {
+          return DISP_E_TYPEMISMATCH;
+        }
+        if (pDispparams->rgvarg[0].boolVal != VARIANT_FALSE)
+        {
+          CPluginClient* client = CPluginClient::GetInstance();
+          client->AddSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
+        }
+        else
+        {
+          CPluginClient* client = CPluginClient::GetInstance();
+          client->RemoveSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
+        }
+      }
+      break;
+    case dispatchID_IsUpdate:
+      {
+        if (pDispparams->cArgs != 0)
+        {
+          return DISP_E_BADPARAMCOUNT;
+        }
+        if (pVarResult)
+        {
+          pVarResult->vt = VT_BOOL;
+          pVarResult->boolVal = CPluginClient::GetInstance()->GetPref(L"displayUpdatePage", false) ? VARIANT_TRUE : VARIANT_FALSE;
+        }
+      }
+      break;
+    default:
+      return DISP_E_MEMBERNOTFOUND;
+      break;
     }
   }
-  else if (method == s_AddWhitelistDomain)
+  catch (...)
   {
-    if (pDispparams->cArgs != 1)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pDispparams->rgvarg[0].vt != VT_BSTR)
-      return DISP_E_TYPEMISMATCH;
-
-    CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
-    if (domain.Length())
-    {
-      settings->AddWhiteListedDomain((BSTR)domain);
-    }
+    return E_FAIL;
   }
-  else if (method == s_RemoveWhitelistDomain)
-  {
-    if (pDispparams->cArgs != 1)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pDispparams->rgvarg[0].vt != VT_BSTR)
-      return DISP_E_TYPEMISMATCH;
-
-    CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
-    if (domain.Length())
-    {
-      settings->RemoveWhiteListedDomain((BSTR)domain);
-    }
-  }
-  else if (method == s_GetAppLocale)
-  {
-    if (pDispparams->cArgs != 0)
-      return DISP_E_BADPARAMCOUNT;
-
-    pVarResult->vt = VT_BSTR;
-    pVarResult->bstrVal = SysAllocString(settings->GetAppLocale());
-  }
-  else if (method == s_GetDocumentationLink)
-  {
-    if (pDispparams->cArgs != 0)
-      return DISP_E_BADPARAMCOUNT;
-
-    pVarResult->vt = VT_BSTR;
-    pVarResult->bstrVal = SysAllocString(settings->GetDocumentationLink());
-  }
-  else if (s_IsAcceptableAdsEnabled == method)
-  {
-    if (pDispparams->cArgs != 0)
-      return DISP_E_BADPARAMCOUNT;
-
-    pVarResult->vt = VT_BOOL;
-    pVarResult->boolVal = CPluginClient::GetInstance()->IsAcceptableAdsEnabled() ? VARIANT_TRUE : VARIANT_FALSE;
-  }
-  else if (method == s_SetAcceptableAdsEnabled)
-  {
-    if (pDispparams->cArgs != 1)
-      return DISP_E_BADPARAMCOUNT;
-
-    if (pDispparams->rgvarg[0].vt != VT_BOOL)
-      return DISP_E_TYPEMISMATCH;
-
-    bool enable = pDispparams->rgvarg[0].boolVal != VARIANT_FALSE;
-
-    if (enable)
-    {
-      CPluginClient* client = CPluginClient::GetInstance();
-      client->AddSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
-    }
-    else
-    {
-      CPluginClient* client = CPluginClient::GetInstance();
-      client->RemoveSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
-    }
-  }
-  else if (method == s_IsUpdate)
-  {
-    if (pDispparams->cArgs != 0)
-      return DISP_E_BADPARAMCOUNT;
-
-    pVarResult->vt = VT_BOOL;
-    pVarResult->boolVal = CPluginClient::GetInstance()->GetPref(L"displayUpdatePage", false);
-  }
-  else
-    return DISP_E_MEMBERNOTFOUND;
-
   return S_OK;
 }
-
