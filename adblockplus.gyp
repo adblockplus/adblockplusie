@@ -210,6 +210,7 @@
       'test/CommunicationTest.cpp',
       'test/DictionaryTest.cpp',
       'test/RegistryTest.cpp',
+      'test/UtilTest.cpp',
     ],
     'defines': ['WINVER=0x0501'],
     'link_settings': {
