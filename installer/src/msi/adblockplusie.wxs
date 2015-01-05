@@ -145,6 +145,15 @@
     <UIRef Id="custom_WixUI_InstallDir"/>
     <UIRef Id="WixUI_ErrorProgressText"/>
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER"/>
+    
+    <!--
+      Icon for Add/Remove Programs
+      
+      It currently uses the blocking icon.
+      When #1538 is ready, we may have a separate icon file for this.
+    -->
+    <Icon Id="program_icon" SourceFile="$(var.plugin_dir)\src\res\blocking.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="program_icon"/>
 
     <!--
       Define and schedule a "Custom Action Type 1" to ensure that IE is closed before installation.
