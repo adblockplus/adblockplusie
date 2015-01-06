@@ -282,7 +282,6 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
   DEBUG_GENERAL(ToCString(src));
 
   std::string acceptHeader = ExtractHttpAcceptHeader(m_spTargetProtocol);
-  m_contentType = GetContentTypeFromMimeType(ATL::CString(acceptHeader.c_str()));
 
   if (pszAdditionalHeaders)
   {
@@ -300,6 +299,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     m_boundDomain = ExtractHttpHeader<std::wstring>(*pszAdditionalHeaders, L"Referer:", L"\n");
   }
   m_boundDomain = TrimString(m_boundDomain);
+  m_contentType = GetContentType(ATL::CString(acceptHeader.c_str()), m_boundDomain, ToCString(src));
   CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
   CPluginClient* client = CPluginClient::GetInstance();
 
