@@ -88,7 +88,6 @@ private:
   bool CreateStatusBarPane();
 
   CComPtr<IConnectionPoint> GetConnectionPoint();
-  CComPtr<IConnectionPoint> GetConnectionPointPropSink();
 
 public:
   HWND GetBrowserHWND() const;

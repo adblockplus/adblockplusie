@@ -135,28 +135,6 @@ CComPtr<IConnectionPoint> CPluginClass::GetConnectionPoint()
   return pPoint;
 }
 
-// This method tries to get a 'connection point' from the stored browser, which can be
-// used to attach or detach from the stream of browser events
-CComPtr<IConnectionPoint> CPluginClass::GetConnectionPointPropSink()
-{
-  CComQIPtr<IConnectionPointContainer, &IID_IConnectionPointContainer> pContainer(GetBrowser());
-  if (!pContainer)
-  {
-    return NULL;
-  }
-
-  CComPtr<IConnectionPoint> pPoint;
-  HRESULT hr = pContainer->FindConnectionPoint(IID_IPropertyNotifySink, &pPoint);
-  if (FAILED(hr))
-  {
-    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_FIND_CONNECTION_POINT, "Class::GetConnectionPoint - FindConnectionPoint")
-      return NULL;
-  }
-
-  return pPoint;
-}
-
-
 HWND CPluginClass::GetBrowserHWND() const
 {
   SHANDLE_PTR hBrowserWndHandle = NULL;
