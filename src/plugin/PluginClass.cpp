@@ -1227,7 +1227,8 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
         vFlags.vt = VT_I4;
         vFlags.intVal = navOpenInNewTab;
 
-        BSTR urlToNavigate = BString(UserSettingsFileUrl());
+        auto userSettingsFileUrl = UserSettingsFileUrl();
+        ATL::CComBSTR urlToNavigate(static_cast<int>(userSettingsFileUrl.length()), userSettingsFileUrl.c_str());
         HRESULT hr = browser->Navigate(urlToNavigate, &vFlags, NULL, NULL, NULL);
         if (FAILED(hr))
         {

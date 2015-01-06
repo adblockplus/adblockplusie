@@ -7,21 +7,6 @@
 #include "PluginUtil.h"
 #include "PluginSettings.h"
 
-BString::BString(const std::wstring& value)
-    : value(::SysAllocString(value.c_str()))
-{
-}
-
-BString::~BString()
-{
-  ::SysFreeString(value);
-}
-
-BString::operator BSTR()
-{
-  return value;
-}
-
 std::wstring HtmlFolderPath()
 {
   return GetDllDir() + L"html\\templates\\";
