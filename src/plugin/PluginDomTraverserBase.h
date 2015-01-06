@@ -116,7 +116,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
   DWORD res = WaitForSingleObject(m_tab->m_filter->hideFiltersLoadedEvent, ENGINE_STARTUP_TIMEOUT);
   if (!IsEnabled()) return;
 
-  VARIANT_BOOL isBusy;    
+  VARIANT_BOOL isBusy;
   if (SUCCEEDED(pBrowser->get_Busy(&isBusy)))
   {
     if (isBusy)
@@ -159,7 +159,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
       return;
     }
 
-    CComVariant vIndex(0);        
+    CComVariant vIndex(0);
     CComPtr<IDispatch> pBodyDispatch;
     if (FAILED(pBodyCollection->item(vIndex, vIndex, &pBodyDispatch)) || !pBodyDispatch)
     {
@@ -289,7 +289,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
               {
                 TraverseDocument(pFrameBrowser, false, indent);
               }
-            }	                        
+            }
           }
         }
       }
@@ -319,7 +319,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
 
       cacheIndex = m_cacheIndexLast++;
 
-      // Resize cache???            
+      // Resize cache???
       if (cacheIndex >= m_cacheElementsMax)
       {
         T* oldCacheElements = m_cacheElements;
@@ -330,7 +330,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
 
         m_cacheElementsMax *= 2;
 
-        delete [] oldCacheElements;                
+        delete [] oldCacheElements;
       }
 
       m_cacheElements[cacheIndex].Init();
