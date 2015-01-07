@@ -14,34 +14,23 @@
 typedef int (__stdcall *IsImmersiveDynamicFunc)(HANDLE);
 bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & process )
 {
-  if (processNames.find(process.szExeFile) != processNames.end())
-  {   
-    // Make sure the process is still alive
-    HANDLE tmpHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process.th32ProcessID);
-    if (tmpHandle == NULL)
-      return false;
-    Windows_Handle procHandle(tmpHandle);
+  // If the name is not found in our list, it's filtered out
+  if (processNames.find(process.szExeFile) == processNames.end()) return false;
 
-    DWORD exitCode;
-    if (!GetExitCodeProcess(procHandle, &exitCode)) return false;
+  // Make sure the process is still alive
+  HANDLE tmpHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process.th32ProcessID);
+  if (tmpHandle == NULL) return false;
+  Windows_Handle procHandle(tmpHandle);
+  DWORD exitCode;
+  if (!GetExitCodeProcess(procHandle, &exitCode)) return false;
+  if (exitCode != STILL_ACTIVE) return false;
 
-    if (exitCode != STILL_ACTIVE) return false;
-
-    // Check if this is a Windows Store app process (we don't care for IE in Modern UI)
-    HMODULE tmpModule = LoadLibrary(L"user32.dll");
-    if (tmpModule == NULL)
-      return true;
-    Windows_Module_Handle user32Dll(tmpModule);
-    if (!user32Dll) return true;
-
-    IsImmersiveDynamicFunc IsImmersiveDynamicCall = (IsImmersiveDynamicFunc)GetProcAddress(user32Dll, "IsImmersiveProcess");
-    if (!IsImmersiveDynamicCall) return true;
-
-    BOOL retValue = !IsImmersiveDynamicCall(procHandle);
-
-    return retValue;
-  }
-  return false;
+  // Check if this is a Windows Store app process (we don't care for IE in Modern UI)
+  HMODULE user32Dll = LoadLibrary(L"user32.dll");
+  if (!user32Dll) return true;
+  IsImmersiveDynamicFunc IsImmersiveDynamicCall = (IsImmersiveDynamicFunc)GetProcAddress(user32Dll, "IsImmersiveProcess");
+  if (!IsImmersiveDynamicCall) return true;
+  return !IsImmersiveDynamicCall(procHandle);
 }
 
 //-------------------------------------------------------
