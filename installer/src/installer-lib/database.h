@@ -140,23 +140,7 @@ public:
 */
 class View
 {
-  /**
-  * Policy class to close a view handle.
-  * View handles don't get closed with the generic close function for other MSI handles.
-  */
-  template< class T >
-  struct View_Destruction
-  {
-    /**
-    * \sa MSDN [MsiViewClose function](http://msdn.microsoft.com/en-us/library/aa370510%28v=vs.85%29.aspx)
-    */
-    inline static void close( T handle )
-    {
-      ::MsiViewClose( handle ) ;
-    }
-  } ;
-
-  typedef handle< MSIHANDLE, Disallow_Null, View_Destruction > handle_type ;
+  typedef handle< MSIHANDLE, Disallow_Null, MSI_Generic_Destruction > handle_type ;
 
   /**
   * Handle for the MSI view object
