@@ -325,7 +325,7 @@ namespace
       }
       case Communication::PROC_GET_DOCUMENTATION_LINK:
       {
-        response << ToUtf16String(filterEngine->GetPref("documentation_link")->AsString());
+        response << filterEngine->GetPref("documentation_link")->AsString();
         break;
       }
       case Communication::PROC_TOGGLE_PLUGIN_ENABLED:
