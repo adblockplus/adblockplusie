@@ -514,9 +514,9 @@ std::wstring CAdblockPlusClient::GetDocumentationLink()
   Communication::InputBuffer response;
   if (!CallEngine(Communication::PROC_GET_DOCUMENTATION_LINK, response)) 
     return L"";
-  std::wstring docLink;
+  std::string docLink;
   response >> docLink;
-  return docLink;
+  return ToUtf16String(docLink);
 }
 
 bool CAdblockPlusClient::TogglePluginEnabled()
