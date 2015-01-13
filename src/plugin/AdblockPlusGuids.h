@@ -1,3 +1,20 @@
+/*
+ * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * Copyright (C) 2006-2015 Eyeo GmbH
+ *
+ * Adblock Plus is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * Adblock Plus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #define GUUID_IPRODUCT          9B871243-2983-495D-9FEB-D7059D0E8057
 #define GUUID_ILISTENER         6515EEE0-B1B2-4723-8FFE-7123F8968E2F
 #define GUUID_IMIMEFILTER       FEA97E02-0E6A-4A8F-A20E-ABB80725CCBD
