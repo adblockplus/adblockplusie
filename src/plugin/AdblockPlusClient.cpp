@@ -15,7 +15,7 @@ namespace
   void SpawnAdblockPlusEngine()
   {
     std::wstring engineExecutablePath = GetDllDir() + L"AdblockPlusEngine.exe";
-    CString params = to_CString(L"AdblockPlusEngine.exe " + GetBrowserLanguage());
+    CString params = ToCString(L"AdblockPlusEngine.exe " + GetBrowserLanguage());
 
     STARTUPINFO startupInfo = {};
     PROCESS_INFORMATION processInformation = {};

@@ -1248,11 +1248,11 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
       std::wstring urlString = GetTab()->GetDocumentUrl();
       if (client->IsWhitelistedUrl(urlString))
       {
-        settings->RemoveWhiteListedDomain(to_CString(client->GetHostFromUrl(urlString)));
+        settings->RemoveWhiteListedDomain(ToCString(client->GetHostFromUrl(urlString)));
       }
       else
       {
-        settings->AddWhiteListedDomain(to_CString(client->GetHostFromUrl(urlString)));
+        settings->AddWhiteListedDomain(ToCString(client->GetHostFromUrl(urlString)));
       }
       GetBrowser()->Refresh();
     }

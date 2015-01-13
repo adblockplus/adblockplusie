@@ -536,7 +536,7 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
 
 bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent) const
 {
-  CString tagCString = to_CString(tag);
+  CString tagCString = ToCString(tag);
 
   CString id;
   CComBSTR bstrId;
@@ -728,7 +728,7 @@ bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const 
   }
 
   CPluginClient* client = CPluginClient::GetInstance();
-  if (client->Matches(srcTrimmed, to_wstring(type), domain))
+  if (client->Matches(srcTrimmed, ToWstring(type), domain))
   {
     if (addDebug)
     {
