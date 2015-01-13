@@ -192,7 +192,7 @@ void CPluginDebug::DebugResultBlocking(const CString& type, const std::wstring& 
   }
 
   CString blocking;
-  blocking.Format(L"Blocked  %-12s  %-20s  %s", type, domain.empty()? L"-" : to_CString(domain), srcTrunc);
+  blocking.Format(L"Blocked  %-12s  %-20s  %s", type, domain.empty()? L"-" : ToCString(domain), srcTrunc);
 
   DebugResult(blocking);
 }
@@ -236,7 +236,7 @@ void CPluginDebug::DebugResultIgnoring(const CString& type, const std::wstring& 
   }
 
   CString blocking;
-  blocking.Format(L"Ignored  %-12s  %s  %s", type, domain.empty()? L"-" : to_CString(domain), srcTrunc);
+  blocking.Format(L"Ignored  %-12s  %s  %s", type, domain.empty()? L"-" : ToCString(domain), srcTrunc);
 
   DebugResult(blocking);
 }

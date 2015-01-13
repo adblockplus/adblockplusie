@@ -20,7 +20,7 @@ namespace
 {
   std::wstring CreateDomainWhitelistingFilter(const CString& domain)
   {
-    return L"@@||" + to_wstring(domain) + L"^$document";
+    return L"@@||" + ToWstring(domain) + L"^$document";
   }
 }
 
@@ -265,7 +265,7 @@ CString CPluginSettings::GetSubscription()
 
 CString CPluginSettings::GetAppLocale()
 {
-  return to_CString(GetBrowserLanguage());
+  return ToCString(GetBrowserLanguage());
 }
 
 CString CPluginSettings::GetDocumentationLink()

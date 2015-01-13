@@ -274,7 +274,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
             // eg. http://w3schools.com/html/html_examples.asp
             else if (srcLegacy.Left(4) != L"http" && srcLegacy.Left(6) != L"res://")
             {
-              srcLegacy = L"http://" + to_CString(m_domain) + srcLegacy;
+              srcLegacy = L"http://" + ToCString(m_domain) + srcLegacy;
             }
             std::wstring src(ToWstring(srcLegacy));
             UnescapeUrl(src);
