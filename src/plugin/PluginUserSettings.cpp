@@ -92,7 +92,7 @@ STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames
   if (!rgdispid)
     return E_POINTER;
 
-  if (1 != cNames)
+  if (cNames != 1)
     return E_FAIL;
 
   size_t indxMethod = 0;
@@ -150,12 +150,12 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
 
   const CString& method = s_Methods[dispidMember];
 
-  if (s_GetMessage == method)
+  if (method == s_GetMessage)
   {
-    if (2 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 2)
       return DISP_E_BADPARAMCOUNT;
 
-    if (VT_BSTR != pDispparams->rgvarg[0].vt)
+    if (pDispparams->rgvarg[0].vt != VT_BSTR)
       return DISP_E_TYPEMISMATCH;
 
     if (pVarResult)
@@ -168,7 +168,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       pVarResult->bstrVal = SysAllocString(message);
     }
   }
-  else if (s_GetLanguageCount == method)
+  else if (method == s_GetLanguageCount)
   {
     if (pDispparams->cArgs)
       return DISP_E_BADPARAMCOUNT;
@@ -181,12 +181,12 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       pVarResult->lVal = static_cast<LONG>(languageList.size());
     }
   }
-  else if (s_GetLanguageByIndex == method)
+  else if (method == s_GetLanguageByIndex)
   {
-    if (1 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 1)
       return DISP_E_BADPARAMCOUNT;
 
-    if (VT_I4 != pDispparams->rgvarg[0].vt)
+    if (pDispparams->rgvarg[0].vt != VT_I4)
       return DISP_E_TYPEMISMATCH;
 
     if (pVarResult)
@@ -216,12 +216,12 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       pVarResult->bstrVal = SysAllocString(language);
     }
   }
-  else if (s_GetLanguageTitleByIndex == method)
+  else if (method == s_GetLanguageTitleByIndex)
   {
-    if (1 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 1)
       return DISP_E_BADPARAMCOUNT;
 
-    if (VT_I4 != pDispparams->rgvarg[0].vt)
+    if (pDispparams->rgvarg[0].vt != VT_I4)
       return DISP_E_TYPEMISMATCH;
 
     if (pVarResult)
@@ -251,19 +251,19 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       pVarResult->bstrVal = SysAllocString(languageTitle);
     }
   }
-  else if (s_SetLanguage == method)
+  else if (method == s_SetLanguage)
   {
-    if (1 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 1)
       return DISP_E_BADPARAMCOUNT;
 
-    if (VT_BSTR != pDispparams->rgvarg[0].vt)
+    if (pDispparams->rgvarg[0].vt != VT_BSTR)
       return DISP_E_TYPEMISMATCH;
 
     CComBSTR url = pDispparams->rgvarg[0].bstrVal;
 
     settings->SetSubscription((BSTR)url);
   }
-  else if (s_GetLanguage == method)
+  else if (method == s_GetLanguage)
   {
     if (pDispparams->cArgs)
       return DISP_E_BADPARAMCOUNT;
@@ -276,7 +276,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       pVarResult->bstrVal = SysAllocString(url);
     }
   }
-  else if (s_GetWhitelistDomains == method)
+  else if (method == s_GetWhitelistDomains)
   {
     if (pDispparams->cArgs)
       return DISP_E_BADPARAMCOUNT;
@@ -298,12 +298,12 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       pVarResult->bstrVal = SysAllocString(sWhiteList);
     }
   }
-  else if (s_AddWhitelistDomain == method)
+  else if (method == s_AddWhitelistDomain)
   {
-    if (1 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 1)
       return DISP_E_BADPARAMCOUNT;
 
-    if (VT_BSTR != pDispparams->rgvarg[0].vt)
+    if (pDispparams->rgvarg[0].vt != VT_BSTR)
       return DISP_E_TYPEMISMATCH;
 
     CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
@@ -312,12 +312,12 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       settings->AddWhiteListedDomain((BSTR)domain);
     }
   }
-  else if (s_RemoveWhitelistDomain == method)
+  else if (method == s_RemoveWhitelistDomain)
   {
-    if (1 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 1)
       return DISP_E_BADPARAMCOUNT;
 
-    if (VT_BSTR != pDispparams->rgvarg[0].vt)
+    if (pDispparams->rgvarg[0].vt != VT_BSTR)
       return DISP_E_TYPEMISMATCH;
 
     CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
@@ -326,17 +326,17 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       settings->RemoveWhiteListedDomain((BSTR)domain);
     }
   }
-  else if (s_GetAppLocale == method)
+  else if (method == s_GetAppLocale)
   {
-    if (0 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 0)
       return DISP_E_BADPARAMCOUNT;
 
     pVarResult->vt = VT_BSTR;
     pVarResult->bstrVal = SysAllocString(settings->GetAppLocale());
   }
-  else if (s_GetDocumentationLink == method)
+  else if (method == s_GetDocumentationLink)
   {
-    if (0 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 0)
       return DISP_E_BADPARAMCOUNT;
 
     pVarResult->vt = VT_BSTR;
@@ -344,21 +344,21 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
   }
   else if (s_IsAcceptableAdsEnabled == method)
   {
-    if (0 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 0)
       return DISP_E_BADPARAMCOUNT;
 
     pVarResult->vt = VT_BOOL;
     pVarResult->boolVal = CPluginClient::GetInstance()->IsAcceptableAdsEnabled() ? VARIANT_TRUE : VARIANT_FALSE;
   }
-  else if (s_SetAcceptableAdsEnabled == method)
+  else if (method == s_SetAcceptableAdsEnabled)
   {
-    if (1 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 1)
       return DISP_E_BADPARAMCOUNT;
 
-    if (VT_BOOL != pDispparams->rgvarg[0].vt)
+    if (pDispparams->rgvarg[0].vt != VT_BOOL)
       return DISP_E_TYPEMISMATCH;
 
-    bool enable = VARIANT_FALSE != pDispparams->rgvarg[0].boolVal;
+    bool enable = pDispparams->rgvarg[0].boolVal != VARIANT_FALSE;
 
     if (enable)
     {
@@ -371,9 +371,9 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
       client->RemoveSubscription(client->GetPref(L"subscriptions_exceptionsurl", L""));
     }
   }
-  else if (s_IsUpdate == method)
+  else if (method == s_IsUpdate)
   {
-    if (0 != pDispparams->cArgs)
+    if (pDispparams->cArgs != 0)
       return DISP_E_BADPARAMCOUNT;
 
     pVarResult->vt = VT_BOOL;
