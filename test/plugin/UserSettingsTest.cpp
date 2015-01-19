@@ -117,5 +117,5 @@ TEST(CPluginUserSettingsInvoke, InvalidDispatchIdShouldUnderflow)
  */
 TEST(CPluginUserSettingsInvoke, InvalidDispatchIdShouldOverflow)
 {
-  InvokeInvalidDispatchId(13);
+  InvokeInvalidDispatchId(14);
 }
