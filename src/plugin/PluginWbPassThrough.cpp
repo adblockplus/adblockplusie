@@ -38,16 +38,30 @@ namespace
         "</body>"
     "</html>";
 
+  template <typename T>
+  T ASCIIStringToLower(const T& text)
+  {
+    T textlower;
+    std::transform(text.begin(), text.end(), std::back_inserter(textlower), 
+      [](T::value_type ch)
+	  { 
+	    return std::tolower(ch, std::locale());
+	  }
+	);
+    return textlower;
+  }
+
   template <class T>
   T ExtractHttpHeader(const T& allHeaders, const T& targetHeaderNameWithColon, const T& delimiter)
   {
-    auto targetHeaderBeginsAt = allHeaders.find(targetHeaderNameWithColon);
+    const T allHeadersLower = ASCIIStringToLower(allHeaders);
+    auto targetHeaderBeginsAt = allHeadersLower.find(ASCIIStringToLower(targetHeaderNameWithColon));
     if (targetHeaderBeginsAt == T::npos)
     {
       return T();
     }
     targetHeaderBeginsAt += targetHeaderNameWithColon.length();
-    auto targetHeaderEndsAt = allHeaders.find(delimiter, targetHeaderBeginsAt);
+    auto targetHeaderEndsAt = allHeadersLower.find(ASCIIStringToLower(delimiter), targetHeaderBeginsAt);
     if (targetHeaderEndsAt == T::npos)
     {
       return T();
