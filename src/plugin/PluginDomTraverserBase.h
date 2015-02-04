@@ -136,7 +136,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
   VARIANT_BOOL isBusy;
   if (SUCCEEDED(pBrowser->get_Busy(&isBusy)))
   {
-    if (isBusy)
+    if (isBusy != VARIANT_FALSE)
     {
       return;
     }
@@ -171,7 +171,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
   else
   {
     CComPtr<IHTMLElementCollection> pBodyCollection;
-    if (FAILED(pDoc->getElementsByTagName(L"body", &pBodyCollection)) || !pBodyCollection)
+    if (FAILED(pDoc->getElementsByTagName(ATL::CComBSTR(L"body"), &pBodyCollection)) || !pBodyCollection)
     {
       return;
     }
@@ -194,7 +194,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
   {
     CComVariant vCacheIndex;
 
-    if (FAILED(pBodyEl->getAttribute(L"abp", 0, &vCacheIndex)) || vCacheIndex.vt == VT_NULL)
+    if (FAILED(pBodyEl->getAttribute(ATL::CComBSTR(L"abp"), 0, &vCacheIndex)) || vCacheIndex.vt == VT_NULL)
     {
       ClearCache();
     }
@@ -220,7 +220,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
     // eg. http://gamecopyworld.com/
     long frameCount = 0;
     CComPtr<IHTMLElementCollection> pFrameCollection;
-    if (SUCCEEDED(pDoc->getElementsByTagName(L"frame", &pFrameCollection)) && pFrameCollection)
+    if (SUCCEEDED(pDoc->getElementsByTagName(ATL::CComBSTR(L"frame"), &pFrameCollection)) && pFrameCollection)
     {
       pFrameCollection->get_length(&frameCount);
     }
@@ -258,7 +258,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
   {
     long frameCount = 0;
     CComPtr<IHTMLElementCollection> pFrameCollection;
-    if (SUCCEEDED(pDoc->getElementsByTagName(L"iframe", &pFrameCollection)) && pFrameCollection)
+    if (SUCCEEDED(pDoc->getElementsByTagName(ATL::CComBSTR(L"iframe"), &pFrameCollection)) && pFrameCollection)
     {
       pFrameCollection->get_length(&frameCount);
     }
@@ -277,7 +277,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
         {
           CComVariant vAttr;
 
-          if (SUCCEEDED(pFrameEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
+          if (SUCCEEDED(pFrameEl->getAttribute(ATL::CComBSTR(L"scr"), 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
           {
             CString srcLegacy = vAttr.bstrVal;
 
@@ -322,7 +322,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
   m_criticalSection.Lock();
   {
     CComVariant vCacheIndex;
-    if (isCached && SUCCEEDED(pEl->getAttribute(L"abp", 0, &vCacheIndex)) && vCacheIndex.vt == VT_I4)
+    if (isCached && SUCCEEDED(pEl->getAttribute(ATL::CComBSTR(L"abp"), 0, &vCacheIndex)) && vCacheIndex.vt == VT_I4)
     {
       cacheIndex = vCacheIndex.intVal;
 
@@ -353,7 +353,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
       vCacheIndex.vt = VT_I4;
       vCacheIndex.intVal = cacheIndex;
 
-      pEl->setAttribute(L"abp", vCacheIndex);
+      pEl->setAttribute(ATL::CComBSTR(L"abp"), vCacheIndex);
     }
   }
   m_criticalSection.Unlock();

@@ -66,7 +66,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
   {
     CComVariant vAttr;
 
-    if (SUCCEEDED(pEl->getAttribute(L"src", 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
+    if (SUCCEEDED(pEl->getAttribute(ATL::CComBSTR(L"src"), 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
     {
       std::wstring src(vAttr.bstrVal, SysStringLen(vAttr.bstrVal));
       UnescapeUrl(src);
