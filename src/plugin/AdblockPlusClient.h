@@ -23,6 +23,7 @@
 #include "PluginClientBase.h"
 #include "../shared/Communication.h"
 #include "../shared/CriticalSection.h"
+#include <AdblockPlus/FilterEngine.h>
 
 
 class CPluginFilter;
@@ -66,13 +67,13 @@ public:
 
   // Removes the url from the list of whitelisted urls if present
   // Only called from ui thread
-  bool ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug=false);
+  bool ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug=false);
 
   bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent, CPluginFilter* filter);
   bool IsWhitelistedUrl(const std::wstring& url);
   bool IsElemhideWhitelistedOnDomain(const std::wstring& url);
 
-  bool Matches(const std::wstring& url, const std::wstring& contentType, const std::wstring& domain);
+  bool Matches(const std::wstring& url, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain);
   std::vector<std::wstring> GetElementHidingSelectors(const std::wstring& domain);
   std::vector<SubscriptionDescription> FetchAvailableSubscriptions();
   std::vector<SubscriptionDescription> GetListedSubscriptions();

@@ -17,6 +17,7 @@
 
 #pragma once
 #include <cstdint>
+#include <AdblockPlus/FilterEngine.h>
 #include "ProtocolCF.h"
 #include "ProtocolImpl.h"
 #define IE_MAX_URL_LENGTH 2048
@@ -32,13 +33,13 @@ public:
 
 	uint64_t m_currentPositionOfSentPage;
 	CComPtr<IInternetProtocol> m_pTargetProtocol;
-	int m_contentType;
+	AdblockPlus::FilterEngine::ContentType m_contentType;
 	std::wstring m_boundDomain;
 	bool m_isCustomResponse;
 
-	int GetContentTypeFromMimeType(const CString& mimeType);
-  int GetContentTypeFromURL(const std::wstring& src);
-  int GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src);
+	AdblockPlus::FilterEngine::ContentType GetContentTypeFromMimeType(const CString& mimeType);
+	AdblockPlus::FilterEngine::ContentType GetContentTypeFromURL(const std::wstring& src);
+	AdblockPlus::FilterEngine::ContentType GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src);
 	bool IsFlashRequest(const wchar_t* const* additionalHeaders);
 public:
 	BEGIN_COM_MAP(WBPassthruSink)

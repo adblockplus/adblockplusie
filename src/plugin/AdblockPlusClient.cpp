@@ -225,7 +225,7 @@ CAdblockPlusClient* CAdblockPlusClient::GetInstance()
   return instance;
 }
 
-bool CAdblockPlusClient::ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug)
+bool CAdblockPlusClient::ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug)
 {
   bool isBlocked = false;
   bool isCached = false;
@@ -250,7 +250,7 @@ bool CAdblockPlusClient::ShouldBlock(const std::wstring& src, int contentType, c
     m_criticalSectionFilter.Unlock();
 
     // Cache result, if content type is defined
-    if (contentType != CFilter::contentTypeAny)
+    if (contentType != AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_OTHER)
     {
       m_criticalSectionCache.Lock();
       {
@@ -304,10 +304,10 @@ bool CAdblockPlusClient::IsElemhideWhitelistedOnDomain(const std::wstring& url)
   return isWhitelisted;
 }
 
-bool CAdblockPlusClient::Matches(const std::wstring& url, const std::wstring& contentType, const std::wstring& domain)
+bool CAdblockPlusClient::Matches(const std::wstring& url, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_MATCHES << ToUtf8String(url) << ToUtf8String(contentType) << ToUtf8String(domain);
+  request << Communication::PROC_MATCHES << ToUtf8String(url) << static_cast<int32_t>(contentType) << ToUtf8String(domain);
 
   Communication::InputBuffer response;
   if (!CallEngine(request, response)) 

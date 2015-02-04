@@ -21,6 +21,7 @@
 
 #include "PluginTypedef.h"
 #include <memory>
+#include <AdblockPlus/FilterEngine.h>
 
 enum CFilterElementHideAttrPos
 {
@@ -97,24 +98,6 @@ class CFilter
 
 public:
 
-  enum EContentType
-  {
-    contentTypeUnknown = 0,
-    contentTypeOther = 1,
-    contentTypeScript = 2,
-    contentTypeImage = 4,
-    contentTypeStyleSheet = 8,
-    contentTypeObject = 16,
-    contentTypeSubdocument = 32,
-    contentTypeDocument = 64,
-    contentTypeBackground = 256,
-    contentTypeXbl = 512,
-    contentTypePing = 1024,
-    contentTypeXmlHttpRequest = 2048,
-    contentTypeObjectSubrequest = 4096,
-    contentTypeDtd = 8192,
-    contentTypeAny = 65535
-  } contentType;
 
   enum EFilterType
   {
@@ -124,7 +107,6 @@ public:
     filterTypeUnknown = 3
   } filterType;
 
-  int m_contentType;
   enum EFilterType m_filterType;
   bool m_isMatchCase;
   bool m_isFirstParty;
@@ -149,8 +131,6 @@ private:
 
   CString m_dataPath;
 
-  std::map<int, CString> m_contentMapText;
-  
   typedef std::map<DWORD, CFilter> TFilterMap;
   typedef std::vector<CFilter> TFilterMapDefault;
 
@@ -182,7 +162,7 @@ public:
   bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent) const;
 
 
-  bool ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug=false) const;
+  bool ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug=false) const;
 
   HANDLE hideFiltersLoadedEvent;
 };

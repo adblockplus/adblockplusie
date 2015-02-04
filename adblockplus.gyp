@@ -78,7 +78,8 @@
     'target_name': 'AdblockPlus',
     'type': 'shared_library',
     'dependencies': [
-      'shared'
+      'shared',
+      'libadblockplus/libadblockplus.gyp:libadblockplus',
     ],
     'sources': [
       'src/plugin/abp.h',
@@ -229,6 +230,7 @@
     'type': 'executable',
     'dependencies': [
       'shared',
+      'libadblockplus/libadblockplus.gyp:libadblockplus',
       'libadblockplus/third_party/googletest.gyp:googletest_main',
     ],
     'sources': [
