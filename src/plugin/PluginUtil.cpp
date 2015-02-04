@@ -45,3 +45,13 @@ std::wstring FileUrl(const std::wstring& path)
   std::replace(url.begin(), url.end(), L'\\', L'/');
   return L"file:///" + url;
 }
+
+std::wstring GetLocationUrl(IWebBrowser2& browser)
+{
+  ATL::CComBSTR locationUrl;
+  if (FAILED(browser.get_LocationURL(&locationUrl)) || !locationUrl)
+  {
+    return std::wstring();
+  }
+  return std::wstring(locationUrl, locationUrl.Length());
+}
