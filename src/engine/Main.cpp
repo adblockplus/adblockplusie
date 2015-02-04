@@ -106,12 +106,14 @@ namespace
       case Communication::PROC_MATCHES:
       {
         std::string url;
-        std::string type;
+        using namespace AdblockPlus;
         std::string documentUrl;
+        int32_t type;
         request >> url >> type >> documentUrl;
-        referrerMapping.Add(url, documentUrl); 
-        AdblockPlus::FilterPtr filter = filterEngine->Matches(url, type, referrerMapping.BuildReferrerChain(documentUrl));
-        response << (filter && filter->GetType() != AdblockPlus::Filter::TYPE_EXCEPTION);
+        referrerMapping.Add(url, documentUrl);
+        auto contentType = static_cast<FilterEngine::ContentType>(type);
+        FilterPtr filter = filterEngine->Matches(url, contentType, referrerMapping.BuildReferrerChain(documentUrl));
+        response << (filter && filter->GetType() != Filter::TYPE_EXCEPTION);
         break;
       }
       case Communication::PROC_GET_ELEMHIDE_SELECTORS:
@@ -210,7 +212,8 @@ namespace
       {
         std::string url;
         request >> url;
-        AdblockPlus::FilterPtr match = filterEngine->Matches(url, "DOCUMENT", url);
+        AdblockPlus::FilterPtr match = filterEngine->Matches(url,
+          AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_DOCUMENT, url);
         response << (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION);
         break;
       }
@@ -218,7 +221,8 @@ namespace
       {
         std::string url;
         request >> url;
-        AdblockPlus::FilterPtr match = filterEngine->Matches(url, "ELEMHIDE", url);
+        AdblockPlus::FilterPtr match = filterEngine->Matches(url,
+          AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_ELEMHIDE, url);
         response << (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION);
         break;
       }

@@ -30,7 +30,6 @@
 #include "..\shared\CriticalSection.h"
 #include "..\shared\Utils.h"
 
-
 // The filters are described at http://adblockplus.org/en/filters
 
 static CriticalSection s_criticalSectionFilterMap;
@@ -272,7 +271,6 @@ CFilterElementHide::CFilterElementHide(const CFilterElementHide& filter)
 
 CFilter::CFilter(const CFilter& filter)
 {
-  m_contentType = filter.m_contentType;
   m_filterType  = filter.m_filterType;
 
   m_isFirstParty = filter.m_isFirstParty;
@@ -288,7 +286,8 @@ CFilter::CFilter(const CFilter& filter)
 }
 
 
-CFilter::CFilter() : m_isMatchCase(false), m_isFirstParty(false), m_isThirdParty(false), m_contentType(CFilter::contentTypeAny),
+CFilter::CFilter() : m_isMatchCase(false), m_isFirstParty(false),
+  m_isThirdParty(false),
   m_isFromStart(false), m_isFromEnd(false), m_hitCount(0)
 {
 }
@@ -472,18 +471,7 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
 
 CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
 {
-  m_contentMapText[CFilter::contentTypeDocument] = "DOCUMENT";
-  m_contentMapText[CFilter::contentTypeObject] = "OBJECT";
-  m_contentMapText[CFilter::contentTypeObjectSubrequest] = "OBJECT_SUBREQUEST";
-  m_contentMapText[CFilter::contentTypeImage] = "IMAGE";
-  m_contentMapText[CFilter::contentTypeScript] = "SCRIPT";
-  m_contentMapText[CFilter::contentTypeOther] = "OTHER";
-  m_contentMapText[CFilter::contentTypeUnknown] = "OTHER";
-  m_contentMapText[CFilter::contentTypeSubdocument] = "SUBDOCUMENT";
-  m_contentMapText[CFilter::contentTypeStyleSheet] = "STYLESHEET";
-  m_contentMapText[CFilter::contentTypeXmlHttpRequest] = "XMLHTTPREQUEST";
-
-  ClearFilters(); 
+  ClearFilters();
 }
 
 
@@ -720,7 +708,7 @@ void CPluginFilter::ClearFilters()
   }
 }
 
-bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const std::wstring& domain, bool addDebug) const
+bool CPluginFilter::ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug) const
 {
   std::wstring srcTrimmed = TrimString(src);
 
@@ -730,35 +718,25 @@ bool CPluginFilter::ShouldBlock(const std::wstring& src, int contentType, const 
   {
     return false;
   }
+
   CPluginSettings* settings = CPluginSettings::GetInstance();
 
-  CString type;
+  CPluginClient* client = CPluginClient::GetInstance();
+  bool result = client->Matches(srcTrimmed, contentType, domain);
+
+#ifdef ENABLE_DEBUG_RESULT
   if (addDebug)
   {
-    type = "OTHER";
-
-    std::map<int,CString>::const_iterator it = m_contentMapText.find(contentType);
-    if (it != m_contentMapText.end())
+    std::wstring type = ToUtf16String(AdblockPlus::FilterEngine::ContentTypeToString(contentType));
+    if (result)
     {
-      type = it->second;
+      CPluginDebug::DebugResultBlocking(ToCString(type), srcTrimmed, domain);
+    }
+    else
+    {
+      CPluginDebug::DebugResultIgnoring(ToCString(type), srcTrimmed, domain);
     }
   }
-
-  CPluginClient* client = CPluginClient::GetInstance();
-  if (client->Matches(srcTrimmed, ToWstring(type), domain))
-  {
-    if (addDebug)
-    {
-      DEBUG_FILTER("Filter::ShouldBlock " + type + " YES")
-
-#ifdef ENABLE_DEBUG_RESULT
-        CPluginDebug::DebugResultBlocking(type, srcTrimmed, domain);
 #endif
-    }
-    return true;
-  }
-#ifdef ENABLE_DEBUG_RESULT
-  CPluginDebug::DebugResultIgnoring(type, srcTrimmed, domain);
-#endif
-  return false;
+  return result;
 }

@@ -51,6 +51,8 @@ namespace
     return textlower;
   }
 
+  typedef AdblockPlus::FilterEngine::ContentType ContentType;
+
   template <class T>
   T ExtractHttpHeader(const T& allHeaders, const T& targetHeaderNameWithColon, const T& delimiter)
   {
@@ -105,43 +107,43 @@ namespace
 
 WBPassthruSink::WBPassthruSink()
   : m_currentPositionOfSentPage(0)
-  , m_contentType(CFilter::EContentType::contentTypeAny)
+  , m_contentType(ContentType::CONTENT_TYPE_OTHER)
   , m_isCustomResponse(false)
 {
 }
 
-int WBPassthruSink::GetContentTypeFromMimeType(const CString& mimeType)
+ContentType WBPassthruSink::GetContentTypeFromMimeType(const CString& mimeType)
 {
   if (mimeType.Find(L"image/") >= 0)
   {
-    return CFilter::contentTypeImage;
+    return ContentType::CONTENT_TYPE_IMAGE;
   }
   if (mimeType.Find(L"text/css") >= 0)
   {
-    return CFilter::contentTypeStyleSheet;
+    return ContentType::CONTENT_TYPE_STYLESHEET;
   }
   if ((mimeType.Find(L"application/javascript") >= 0) || (mimeType.Find(L"application/json") >= 0))
   {
-    return CFilter::contentTypeScript;
+    return ContentType::CONTENT_TYPE_SCRIPT;
   }
   if (mimeType.Find(L"application/x-shockwave-flash") >= 0)
   {
-    return CFilter::contentTypeObject;
+    return ContentType::CONTENT_TYPE_OBJECT;
   }
   if (mimeType.Find(L"text/html") >= 0)
   {
-    return CFilter::contentTypeSubdocument;
+    return ContentType::CONTENT_TYPE_SUBDOCUMENT;
   }
   // It is important to have this check last, since it is rather generic, and might overlay text/html, for example
   if (mimeType.Find(L"xml") >= 0)
   {
-    return CFilter::contentTypeXmlHttpRequest;
+    return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
   }
 
-  return CFilter::contentTypeAny;
+  return ContentType::CONTENT_TYPE_OTHER;
 }
 
-int WBPassthruSink::GetContentTypeFromURL(const std::wstring& src)
+ContentType WBPassthruSink::GetContentTypeFromURL(const std::wstring& src)
 {
   CString srcLegacy = ToCString(src);
   CString srcExt = srcLegacy;
@@ -154,45 +156,45 @@ int WBPassthruSink::GetContentTypeFromURL(const std::wstring& src)
 
   int lastDotIndex = srcExt.ReverseFind('.');
   if (lastDotIndex < 0)
-    return CFilter::contentTypeAny;
+    return ContentType::CONTENT_TYPE_OTHER;
   CString ext = srcExt.Mid(lastDotIndex);
   if (ext == L".jpg" || ext == L".gif" || ext == L".png" || ext == L".jpeg")
   {
-    return CFilter::contentTypeImage;
+    return ContentType::CONTENT_TYPE_IMAGE;
   }
   else if (ext == L".css")
   {
-    return CFilter::contentTypeStyleSheet;
+    return ContentType::CONTENT_TYPE_STYLESHEET;
   }
   else if (ext.Right(3) == L".js")
   {
-    return CFilter::contentTypeScript;
+    return ContentType::CONTENT_TYPE_SCRIPT;
   }
   else if (ext == L".xml")
   {
-    return CFilter::contentTypeXmlHttpRequest;
+    return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
   }
   else if (ext == L".swf")
   {
-    return CFilter::contentTypeObject;
+    return ContentType::CONTENT_TYPE_OBJECT;
   }
   else if (ext == L".jsp" || ext == L".php" || ext == L".html")
   {
-    return CFilter::contentTypeSubdocument;
+    return ContentType::CONTENT_TYPE_SUBDOCUMENT;
   }
-  return CFilter::contentTypeAny;
+  return ContentType::CONTENT_TYPE_OTHER;
 }
 
-int WBPassthruSink::GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src)
+ContentType WBPassthruSink::GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src)
 {
   // No referer or mime type
   // BINDSTRING_XDR_ORIGIN works only for IE v8+
   if (mimeType.IsEmpty() && domain.empty() && AdblockPlus::IE::InstalledMajorVersion() >= 8)
   {
-    return CFilter::contentTypeXmlHttpRequest;
+    return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
   }
-  int contentType = GetContentTypeFromMimeType(mimeType);
-  if (contentType == CFilter::contentTypeAny)
+  ContentType contentType = GetContentTypeFromMimeType(mimeType);
+  if (contentType == ContentType::CONTENT_TYPE_OTHER)
   {
     contentType = GetContentTypeFromURL(src);
   }
@@ -334,6 +336,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
   }
   m_boundDomain = TrimString(m_boundDomain);
   m_contentType = GetContentType(ATL::CString(acceptHeader.c_str()), m_boundDomain, src);
+
   CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
   CPluginClient* client = CPluginClient::GetInstance();
 
@@ -349,28 +352,28 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     {
       if (tab->IsFrameCached(src))
       {
-        m_contentType = CFilter::contentTypeSubdocument;
+        m_contentType = ContentType::CONTENT_TYPE_SUBDOCUMENT;
       }
     }
   }
 
   if (IsFlashRequest(pszAdditionalHeaders))
   {
-    m_contentType = CFilter::EContentType::contentTypeObjectSubrequest;
+    m_contentType = ContentType::CONTENT_TYPE_OBJECT_SUBREQUEST;
   }
 
   if (pszAdditionalHeaders && *pszAdditionalHeaders && IsXmlHttpRequest(*pszAdditionalHeaders))
   {
-    m_contentType = CFilter::EContentType::contentTypeXmlHttpRequest;
+    m_contentType = ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
   }
 
   if (client->ShouldBlock(szURL, m_contentType, m_boundDomain, /*debug flag but must be set*/true))
   {
     // NOTE: Feeding custom HTML to Flash, instead of original object subrequest
-    // doesn't have much sense. It also can manifest in unwanted result	
-    // like video being blocked (See https://issues.adblockplus.org/ticket/1669)	
+    // doesn't have much sense. It also can manifest in unwanted result
+    // like video being blocked (See https://issues.adblockplus.org/ticket/1669)
     // So we report blocked object subrequests as failed, not just empty HTML.
-    m_isCustomResponse = m_contentType != CFilter::contentTypeObjectSubrequest; 
+    m_isCustomResponse = m_contentType != ContentType::CONTENT_TYPE_OBJECT_SUBREQUEST;
     return E_ABORT;
   }
   return nativeHr;

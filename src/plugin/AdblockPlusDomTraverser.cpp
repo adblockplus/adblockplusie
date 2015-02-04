@@ -34,7 +34,8 @@ bool CPluginDomTraverser::OnIFrame(IHTMLElement* pEl, const std::wstring& url, C
   CPluginClient* client = CPluginClient::GetInstance();
 
   // If src should be blocked, set style display:none on iframe
-  bool isBlocked = client->ShouldBlock(url, CFilter::contentTypeSubdocument, m_domain);
+  bool isBlocked = client->ShouldBlock(url,
+    AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_SUBDOCUMENT, m_domain);
   if (isBlocked)
   {
     HideElement(pEl, "iframe", url, true, indent);
@@ -72,7 +73,8 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
       UnescapeUrl(src);
 
       // If src should be blocked, set style display:none on image
-      cache->m_isHidden = client->ShouldBlock(src, CFilter::contentTypeImage, m_domain);
+      cache->m_isHidden = client->ShouldBlock(src,
+        AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_IMAGE, m_domain);
       if (cache->m_isHidden)
       {
         HideElement(pEl, "image", src, true, indent);
