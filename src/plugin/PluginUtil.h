@@ -22,3 +22,4 @@ std::wstring HtmlFolderPath();
 std::wstring UserSettingsFileUrl();
 std::wstring FirstRunPageFileUrl();
 std::wstring FileUrl(const std::wstring& url);
+std::wstring GetLocationUrl(IWebBrowser2& browser);
