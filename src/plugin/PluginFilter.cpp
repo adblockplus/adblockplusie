@@ -692,20 +692,9 @@ void CPluginFilter::ClearFilters()
 {
   // Clear filter maps
   CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
-  {
-    for (int i = 0; i < 2; i++)
-    {
-      for (int j = 0; j < 2; j++)
-      {
-        m_filterMap[i][j].clear();
-      }
-      m_filterMapDefault[i].clear();
-    }
-
-    m_elementHideTags.clear();
-    m_elementHideTagsId.clear();
-    m_elementHideTagsClass.clear();
-  }
+  m_elementHideTags.clear();
+  m_elementHideTagsId.clear();
+  m_elementHideTagsClass.clear();
 }
 
 bool CPluginFilter::ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug) const
