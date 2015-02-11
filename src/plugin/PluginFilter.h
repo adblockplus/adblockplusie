@@ -129,9 +129,6 @@ private:
 
   CString m_dataPath;
 
-  typedef std::map<DWORD, CFilter> TFilterMap;
-  typedef std::vector<CFilter> TFilterMapDefault;
-
   // (Tag,Name) -> Filter
   typedef std::multimap<std::pair<CString,CString>, CFilterElementHide> TFilterElementHideTagsNamed;
 
@@ -142,9 +139,6 @@ private:
   TFilterElementHideTagsNamed m_elementHideTagsId;
   TFilterElementHideTagsNamed m_elementHideTagsClass;
   TFilterElementHideTags m_elementHideTags;
-
-  TFilterMap m_filterMap[2][2];
-  TFilterMapDefault m_filterMapDefault[2];
 
   void ClearFilters();
 
