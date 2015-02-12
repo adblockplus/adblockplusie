@@ -83,10 +83,18 @@ void CPluginTabBase::OnUpdate()
 
 namespace
 {
+  // Entry Point
   void FilterLoader(CPluginTabBase* tabBase)
   {
-    tabBase->m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(tabBase->GetDocumentDomain()));
-    SetEvent(tabBase->m_filter->hideFiltersLoadedEvent);
+    try
+    {
+      tabBase->m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(tabBase->GetDocumentDomain()));
+      SetEvent(tabBase->m_filter->hideFiltersLoadedEvent);
+    }
+    catch (...)
+    {
+      // As a thread-main function, we truncate any C++ exception.
+    }
   }
 }
 
