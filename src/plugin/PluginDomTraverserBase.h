@@ -18,10 +18,7 @@
 #ifndef _PLUGIN_DOM_TRAVERSER_BASE_H_
 #define _PLUGIN_DOM_TRAVERSER_BASE_H_
 
-
-#include "PluginTypedef.h"
-#include "PluginTab.h"
-
+#include "PluginTabBase.h"
 
 class CPluginDomTraverserCacheBase
 {

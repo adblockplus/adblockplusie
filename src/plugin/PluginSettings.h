@@ -24,7 +24,6 @@
 #ifndef _PLUGIN_SETTINGS_H_
 #define _PLUGIN_SETTINGS_H_
 
-#include "PluginTypedef.h"
 #include "AdblockPlusClient.h"
 
 // Main settings

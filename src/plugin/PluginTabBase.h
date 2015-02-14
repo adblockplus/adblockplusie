@@ -83,5 +83,19 @@ public:
 
 };
 
+/**
+ * Temporary class used during refactoring.
+ * This is the definition previously in AdblockPlusTab.h
+ * Defining this class during refactoring alleviates the need to rename CPluginTabBase in the first change set.
+ */
+class CPluginTab : public CPluginTabBase
+{
+
+public:
+  CPluginTab(CPluginClass* plugin) : CPluginTabBase(plugin) {};
+  ~CPluginTab() {};
+};
+
+
 
 #endif // _PLUGIN_TAB_BASE_H_
