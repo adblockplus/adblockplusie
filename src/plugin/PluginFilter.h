@@ -18,8 +18,6 @@
 #ifndef _PLUGIN_FILTER_H_
 #define _PLUGIN_FILTER_H_
 
-
-#include "PluginTypedef.h"
 #include <memory>
 #include <AdblockPlus/FilterEngine.h>
 

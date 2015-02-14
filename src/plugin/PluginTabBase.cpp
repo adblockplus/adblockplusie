@@ -19,7 +19,6 @@
 
 #include "PluginClient.h"
 #include "PluginSettings.h"
-#include "PluginTab.h"
 #include "AdblockPlusDomTraverser.h"
 #include "PluginClass.h"
 #include "PluginTabBase.h"

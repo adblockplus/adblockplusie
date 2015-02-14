@@ -23,9 +23,8 @@
 #define _PLUGIN_CLASS_H_
 
 
-#include "PluginTypedef.h"
 #include "Plugin.h"
-#include "PluginTab.h"
+#include "PluginTabBase.h"
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>

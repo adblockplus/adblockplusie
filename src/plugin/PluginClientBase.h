@@ -18,12 +18,7 @@
 #ifndef _PLUGIN_CLIENT_BASE_H_
 #define _PLUGIN_CLIENT_BASE_H_
 
-
-#include "PluginTypedef.h"
-
-
 class CPluginClientFactory;
-
 
 class CPluginError
 {

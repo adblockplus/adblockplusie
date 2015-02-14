@@ -19,7 +19,6 @@
 #define _ADBLOCK_PLUS_CLIENT_H_
 
 
-#include "PluginTypedef.h"
 #include "PluginClientBase.h"
 #include "../shared/Communication.h"
 #include "../shared/CriticalSection.h"
