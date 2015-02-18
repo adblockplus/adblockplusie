@@ -18,6 +18,7 @@
 #ifndef _ADBLOCK_PLUS_CLIENT_H_
 #define _ADBLOCK_PLUS_CLIENT_H_
 
+#include <MsHTML.h>
 
 #include "PluginClientBase.h"
 #include "../shared/Communication.h"
@@ -35,7 +36,7 @@ struct SubscriptionDescription
   bool listed;
 };
 
-class CAdblockPlusClient : public CPluginClientBase
+class CAdblockPlusClient
 {
 
 private:
@@ -44,6 +45,7 @@ private:
 
   CComAutoCriticalSection m_criticalSectionFilter;
   CComAutoCriticalSection m_criticalSectionCache;
+  static CComAutoCriticalSection s_criticalSectionLocal;
 
   std::map<std::wstring, bool> m_cacheBlockedSources;
 

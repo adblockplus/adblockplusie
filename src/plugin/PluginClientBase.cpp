@@ -15,46 +15,19 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PluginStdAfx.h"
-
-// Internet / FTP
-#include <wininet.h>
-
-// IP adapter
-#include <iphlpapi.h>
-
-#include "PluginSettings.h"
-#include "PluginSystem.h"
-#include "PluginMutex.h"
-#include "PluginClass.h"
-
 #include "PluginClientBase.h"
 
-// IP adapter
-#pragma comment(lib, "IPHLPAPI.lib")
+#include <memory>
+#include <WinInet.h>
+#include <shlwapi.h>
 
-// IE functions
-#pragma comment(lib, "iepmapi.lib")
+#include "PluginSettings.h"
+#include "Config.h"
+#include "PluginDebug.h"
 
-// Internet / FTP
-#pragma comment(lib, "wininet.lib")
+CComAutoCriticalSection LogQueue::s_criticalSectionQueue;
+std::vector<CPluginError> LogQueue::s_pluginErrors;
 
-
-CComAutoCriticalSection CPluginClientBase::s_criticalSectionLocal;
-
-std::vector<CPluginError> CPluginClientBase::s_pluginErrors;
-
-bool CPluginClientBase::s_isErrorLogging = false;
-
-
-CPluginClientBase::CPluginClientBase()
-{
-}
-
-
-CPluginClientBase::~CPluginClientBase()
-{
-}
 
 void UnescapeUrl(std::wstring& url)
 {
@@ -84,7 +57,7 @@ void UnescapeUrl(std::wstring& url)
   }
 }
 
-void CPluginClientBase::LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description, bool isAsync, DWORD dwProcessId, DWORD dwThreadId)
+void LogQueue::LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description, bool isAsync, DWORD dwProcessId, DWORD dwThreadId)
 {
   // Prevent circular references
   if (CPluginSettings::HasInstance() && isAsync)
@@ -105,28 +78,28 @@ void CPluginClientBase::LogPluginError(DWORD errorCode, int errorId, int errorSu
   // Post error to client for later submittal
   if (!isAsync)
   {
-    CPluginClientBase::PostPluginError(errorId, errorSubid, errorCode, description);
+    LogQueue::PostPluginError(errorId, errorSubid, errorCode, description);
   }
 }
 
 
-void CPluginClientBase::PostPluginError(int errorId, int errorSubid, DWORD errorCode, const CString& errorDescription)
+void LogQueue::PostPluginError(int errorId, int errorSubid, DWORD errorCode, const CString& errorDescription)
 {
-  s_criticalSectionLocal.Lock();
+  s_criticalSectionQueue.Lock();
   {
     CPluginError pluginError(errorId, errorSubid, errorCode, errorDescription);
 
     s_pluginErrors.push_back(pluginError);
   }
-  s_criticalSectionLocal.Unlock();
+  s_criticalSectionQueue.Unlock();
 }
 
 
-bool CPluginClientBase::PopFirstPluginError(CPluginError& pluginError)
+bool LogQueue::PopFirstPluginError(CPluginError& pluginError)
 {
   bool hasError = false;
 
-  s_criticalSectionLocal.Lock();
+  s_criticalSectionQueue.Lock();
   {
     std::vector<CPluginError>::iterator it = s_pluginErrors.begin();
     if (it != s_pluginErrors.end())
@@ -138,7 +111,7 @@ bool CPluginClientBase::PopFirstPluginError(CPluginError& pluginError)
       s_pluginErrors.erase(it);
     }
   }
-  s_criticalSectionLocal.Unlock();
+  s_criticalSectionQueue.Unlock();
 
   return hasError;
 }

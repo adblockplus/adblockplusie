@@ -50,14 +50,9 @@ protected:
   std::thread m_thread;
   std::atomic<bool> m_continueThreadRunning;
   CPluginDomTraverser* m_traverser;
-  static int s_dictionaryVersion;
-  static int s_settingsVersion;
-  static int s_filterVersion;
 public:
   std::auto_ptr<CPluginFilter> m_filter;
 private:
-  static int s_whitelistVersion;
-
   void ThreadProc();
   CComAutoCriticalSection m_criticalSectionCache;
   std::set<std::wstring> m_cacheFrames;

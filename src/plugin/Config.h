@@ -129,7 +129,7 @@
 #endif
 
 #undef  DEBUG_ERROR_LOG
-#define DEBUG_ERROR_LOG(err, id, subid, description) CPluginClient::LogPluginError(err, id, subid, description);
+#define DEBUG_ERROR_LOG(err, id, subid, description) LogQueue::LogPluginError(err, id, subid, description);
 
 // ----------------------------------------------------------------------------
 // Miscellaneous
