@@ -40,15 +40,6 @@ namespace
   CriticalSection activeConnectionsLock;
   HWND callbackWindow;
 
-  void WriteStrings(Communication::OutputBuffer& response,
-      const std::vector<std::string>& strings)
-  {
-    int32_t count = static_cast<int32_t>(strings.size());
-    response << count;
-    for (int32_t i = 0; i < count; i++)
-      response << strings[i];
-  }
-
   void WriteSubscriptions(Communication::OutputBuffer& response,
       const std::vector<AdblockPlus::SubscriptionPtr>& subscriptions)
   {
@@ -120,7 +111,7 @@ namespace
       {
         std::string domain;
         request >> domain;
-        WriteStrings(response, filterEngine->GetElementHidingSelectors(domain));
+        response << filterEngine->GetElementHidingSelectors(domain);
         break;
       }
       case Communication::PROC_AVAILABLE_SUBSCRIPTIONS:
@@ -205,7 +196,7 @@ namespace
           }
         }
 
-        WriteStrings(response, domains);
+        response << domains;
         break;
       }
       case Communication::PROC_IS_WHITELISTED_URL:

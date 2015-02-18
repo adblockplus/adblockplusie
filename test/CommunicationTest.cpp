@@ -112,3 +112,39 @@ TEST(CommunicationTest, SendReceive)
   ASSERT_EQ(7, int32Value);
   ASSERT_FALSE(boolValue);
 }
+
+void SendReceiveStrings(const std::vector<std::string>& src)
+{
+  Communication::OutputBuffer outputBuffer;
+  outputBuffer << src;
+  Communication::InputBuffer inputBuffer(outputBuffer.Get());
+  std::vector<std::string> dst;
+  inputBuffer >> dst;
+  auto dstSize = dst.size();
+  ASSERT_EQ(dstSize, src.size());
+  for (auto i = 0; i < dstSize; ++i)
+  {
+    EXPECT_EQ(dst[i], src[i]);
+  }
+}
+
+TEST(InputOutputBuffersTests, EmptyStrings)
+{
+  SendReceiveStrings(std::vector<std::string>());
+}
+
+TEST(InputOutputBuffersTests, StringsWithOneValue)
+{
+  std::vector<std::string> src;
+  src.emplace_back("string1");
+  SendReceiveStrings(src);
+}
+
+TEST(InputOutputBuffersTests, MultivalueStrings)
+{
+  std::vector<std::string> src;
+  src.emplace_back("string1");
+  src.emplace_back("str2");
+  src.emplace_back("value");
+  SendReceiveStrings(src);
+}

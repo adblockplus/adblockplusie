@@ -125,21 +125,6 @@ namespace
     }
   }
 
-  std::vector<std::wstring> ReadStrings(Communication::InputBuffer& message)
-  {
-    int32_t count;
-    message >> count;
-
-    std::vector<std::wstring> result;
-    for (int32_t i = 0; i < count; i++)
-    {
-      std::string str;
-      message >> str;
-      result.push_back(ToUtf16String(str));
-    }
-    return result;
-  }
-
   std::vector<SubscriptionDescription> ReadSubscriptions(Communication::InputBuffer& message)
   {
     int32_t count;
@@ -326,7 +311,10 @@ std::vector<std::wstring> CAdblockPlusClient::GetElementHidingSelectors(const st
   Communication::InputBuffer response;
   if (!CallEngine(request, response)) 
     return std::vector<std::wstring>();
-  return ReadStrings(response);
+
+  std::vector<std::string> selectors;
+  response >> selectors;
+  return ToUtf16Strings(selectors);
 }
 
 std::vector<SubscriptionDescription> CAdblockPlusClient::FetchAvailableSubscriptions()
@@ -392,7 +380,10 @@ std::vector<std::wstring> CAdblockPlusClient::GetExceptionDomains()
   Communication::InputBuffer response;
   if (!CallEngine(Communication::PROC_GET_EXCEPTION_DOMAINS, response)) 
     return std::vector<std::wstring>();
-  return ReadStrings(response);
+
+  std::vector<std::string> domains;
+  response >> domains;
+  return ToUtf16Strings(domains);
 }
 
 bool CAdblockPlusClient::IsFirstRun()
