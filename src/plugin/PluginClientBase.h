@@ -18,7 +18,8 @@
 #ifndef _PLUGIN_CLIENT_BASE_H_
 #define _PLUGIN_CLIENT_BASE_H_
 
-class CPluginClientFactory;
+#include <vector>
+#include "ATL_Deprecate.h"
 
 class CPluginError
 {
@@ -56,31 +57,14 @@ public:
 };
 
 
-class CPluginClientBase
+class LogQueue
 {
-  friend class CPluginClientFactory;
-
 private:
-
   static std::vector<CPluginError> s_pluginErrors;
-
-  static bool s_isErrorLogging;
-
-protected:
-
-  // Protected constructor used by the singleton pattern
-  CPluginClientBase();
-
-  static CComAutoCriticalSection s_criticalSectionLocal;
+  static CComAutoCriticalSection s_criticalSectionQueue;
 
 public:
-
-  ~CPluginClientBase();
-
-  static void SetLocalization();
-
   static void LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description="", bool isAsync=false, DWORD dwProcessId=0, DWORD dwThreadId=0);
-
   static void PostPluginError(int errorId, int errorSubid, DWORD errorCode, const CString& errorDescription);
   static bool PopFirstPluginError(CPluginError& pluginError);
 };

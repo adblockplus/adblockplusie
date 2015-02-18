@@ -27,11 +27,6 @@
 #include <dispex.h>
 #include <Mshtmhst.h>
 
-int CPluginTabBase::s_dictionaryVersion = 0;
-int CPluginTabBase::s_settingsVersion = 1;
-int CPluginTabBase::s_filterVersion = 0;
-int CPluginTabBase::s_whitelistVersion = 0;
-
 CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
   : m_plugin(plugin)
   , m_isActivated(false)
@@ -347,17 +342,7 @@ void CPluginTabBase::ThreadProc()
       DEBUG_THREAD("Loop iteration " + sTabLoopIteration);
     DEBUG_THREAD("--------------------------------------------------------------------------------")
 #endif
-      if (this->m_isActivated)
-      {
-        bool isChanged = false;
-
-        if (isChanged)
-        {
-          this->m_plugin->UpdateStatusBar();
-        }
-
-        this->m_isActivated = false;
-      }
+      this->m_isActivated = false;
 
       // --------------------------------------------------------------------
       // End loop
@@ -368,9 +353,9 @@ void CPluginTabBase::ThreadProc()
       {
         // Post async plugin error
         CPluginError pluginError;
-        if (CPluginClient::PopFirstPluginError(pluginError))
+        if (LogQueue::PopFirstPluginError(pluginError))
         {
-          CPluginClient::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
+          LogQueue::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
         }
 
         // Non-hanging sleep

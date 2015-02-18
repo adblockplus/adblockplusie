@@ -132,9 +132,9 @@ void InitPlugin(bool isInstall)
 
   // Post async plugin error
   CPluginError pluginError;
-  while (CPluginClientBase::PopFirstPluginError(pluginError))
+  while (LogQueue::PopFirstPluginError(pluginError))
   {
-    CPluginClientBase::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
+    LogQueue::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
   }
 }
 

@@ -151,8 +151,9 @@ namespace
 }
 
 CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
+CComAutoCriticalSection CAdblockPlusClient::s_criticalSectionLocal;
 
-CAdblockPlusClient::CAdblockPlusClient() : CPluginClientBase()
+CAdblockPlusClient::CAdblockPlusClient()
 {
   m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
 }
