@@ -55,7 +55,7 @@ namespace Communication
     PROC_COMPARE_VERSIONS
   };
   enum ValueType : uint32_t {
-    TYPE_PROC, TYPE_STRING, TYPE_WSTRING, TYPE_INT64, TYPE_INT32, TYPE_BOOL
+    TYPE_PROC, TYPE_STRING, TYPE_WSTRING, TYPE_INT64, TYPE_INT32, TYPE_BOOL, TYPE_STRINGS
   };
   typedef uint32_t SizeType;
 
@@ -76,6 +76,7 @@ namespace Communication
     InputBuffer& operator>>(int64_t& value) { return Read(value, TYPE_INT64); }
     InputBuffer& operator>>(int32_t& value) { return Read(value, TYPE_INT32); }
     InputBuffer& operator>>(bool& value) { return Read(value, TYPE_BOOL); }
+    InputBuffer& operator>>(std::vector<std::string>& value) { return ReadStrings(value); }
     InputBuffer& operator=(const InputBuffer& copy) 
     { 
       hasType = copy.hasType; 
@@ -105,6 +106,21 @@ namespace Communication
         throw new std::runtime_error("Unexpected end of input buffer");
 
       value.assign(data.get(), length);
+      return *this;
+    }
+
+    InputBuffer& ReadStrings(std::vector<std::string>& value)
+    {
+      value.clear();
+      CheckType(ValueType::TYPE_STRINGS);
+
+      SizeType length;
+      ReadBinary(length);
+      value.resize(length);
+      for (SizeType i = 0; i < length; ++i)
+      {
+        operator>>(value[i]);
+      }
       return *this;
     }
 
@@ -144,6 +160,7 @@ namespace Communication
     OutputBuffer& operator<<(int64_t value) { return Write(value, TYPE_INT64); }
     OutputBuffer& operator<<(int32_t value) { return Write(value, TYPE_INT32); }
     OutputBuffer& operator<<(bool value) { return Write(value, TYPE_BOOL); }
+    OutputBuffer& operator<<(const std::vector<std::string>& value) { return WriteStrings(value); }
   private:
     std::ostringstream buffer;
 
@@ -162,6 +179,17 @@ namespace Communication
       if (buffer.fail())
         throw new std::runtime_error("Unexpected error writing to output buffer");
 
+      return *this;
+    }
+
+    OutputBuffer& WriteStrings(const std::vector<std::string>& value)
+    {
+      WriteBinary(ValueType::TYPE_STRINGS);
+      WriteBinary(static_cast<SizeType>(value.size()));
+      for (const auto& str : value)
+      {
+        operator<<(str);
+      }
       return *this;
     }
 

@@ -83,6 +83,14 @@ std::wstring ToUtf16String(const std::string& str)
   return utf16String;
 }
 
+std::vector<std::wstring> ToUtf16Strings(const std::vector<std::string>& values)
+{
+  std::vector<std::wstring> result;
+  result.reserve(values.size());
+  transform(values.begin(), values.end(), back_inserter(result), ToUtf16String);
+  return result;
+}
+
 std::wstring GetDllDir()
 {
   std::vector<WCHAR> path(MAX_PATH);
