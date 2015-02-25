@@ -44,6 +44,8 @@ typedef HRESULT (WINAPI *CLOSETHEMEDATA)(HANDLE);
 
 HICON CPluginClass::s_hIcons[ICON_MAX] = { NULL, NULL, NULL };
 DWORD CPluginClass::s_hIconTypes[ICON_MAX] = { IDI_ICON_DISABLED, IDI_ICON_ENABLED, IDI_ICON_DEACTIVATED };
+uint32_t iconHeight = 32;
+uint32_t iconWidth = 32;
 
 CPluginMimeFilterClient* CPluginClass::s_mimeFilter = NULL;
 
@@ -992,10 +994,16 @@ bool CPluginClass::CreateStatusBarPane()
 
   if (rcStatusBar.Height() > 0)
   {
+    if (rcStatusBar.Height() < iconWidth)
+    { 
+      iconWidth = 19;
+      iconHeight = 19;
+    }
+
 #ifdef _DEBUG
     m_nPaneWidth = 70;
 #else
-    m_nPaneWidth = min(rcStatusBar.Height(), 22);
+    m_nPaneWidth = min(rcStatusBar.Height(), iconWidth);
 #endif
   }
   else
@@ -1003,7 +1011,7 @@ bool CPluginClass::CreateStatusBarPane()
 #ifdef _DEBUG
     m_nPaneWidth = 70;
 #else
-    m_nPaneWidth = 22;
+    m_nPaneWidth = iconWidth;
 #endif
   }
   // Create pane window
@@ -1012,7 +1020,7 @@ bool CPluginClass::CreateStatusBarPane()
     MAKEINTATOM(GetAtomPaneClass()),
     L"",
     WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-    rcStatusBar.Width() - 500,0,m_nPaneWidth,rcStatusBar.Height(),
+    rcStatusBar.Width() - 500, 0, m_nPaneWidth, rcStatusBar.Height(),
     hWndStatusBar,
     (HMENU)3671,
     _Module.m_hInst,
@@ -1621,8 +1629,11 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         int offx = nDrawEdge;
         if (hIcon)
         {
-          ::DrawIconEx(hDC, offx, (rcClient.Height() - 16)/2 + 2, hIcon, 16, 16, NULL, NULL, DI_NORMAL);
-          offx += 22;
+          //Get the RECT for the leftmost pane (the status text pane)
+          RECT rect;
+          BOOL rectRes = ::SendMessage(pClass->m_hStatusBarWnd, SB_GETRECT, 0, (LPARAM)&rect);
+          ::DrawIconEx(hDC, 0, rect.bottom - rect.top - iconHeight, hIcon, iconWidth, iconHeight, NULL, NULL, DI_NORMAL);
+          offx += iconWidth;
         }
 #ifdef _DEBUG
         // Display version
@@ -1790,7 +1801,9 @@ HICON CPluginClass::GetIcon(int type)
   {
     if (!s_hIcons[type])
     {
-      s_hIcons[type] = ::LoadIcon(_Module.m_hInst, MAKEINTRESOURCE(s_hIconTypes[type]));
+      std::wstring imageToLoad = L"#";
+      imageToLoad += std::to_wstring(s_hIconTypes[type]);
+      s_hIcons[type] = (HICON)::LoadImage(_Module.m_hInst, imageToLoad.c_str(), IMAGE_ICON, iconWidth, iconHeight, LR_SHARED);
       if (!s_hIcons[type])
       {
         DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_LOAD_ICON, "Class::GetIcon - LoadIcon")
