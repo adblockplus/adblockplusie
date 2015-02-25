@@ -274,7 +274,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
         {
           CComVariant vAttr;
 
-          if (SUCCEEDED(pFrameEl->getAttribute(ATL::CComBSTR(L"scr"), 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
+          if (SUCCEEDED(pFrameEl->getAttribute(ATL::CComBSTR(L"src"), 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
           {
             CString srcLegacy = vAttr.bstrVal;
 
