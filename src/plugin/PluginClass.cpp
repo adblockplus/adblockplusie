@@ -682,10 +682,11 @@ STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, W
       if (AdblockPlus::IE::InstalledMajorVersion() > 6)
         {
           RECT rect;
-          BOOL rectRes = GetClientRect(m_hStatusBarWnd, &rect);
+          //Get the RECT for the leftmost pane (the status text pane)
+          BOOL rectRes = ::SendMessage(m_hStatusBarWnd, SB_GETRECT, 0, (LPARAM)&rect);
           if (rectRes == TRUE)
           {
-            MoveWindow(m_hPaneWnd, rect.right - 200, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
+            MoveWindow(m_hPaneWnd, rect.right - m_nPaneWidth, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
           }
         }      
       }
@@ -1617,7 +1618,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
       {
         HICON hIcon = GetStatusBarIcon(pClass->GetTab()->GetDocumentUrl());
 
-        int offx = (rcClient.Height() - 16)/2 + nDrawEdge;
+        int offx = nDrawEdge;
         if (hIcon)
         {
           ::DrawIconEx(hDC, offx, (rcClient.Height() - 16)/2 + 2, hIcon, 16, 16, NULL, NULL, DI_NORMAL);
