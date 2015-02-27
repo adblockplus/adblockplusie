@@ -27,7 +27,7 @@
 #include <WinInet.h>
 #include "wtypes.h"
 #include "../shared/Utils.h"
-#include "../shared/IE_version.h"
+#include "IeVersion.h"
 
 namespace
 {

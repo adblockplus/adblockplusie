@@ -27,7 +27,7 @@
 #include "../shared/Utils.h"
 #include "../shared/Version.h"
 #include "../shared/CriticalSection.h"
-#include "../shared/IE_version.h"
+#include "IeVersion.h"
 #include "AdblockPlus.h"
 #include "Debug.h"
 #include "Updater.h"

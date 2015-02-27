@@ -1,5 +1,5 @@
 /*
- * This file is part of Adblock Plus <https://adblockplus.org/>,
+ * This file is part of Adblock Plus <http://adblockplus.org/>,
  * Copyright (C) 2006-2015 Eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
@@ -16,42 +16,16 @@
  */
 
 #include <gtest/gtest.h>
+#include "IE_Version.h"
 
-#include "../src/shared/Registry.h"
-#include "../src/shared/IE_Version.h"
-
-using namespace AdblockPlus;
-
-//----------------------------------
-// Registry_Key
-//----------------------------------
-TEST(RegistryTest, simple_0)
-{
-  ASSERT_NO_THROW({ auto r = RegistryKey(HKEY_CLASSES_ROOT, L"CLSID"); });
-}
-
-TEST(RegistryTest, constructor_illegal_argument_0)
-{
-  ASSERT_ANY_THROW({ auto r1 = RegistryKey(HKEY_CLASSES_ROOT, L""); });
-}
-
-TEST(RegistryTest, value_notfound_0)
-{
-  auto r1 = RegistryKey(HKEY_CLASSES_ROOT, L"CLSID");
-  ASSERT_ANY_THROW({ r1.value_wstring(L"nonexistent"); });
-}
-
-//----------------------------------
-// IE_Version
-//----------------------------------
 /*
  * Exact version tests enabled by default.
- * If they are disabled, gtext will report 2 disabled tests.
+ * If they are disabled, gtest will report 2 disabled tests.
  */
 #if !defined(DISABLE_EXACT_TESTS)
-#define exact(x) exact_##x
+#define exact(x) Exact##x
 #else
-#define exact(x) DISABLED_exact_##x
+#define exact(x) DISABLED_Exact##x
 #endif
 /*
  * Define a default version as the current version of IE in general release.
@@ -61,14 +35,14 @@ TEST(RegistryTest, value_notfound_0)
 #define INSTALLED_IE_VERSION 11
 #endif
 
-TEST(IE_Version_Test, sanity_string)
+TEST(InstalledVersionStringTest, Sanity)
 {
   std::wstring version = AdblockPlus::IE::InstalledVersionString();
   ASSERT_FALSE(version.length() == 0); // separate test for default value
   ASSERT_TRUE(version.length() >= 2);
 }
 
-TEST(IE_Version_Test, sanity_major)
+TEST(InstalledMajorVersionTest, Sanity)
 {
   int version = AdblockPlus::IE::InstalledMajorVersion();
   ASSERT_NE(version, 0); // separate test for default value
@@ -77,14 +51,14 @@ TEST(IE_Version_Test, sanity_major)
   EXPECT_NE(version, 12); // This check will point out when the test needs updating.
 }
 
-TEST(IE_Version_Test, exact(string))
+TEST(InstalledVersionStringTest, exact(PrefixOnly))
 {
     std::wstring version = AdblockPlus::IE::InstalledVersionString();
     std::wstring expected = std::to_wstring(INSTALLED_IE_VERSION) + L".";
     ASSERT_EQ(expected, version.substr(0, expected.length()));
 }
 
-TEST(IE_Version_Test, exact(major))
+TEST(InstalledMajorVersionTest, exact(MajorOnly))
 {
   int version = AdblockPlus::IE::InstalledMajorVersion();
   ASSERT_EQ(version, INSTALLED_IE_VERSION);

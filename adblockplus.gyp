@@ -1,5 +1,8 @@
 {
-  'includes': ['defaults.gypi'],
+  'includes': [
+    'defaults.gypi',
+    'common/common.gypi',
+  ],
 
   'variables': {
     'build_type%': 'devbuild',
@@ -33,18 +36,17 @@
   'targets': [{
     'target_name': 'shared',
     'type': 'static_library',
+    'dependencies': [
+      'common',
+    ],
     'sources': [
       'src/shared/AutoHandle.cpp',
       'src/shared/Communication.cpp',
       'src/shared/Dictionary.cpp',
       'src/shared/Utils.cpp',
-      'src/shared/Registry.h',
-      'src/shared/Registry.cpp',
-      'src/shared/IE_version.h',
-      'src/shared/IE_version.cpp',
       ]
   },
-  
+
   {
     'target_name': 'AdblockPlusEngine',
     'type': 'executable',
@@ -204,7 +206,6 @@
     'sources': [
       'test/CommunicationTest.cpp',
       'test/DictionaryTest.cpp',
-      'test/RegistryTest.cpp',
       'test/UtilTest.cpp',
       'test/UtilGetQueryStringTest.cpp',
       'test/UtilGetSchemeAndHierarchicalPartTest.cpp',
@@ -215,7 +216,7 @@
     },
     'msvs_settings': {
       'VCLinkerTool': {
-        'SubSystem': '1',   # Console
+        'SubSystem': '1', # Console
         'EntryPointSymbol': 'mainCRTStartup',
       },
     },
@@ -266,7 +267,7 @@
     },
     'msvs_settings': {
       'VCLinkerTool': {
-        'SubSystem': '1',   # Console
+        'SubSystem': '1', # Console
         'EntryPointSymbol': 'mainCRTStartup',
         'conditions': [[
           'target_arch=="ia32"', {
