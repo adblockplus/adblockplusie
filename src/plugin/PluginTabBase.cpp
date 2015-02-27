@@ -23,7 +23,7 @@
 #include "PluginClass.h"
 #include "PluginTabBase.h"
 #include "PluginUtil.h"
-#include "../shared/IE_version.h"
+#include "IeVersion.h"
 #include <dispex.h>
 #include <Mshtmhst.h>
 

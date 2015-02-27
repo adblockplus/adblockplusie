@@ -30,7 +30,7 @@
 #include "PluginUserSettings.h"
 #include "../shared/Utils.h"
 #include "../shared/Dictionary.h"
-#include "../shared/IE_version.h"
+#include "IeVersion.h"
 #include <thread>
 #include <array>
 
