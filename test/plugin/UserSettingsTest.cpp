@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include <gtest/gtest.h>
 
 #include <OAIdl.h>
@@ -44,11 +43,6 @@ namespace
     DISPID ids[1];
     HRESULT h = x.GetIDsOfNames(IID_NULL, names, 1, 0, ids);
     ASSERT_NE(S_OK, h);
-    // The old version returns a nonstandard error code.
-    if (h == DISP_E_MEMBERNOTFOUND)
-    {
-      return;
-    }
     EXPECT_EQ(DISP_E_UNKNOWNNAME, h);
   }
 }
@@ -69,6 +63,7 @@ TEST(CPluginUserSettingsGetIDsOfNames, AllDefinedMethodsMustBeFound)
   SingleMethodNameFound(L"GetDocumentationLink", 10);
   SingleMethodNameFound(L"IsAcceptableAdsEnabled", 11);
   SingleMethodNameFound(L"SetAcceptableAdsEnabled", 12);
+  SingleMethodNameFound(L"IsUpdate", 13);
 }
 
 TEST(CPluginUserSettingsGetIDsOfNames, UndefinedMethodsMustNotBeFound)
@@ -95,11 +90,6 @@ namespace
     EXCEPINFO ex;
     HRESULT h = x.Invoke(id, IID_NULL, 0, DISPATCH_METHOD, &params, nullptr, &ex, nullptr);
     ASSERT_NE(S_OK, h);
-    // The old version returns a nonstandard error code.
-    if (h == DISP_E_BADINDEX)
-    {
-      return;
-    }
     EXPECT_EQ(DISP_E_MEMBERNOTFOUND, h);
   }
 }
