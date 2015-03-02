@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef PLUGIN_USER_SETTINGS_H
+#define PLUGIN_USER_SETTINGS_H
 
-#pragma once
-
-#include <vector>
-#include <utility>
+#include <OAIdl.h>
 
 /*
 Class is used to call methods Get,Set,Update of Settings object from JavaScript.
@@ -28,8 +27,6 @@ Then var value = window.Settings.Get(par), window.Settings.Set(par, value), wind
 class CPluginUserSettings: public IDispatch
 {
 public:
-  CPluginUserSettings();
-
   // IUnknown
   STDMETHOD(QueryInterface)(REFIID riid, void **ppvObj);
   ULONG __stdcall AddRef();
@@ -42,3 +39,5 @@ public:
   STDMETHOD(Invoke)(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispparams, VARIANT* pVarResult,
     EXCEPINFO* pExcepinfo, UINT* pArgErr);
 };
+
+#endif
