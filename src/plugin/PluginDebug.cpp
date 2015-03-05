@@ -21,7 +21,6 @@
 #include "PluginMutex.h"
 #include "PluginSettings.h"
 
-
 class CPluginDebugLock : public CPluginMutex
 {
 
@@ -44,10 +43,15 @@ public:
 
 CComAutoCriticalSection CPluginDebugLock::s_criticalSectionDebugLock;
 
+void CPluginDebug::DebugSystemException(const std::system_error& ex, int errorId, int errorSubid, const std::string& description)
+{
+  std::string message = description + ", " + ex.code().message() + ", " + ex.what();
+  DEBUG_ERROR_LOG(ex.code().value(), errorId, errorSubid, message);
+}
 
 #ifdef ENABLE_DEBUG_INFO
 
-void CPluginDebug::Debug(const CString& text, DWORD dwProcessId, DWORD dwThreadId)
+void DebugLegacy(const CString& text, DWORD dwProcessId, DWORD dwThreadId)
 {
 #ifdef USE_CONSOLE
   CONSOLE("%s", CT2A(text.GetString(), CP_UTF8));
@@ -116,30 +120,23 @@ void CPluginDebug::Debug(const CString& text, DWORD dwProcessId, DWORD dwThreadI
   }
 }
 
-void CPluginDebug::DebugClear()
+void CPluginDebug::Debug(const std::string& text, DWORD processId, DWORD threadId)
 {
-  CPluginDebugLock lock;
-  if (lock.IsLocked())
-  {
-    DeleteFileW(GetDataPath(L"debug.txt").c_str());
-    DeleteFileW(GetDataPath(L"debug_main_ui.txt").c_str());
-    DeleteFileW(GetDataPath(L"debug_main_thread.txt").c_str());
+  DebugLegacy(CString(text.c_str()), processId, threadId);
+}
 
-    for (int i = 1; i <= 10; i++)
-    {
-      std::wstring x = std::to_wstring(i);
-      DeleteFileW(GetDataPath(L"debug_tab" + x + L"_ui.txt").c_str());
-      DeleteFileW(GetDataPath(L"debug_tab" + x + L"_thread.txt").c_str());
-    }
-  }
+void CPluginDebug::Debug(const std::wstring& text, DWORD processId, DWORD threadId)
+{
+  DebugLegacy(ToCString(text), processId, threadId);
 }
 
 #endif
 
-#if (defined ENABLE_DEBUG_INFO || defined ENABLE_DEBUG_SELFTEST)
+#if (defined ENABLE_DEBUG_INFO)
 
-void CPluginDebug::DebugError(const CString& error)
+void CPluginDebug::DebugException(const std::exception& ex)
 {
+  auto error = std::string("!!! Exception:") + ex.what();
 #ifdef ENABLE_DEBUG_ERROR
   Debug(error);
 #endif
@@ -147,7 +144,7 @@ void CPluginDebug::DebugError(const CString& error)
   DEBUG_SELFTEST("********************************************************************************\n" + error + "\n********************************************************************************")
 }
 
-void CPluginDebug::DebugErrorCode(DWORD errorCode, const CString& error, DWORD dwProcessId, DWORD dwThreadId)
+void DebugErrorCodeLegacy(DWORD errorCode, const CString& error, DWORD dwProcessId, DWORD dwThreadId)
 {
   CString errorCodeText;
   errorCodeText.Format(L"%u (0x%8.8x)", errorCode, errorCode);
@@ -155,10 +152,15 @@ void CPluginDebug::DebugErrorCode(DWORD errorCode, const CString& error, DWORD d
   CString finalError = error + L". error=" + errorCodeText;
 
 #ifdef ENABLE_DEBUG_ERROR
-  Debug(finalError, dwProcessId, dwThreadId);
+  DebugLegacy(finalError, dwProcessId, dwThreadId);
 #endif
 
   DEBUG_SELFTEST(L"********************************************************************************\n" + finalError + "\n********************************************************************************")
+}
+
+void CPluginDebug::DebugErrorCode(DWORD errorCode, const std::string& error, DWORD processId, DWORD threadId)
+{
+  DebugErrorCodeLegacy(errorCode, CString(error.c_str()), processId, threadId);
 }
 
 #endif
@@ -169,7 +171,7 @@ void CPluginDebug::DebugErrorCode(DWORD errorCode, const CString& error, DWORD d
 
 #ifdef ENABLE_DEBUG_RESULT
 
-void CPluginDebug::DebugResult(const CString& text)
+void DebugResultLegacy(const CString& text)
 {
   SYSTEMTIME st;
   ::GetSystemTime(&st);
@@ -192,7 +194,12 @@ void CPluginDebug::DebugResult(const CString& text)
   }
 }
 
-void CPluginDebug::DebugResultDomain(const CString& domain)
+void CPluginDebug::DebugResult(const std::wstring& text)
+{
+  DebugResultLegacy(ToCString(text));
+}
+
+void CPluginDebug::DebugResultDomain(const std::wstring& domain)
 {
   DebugResult(L"===========================================================================================================================================================================================");
   DebugResult(domain);
@@ -200,7 +207,7 @@ void CPluginDebug::DebugResultDomain(const CString& domain)
 }
 
 
-void CPluginDebug::DebugResultBlocking(const CString& type, const std::wstring& src, const std::wstring& domain)
+void CPluginDebug::DebugResultBlocking(const std::wstring& type, const std::wstring& src, const std::wstring& domain)
 {
   CString srcTrunc = ToCString(src);
   if (src.length() > 100)
@@ -209,34 +216,24 @@ void CPluginDebug::DebugResultBlocking(const CString& type, const std::wstring& 
   }
 
   CString blocking;
-  blocking.Format(L"Blocked  %-12s  %-20s  %s", type, domain.empty()? L"-" : ToCString(domain), srcTrunc);
+  blocking.Format(L"Blocked  %-12s  %-20s  %s", ToCString(type), domain.empty()? L"-" : ToCString(domain), srcTrunc);
 
-  DebugResult(blocking);
+  DebugResultLegacy(blocking);
 }
 
 
-void CPluginDebug::DebugResultHiding(const CString& tag, const CString& id, const CString& filter)
+void CPluginDebug::DebugResultHiding(const std::wstring& tag, const std::wstring& id, const std::wstring& filter)
 {
-  CString srcTrunc = id;
+  CString srcTrunc = ToCString(id);
   if (srcTrunc.GetLength() > 100)
   {
     srcTrunc = srcTrunc.Left(67) + L"..." + srcTrunc.Right(30);
   }
 
   CString blocking;
-  blocking.Format(L"Hidden   %-12s  - %s  %s", tag, srcTrunc, filter);
+  blocking.Format(L"Hidden   %-12s  - %s  %s", ToCString(tag), srcTrunc, ToCString(filter));
 
-  DebugResult(blocking);
-}
-
-
-void CPluginDebug::DebugResultClear()
-{
-  CPluginDebugLock lock;
-  if (lock.IsLocked())
-  {
-    DeleteFileW(GetDataPath(L"debug_result.txt").c_str());
-  }
+  DebugResultLegacy(blocking);
 }
 
 #endif // ENABLE_DEBUG_RESULT
@@ -244,7 +241,7 @@ void CPluginDebug::DebugResultClear()
 
 #ifdef ENABLE_DEBUG_RESULT_IGNORED
 
-void CPluginDebug::DebugResultIgnoring(const CString& type, const std::wstring& src, const std::wstring& domain)
+void CPluginDebug::DebugResultIgnoring(const std::wstring& type, const std::wstring& src, const std::wstring& domain)
 {
   CString srcTrunc = ToCString(src);
   if (src.length() > 100)
@@ -253,9 +250,9 @@ void CPluginDebug::DebugResultIgnoring(const CString& type, const std::wstring& 
   }
 
   CString blocking;
-  blocking.Format(L"Ignored  %-12s  %s  %s", type, domain.empty()? L"-" : ToCString(domain), srcTrunc);
+  blocking.Format(L"Ignored  %-12s  %s  %s", ToCString(type), domain.empty()? L"-" : ToCString(domain), srcTrunc);
 
-  DebugResult(blocking);
+  DebugResultLegacy(blocking);
 }
 
 #endif // ENABLE_DEBUG_RESULT_IGNORED

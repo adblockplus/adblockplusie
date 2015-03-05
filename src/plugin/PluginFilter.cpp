@@ -570,7 +570,7 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
         {
 #ifdef ENABLE_DEBUG_RESULT
           DEBUG_HIDE_EL(indent + "HideEl::Found (tag/id) filter:" + idIt->second.m_filterText)
-            CPluginDebug::DebugResultHiding(tagCString, L"id:" + id, idIt->second.m_filterText);
+            CPluginDebug::DebugResultHiding(tag, L"id:" + ToWstring(id), ToWstring(idIt->second.m_filterText));
 #endif
           return true;
         }
@@ -584,7 +584,7 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
         {
 #ifdef ENABLE_DEBUG_RESULT
           DEBUG_HIDE_EL(indent + "HideEl::Found (?/id) filter:" + idIt->second.m_filterText)
-            CPluginDebug::DebugResultHiding(tagCString, L"id:" + id, idIt->second.m_filterText);
+            CPluginDebug::DebugResultHiding(tag, L"id:" + ToWstring(id), ToWstring(idIt->second.m_filterText));
 #endif
           return true;
         }
@@ -607,7 +607,7 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
           {
 #ifdef ENABLE_DEBUG_RESULT
             DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
-              CPluginDebug::DebugResultHiding(tagCString, L"class:" + className, classIt->second.m_filterText);
+              CPluginDebug::DebugResultHiding(tag, L"class:" + ToWstring(className), ToWstring(classIt->second.m_filterText));
 #endif
             return true;
           }
@@ -620,8 +620,8 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
           if (classIt->second.IsMatchFilterElementHide(pEl))
           {
 #ifdef ENABLE_DEBUG_RESULT
-            DEBUG_HIDE_EL(indent + "HideEl::Found (?/class) filter:" + classIt->second.m_filterText)
-              CPluginDebug::DebugResultHiding(tagCString, "class:" + className, classIt->second.m_filterText);
+            DEBUG_HIDE_EL(indent + L"HideEl::Found (?/class) filter:" + ToWString(classIt->second.m_filterText));
+            CPluginDebug::DebugResultHiding(tag, L"class:" + ToWstring(className), ToWstring(classIt->second.m_filterText));
 #endif
             return true;
           }
@@ -641,7 +641,7 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
       {
 #ifdef ENABLE_DEBUG_RESULT
         DEBUG_HIDE_EL(indent + "HideEl::Found (tag) filter:" + tagIt->second.m_filterText)
-          CPluginDebug::DebugResultHiding(tagCString, "-", tagIt->second.m_filterText);
+          CPluginDebug::DebugResultHiding(tag, L"-", ToWstring(tagIt->second.m_filterText));
 #endif
         return true;
       }
@@ -678,7 +678,7 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
         catch(...)
         {
 #ifdef ENABLE_DEBUG_RESULT
-          CPluginDebug::DebugResult(L"Error loading hide filter: " + filter);
+          CPluginDebug::DebugResult(L"Error loading hide filter: " + ToWstring(filter));
 #endif
         }
       }
@@ -719,11 +719,11 @@ bool CPluginFilter::ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngi
     std::wstring type = ToUtf16String(AdblockPlus::FilterEngine::ContentTypeToString(contentType));
     if (result)
     {
-      CPluginDebug::DebugResultBlocking(ToCString(type), srcTrimmed, domain);
+      CPluginDebug::DebugResultBlocking(type, srcTrimmed, domain);
     }
     else
     {
-      CPluginDebug::DebugResultIgnoring(ToCString(type), srcTrimmed, domain);
+      CPluginDebug::DebugResultIgnoring(type, srcTrimmed, domain);
     }
   }
 #endif

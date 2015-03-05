@@ -57,7 +57,7 @@ void UnescapeUrl(std::wstring& url)
   }
 }
 
-void LogQueue::LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description, bool isAsync, DWORD dwProcessId, DWORD dwThreadId)
+void LogQueue::LogPluginError(DWORD errorCode, int errorId, int errorSubid, const std::string& description, bool isAsync, DWORD dwProcessId, DWORD dwThreadId)
 {
   // Prevent circular references
   if (CPluginSettings::HasInstance() && isAsync)
@@ -83,7 +83,7 @@ void LogQueue::LogPluginError(DWORD errorCode, int errorId, int errorSubid, cons
 }
 
 
-void LogQueue::PostPluginError(int errorId, int errorSubid, DWORD errorCode, const CString& errorDescription)
+void LogQueue::PostPluginError(int errorId, int errorSubid, DWORD errorCode, const std::string& errorDescription)
 {
   s_criticalSectionQueue.Lock();
   {

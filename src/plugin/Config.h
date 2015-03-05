@@ -25,17 +25,6 @@
 #define ENABLE_DEBUG_INFO
 #define ENABLE_DEBUG_GENERAL
 #define ENABLE_DEBUG_ERROR
-#undef  ENABLE_DEBUG_BLOCKER
-#undef  ENABLE_DEBUG_FILTER
-#undef  ENABLE_DEBUG_SETTINGS
-#undef  ENABLE_DEBUG_THREAD
-#undef  ENABLE_DEBUG_NAVI
-#undef  ENABLE_DEBUG_DICTIONARY
-#undef  ENABLE_DEBUG_CHECKSUM
-#undef  ENABLE_DEBUG_INI
-#undef  ENABLE_DEBUG_MUTEX
-#undef  ENABLE_DEBUG_HIDE_EL
-#undef  ENABLE_DEBUG_WHITELIST
 
 #define ENABLE_DEBUG_RESULT
 #define ENABLE_DEBUG_RESULT_IGNORED
@@ -51,99 +40,66 @@
 #undef ENABLE_DEBUG_SELFTEST
 
 #define DEBUG_FUNC CPluginDebug::Debug
-#define DEBUG_ERROR_FUNC CPluginDebug::DebugError
-#define DEBUG_ERROR_CODE_FUNC CPluginDebug::DebugErrorCode
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_GENERAL)
-#undef  DEBUG_GENERAL
 #define DEBUG_GENERAL(x) DEBUG_FUNC(x);
-#endif
-
-#if (defined ENABLE_DEBUG_INFO)
-#undef  DEBUG
-#define DEBUG(x) DEBUG_FUNC(x);
-#endif
-
-#if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_BLOCKER)
-#undef  DEBUG_BLOCKER
-#define DEBUG_BLOCKER(x) DEBUG_FUNC(x);
+#else
+#define DEBUG_GENERAL(x)
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_FILTER)
-#undef  DEBUG_FILTER
 #define DEBUG_FILTER(x) DEBUG_FUNC(x);
+#else
+#define DEBUG_FILTER(x)
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_SETTINGS)
-#undef  DEBUG_SETTINGS
 #define DEBUG_SETTINGS(x) DEBUG_FUNC(x);
+#else
+#define DEBUG_SETTINGS(x)
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_THREAD)
-#undef  DEBUG_THREAD
 #define DEBUG_THREAD(x) DEBUG_FUNC(x);
+#else
+#define DEBUG_THREAD(x)
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_NAVI)
-#undef  DEBUG_NAVI
 #define DEBUG_NAVI(x) DEBUG_FUNC(x);
-#endif
-
-#if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_CHECKSUM)
-#undef  DEBUG_CHECKSUM
-#define DEBUG_CHECKSUM(x) DEBUG_FUNC(x);
-#endif
-
-#if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_DICTIONARY)
-#undef  DEBUG_DICTIONARY
-#define DEBUG_DICTIONARY(x) DEBUG_FUNC(x);
-#endif
-
-#if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_INI)
-#undef  DEBUG_INI
-#define DEBUG_INI(x) DEBUG_FUNC(x);
+#else
+#define DEBUG_NAVI(x)
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_MUTEX)
-#undef  DEBUG_MUTEX
 #define DEBUG_MUTEX(x) DEBUG_FUNC(x);
+#else
+#define DEBUG_MUTEX(x)
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_HIDE_EL)
-#undef  DEBUG_HIDE_EL
 #define DEBUG_HIDE_EL(x) DEBUG_FUNC(x);
-#endif
-
-#if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_WHITELIST)
-#undef  DEBUG_WHITELIST
-#define DEBUG_WHITELIST(x) DEBUG_FUNC(x);
+#else
+#define DEBUG_HIDE_EL(x)
 #endif
 
 #if (defined ENABLE_DEBUG_INFO && defined ENABLE_DEBUG_ERROR)
-#undef  DEBUG_ERROR
-#define DEBUG_ERROR(x) DEBUG_ERROR_FUNC("!!! Error:" + CString(x));
-#undef  DEBUG_ERROR_CODE
-#define DEBUG_ERROR_CODE(err, x) DEBUG_ERROR_CODE_FUNC(err, "!!! Error:" + CString(x));
-#undef  DEBUG_ERROR_CODE_EX
-#define DEBUG_ERROR_CODE_EX(err, x, process, thread) DEBUG_ERROR_CODE_FUNC(err, "!!! Error:" + CString(x), process, thread);
+#define DEBUG_EXCEPTION(x) CPluginDebug::DebugException(x)
+#define DEBUG_ERROR_CODE(err, x) CPluginDebug::DebugErrorCode(err, x);
+#define DEBUG_ERROR_CODE_EX(err, x, process, thread) CPluginDebug::DebugErrorCode(err, x, process, thread);
+#else
+#define DEBUG_EXCEPTION(x)
+#define DEBUG_ERROR_CODE(err, x)
+#define DEBUG_ERROR_CODE_EX(err, x, process, thread)
 #endif
 
-#undef  DEBUG_ERROR_LOG
-#define DEBUG_ERROR_LOG(err, id, subid, description) LogQueue::LogPluginError(err, id, subid, description);
+#define DEBUG_ERROR_LOG(err, id, subid, description) LogQueue::PostPluginError(err, id, subid, description);
+#define DEBUG_SYSTEM_EXCEPTION(ex, id, subid, description) CPluginDebug::DebugSystemException(ex, id, subid, description)
+#define DEBUG_SELFTEST(x)
 
 // ----------------------------------------------------------------------------
 // Miscellaneous
 // ----------------------------------------------------------------------------
-
-//For debugging production build
-//#define ENABLE_DEBUG_INFO
-
-// If defined, we will surround most of the methods with try catch
-#undef CATCHALL
-
-// If defined, we will throw exceptions for errors
-// Otherwise we will try to handle it in a silent way, and only report
-#undef THROW_ON_ERROR
 
 // Status bar pane name
 #define STATUSBAR_PANE_NAME L"AdblockPlusStatusBarPane"

@@ -296,9 +296,8 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
             }
             catch (const std::system_error& ex)
             {
-              auto errDescription = std::string("Class::Thread - Failed to create StartInitObject thread, ") +
-                ex.code().message() + ex.what();
-              DEBUG_ERROR_LOG(ex.code().value(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, errDescription.c_str());
+              DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, 
+                "Class::Thread - Failed to create StartInitObject thread");
             }
           }
           else
@@ -341,9 +340,9 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
         }
       }
     }
-    catch (std::runtime_error e)
+    catch (const std::runtime_error& ex)
     {
-      DEBUG_ERROR(e.what());
+      DEBUG_EXCEPTION(ex);
       Unadvice();
     }
   }
@@ -577,17 +576,20 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
   {
     m_tab->OnNavigate(url);
 
-    DEBUG_GENERAL(L"================================================================================\nBegin main navigation url:" + urlLegacy + "\n================================================================================")
+    DEBUG_GENERAL(
+      L"================================================================================\n"
+      L"Begin main navigation url:" + url + L"\n"
+      L"================================================================================")
 
 #ifdef ENABLE_DEBUG_RESULT
-      CPluginDebug::DebugResultDomain(urlLegacy);
+      CPluginDebug::DebugResultDomain(url);
 #endif
 
     UpdateStatusBar();
   }
   else
   {
-    DEBUG_NAVI(L"Navi::Begin navigation url:" + urlLegacy)
+    DEBUG_NAVI(L"Navi::Begin navigation url:" + url)
     m_tab->CacheFrame(url);
   }
 }
@@ -1806,7 +1808,7 @@ HICON CPluginClass::GetIcon(int type)
       s_hIcons[type] = (HICON)::LoadImage(_Module.m_hInst, imageToLoad.c_str(), IMAGE_ICON, iconWidth, iconHeight, LR_SHARED);
       if (!s_hIcons[type])
       {
-        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_LOAD_ICON, "Class::GetIcon - LoadIcon")
+        DEBUG_ERROR_LOG(::GetLastError(), PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_LOAD_ICON, "Class::GetIcon - LoadIcon");
       }
     }
 

@@ -47,9 +47,8 @@ CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
   }
   catch (const std::system_error& ex)
   {
-    auto errDescription = std::string("Tab::Thread - Failed to create tab thread") +
-                ex.code().message() + ex.what();
-    DEBUG_ERROR_LOG(ex.code().value(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_TAB_THREAD_CREATE_PROCESS, errDescription.c_str());
+    DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_TAB_THREAD_CREATE_PROCESS,
+      "Tab::Thread - Failed to create tab thread");
   }
   m_traverser = new CPluginDomTraverser(static_cast<CPluginTab*>(this));
 }
@@ -106,9 +105,8 @@ void CPluginTabBase::OnNavigate(const std::wstring& url)
   }
   catch (const std::system_error& ex)
   {
-    auto errDescription = std::string("Class::Thread - Failed to start filter loader thread, ") +
-      ex.code().message() + ex.what();
-    DEBUG_ERROR_LOG(ex.code().value(), PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, errDescription.c_str());
+    DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS,
+      "Class::Thread - Failed to start filter loader thread");
   }
   m_traverser->ClearCache();
 }
@@ -116,12 +114,17 @@ void CPluginTabBase::OnNavigate(const std::wstring& url)
 void CPluginTabBase::InjectABP(IWebBrowser2* browser)
 {
   CriticalSection::Lock lock(m_csInject);
-  CString url = ToCString(GetDocumentUrl());
-  CString log;
-  log.Format(L"InjectABP. Current URL: %s, settings URL: %s", url, UserSettingsFileUrl().c_str());
+  auto url = GetDocumentUrl();
+
+  std::wstring log = L"InjectABP. Current URL: ";
+  log += url;
+  log += L", settings URL: ";
+  log += UserSettingsFileUrl();
   DEBUG_GENERAL(log);
-  if (!(0 == url.CompareNoCase(CString(UserSettingsFileUrl().c_str())) ||
-      0 == url.CompareNoCase(CString(FirstRunPageFileUrl().c_str()))))
+
+  CString urlLegacy = ToCString(url);
+  if (!(0 == urlLegacy.CompareNoCase(CString(UserSettingsFileUrl().c_str())) ||
+      0 == urlLegacy.CompareNoCase(CString(FirstRunPageFileUrl().c_str()))))
   {
     DEBUG_GENERAL(L"Not injecting");
     return;
@@ -310,20 +313,18 @@ void CPluginTabBase::ClearFrameCache(const std::wstring& domain)
 void CPluginTabBase::ThreadProc()
 {
   // Force loading/creation of settings
-  CPluginSettings* settings = CPluginSettings::GetInstance();
+  CPluginSettings::GetInstance()->SetWorkingThreadId();
 
-  settings->SetWorkingThreadId();
-
-  CString threadInfo;
-  threadInfo.Format(L"%d.%d", ::GetCurrentProcessId(), ::GetCurrentThreadId());
-
-  CString debugText;
-
-  debugText += L"================================================================================";
-  debugText += L"\nTAB THREAD " + threadInfo;
-  debugText += L"\n================================================================================";
-
-  DEBUG_GENERAL(debugText)
+  std::string message =
+    "================================================================================\n"
+    "TAB THREAD process=";
+  message += std::to_string(::GetCurrentProcessId());
+  message + " thread=";
+  message += std::to_string(::GetCurrentThreadId());
+  message +=
+    "\n"
+    "================================================================================";
+  DEBUG_GENERAL(message);
 
   // --------------------------------------------------------------------
   // Tab loop

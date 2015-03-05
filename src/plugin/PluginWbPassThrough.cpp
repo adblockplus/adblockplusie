@@ -315,7 +315,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
   }
   std::wstring src = szURL;
   UnescapeUrl(src);
-  DEBUG_GENERAL(ToCString(src));
+  DEBUG_GENERAL(src);
 
   std::string acceptHeader = ExtractHttpAcceptHeader(m_spTargetProtocol);
 

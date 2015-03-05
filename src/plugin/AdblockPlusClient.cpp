@@ -169,9 +169,9 @@ bool CAdblockPlusClient::CallEngine(Communication::OutputBuffer& message, Commun
     enginePipe->WriteMessage(message);
     inputBuffer = enginePipe->ReadMessage();
   }
-  catch (const std::exception& e)
+  catch (const std::exception& ex)
   {
-    DEBUG_GENERAL(e.what());
+    DEBUG_EXCEPTION(ex);
     return false;
   }
   DEBUG_GENERAL("CallEngine end");
