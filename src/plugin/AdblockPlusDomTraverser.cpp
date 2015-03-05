@@ -150,12 +150,12 @@ void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const CString& type, co
 
     if (SUCCEEDED(pStyle->put_display(sbstrNone)))
     {
-      DEBUG_HIDE_EL(indent + L"HideEl::Hiding " + type + L" url:" + ToCString(url))
+      DEBUG_HIDE_EL(ToWstring(indent) + L"HideEl::Hiding " + ToWstring(type) + L" url:" + url)
 
 #ifdef ENABLE_DEBUG_RESULT
         if (isDebug)
         {
-          CPluginDebug::DebugResultHiding(type, ToCString(url), "-");
+          CPluginDebug::DebugResultHiding(ToWstring(type), url, L"-");
         }
 #endif // ENABLE_DEBUG_RESULT
     }

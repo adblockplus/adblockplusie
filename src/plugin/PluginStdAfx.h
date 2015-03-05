@@ -68,7 +68,6 @@ extern CComModule _Module;
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#include "PluginDebugMacros.h"
 #include "PluginErrorCodes.h"
 #include "Config.h"
 #include "Resource.h"

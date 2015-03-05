@@ -29,13 +29,13 @@ private:
   int m_errorId;
   int m_errorSubid;
   DWORD m_errorCode;
-  CString m_errorDescription;
+  std::string m_errorDescription;
   DWORD m_processId;
   DWORD m_threadId;
 
 public:
 
-  CPluginError(int errorId, int errorSubid, DWORD errorCode, const CString& errorDesc) : 
+  CPluginError(int errorId, int errorSubid, DWORD errorCode, const std::string& errorDesc) : 
     m_errorId(errorId), m_errorSubid(errorSubid), m_errorCode(errorCode), m_errorDescription(errorDesc)
   {
     m_processId = ::GetCurrentProcessId();
@@ -51,7 +51,7 @@ public:
   int GetErrorId() const { return m_errorId; }
   int GetErrorSubid() const { return m_errorSubid; }
   DWORD GetErrorCode() const { return m_errorCode; }
-  CString GetErrorDescription() const { return m_errorDescription; }
+  std::string GetErrorDescription() const { return m_errorDescription; }
   DWORD GetProcessId() const { return m_processId; }
   DWORD GetThreadId() const { return m_threadId; }
 };
@@ -64,8 +64,8 @@ private:
   static CComAutoCriticalSection s_criticalSectionQueue;
 
 public:
-  static void LogPluginError(DWORD errorCode, int errorId, int errorSubid, const CString& description="", bool isAsync=false, DWORD dwProcessId=0, DWORD dwThreadId=0);
-  static void PostPluginError(int errorId, int errorSubid, DWORD errorCode, const CString& errorDescription);
+  static void LogPluginError(DWORD errorCode, int errorId, int errorSubid, const std::string& description="", bool isAsync=false, DWORD dwProcessId=0, DWORD dwThreadId=0);
+  static void PostPluginError(int errorId, int errorSubid, DWORD errorCode, const std::string& errorDescription);
   static bool PopFirstPluginError(CPluginError& pluginError);
 };
 

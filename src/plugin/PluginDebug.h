@@ -18,29 +18,28 @@
 #ifndef _PLUGIN_DEBUG_H_
 #define _PLUGIN_DEBUG_H_
 
-
 class CPluginDebug
 {
 
 public:
+  static void DebugSystemException(const std::system_error& ex, int errorId, int errorSubid, const std::string& description); 
 
 #if (defined ENABLE_DEBUG_INFO)
-  static void Debug(const CString& error, DWORD dwProcessId=0, DWORD dwThreadId=0);
-  static void DebugClear();
-  static void DebugError(const CString& error);
-  static void DebugErrorCode(DWORD errorCode, const CString& error, DWORD dwProcessId=0, DWORD dwThreadId=0);
+  static void Debug(const std::string& text, DWORD processId=0, DWORD threadId=0);
+  static void Debug(const std::wstring& text, DWORD processId=0, DWORD threadId=0);
+  static void DebugException(const std::exception& ex);
+  static void DebugErrorCode(DWORD errorCode, const std::string& error, DWORD processId=0, DWORD threadId=0);
 #endif
 
 #if (defined ENABLE_DEBUG_RESULT)
-  static void DebugResult(const CString& text);
-  static void DebugResultDomain(const CString& domain);
-  static void DebugResultBlocking(const CString& type, const std::wstring& src, const std::wstring& domain);
-  static void DebugResultHiding(const CString& tag, const CString& id, const CString& filter);
-  static void DebugResultClear();
+  static void DebugResult(const std::wstring& text);
+  static void DebugResultDomain(const std::wstring& domain);
+  static void DebugResultBlocking(const std::wstring& type, const std::wstring& src, const std::wstring& domain);
+  static void DebugResultHiding(const std::wstring& tag, const std::wstring& id, const std::wstring& filter);
 #endif
 
 #if (defined ENABLE_DEBUG_RESULT_IGNORED)
-  static void DebugResultIgnoring(const CString& type, const std::wstring& src, const std::wstring& domain);
+  static void DebugResultIgnoring(const std::wstring& type, const std::wstring& src, const std::wstring& domain);
 #endif
 };
 
