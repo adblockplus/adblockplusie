@@ -201,7 +201,7 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
 {
   if (thisPtr == NULL)
     return 0;
-  if (!((CPluginClass*)thisPtr)->InitObject(true))
+  if (!((CPluginClass*)thisPtr)->InitObject())
   {
     ((CPluginClass*)thisPtr)->Unadvise();
   }
@@ -209,169 +209,143 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
   return 0;
 }
 
-// This gets called when a new browser window is created (which also triggers the
-// creation of this object). The pointer passed in should be to a IWebBrowser2
-// interface that represents the browser for the window.
-// it is also called when a tab is closed, this unknownSite will be null
-// so we should handle that it is called this way several times during a session
+/*
+ * IE calls this when it creates a new browser window or tab, immediately after it also 
+ * creates the object. The argument 'unknownSite' in is the OLE "site" of the object, 
+ * which is an IWebBrowser2 interface associated with the window/tab. 
+ *
+ * IE also ordinarily calls this again when its window/tab is closed, in which case
+ * 'unknownSite' will be null. Extraordinarily, this is sometimes _not_ called when IE
+ * is shutting down. Thus 'SetSite(nullptr)' has some similarities with a destructor,
+ * but it is not a proper substitute for one.
+ */
 STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 {
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  MULTIPLE_VERSIONS_CHECK();
-
-  if (unknownSite)
+  try
   {
-
-    DEBUG_GENERAL(L"================================================================================\nNEW TAB UI\n================================================================================")
-
-    HRESULT hr = ::CoInitialize(NULL);
-    if (FAILED(hr))
+    if (unknownSite)
     {
-      DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_COINIT, "Class::SetSite - CoInitialize");
-    }
 
-    s_criticalSectionBrowser.Lock();
-    {
-      m_webBrowser2 = unknownSite;
-    }
-    s_criticalSectionBrowser.Unlock();
+      DEBUG_GENERAL(L"================================================================================\nNEW TAB UI\n================================================================================")
 
-    //register the mimefilter
-    //and only mimefilter
-    //on some few computers the mimefilter does not get properly registered when it is done on another thread
-
-    s_criticalSectionLocal.Lock();
-    {
-      // Always register on startup, then check if we need to unregister in a separate thread
-      s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
-      s_asyncWebBrowser2 = unknownSite;
-      s_instances.insert(this);
-    }
-    s_criticalSectionLocal.Unlock();
-
-    try
-    {
-      // Check if loaded as BHO
-      auto webBrowser = GetBrowser();
-      if (webBrowser)
+      HRESULT hr = ::CoInitialize(NULL);
+      if (FAILED(hr))
       {
-        DEBUG_GENERAL("Loaded as BHO");
-        HRESULT hr = DispEventAdvise(webBrowser);
-        if (SUCCEEDED(hr))
-        {
-          m_isAdvised = true;
-          try
-          {
-            std::thread startInitObjectThread(StartInitObject, this);
-            startInitObjectThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
-          }
-          catch (const std::system_error& ex)
-          {
-            DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, 
-              "Class::Thread - Failed to create StartInitObject thread");
-          }
-        }
-        else
-        {
-          DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_ADVICE, "Class::SetSite - Advise");
-        }
+        DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_COINIT, "Class::SetSite - CoInitialize");
       }
-      else // Check if loaded as toolbar handler
-      {
-        DEBUG_GENERAL("Loaded as toolbar handler");
-        CComPtr<IServiceProvider> pServiceProvider;
 
-        HRESULT hr = unknownSite->QueryInterface(&pServiceProvider);
-        if (SUCCEEDED(hr))
+      s_criticalSectionBrowser.Lock();
+      {
+        m_webBrowser2 = unknownSite;
+      }
+      s_criticalSectionBrowser.Unlock();
+
+      //register the mimefilter
+      //and only mimefilter
+      //on some few computers the mimefilter does not get properly registered when it is done on another thread
+
+      s_criticalSectionLocal.Lock();
+      {
+        // Always register on startup, then check if we need to unregister in a separate thread
+        s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
+        s_asyncWebBrowser2 = unknownSite;
+        s_instances.insert(this);
+      }
+      s_criticalSectionLocal.Unlock();
+
+      try
+      {
+        auto webBrowser = GetBrowser();
+        if (webBrowser)
         {
-          if (pServiceProvider)
+          DEBUG_GENERAL("Loaded as BHO");
+          HRESULT hr = DispEventAdvise(webBrowser);
+          if (SUCCEEDED(hr))
           {
-            s_criticalSectionBrowser.Lock();
+            m_isAdvised = true;
+            try
             {
-              HRESULT hr = pServiceProvider->QueryService(IID_IWebBrowserApp, &m_webBrowser2);
-              if (SUCCEEDED(hr))
-              {
-                if (m_webBrowser2)
-                {
-                  InitObject(false);
-                }
-              }
-              else
-              {
-                DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_QUERY_BROWSER, "Class::SetSite - QueryService (IID_IWebBrowserApp)");
-              }
+              std::thread startInitObjectThread(StartInitObject, this);
+              startInitObjectThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
             }
-            s_criticalSectionBrowser.Unlock();
+            catch (const std::system_error& ex)
+            {
+              DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, 
+                "Class::Thread - Failed to create StartInitObject thread");
+            }
+          }
+          else
+          {
+            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_ADVICE, "Class::SetSite - Advise");
           }
         }
-        else
+      }
+      catch (const std::runtime_error& ex)
+      {
+        DEBUG_EXCEPTION(ex);
+        Unadvise();
+      }
+    }
+    else
+    {
+      Unadvise();
+
+      // Destroy window
+      if (m_pWndProcStatus)
+      {
+        ::SetWindowLongPtr(m_hStatusBarWnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)m_pWndProcStatus);
+
+        m_pWndProcStatus = NULL;
+      }
+
+      if (m_hPaneWnd)
+      {
+        DestroyWindow(m_hPaneWnd);
+        m_hPaneWnd = NULL;
+      }
+
+      m_hTabWnd = NULL;
+      m_hStatusBarWnd = NULL;
+
+      // Remove instance from the list, shutdown threads
+      HANDLE hMainThread = NULL;
+      HANDLE hTabThread = NULL;
+
+      s_criticalSectionLocal.Lock();
+      {
+        s_instances.erase(this);
+
+        std::map<DWORD,CPluginClass*>::iterator it = s_threadInstances.find(::GetCurrentThreadId());
+        if (it != s_threadInstances.end())
         {
-          DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_QUERY_SERVICE_PROVIDER, "Class::SetSite - QueryInterface (service provider)");
+          s_threadInstances.erase(it);
+        }
+        if (s_instances.empty())
+        {
+          // TODO: Explicitly releasing a resource when a container becomes empty looks like a job better suited for shared_ptr
+          CPluginClientFactory::ReleaseMimeFilterClientInstance();
         }
       }
+      s_criticalSectionLocal.Unlock();
+
+      // Release browser interface
+      s_criticalSectionBrowser.Lock();
+      {
+        m_webBrowser2.Release();
+      }
+      s_criticalSectionBrowser.Unlock();
+
+      DEBUG_GENERAL("================================================================================\nNEW TAB UI - END\n================================================================================")
+
+      ::CoUninitialize();
     }
-    catch (const std::runtime_error& ex)
-    {
-      DEBUG_EXCEPTION(ex);
-      Unadvise();
-    }
+
+    IObjectWithSiteImpl<CPluginClass>::SetSite(unknownSite);
   }
-  else
+  catch (...)
   {
-    Unadvise();
-
-    // Destroy window
-    if (m_pWndProcStatus)
-    {
-      ::SetWindowLongPtr(m_hStatusBarWnd, GWLP_WNDPROC, (LPARAM)(WNDPROC)m_pWndProcStatus);
-
-      m_pWndProcStatus = NULL;
-    }
-
-    if (m_hPaneWnd)
-    {
-      DestroyWindow(m_hPaneWnd);
-      m_hPaneWnd = NULL;
-    }
-
-    m_hTabWnd = NULL;
-    m_hStatusBarWnd = NULL;
-
-    // Remove instance from the list, shutdown threads
-    HANDLE hMainThread = NULL;
-    HANDLE hTabThread = NULL;
-
-    s_criticalSectionLocal.Lock();
-    {
-      s_instances.erase(this);
-
-      std::map<DWORD,CPluginClass*>::iterator it = s_threadInstances.find(::GetCurrentThreadId());
-      if (it != s_threadInstances.end())
-      {
-        s_threadInstances.erase(it);
-      }
-      if (s_instances.empty())
-      {
-        // TODO: Explicitly releasing a resource when a container becomes empty looks like a job better suited for shared_ptr
-        CPluginClientFactory::ReleaseMimeFilterClientInstance();
-      }
-    }
-    s_criticalSectionLocal.Unlock();
-
-    // Release browser interface
-    s_criticalSectionBrowser.Lock();
-    {
-      m_webBrowser2.Release();
-    }
-    s_criticalSectionBrowser.Unlock();
-
-    DEBUG_GENERAL("================================================================================\nNEW TAB UI - END\n================================================================================")
-
-    ::CoUninitialize();
   }
-
-  return IObjectWithSiteImpl<CPluginClass>::SetSite(unknownSite);
+  return S_OK;
 }
 
 bool CPluginClass::IsStatusBarEnabled()
@@ -601,7 +575,7 @@ void STDMETHODCALLTYPE CPluginClass::OnWindowStateChanged(unsigned long flags, u
         if (!m_isInitializedOk)
         {
           m_isInitializedOk = true;
-          InitObject(true);
+          InitObject();
           UpdateStatusBar();
         }
       }
@@ -654,7 +628,7 @@ void STDMETHODCALLTYPE CPluginClass::OnOnQuit()
   }
 }
 
-bool CPluginClass::InitObject(bool bBHO)
+bool CPluginClass::InitObject()
 {
   DEBUG_GENERAL("InitObject");
   CPluginSettings* settings = CPluginSettings::GetInstance();
@@ -731,7 +705,7 @@ bool CPluginClass::InitObject(bool bBHO)
 
   int ieVersion = AdblockPlus::IE::InstalledMajorVersion();
   // Create status pane
-  if (bBHO && ieVersion > 6 && !CreateStatusBarPane())
+  if (ieVersion > 6 && !CreateStatusBarPane())
   {
     return false;
   }

@@ -82,7 +82,6 @@
       'libadblockplus/libadblockplus.gyp:libadblockplus',
     ],
     'sources': [
-      'src/plugin/abp.h',
       'src/plugin/AdblockPlus.def',
       'src/plugin/AdblockPlus.idl',
       'src/plugin/AdblockPlus.rc',

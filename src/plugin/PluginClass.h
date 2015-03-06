@@ -119,7 +119,7 @@ private:
   std::wstring GetBrowserUrl() const;
 
   static DWORD WINAPI StartInitObject(LPVOID thisPtr);
-  bool InitObject(bool bBHO);
+  bool InitObject();
   void CloseTheme();
   void UpdateTheme();
 
