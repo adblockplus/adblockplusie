@@ -25,8 +25,8 @@ public:
   static void DebugSystemException(const std::system_error& ex, int errorId, int errorSubid, const std::string& description); 
 
 #if (defined ENABLE_DEBUG_INFO)
-  static void Debug(const std::string& text, DWORD processId=0, DWORD threadId=0);
-  static void Debug(const std::wstring& text, DWORD processId=0, DWORD threadId=0);
+  static void Debug(const std::string& text);
+  static void Debug(const std::wstring& text);
   static void DebugException(const std::exception& ex);
   static void DebugErrorCode(DWORD errorCode, const std::string& error, DWORD processId=0, DWORD threadId=0);
 #endif

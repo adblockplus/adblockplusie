@@ -52,8 +52,6 @@ class CPluginIniFileW;
 class CPluginSettings
 {
 private:
-  DWORD m_dwWorkingThreadId;
-
   static CComAutoCriticalSection s_criticalSectionLocal;
 
   void Clear();
@@ -72,10 +70,6 @@ public:
   bool IsPluginEnabled() const;
 
   std::map<std::wstring, std::wstring> GetFilterLanguageTitleList() const;
-
-  void SetWorkingThreadId();
-  void SetWorkingThreadId(DWORD id);
-  bool IsWorkingThread(DWORD dwThread=0) const;
 
 public:
 
@@ -101,7 +95,5 @@ public:
   void SetSubscription(const std::wstring& url);
   std::wstring GetSubscription();
 };
-
-std::wstring GetDataPath(const std::wstring& filename=L"");
 
 #endif // _PLUGIN_SETTINGS_H_

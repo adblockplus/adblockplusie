@@ -41,7 +41,7 @@ public:
 CPluginSettings* CPluginSettings::s_instance = NULL;
 CComAutoCriticalSection CPluginSettings::s_criticalSectionLocal;
 
-CPluginSettings::CPluginSettings() : m_dwWorkingThreadId(0)
+CPluginSettings::CPluginSettings()
 {
   s_instance = NULL;
   ClearWhitelist();
@@ -84,11 +84,6 @@ bool CPluginSettings::HasInstance()
   return hasInstance;
 }
 
-std::wstring GetDataPath(const std::wstring& filename)
-{
-  return GetAppDataPath() + L"\\" + filename;
-}
-
 bool CPluginSettings::IsPluginEnabled() const
 {
   return GetPluginEnabled();
@@ -105,25 +100,6 @@ std::map<std::wstring, std::wstring> CPluginSettings::GetFilterLanguageTitleList
     filterList.insert(std::make_pair(it.url, it.title));
   }
   return filterList;
-}
-
-bool CPluginSettings::IsWorkingThread(DWORD dwThreadId) const
-{
-  if (dwThreadId == 0)
-  {
-    dwThreadId = ::GetCurrentThreadId();
-  }
-  return m_dwWorkingThreadId == dwThreadId;
-}
-
-void CPluginSettings::SetWorkingThreadId()
-{
-  m_dwWorkingThreadId = ::GetCurrentThreadId();
-}
-
-void CPluginSettings::SetWorkingThreadId(DWORD id)
-{
-  m_dwWorkingThreadId = id;
 }
 
 void CPluginSettings::TogglePluginEnabled()

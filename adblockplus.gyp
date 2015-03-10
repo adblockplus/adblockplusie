@@ -123,7 +123,6 @@
       'src/plugin/ATL_Deprecate.cpp',
       'src/plugin/ATL_Deprecate.h',
       'src/plugin/Config.h',
-      'src/plugin/Console.h',
       'src/plugin/NotificationMessage.cpp',
       'src/plugin/NotificationMessage.h',
       'src/plugin/Plugin.cpp',

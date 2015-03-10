@@ -388,7 +388,7 @@ void CPluginTabBase::ClearFrameCache(const std::wstring& domain)
 void CPluginTabBase::ThreadProc()
 {
   // Force loading/creation of settings
-  CPluginSettings::GetInstance()->SetWorkingThreadId();
+  CPluginSettings::GetInstance();
 
   std::string message =
     "================================================================================\n"

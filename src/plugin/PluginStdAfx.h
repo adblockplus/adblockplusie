@@ -82,6 +82,3 @@
 #define countof(x) (sizeof(x)/sizeof(*x))
 #endif
 
-#ifdef USE_CONSOLE
-#include "Console.h"
-#endif
