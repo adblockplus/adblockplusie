@@ -16,12 +16,10 @@
  */
 
 #include "PluginStdAfx.h"
-
-#include "PluginClient.h"
+#include "AdblockPlusDomTraverser.h"
+#include "AdblockPlusClient.h"
 #include "PluginFilter.h"
 #include "PluginSettings.h"
-
-#include "AdblockPlusDomTraverser.h"
 
 
 CPluginDomTraverser::CPluginDomTraverser(CPluginTab* tab) : CPluginDomTraverserBase(tab)

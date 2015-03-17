@@ -16,15 +16,12 @@
  */
 
 #include "PluginStdAfx.h"
+#include "AdblockPlusClient.h"
 #include "PluginSettings.h"
 #include "PluginSystem.h"
 #include "PluginFilter.h"
-#include "PluginClientFactory.h"
 #include "PluginMutex.h"
 #include "PluginClass.h"
-
-#include "AdblockPlusClient.h"
-
 #include "../shared/Utils.h"
 
 namespace

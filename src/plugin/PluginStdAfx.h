@@ -39,7 +39,6 @@
 //#define _CRT_SECURE_NO_DEPRECATE 1
 #include "ATL_Deprecate.h"
 
-extern CComModule _Module;
 #include <stdio.h>
 #include <assert.h>
 #include <stdexcept>
@@ -77,13 +76,6 @@ extern CComModule _Module;
 #include <stdlib.h>
 #include <crtdbg.h>
 
-
-#ifdef _MSC_VER
-#pragma warning(push)
-// warning C4996: function call with parameters that might be unsafe
-#pragma warning(disable : 4996)
-#endif
-
 #endif // not _STDAFX_H
 
 #ifndef countof
@@ -93,5 +85,3 @@ extern CComModule _Module;
 #ifdef USE_CONSOLE
 #include "Console.h"
 #endif
-
-#include "BuildVariant.h"

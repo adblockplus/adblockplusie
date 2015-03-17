@@ -17,9 +17,8 @@
 
 #include "PluginStdAfx.h"
 #include "PluginUserSettings.h"
-#include <algorithm>
+#include "AdblockPlusClient.h"
 #include "PluginSettings.h"
-#include "PluginClient.h"
 #include "../shared/Dictionary.h"
 #include <unordered_map>
 

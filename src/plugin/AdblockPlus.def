@@ -1,11 +1,9 @@
 ; AdBlockPlus.def : Declares the module parameters.
 
-LIBRARY      "ADBLOCKPLUS.DLL"
+LIBRARY "ADBLOCKPLUS.DLL"
 
 EXPORTS
-	DllCanUnloadNow      PRIVATE
-	DllGetClassObject    PRIVATE
-	DllRegisterServer    PRIVATE
-	DllUnregisterServer	 PRIVATE
-	OnInstall
-	OnUpdate
+  DllCanUnloadNow      PRIVATE
+  DllGetClassObject    PRIVATE
+  DllRegisterServer    PRIVATE
+  DllUnregisterServer  PRIVATE

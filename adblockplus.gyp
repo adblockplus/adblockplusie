@@ -41,9 +41,15 @@
     ],
     'sources': [
       'src/shared/AutoHandle.cpp',
+      'src/shared/AutoHandle.h',
       'src/shared/Communication.cpp',
+      'src/shared/Communication.h',
+      'src/shared/CriticalSection.h',
       'src/shared/Dictionary.cpp',
+      'src/shared/Dictionary.h',
       'src/shared/Utils.cpp',
+      'src/shared/Utils.h',
+      'src/shared/Version.h',
       ]
   },
 
@@ -95,7 +101,6 @@
       'src/plugin/AdblockPlusGuids.h',
       'src/plugin/ATL_Deprecate.cpp',
       'src/plugin/ATL_Deprecate.h',
-      'src/plugin/BuildVariant.h',
       'src/plugin/Config.h',
       'src/plugin/Console.h',
       'src/plugin/NotificationMessage.cpp',
@@ -104,7 +109,6 @@
       'src/plugin/Plugin.h',
       'src/plugin/PluginClass.cpp',
       'src/plugin/PluginClass.h',
-      'src/plugin/PluginClient.h',
       'src/plugin/PluginClientBase.cpp',
       'src/plugin/PluginClientBase.h',
       'src/plugin/PluginClientFactory.cpp',

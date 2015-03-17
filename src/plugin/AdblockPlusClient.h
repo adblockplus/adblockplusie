@@ -19,12 +19,9 @@
 #define _ADBLOCK_PLUS_CLIENT_H_
 
 #include <MsHTML.h>
-
-#include "PluginClientBase.h"
 #include "../shared/Communication.h"
 #include "../shared/CriticalSection.h"
 #include <AdblockPlus/FilterEngine.h>
-
 
 class CPluginFilter;
 
@@ -104,5 +101,7 @@ public:
 
   bool IsFirstRun();
 };
+
+typedef CAdblockPlusClient CPluginClient;
 
 #endif // _ADBLOCK_PLUS_CLIENT_H_

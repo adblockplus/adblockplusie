@@ -16,8 +16,8 @@
  */
 
 #include "PluginStdAfx.h"
-
 #include "PluginDebug.h"
+#include "PluginClientBase.h"
 #include "PluginMutex.h"
 #include "PluginSettings.h"
 
