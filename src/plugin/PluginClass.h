@@ -43,11 +43,11 @@ class CPluginMimeFilterClient;
 
 
 class ATL_NO_VTABLE CPluginClass :
-  public CComObjectRootEx<CComMultiThreadModel>,
-  public CComCoClass<CPluginClass, &CLSID_PluginClass>,
-  public IObjectWithSiteImpl<CPluginClass>,
-  public IDispatchImpl<IIEPlugin, &IID_IIEPlugin, &LIBID_PluginLib>,
-  public IOleCommandTarget
+  public ATL::CComObjectRootEx<ATL::CComMultiThreadModel>,
+  public ATL::CComCoClass<CPluginClass, &CLSID_PluginClass>,
+  public ATL::IObjectWithSiteImpl<CPluginClass>,
+  public IOleCommandTarget,
+  public ATL::IDispEventImpl<1, CPluginClass, &DIID_DWebBrowserEvents2, &LIBID_SHDocVw, 1, 1>
 {
 
   friend class CPluginTab;
@@ -63,11 +63,18 @@ public:
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
   BEGIN_COM_MAP(CPluginClass)
-    COM_INTERFACE_ENTRY(IIEPlugin)
-    COM_INTERFACE_ENTRY(IDispatch)
     COM_INTERFACE_ENTRY(IObjectWithSite)
     COM_INTERFACE_ENTRY(IOleCommandTarget)
   END_COM_MAP()
+
+  BEGIN_SINK_MAP(CPluginClass)
+    SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2, OnBeforeNavigate2)
+    SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_DOWNLOADCOMPLETE, OnDownloadComplete)
+    SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete)
+    SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_WINDOWSTATECHANGED, OnWindowStateChanged)
+    SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_COMMANDSTATECHANGE, OnCommandStateChange)
+    SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_ONQUIT, OnOnQuit)
+  END_SINK_MAP()
 
   CPluginClass();
   ~CPluginClass();
@@ -84,10 +91,6 @@ public:
   STDMETHOD(QueryStatus)(const GUID* pguidCmdGroup, ULONG cCmds, OLECMD prgCmds[], OLECMDTEXT* pCmdText);
   STDMETHOD(Exec)(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG* pvaOut);
 
-  // IDispatch
-
-  STDMETHOD(Invoke)(DISPID dispidMember,REFIID riid, LCID lcid, WORD wFlags,
-    DISPPARAMS * pdispparams, VARIANT * pvarResult,EXCEPINFO * pexcepinfo, UINT * puArgErr);
 
   static CPluginTab* GetTab(DWORD dwThreadId);
   CPluginTab* GetTab();
@@ -103,14 +106,11 @@ private:
   void DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, UINT nMenuFlags);
   bool CreateStatusBarPane();
 
-  CComPtr<IConnectionPoint> GetConnectionPoint();
-
 public:
   HWND GetBrowserHWND() const;
   HWND GetTabHWND() const;
   CComQIPtr<IWebBrowser2> GetBrowser() const;
 
-  STDMETHODIMP OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags);
 
   static CPluginMimeFilterClient* s_mimeFilter;
 
@@ -128,9 +128,20 @@ private:
   static LRESULT CALLBACK NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
   static LRESULT CALLBACK PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
   static void FirstRunThread();
-  void BeforeNavigate2(DISPPARAMS* pDispParams);
 
-  void Unadvice();
+  void STDMETHODCALLTYPE OnBeforeNavigate2(IDispatch* pDisp /**< [in] */,
+                                           VARIANT* URL /**< [in] */,
+                                           VARIANT* Flags /**< [in] */,
+                                           VARIANT* TargetFrameName /**< [in] */,
+                                           VARIANT* PostData /**< [in] */,
+                                           VARIANT* Headers /**< [in] */,
+                                           VARIANT_BOOL* Cancel /* [in, out] */);
+  void STDMETHODCALLTYPE OnDownloadComplete();
+  void STDMETHODCALLTYPE OnDocumentComplete(IDispatch* frameBrowserDisp, VARIANT* /*urlOrPidl*/);
+  void STDMETHODCALLTYPE OnWindowStateChanged(unsigned long flags, unsigned long validFlagsMask);
+  void STDMETHODCALLTYPE OnCommandStateChange(long command, VARIANT_BOOL enable);
+  void STDMETHODCALLTYPE OnOnQuit();
+  void Unadvise();
 
   void ShowStatusBar();
   bool IsStatusBarEnabled();
@@ -138,7 +149,6 @@ private:
 public:
   CComQIPtr<IWebBrowser2> m_webBrowser2;
 private:
-  DWORD m_nConnectionID;
   HWND m_hBrowserWnd;
   HWND m_hTabWnd;
   HWND m_hStatusBarWnd;
@@ -152,7 +162,7 @@ private:
 
   NotificationMessage notificationMessage;
 
-  bool m_isAdviced;
+  bool m_isAdvised;
   bool m_isInitializedOk;
 
   // Atom pane class
