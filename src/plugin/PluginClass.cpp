@@ -94,8 +94,7 @@ CPluginClass::CPluginClass()
   //Use this line to debug memory leaks
   //	_CrtDumpMemoryLeaks();
 
-  m_isAdviced = false;
-  m_nConnectionID = 0;
+  m_isAdvised = false;
   m_hTabWnd = NULL;
   m_hStatusBarWnd = NULL;
   m_hPaneWnd = NULL;
@@ -131,28 +130,6 @@ void CPluginClass::FinalRelease()
     m_webBrowser2.Release();
   }
   s_criticalSectionBrowser.Unlock();
-}
-
-
-// This method tries to get a 'connection point' from the stored browser, which can be
-// used to attach or detach from the stream of browser events
-CComPtr<IConnectionPoint> CPluginClass::GetConnectionPoint()
-{
-  CComQIPtr<IConnectionPointContainer, &IID_IConnectionPointContainer> pContainer(GetBrowser());
-  if (!pContainer)
-  {
-    return NULL;
-  }
-
-  CComPtr<IConnectionPoint> pPoint;
-  HRESULT hr = pContainer->FindConnectionPoint(DIID_DWebBrowserEvents2, &pPoint);
-  if (FAILED(hr))
-  {
-    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_FIND_CONNECTION_POINT, "Class::GetConnectionPoint - FindConnectionPoint")
-      return NULL;
-  }
-
-  return pPoint;
 }
 
 HWND CPluginClass::GetBrowserHWND() const
@@ -226,13 +203,11 @@ DWORD WINAPI CPluginClass::StartInitObject(LPVOID thisPtr)
     return 0;
   if (!((CPluginClass*)thisPtr)->InitObject(true))
   {
-    ((CPluginClass*)thisPtr)->Unadvice();
+    ((CPluginClass*)thisPtr)->Unadvise();
   }
 
   return 0;
 }
-
-
 
 // This gets called when a new browser window is created (which also triggers the
 // creation of this object). The pointer passed in should be to a IWebBrowser2
@@ -278,32 +253,28 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     try
     {
       // Check if loaded as BHO
-      if (GetBrowser())
+      auto webBrowser = GetBrowser();
+      if (webBrowser)
       {
         DEBUG_GENERAL("Loaded as BHO");
-        CComPtr<IConnectionPoint> pPoint = GetConnectionPoint();
-        if (pPoint)
+        HRESULT hr = DispEventAdvise(webBrowser);
+        if (SUCCEEDED(hr))
         {
-          HRESULT hr = pPoint->Advise((IDispatch*)this, &m_nConnectionID);
-          if (SUCCEEDED(hr))
+          m_isAdvised = true;
+          try
           {
-            m_isAdviced = true;
-
-            try
-            {
-              std::thread startInitObjectThread(StartInitObject, this);
-              startInitObjectThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
-            }
-            catch (const std::system_error& ex)
-            {
-              DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, 
-                "Class::Thread - Failed to create StartInitObject thread");
-            }
+            std::thread startInitObjectThread(StartInitObject, this);
+            startInitObjectThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
           }
-          else
+          catch (const std::system_error& ex)
           {
-            DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_ADVICE, "Class::SetSite - Advice");
+            DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS, 
+              "Class::Thread - Failed to create StartInitObject thread");
           }
+        }
+        else
+        {
+          DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_ADVICE, "Class::SetSite - Advise");
         }
       }
       else // Check if loaded as toolbar handler
@@ -343,13 +314,12 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     catch (const std::runtime_error& ex)
     {
       DEBUG_EXCEPTION(ex);
-      Unadvice();
+      Unadvise();
     }
   }
   else
   {
-    // Unadvice
-    Unadvice();
+    Unadvise();
 
     // Destroy window
     if (m_pWndProcStatus)
@@ -517,66 +487,45 @@ void CPluginClass::ShowStatusBar()
   DEBUG_GENERAL("ShowStatusBar end");
 }
 
-/*
- * #1163 This class is the implementation for method DISPID_BEFORENAVIGATE2 in CPluginClass::Invoke.
- * - It validates and convertes its own arguments, rather than unifying them in the Invoke body.
- * - It's declared void and not HRESULT, so DISPID_BEFORENAVIGATE2 can only return S_OK.
- */
-void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
+// Entry point
+void STDMETHODCALLTYPE CPluginClass::OnBeforeNavigate2(
+  IDispatch* frameBrowserDisp /**< [in] */,
+  VARIANT* urlVariant /**< [in] */,
+  VARIANT* /**< [in] Flags*/,
+  VARIANT* /**< [in] TargetFrameName*/,
+  VARIANT* /**< [in] PostData*/,
+  VARIANT* /**< [in] Headers*/,
+  VARIANT_BOOL* /**< [in, out] Cancel*/)
 {
-
-  if (pDispParams->cArgs < 7)
+  try
   {
-    return;
-  }
-  //Register a mime filter if it's not registered yet
-  if (s_mimeFilter == NULL)
-  {
-    s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
-  }
-
-  // Get the IWebBrowser2 interface
-  CComQIPtr<IWebBrowser2, &IID_IWebBrowser2> WebBrowser2Ptr;
-  VARTYPE vt = pDispParams->rgvarg[6].vt;
-  if (vt == VT_DISPATCH)
-  {
-    WebBrowser2Ptr = pDispParams->rgvarg[6].pdispVal;
-  }
-  else
-  {
-    // Wrong type, return.
-    return;
-  }
-
-  // Get the URL
-  std::wstring url;
-  const auto& arg = pDispParams->rgvarg[5];
-  vt = arg.vt;
-  if (vt == (VT_BYREF | VT_VARIANT) && arg.pvarVal->vt == VT_BSTR)
-  {
-    BSTR b = arg.pvarVal->bstrVal;
-    if (b) {
-      url = std::wstring(b, SysStringLen(b));
-      UnescapeUrl(url);
+    ATL::CComQIPtr<IWebBrowser2> webBrowser = frameBrowserDisp;
+    if (!webBrowser)
+    {
+      return;
     }
-  }
-  else
-  {
-    // Wrong type, return.
-    return;
-  }
+    if (!urlVariant || urlVariant->vt != VT_BSTR)
+    {
+      return;
+    }
+    std::wstring url(urlVariant->bstrVal, SysStringLen(urlVariant->bstrVal));
+    UnescapeUrl(url);
 
-  // If webbrowser2 is equal to top level browser (as set in SetSite), we are navigating new page
-  CPluginClient* client = CPluginClient::GetInstance();
-  CString urlLegacy = ToCString(url);
-  if (urlLegacy.Find(L"javascript") == 0)
-  {
-  }
-  else if (GetBrowser().IsEqualObject(WebBrowser2Ptr))
-  {
-    m_tab->OnNavigate(url);
-
-    DEBUG_GENERAL(
+    //Register a mime filter if it's not registered yet
+    if (s_mimeFilter == nullptr)
+    {
+      s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
+    }
+    // If webbrowser2 is equal to top level browser (as set in SetSite), we are
+    // navigating new page
+    CPluginClient* client = CPluginClient::GetInstance();
+    if (url.find(L"javascript") == 0)
+    {
+    }
+    else if (GetBrowser().IsEqualObject(webBrowser))
+    {
+      m_tab->OnNavigate(url);
+      DEBUG_GENERAL(
       L"================================================================================\n"
       L"Begin main navigation url:" + url + L"\n"
       L"================================================================================")
@@ -584,195 +533,125 @@ void CPluginClass::BeforeNavigate2(DISPPARAMS* pDispParams)
 #ifdef ENABLE_DEBUG_RESULT
       CPluginDebug::DebugResultDomain(url);
 #endif
-
-    UpdateStatusBar();
-  }
-  else
-  {
-    DEBUG_NAVI(L"Navi::Begin navigation url:" + url)
-    m_tab->CacheFrame(url);
-  }
-}
-
-/*
- * #1163 implements behavior for method DISPID_WINDOWSTATECHANGED in CPluginClass::Invoke
- * - should validate and convert arguments in Invoke, not here
- * - does not validate number of arguments before indexing into 'rgvarg'
- * - does not validate type of argument before using its value
- */
-STDMETHODIMP CPluginClass::OnTabChanged(DISPPARAMS* pDispParams, WORD wFlags)
-{
-  DEBUG_GENERAL("Tab changed");
-  bool newtabshown = pDispParams->rgvarg[1].intVal==3;
-  if (newtabshown)
-  {
-    std::map<DWORD,CPluginClass*>::const_iterator it = s_threadInstances.find(GetCurrentThreadId());
-    if (it == s_threadInstances.end())
+      UpdateStatusBar();
+    }
+    else
     {
-      s_threadInstances[::GetCurrentThreadId()] = this;
-      if (!m_isInitializedOk)
-      {
-        m_isInitializedOk = true;
-        InitObject(true);
-        UpdateStatusBar();
-      }
+      DEBUG_NAVI(L"Navi::Begin navigation url:" + url)
+      m_tab->CacheFrame(url);
     }
   }
-  notificationMessage.Hide();
-  DEBUG_GENERAL("Tab change end");
-  return S_OK;
+  catch (...)
+  {
+  }
 }
 
-// This gets called whenever there's a browser event
-// ENTRY POINT
-STDMETHODIMP CPluginClass::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pvarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr)
+// Entry point
+void STDMETHODCALLTYPE CPluginClass::OnDownloadComplete()
 {
   try
   {
-    WCHAR tmp[256];
-    wsprintf(tmp, L"Invoke: %d\n", dispidMember);
-    DEBUG_GENERAL(tmp);
-    switch (dispidMember)
+    DEBUG_NAVI(L"Navi::Download Complete")
+    ATL::CComPtr<IWebBrowser2> browser = GetBrowser();
+    if (browser)
     {
-    case DISPID_WINDOWSTATECHANGED:
-      {
-        // #1163 should validate and convert arguments here
-        return OnTabChanged(pDispParams, wFlags);
-      }
-
-    case DISPID_HTMLDOCUMENTEVENTS2_ONBEFOREUPDATE:
-      break;
-
-    case DISPID_HTMLDOCUMENTEVENTS2_ONCLICK:
-      break;
-
-    case DISPID_EVMETH_ONLOAD:
-      DEBUG_NAVI("Navi::OnLoad")
-      break;
-
-    case DISPID_EVMETH_ONCHANGE:
-      break;
-
-    case DISPID_EVMETH_ONMOUSEDOWN:
-      break;
-
-    case DISPID_EVMETH_ONMOUSEENTER:
-      break;
-
-    case DISPID_IHTMLIMGELEMENT_START:
-      break;
-
-    case STDDISPID_XOBJ_ERRORUPDATE:
-      break;
-
-    case STDDISPID_XOBJ_ONPROPERTYCHANGE:
-      break;
-
-    case DISPID_READYSTATECHANGE:
-      DEBUG_NAVI("Navi::ReadyStateChange");
-      break;
-
-    case DISPID_BEFORENAVIGATE:
-      DEBUG_NAVI("Navi::BeforeNavigate");
-      break;
-
-    case DISPID_COMMANDSTATECHANGE:
-      if (m_hPaneWnd == NULL)
-      {
-        CreateStatusBarPane();
-      }
-      else
-      {
-      if (AdblockPlus::IE::InstalledMajorVersion() > 6)
-        {
-          RECT rect;
-          //Get the RECT for the leftmost pane (the status text pane)
-          BOOL rectRes = ::SendMessage(m_hStatusBarWnd, SB_GETRECT, 0, (LPARAM)&rect);
-          if (rectRes == TRUE)
-          {
-            MoveWindow(m_hPaneWnd, rect.right - m_nPaneWidth, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
-          }
-        }      
-      }
-      break;
-
-    case DISPID_STATUSTEXTCHANGE:
-      break;
-
-    case DISPID_BEFORENAVIGATE2:
-      {
-        // #1163 should validate and convert parameters here
-        BeforeNavigate2(pDispParams);
-      }
-      break;
-
-    case DISPID_DOWNLOADBEGIN:
-      {
-        DEBUG_NAVI("Navi::Download Begin")
-      }
-      break;
-
-    case DISPID_DOWNLOADCOMPLETE:
-      {
-        DEBUG_NAVI("Navi::Download Complete");
-        CComQIPtr<IWebBrowser2> browser = GetBrowser();
-        if (browser)
-        {
-          m_tab->OnDownloadComplete(browser);
-        }
-      }
-      break;
-
-    case DISPID_DOCUMENTCOMPLETE:
-      {
-        DEBUG_NAVI("Navi::Document Complete");
-        CComQIPtr<IWebBrowser2> browser = GetBrowser();
-        if (browser && pDispParams->cArgs >= 2 && pDispParams->rgvarg[1].vt == VT_DISPATCH)
-        {
-          CComQIPtr<IWebBrowser2> pBrowser = pDispParams->rgvarg[1].pdispVal;
-          if (pBrowser)
-          {
-            CComBSTR bstrUrl;
-            if (SUCCEEDED(pBrowser->get_LocationURL(&bstrUrl)) && bstrUrl && ::SysStringLen(bstrUrl) > 0)
-            {
-              std::wstring url = std::wstring(bstrUrl, SysStringLen(bstrUrl));
-              UnescapeUrl(url);
-              m_tab->OnDocumentComplete(browser, url, browser.IsEqualObject(pBrowser));
-            }
-          }
-        }
-      }
-      break;
-
-    case DISPID_ONQUIT:
-    case DISPID_QUIT:
-      {
-        Unadvice();
-      }
-      break;
-
-    default:
-      {
-        CString did;
-        did.Format(L"DispId:%u", dispidMember);
-
-        DEBUG_NAVI(L"Navi::Default " + did)
-      }
-      /*
-       * Ordinarily a method not dispatched should return DISP_E_MEMBERNOTFOUND.
-       * As a conservative initial change, we leave it behaving as before,
-       *   which is to do nothing and return S_OK.
-       */
-      // do nothing
-      break;
+      m_tab->OnDownloadComplete(browser);
     }
   }
-  catch(...)
+  catch (...)
   {
-    DEBUG_GENERAL( "Caught unknown exception in CPluginClass::Invoke" );
-    return E_FAIL;
   }
-  return S_OK;
+}
+
+// Entry point
+void STDMETHODCALLTYPE CPluginClass::OnDocumentComplete(IDispatch* frameBrowserDisp, VARIANT* /*urlOrPidl*/)
+{
+  try
+  {
+    DEBUG_NAVI(L"Navi::Document Complete");
+    ATL::CComQIPtr<IWebBrowser2> webBrowser2 = frameBrowserDisp;
+    if (!webBrowser2)
+    {
+      return;
+    }
+    std::wstring frameSrc = GetLocationUrl(*webBrowser2);
+    UnescapeUrl(frameSrc);
+    bool isRootPageBrowser = GetBrowser().IsEqualObject(webBrowser2);
+    m_tab->OnDocumentComplete(webBrowser2, frameSrc, isRootPageBrowser);
+  }
+  catch (...)
+  {
+  }
+}
+
+// Entry point
+void STDMETHODCALLTYPE CPluginClass::OnWindowStateChanged(unsigned long flags, unsigned long validFlagsMask)
+{
+  try
+  {
+    DEBUG_GENERAL(L"WindowStateChanged (check tab changed)");
+    bool newtabshown = validFlagsMask == (OLECMDIDF_WINDOWSTATE_USERVISIBLE | OLECMDIDF_WINDOWSTATE_ENABLED)
+      && flags == (OLECMDIDF_WINDOWSTATE_USERVISIBLE | OLECMDIDF_WINDOWSTATE_ENABLED);
+    if (newtabshown)
+    {
+      std::map<DWORD,CPluginClass*>::const_iterator it = s_threadInstances.find(GetCurrentThreadId());
+      if (it == s_threadInstances.end())
+      {
+        s_threadInstances[::GetCurrentThreadId()] = this;
+        if (!m_isInitializedOk)
+        {
+          m_isInitializedOk = true;
+          InitObject(true);
+          UpdateStatusBar();
+        }
+      }
+    }
+    notificationMessage.Hide();
+    DEBUG_GENERAL(L"WindowStateChanged (check tab changed) end");
+  }
+  catch (...)
+  {
+  }
+}
+
+// Entry point
+void STDMETHODCALLTYPE CPluginClass::OnCommandStateChange(long /*command*/, VARIANT_BOOL /*enable*/)
+{
+  try
+  {
+    if (m_hPaneWnd == NULL)
+    {
+      CreateStatusBarPane();
+    }
+    else
+    {
+      if (AdblockPlus::IE::InstalledMajorVersion() > 6)
+      {
+        RECT rect;
+        //Get the RECT for the leftmost pane (the status text pane)
+        BOOL rectRes = ::SendMessage(m_hStatusBarWnd, SB_GETRECT, 0, (LPARAM)&rect);
+        if (rectRes == TRUE)
+        {
+          MoveWindow(m_hPaneWnd, rect.right - m_nPaneWidth, 0, m_nPaneWidth, rect.bottom - rect.top, TRUE);
+        }
+      }
+    }
+  }
+  catch (...)
+  {
+  }
+}
+
+// Entry point
+void STDMETHODCALLTYPE CPluginClass::OnOnQuit()
+{
+  try
+  {
+    Unadvise();
+  }
+  catch (...)
+  {
+  }
 }
 
 bool CPluginClass::InitObject(bool bBHO)
@@ -1773,23 +1652,18 @@ void CPluginClass::UpdateStatusBar()
 }
 
 
-void CPluginClass::Unadvice()
+void CPluginClass::Unadvise()
 {
   s_criticalSectionLocal.Lock();
   {
-    if (m_isAdviced)
+    if (m_isAdvised)
     {
-      CComPtr<IConnectionPoint> pPoint = GetConnectionPoint();
-      if (pPoint)
+      HRESULT hr = DispEventUnadvise(GetBrowser());
+      if (FAILED(hr))
       {
-        HRESULT hr = pPoint->Unadvise(m_nConnectionID);
-        if (FAILED(hr))
-        {
-          DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_UNADVICE, "Class::Unadvice - Unadvise");
-        }
+        DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_UNADVISE, "Class::Unadvise - Unadvise");
       }
-
-      m_isAdviced = false;
+      m_isAdvised = false;
     }
   }
   s_criticalSectionLocal.Unlock();
@@ -1889,7 +1763,5 @@ HWND CPluginClass::GetTabHWND() const
 
     hTabWnd = ::GetWindow(hTabWnd, GW_HWNDNEXT);
   }
-
   return hTabWnd;
-
 }
