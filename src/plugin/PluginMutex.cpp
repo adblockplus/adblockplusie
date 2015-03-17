@@ -18,8 +18,7 @@
 #include "PluginStdAfx.h"
 
 #include "PluginMutex.h"
-#include "PluginClient.h"
-#include "sddl.h"
+#include "PluginClientBase.h"
 
 
 CPluginMutex::CPluginMutex(const std::wstring& name, int errorSubidBase) 

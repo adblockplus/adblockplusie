@@ -19,6 +19,7 @@
 #define _PLUGIN_DOM_TRAVERSER_BASE_H_
 
 #include "PluginTabBase.h"
+#include "PluginUtil.h"
 
 class CPluginDomTraverserCacheBase
 {

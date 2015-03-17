@@ -25,14 +25,8 @@
 #endif
 
 #include "PluginClass.h"
-#include "PluginClient.h"
-#include "PluginSystem.h"
-#include "PluginSettings.h"
 #include "PluginMimeFilterClient.h"
-#include "Msiquery.h"
-#include "PluginFilter.h"
-
-#include "../shared/Dictionary.h"
+#include "PluginSettings.h"
 
 CComModule _Module;
 
@@ -111,41 +105,3 @@ STDAPI DllUnregisterServer(void)
   return _Module.UnregisterServer(TRUE);
 }
 
-void InitPlugin(bool isInstall)
-{
-  CPluginSettings* settings = CPluginSettings::GetInstance();
-
-  if (isInstall)
-  {
-    DEBUG_GENERAL(
-      L"================================================================================\n"
-      L"INSTALLER " IEPLUGIN_VERSION L"\n"
-      L"================================================================================")
-  }
-  else
-  {
-    DEBUG_GENERAL(
-      L"================================================================================\n"
-      L"UPDATER " IEPLUGIN_VERSION L"\n"
-      L"================================================================================")
-  }
-
-  // Post async plugin error
-  CPluginError pluginError;
-  while (LogQueue::PopFirstPluginError(pluginError))
-  {
-    LogQueue::LogPluginError(pluginError.GetErrorCode(), pluginError.GetErrorId(), pluginError.GetErrorSubid(), pluginError.GetErrorDescription(), true, pluginError.GetProcessId(), pluginError.GetThreadId());
-  }
-}
-
-// Called from installer
-EXTERN_C void STDAPICALLTYPE OnInstall(MSIHANDLE hInstall, MSIHANDLE tmp)
-{
-  InitPlugin(true);
-}
-
-// Called from updater
-EXTERN_C void STDAPICALLTYPE OnUpdate(void)
-{
-  InitPlugin(false);
-}

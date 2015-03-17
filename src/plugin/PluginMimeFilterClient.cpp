@@ -16,9 +16,8 @@
  */
 
 #include "PluginStdAfx.h"
-
 #include "PluginMimeFilterClient.h"
-#include "PluginClient.h"
+#include "PluginClientBase.h"
 #include "PluginWbPassThrough.h"
 
 

@@ -16,17 +16,14 @@
  */
 
 #include "PluginStdAfx.h"
-
+#include "AdblockPlusClient.h"
 #include "PluginFilter.h"
 #include "PluginSettings.h"
-#include "PluginClient.h"
-#include "PluginClientFactory.h"
 #include "PluginMutex.h"
 #include "PluginSettings.h"
 #include "PluginSystem.h"
 #include "PluginClass.h"
 #include "mlang.h"
-
 #include "..\shared\CriticalSection.h"
 #include "..\shared\Utils.h"
 

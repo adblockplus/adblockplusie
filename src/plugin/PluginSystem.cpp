@@ -17,7 +17,7 @@
 
 #include "PluginStdAfx.h"
 #include "PluginSystem.h"
-#include "PluginClient.h"
+#include "PluginClientBase.h"
 #include <array>
 
 std::wstring GetBrowserLanguage()

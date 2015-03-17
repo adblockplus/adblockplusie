@@ -22,21 +22,22 @@
 #include "PluginSystem.h"
 #include "PluginFilter.h"
 #include "PluginMimeFilterClient.h"
-#include "PluginClient.h"
+#include "AdblockPlusClient.h"
+#include "PluginClientBase.h"
 #include "PluginClientFactory.h"
-#include "PluginMutex.h"
-#include "sddl.h"
 #include "PluginUtil.h"
-#include "PluginUserSettings.h"
 #include "../shared/Utils.h"
 #include "../shared/Dictionary.h"
 #include "IeVersion.h"
+#include "../shared/Version.h"
 #include <thread>
 #include <array>
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
 #endif
+
+extern CComModule _Module;
 
 typedef HANDLE (WINAPI *OPENTHEMEDATA)(HWND, LPCWSTR);
 typedef HRESULT (WINAPI *DRAWTHEMEBACKGROUND)(HANDLE, HDC, INT, INT, LPRECT, LPRECT);

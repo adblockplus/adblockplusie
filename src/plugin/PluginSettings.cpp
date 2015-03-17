@@ -17,21 +17,11 @@
 
 #include "PluginStdAfx.h"
 
-#include <Wbemidl.h>
-#include <time.h>
 #include "PluginSettings.h"
-#include "PluginClient.h"
+#include "AdblockPlusClient.h"
 #include "PluginSystem.h"
-#include "PluginFilter.h"
 #include "PluginMutex.h"
 #include "../shared/Utils.h"
-#include <memory>
-
-
-// IE functions
-#pragma comment(lib, "iepmapi.lib")
-
-#include <knownfolders.h>
 
 namespace
 {
@@ -40,13 +30,6 @@ namespace
     return L"@@||" + ToWstring(domain) + L"^$document";
   }
 }
-
-class TSettings
-{
-  DWORD processorId;
-
-  char sPluginId[44];
-};
 
 class CPluginSettingsWhitelistLock : public CPluginMutex
 {

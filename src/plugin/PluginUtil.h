@@ -23,3 +23,14 @@ std::wstring UserSettingsFileUrl();
 std::wstring FirstRunPageFileUrl();
 std::wstring FileUrl(const std::wstring& url);
 std::wstring GetLocationUrl(IWebBrowser2& browser);
+
+/**
+ * Wrapper around Microsoft API 'UrlUnescape'
+ *
+ * This function has modify-in-place semantics.
+ * This behavior matches that of the legacy version of this function declared above.
+ * At present, callers of this function have no code to handle error conditions that might arise here.
+ * Because there's no error handling, therefore, this masks failures in UrlUnescape.
+ */
+void UnescapeUrl(std::wstring& url);
+
