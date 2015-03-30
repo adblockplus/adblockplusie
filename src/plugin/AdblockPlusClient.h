@@ -72,6 +72,7 @@ public:
 
   bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent, CPluginFilter* filter);
   bool IsWhitelistedUrl(const std::wstring& url);
+  std::string GetWhitelistingFilter(const std::wstring& url);
   bool IsElemhideWhitelistedOnDomain(const std::wstring& url);
 
   bool Matches(const std::wstring& url, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain);
@@ -86,6 +87,7 @@ public:
   std::vector<std::wstring> GetExceptionDomains();
   void AddFilter(const std::wstring& text);
   void RemoveFilter(const std::wstring& text);
+  void RemoveFilter(const std::string& text);
   void SetPref(const std::wstring& name, const std::wstring& value);
   void SetPref(const std::wstring& name, const int64_t& value);
   void SetPref(const std::wstring& name, bool value);

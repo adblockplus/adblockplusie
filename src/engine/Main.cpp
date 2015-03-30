@@ -199,13 +199,18 @@ namespace
         response << domains;
         break;
       }
-      case Communication::PROC_IS_WHITELISTED_URL:
+      case Communication::PROC_GET_WHITELISTING_FITER:
       {
         std::string url;
         request >> url;
         AdblockPlus::FilterPtr match = filterEngine->Matches(url,
           AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_DOCUMENT, url);
-        response << (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION);
+        std::string filterText;
+        if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
+        {
+          filterText = match->GetProperty("text")->AsString();
+        }
+        response << filterText;
         break;
       }
       case Communication::PROC_IS_ELEMHIDE_WHITELISTED_ON_URL:
