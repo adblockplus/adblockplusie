@@ -261,19 +261,24 @@ bool CAdblockPlusClient::IsElementHidden(const std::wstring& tag, IHTMLElement* 
 
 bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url)
 {
+  return !GetWhitelistingFilter(url).empty();
+}
+
+std::string CAdblockPlusClient::GetWhitelistingFilter(const std::wstring& url)
+{
   DEBUG_GENERAL((L"IsWhitelistedUrl: " + url + L" start").c_str());
   Communication::OutputBuffer request;
-  request << Communication::PROC_IS_WHITELISTED_URL << ToUtf8String(url);
+  request << Communication::PROC_GET_WHITELISTING_FITER << ToUtf8String(url);
 
   Communication::InputBuffer response;
   if (!CallEngine(request, response)) 
-    return false;
+    return "";
 
-  bool isWhitelisted;
-  response >> isWhitelisted;
+  std::string filterText;
+  response >> filterText;
 
   DEBUG_GENERAL((L"IsWhitelistedUrl: " + url + L" end").c_str());
-  return isWhitelisted;
+  return filterText;
 }
 
 bool CAdblockPlusClient::IsElemhideWhitelistedOnDomain(const std::wstring& url)
@@ -406,8 +411,13 @@ void CAdblockPlusClient::AddFilter(const std::wstring& text)
 
 void CAdblockPlusClient::RemoveFilter(const std::wstring& text)
 {
+  RemoveFilter(ToUtf8String(text));
+}
+
+void CAdblockPlusClient::RemoveFilter(const std::string& text)
+{
   Communication::OutputBuffer request;
-  request << Communication::PROC_REMOVE_FILTER << ToUtf8String(text);
+  request << Communication::PROC_REMOVE_FILTER << text;
   CallEngine(request);
 }
 

@@ -1153,9 +1153,10 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
     {
       CPluginSettings* settings = CPluginSettings::GetInstance();
       std::wstring urlString = GetTab()->GetDocumentUrl();
-      if (client->IsWhitelistedUrl(urlString))
+      std::string filterText = client->GetWhitelistingFilter(urlString);
+      if (!filterText.empty())
       {
-        settings->RemoveWhiteListedDomain(ToCString(client->GetHostFromUrl(urlString)));
+        client->RemoveFilter(filterText);
       }
       else
       {
