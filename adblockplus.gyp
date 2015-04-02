@@ -206,6 +206,8 @@
       'test/DictionaryTest.cpp',
       'test/RegistryTest.cpp',
       'test/UtilTest.cpp',
+      'test/UtilGetQueryStringTest.cpp',
+      'test/UtilGetSchemeAndHierarchicalPartTest.cpp',
     ],
     'defines': ['WINVER=0x0501'],
     'link_settings': {

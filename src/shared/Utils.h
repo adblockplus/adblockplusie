@@ -58,6 +58,14 @@ std::wstring GetDllDir();
 std::wstring GetAppDataPath();
 void ReplaceString(std::wstring& input, const std::wstring placeholder, const std::wstring replacement);
 
+/**
+ * Returns the beginning of the URL which includes the scheme and hierarchical
+ * part according to http://en.wikipedia.org/wiki/URI_scheme.
+ */
+std::wstring GetSchemeAndHierarchicalPart(const std::wstring& url);
+
+std::wstring GetQueryString(const std::wstring& url);
+
 template<class T>
 T TrimString(T text)
 {
