@@ -155,3 +155,29 @@ void ReplaceString(std::wstring& input, const std::wstring placeholder, const st
     input.replace(replaceStart, placeholder.length(), replacement);
   }
 }
+
+std::wstring GetSchemeAndHierarchicalPart(const std::wstring& url)
+{
+  auto schemeAndHierarchicalPartEndsAt = url.find(L'?');
+  if (schemeAndHierarchicalPartEndsAt == std::wstring::npos)
+  {
+    schemeAndHierarchicalPartEndsAt = url.find(L'#');
+  }
+  return url.substr(0, schemeAndHierarchicalPartEndsAt);
+}
+
+std::wstring GetQueryString(const std::wstring& url)
+{
+  auto questionSignPos = url.find(L'?');
+  if (questionSignPos == std::wstring::npos)
+  {
+    return L"";
+  }
+  auto queryStringBeginsAt = questionSignPos + 1;
+  auto endQueryStringPos = url.find(L'#', queryStringBeginsAt);
+  if (endQueryStringPos == std::wstring::npos)
+  {
+    endQueryStringPos = url.length();
+  }
+  return url.substr(queryStringBeginsAt, endQueryStringPos - queryStringBeginsAt);
+}

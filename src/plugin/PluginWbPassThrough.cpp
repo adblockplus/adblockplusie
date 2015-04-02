@@ -103,6 +103,40 @@ namespace
     auto requestedWithHeader = ExtractHttpHeader<std::wstring>(additionalHeaders, L"X-Requested-With:", L"\n");
     return TrimString(requestedWithHeader) == L"XMLHttpRequest";
   }
+
+  ContentType GetContentTypeFromString(const std::wstring& value)
+  {
+    auto lastDotPos = value.rfind(L'.');
+    if (lastDotPos == std::wstring::npos)
+      return ContentType::CONTENT_TYPE_OTHER;
+
+    std::wstring ext = ASCIIStringToLower(value.substr(lastDotPos + 1));
+    if (ext == L"jpg" || ext == L"gif" || ext == L"png" || ext == L"jpeg")
+    {
+      return ContentType::CONTENT_TYPE_IMAGE;
+    }
+    else if (ext == L"css")
+    {
+      return ContentType::CONTENT_TYPE_STYLESHEET;
+    }
+    else if (ext == L"js")
+    {
+      return ContentType::CONTENT_TYPE_SCRIPT;
+    }
+    else if (ext == L"xml")
+    {
+      return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
+    }
+    else if (ext == L"swf")
+    {
+      return ContentType::CONTENT_TYPE_OBJECT;
+    }
+    else if (ext == L"jsp" || ext == L"php" || ext == L"html")
+    {
+      return ContentType::CONTENT_TYPE_SUBDOCUMENT;
+    }
+    return ContentType::CONTENT_TYPE_OTHER;
+  }
 }
 
 WBPassthruSink::WBPassthruSink()
@@ -145,44 +179,25 @@ ContentType WBPassthruSink::GetContentTypeFromMimeType(const CString& mimeType)
 
 ContentType WBPassthruSink::GetContentTypeFromURL(const std::wstring& src)
 {
-  CString srcLegacy = ToCString(src);
-  CString srcExt = srcLegacy;
-
-  int pos = 0;
-  if ((pos = srcLegacy.Find('?')) > 0)
+  std::wstring schemeAndHierarchicalPart = GetSchemeAndHierarchicalPart(src);
+  auto contentType = GetContentTypeFromString(schemeAndHierarchicalPart);
+  if (contentType == ContentType::CONTENT_TYPE_OTHER &&
+    AdblockPlus::IE::InstalledMajorVersion() == 8)
   {
-    srcExt = srcLegacy.Left(pos);
+    std::wstring queryString = GetQueryString(src);
+    wchar_t* nextToken = nullptr;
+    const wchar_t* token = wcstok_s(&queryString[0], L"&=", &nextToken);
+    while (token != nullptr)
+    {
+      contentType = GetContentTypeFromString(token);
+      if (contentType != ContentType::CONTENT_TYPE_OTHER)
+      {
+         return contentType;
+      }
+      token = wcstok_s(nullptr, L"&=", &nextToken);
+    }
   }
-
-  int lastDotIndex = srcExt.ReverseFind('.');
-  if (lastDotIndex < 0)
-    return ContentType::CONTENT_TYPE_OTHER;
-  CString ext = srcExt.Mid(lastDotIndex);
-  if (ext == L".jpg" || ext == L".gif" || ext == L".png" || ext == L".jpeg")
-  {
-    return ContentType::CONTENT_TYPE_IMAGE;
-  }
-  else if (ext == L".css")
-  {
-    return ContentType::CONTENT_TYPE_STYLESHEET;
-  }
-  else if (ext.Right(3) == L".js")
-  {
-    return ContentType::CONTENT_TYPE_SCRIPT;
-  }
-  else if (ext == L".xml")
-  {
-    return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
-  }
-  else if (ext == L".swf")
-  {
-    return ContentType::CONTENT_TYPE_OBJECT;
-  }
-  else if (ext == L".jsp" || ext == L".php" || ext == L".html")
-  {
-    return ContentType::CONTENT_TYPE_SUBDOCUMENT;
-  }
-  return ContentType::CONTENT_TYPE_OTHER;
+  return contentType;
 }
 
 ContentType WBPassthruSink::GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src)
