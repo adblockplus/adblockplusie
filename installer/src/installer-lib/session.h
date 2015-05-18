@@ -16,32 +16,32 @@
 // Message
 //-----------------------------------------------------------------------------------------
 /**
-* Wrapper class for arguments to MsiProcessMessage.
-*
-* The "user interface" for custom actions includes both interactive dialog boxes as well as the installation log.
-* All of them use the same call, MsiProcessMessage.
-* This class encapsulates its arguments.
-*
-* \sa 
-*    * MSDN [MsiProcessMessage function](http://msdn.microsoft.com/en-us/library/windows/desktop/aa370354%28v=vs.85%29.aspx)
-*    * MSDN [Sending Messages to Windows Installer Using MsiProcessMessage](http://msdn.microsoft.com/en-us/library/windows/desktop/aa371614%28v=vs.85%29.aspx)
-*/
+ * Wrapper class for arguments to MsiProcessMessage.
+ *
+ * The "user interface" for custom actions includes both interactive dialog boxes as well as the installation log.
+ * All of them use the same call, MsiProcessMessage.
+ * This class encapsulates its arguments.
+ *
+ * \sa 
+ *    * MSDN [MsiProcessMessage function](http://msdn.microsoft.com/en-us/library/windows/desktop/aa370354%28v=vs.85%29.aspx)
+ *    * MSDN [Sending Messages to Windows Installer Using MsiProcessMessage](http://msdn.microsoft.com/en-us/library/windows/desktop/aa371614%28v=vs.85%29.aspx)
+ */
 class Message
 {
 protected:
   /**
   * The flags used by MsiProcessMessage as the box type.
   */
-  INSTALLMESSAGE message_type ;
+  INSTALLMESSAGE MessageTypeCode ;
 
   /**
   * The record argument to MsiProcessMessage
   */
   Record r ;
 
-  Message( std::string message, INSTALLMESSAGE message_type ) ;
+  Message( std::string message, INSTALLMESSAGE MessageTypeCode ) ;
 
-  Message( std::wstring message, INSTALLMESSAGE message_type ) ;
+  Message( std::wstring message, INSTALLMESSAGE MessageTypeCode ) ;
 
   /**
   * This class is a helper for Session, mustering all the arguments for MsiProcessMessage except for the session handle.
@@ -129,12 +129,12 @@ private:
   /**
   * Prefix for log messages, regular string. Contains the name of the custom action.
   */
-  std::string log_prefix ;
+  std::string logPrefix ;
 
   /**
   * Prefix for log messages, wide string. Contains the name of the custom action.
   */
-  std::wstring log_prefix_w ;
+  std::wstring logPrefixW ;
 
   /**
   * Private copy constructor is declared but not defined.
@@ -150,7 +150,7 @@ private:
   *
   * C++11: declare with **noexcept**.
   */
-  int write_message_noexcept( Message & m ) ;
+  int WriteMessageNoexcept( Message & m ) ;
 
   /**
   * Private assignment operator is declared but not defined.
@@ -190,14 +190,14 @@ public:
 
 private:
   /*
-  * Allow helper function for Installation_Database constructor to have access to the handle.
+  * Allow helper function for InstallationDatabase constructor to have access to the handle.
   */
-  friend msi_handle get_active_database( ImmediateSession & session ) ;
+  friend MsiHandle GetActiveDatabase( ImmediateSession & session ) ;
 };
 
 
 //-----------------------------------------------------------------------------------------
-// Deferred_Session
+// DeferredSession
 //-----------------------------------------------------------------------------------------
 /**
 * Session for deferred custom actions.
@@ -212,7 +212,7 @@ private:
 *     http://msdn.microsoft.com/en-us/library/windows/desktop/aa370543%28v=vs.85%29.aspx
 *     lists the API calls available.
 */
-class Deferred_Session : public Session
+class DeferredSession : public Session
 {
 public:
   /**
@@ -223,31 +223,31 @@ public:
   * \param[in] name
   *    The name of the custom action, used for logging.
   */
-  Deferred_Session( MSIHANDLE handle, std::wstring name ) ;
+  DeferredSession( MSIHANDLE handle, std::wstring name ) ;
 };
 
 
 //-----------------------------------------------------------------------------------------
-// Commit_Session
+// CommitSession
 //-----------------------------------------------------------------------------------------
 /**
 * The session for a commit custom action. NOT IMPLEMENTED.
 *
 * \sa MSDN "Commit Custom Actions" http://msdn.microsoft.com/en-us/library/windows/desktop/aa367991%28v=vs.85%29.aspx
 */
-class Commit_Session
+class CommitSession
 {
 };
 
 //-----------------------------------------------------------------------------------------
-// Rollback_Session
+// RollbackSession
 //-----------------------------------------------------------------------------------------
 /**
 * The session for a rollback custom action. NOT IMPLEMENTED.
 *
 * \sa MSDN "Rollback Custom Actions" http://msdn.microsoft.com/en-us/library/windows/desktop/aa371369%28v=vs.85%29.aspx
 */
-class Rollback_Session
+class RollbackSession
 {
 };
 

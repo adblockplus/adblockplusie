@@ -20,14 +20,14 @@
 #include <TlHelp32.h>
 
 //-------------------------------------------------------
-// wstring_ci: case-insensitive wide string
+// WstringCaseInsensitive: case-insensitive wide string
 //-------------------------------------------------------
 
 /**
  * Traits class for case-insensitive strings.
  */
 template< class T >
-struct ci_traits: std::char_traits< T >
+struct CaseInsensitiveTraits: std::char_traits< T >
 {
   static bool eq( T c1, T c2 )
   {
@@ -63,29 +63,29 @@ struct ci_traits: std::char_traits< T >
   }
 } ;
 
-typedef std::basic_string< wchar_t, ci_traits< wchar_t > > wstring_ci ;
+typedef std::basic_string< wchar_t, CaseInsensitiveTraits< wchar_t > > WstringCaseInsensitive ;
 
 //-------------------------------------------------------
-// file_name_set: case-insensitive wide-string set
+// FileNameSet: case-insensitive wide-string set
 //-------------------------------------------------------
-struct file_name_set
-  : public std::set< wstring_ci >
+struct FileNameSet
+  : public std::set< WstringCaseInsensitive >
 {
   /**
    * Empty set constructor.
    */
-  file_name_set()
+  FileNameSet()
   {}
 
   /**
    * Constructor initialization from an array.
    */
-  template< size_t n_file_names >
-  file_name_set( const wchar_t * ( & file_name_list )[ n_file_names ] )
+  template< size_t nFileNames >
+  FileNameSet( const wchar_t * ( & fileNameList )[ nFileNames ] )
   {
-    for ( unsigned int j = 0 ; j < n_file_names ; ++ j )
+    for ( unsigned int j = 0 ; j < nFileNames ; ++ j )
     {
-      insert( wstring_ci( file_name_list[ j ] ) ) ;
+      insert( WstringCaseInsensitive( fileNameList[ j ] ) ) ;
     }
   }
 } ;
@@ -95,7 +95,7 @@ struct file_name_set
 /**
  * Filter by process name. Comparison is case-insensitive. Windows Store app processes excluded
  */
-class process_by_any_exe_not_immersive
+class ProcessByAnyExeNotImmersive
   : public std::unary_function<PROCESSENTRY32W, bool>
 {
   /**
@@ -107,10 +107,10 @@ class process_by_any_exe_not_immersive
    *   and so also is this class.
    * Hence the lifetimes are coterminous, and the reference is not problematic.
    */
-  const file_name_set & processNames;
+  const FileNameSet & processNames;
 public:
   bool operator()( const PROCESSENTRY32W & );
-  process_by_any_exe_not_immersive(const file_name_set & names) : processNames( names ) {}
+  ProcessByAnyExeNotImmersive(const FileNameSet & names) : processNames( names ) {}
 } ;
 
 
@@ -120,7 +120,7 @@ public:
 /**
  * A promiscuous filter admits everything.
  */
-struct every_process
+struct EveryProcess
   : public std::unary_function< PROCESSENTRY32W, bool >
 {
   bool operator()( const PROCESSENTRY32W & ) { return true ; } ;
@@ -129,7 +129,7 @@ struct every_process
 /**
  * Extractor that copies the entire process structure.
  */
-struct copy_all
+struct CopyAll
   : public std::unary_function< PROCESSENTRY32W, PROCESSENTRY32W >
 {
   PROCESSENTRY32W operator()( const PROCESSENTRY32W & process ) { return process ; }
@@ -138,7 +138,7 @@ struct copy_all
 /**
  * Extractor that copies only the PID.
  */
-struct copy_PID
+struct CopyPID
   : public std::unary_function< PROCESSENTRY32W, DWORD >
 {
   inline DWORD operator()( const PROCESSENTRY32W & process ) { return process.th32ProcessID ; }
@@ -159,7 +159,7 @@ struct copy_PID
  * \sa
  *   MSDN [GetWindowThreadProcessId function](http://msdn.microsoft.com/en-us/library/windows/desktop/ms633522%28v=vs.85%29.aspx)
  */
-DWORD creator_process( HWND window ) ;
+DWORD CreatorProcess( HWND window ) ;
 
 //-------------------------------------------------------
 // Snapshot
@@ -167,22 +167,22 @@ DWORD creator_process( HWND window ) ;
 /**
  * Traits class for snapshots of all processes on the system.
  */
-struct Process_Snapshot_Traits
+struct ProcessSnapshotTraits
 {
   /**
    * The type of the data resulting from CreateToolhelp32Snapshot.
    */
-  typedef PROCESSENTRY32W result_type ;
+  typedef PROCESSENTRY32W ResultType ;
 
   /**
    * Flags used to call CreateToolhelp32Snapshot.
    */
-  const static DWORD snapshot_flags = TH32CS_SNAPPROCESS ;
+  const static DWORD SnapshotFlags = TH32CS_SNAPPROCESS ;
 
   /**
    * Wrapper for 'first' function for processes
    */
-  static BOOL first( HANDLE arg1, LPPROCESSENTRY32 arg2 )
+  static BOOL First( HANDLE arg1, LPPROCESSENTRY32 arg2 )
   {
     return ::Process32First( arg1, arg2 ) ;
   }
@@ -190,7 +190,7 @@ struct Process_Snapshot_Traits
   /**
    * Wrapper for 'next' function for processes
    */
-  static BOOL next( HANDLE arg1, LPPROCESSENTRY32 arg2 )
+  static BOOL Next( HANDLE arg1, LPPROCESSENTRY32 arg2 )
   {
     return ::Process32Next( arg1, arg2 ) ;
   }
@@ -199,22 +199,22 @@ struct Process_Snapshot_Traits
 /**
  * Traits class for snapshots of all modules loaded by a process.
  */
-struct Module_Snapshot_Traits
+struct ModuleSnapshotTraits
 {
   /**
    * The type of the data resulting from CreateToolhelp32Snapshot.
    */
-  typedef MODULEENTRY32W result_type ;
+  typedef MODULEENTRY32W ResultType ;
 
   /**
    * Flags used to call CreateToolhelp32Snapshot.
    */
-  const static DWORD snapshot_flags = TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32 ;
+  const static DWORD SnapshotFlags = TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32 ;
 
   /**
    * Wrapper for 'first' function for modules
    */
-  static BOOL first( HANDLE arg1, LPMODULEENTRY32 arg2 )
+  static BOOL First( HANDLE arg1, LPMODULEENTRY32 arg2 )
   {
     return ::Module32First( arg1, arg2 ) ;
   }
@@ -222,7 +222,7 @@ struct Module_Snapshot_Traits
   /**
    * Wrapper for 'next' function for modules
    */
-  static BOOL next( HANDLE arg1, LPMODULEENTRY32 arg2 )
+  static BOOL Next( HANDLE arg1, LPMODULEENTRY32 arg2 )
   {
     return ::Module32Next( arg1, arg2 ) ;
   }
@@ -237,7 +237,7 @@ struct Module_Snapshot_Traits
  * Thus, there can be only one iterator at a time for the snapshot.
  * The two requirements are not simultaneously satisfiable.
  *
- * Instead of a standard iterator, we provide a first() and next() functions wrapping the corresponding system calls.
+ * Instead of a standard iterator, we provide a First() and Next() functions wrapping the corresponding system calls.
  *
  * \par Implementation
  *
@@ -247,7 +247,7 @@ struct Module_Snapshot_Traits
  * - MSDN [PROCESSENTRY32 structure](http://msdn.microsoft.com/en-us/library/windows/desktop/ms684839%28v=vs.85%29.aspx)
  *
  * \par Design Note
- *   The traits class defines first() and next() functions instead of using function pointers.
+ *   The traits class defines First() and Next() functions instead of using function pointers.
  *   This arises from a limitation in the compiler.
  *   The system calls are declared 'WINAPI', which is a compiler-specific extension.
  *   That extension, however, does not go far enough to be able to declare a pointer with the same modifier.
@@ -260,26 +260,26 @@ public:
   /**
    * Expose the result type from the traits class as our own.
    */
-  typedef typename Traits::result_type result_type ;
+  typedef typename Traits::ResultType ResultType ;
 
 private:
   /**
    * Process ID argument for CreateToolhelp32Snapshot.
    */
-  DWORD _id ;
+  DWORD id ;
 
   /**
    * Handle to the underlying snapshot.
    */
-  Windows_Handle handle ;
+  WindowsHandle handle ;
 
   /**
    * Buffer for reading a single process entry out of the snapshot.
    *
    * This buffer is constant insofar as the code outside this class is concerned.
-   * The accessor functions first() and next() return pointers to constant result_type.
+   * The accessor functions First() and Next() return pointers to constant ResultType.
    */
-  result_type buffer;
+  ResultType buffer;
 
   /**
    * Copy constructor declared private and not defined.
@@ -300,12 +300,12 @@ private:
   /**
    * Create a new snapshot and return its handle.
    */
-  Windows_Handle::handle_type make_handle()
+  WindowsHandle::HandleType MakeHandle()
   {
-    Windows_Handle::handle_type h = ::CreateToolhelp32Snapshot( Traits::snapshot_flags, _id ) ;
+    WindowsHandle::HandleType h = ::CreateToolhelp32Snapshot( Traits::SnapshotFlags, id ) ;
     if ( h == INVALID_HANDLE_VALUE )
     {
-      throw windows_api_error( "CreateToolhelp32Snapshot", "INVALID_HANDLE_VALUE" ) ;
+      throw WindowsApiError( "CreateToolhelp32Snapshot", "INVALID_HANDLE_VALUE" ) ;
     }
     return h ;
   }
@@ -315,22 +315,22 @@ protected:
    * Constructor takes a snapshot.
    */
   Snapshot( DWORD id )
-    : _id( id ), handle( make_handle() )
+    : id( id ), handle( MakeHandle() )
   {
     // The various result types all define 'dwSize' with the same semantics.
-    buffer.dwSize = sizeof( result_type ) ;
+    buffer.dwSize = sizeof( ResultType ) ;
   }
 
 public:
   /**
    * Reconstruct the current instance with a new system snapshot.
    *
-   * This function uses reinitialization assignment in the Windows_Handle class,
+   * This function uses reinitialization assignment in the WindowsHandle class,
    *   which takes care of closing the old handle.
    */
   void Refresh()
   {
-    handle = make_handle();
+    handle = MakeHandle();
   }
 
   /**
@@ -349,9 +349,9 @@ public:
    *   The upshot is that we rely that our implementation calls the right functions on the snapshot,
    *     and so we ignore the case where we've passed bad arguments to the system call.
    */
-  const result_type * first()
+  const ResultType * First()
   {
-    return Traits::first(handle, &buffer) ? &buffer : 0;
+    return Traits::First(handle, &buffer) ? &buffer : 0;
   }
 
   /**
@@ -363,11 +363,11 @@ public:
    *   0 otherwise
    *
    * \par Design Note
-   *   See the Design Note for first(); the same considerations apply here.
+   *   See the Design Note for First(); the same considerations apply here.
    */
-  const result_type * next()
+  const ResultType * Next()
   {
-    return Traits::next(handle, &buffer) ? &buffer : 0;
+    return Traits::Next(handle, &buffer) ? &buffer : 0;
   }
 } ;
 
@@ -375,7 +375,7 @@ public:
  * A snapshot of all processes running on the system.
  */
 struct ProcessSnapshot
-  : public Snapshot< Process_Snapshot_Traits >
+  : public Snapshot< ProcessSnapshotTraits >
 {
   ProcessSnapshot()
     : Snapshot( 0 ) 
@@ -385,16 +385,16 @@ struct ProcessSnapshot
 /**
  * A snapshot of all modules loaded for a given process.
  */
-struct Module_Snapshot
-  : public Snapshot< Module_Snapshot_Traits >
+struct ModuleSnapshot
+  : public Snapshot< ModuleSnapshotTraits >
 {
-  Module_Snapshot( DWORD process_id )
-    : Snapshot( process_id )
+  ModuleSnapshot( DWORD processId )
+    : Snapshot( processId )
   {}
 } ;
 
 //-------------------------------------------------------
-// initialize_process_list
+// InitializeProcessList
 //-------------------------------------------------------
 /**
  * \tparam T The type into which a PROCESSENTRY32W struture is extracted.
@@ -406,25 +406,25 @@ struct Module_Snapshot
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
 template<class T, class Admittance, class Extractor>
-void initialize_process_list(std::vector<T>& v, ProcessSnapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
+void InitializeProcessList(std::vector<T>& v, ProcessSnapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
-  const PROCESSENTRY32W* p = snap.first();
+  const PROCESSENTRY32W* p = snap.First();
   while (p != 0)
   {
     if (admit(*p ))
     {
       /*
-	* We don't have C++11 emplace_back, which can construct the element in place.
-	* Instead, we copy the return value of the converter.
-	*/
+       * We don't have C++11 emplace_back, which can construct the element in place.
+       * Instead, we copy the return value of the converter.
+       */
       v.push_back(extract(*p));
     }
-    p = snap.next();
+    p = snap.Next();
   }
 };
 
 //-------------------------------------------------------
-// initialize_process_set
+// InitializeProcessSet
 //-------------------------------------------------------
 /**
  * \tparam T The type into which a PROCESSENTRY32W struture is extracted.
@@ -436,21 +436,21 @@ void initialize_process_list(std::vector<T>& v, ProcessSnapshot &snap, Admittanc
  * \param convert A conversion function that takes a PROCESSENTRY32W as input argument and returns an element of type T.
  */
 template<class T, class Admittance, class Extractor>
-void initialize_process_set(std::set< T > & set, ProcessSnapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
+void InitializeProcessSet(std::set< T > & set, ProcessSnapshot &snap, Admittance admit = Admittance(), Extractor extract = Extractor())
 {
-  const PROCESSENTRY32W* p = snap.first();
+  const PROCESSENTRY32W* p = snap.First();
   while (p != 0)
   {
     if (admit(*p))
     {
       set.insert(extract(*p));
     }
-    p = snap.next();
+    p = snap.Next();
   }
 };
 
 //-------------------------------------------------------
-// enumerate_windows
+// EnumerateWindows
 //-------------------------------------------------------
 
 /**
@@ -463,13 +463,13 @@ typedef enum
   early,	  ///< Callback returned false and terminated iteration early.
   exception,	  ///< Callback threw an exception and thereby terminated iteration.
   error		  ///< Callback always return true but EnumWindows failed.
-} enumerate_windows_state ;
+} EnumerateWindowsState ;
 
 /**
  * Data to perform a window enumeration, shared between the main function and the callback function.
  */
 template< class F >
-struct ew_data
+struct EWData
 {
   /**
    * Function to be applied to each enumerated window.
@@ -479,7 +479,7 @@ struct ew_data
   /**
    * Completion status of the enumeration.
    */
-  enumerate_windows_state status ;
+  EnumerateWindowsState status ;
 
   /**
    * An exception to be transported across the callback.
@@ -499,7 +499,7 @@ struct ew_data
   /**
    * Ordinary constructor.
    */
-  ew_data( F & f )
+  EWData( F & f )
     : f( f ), status( started )
   {}
 } ;
@@ -512,10 +512,10 @@ struct ew_data
  * It captures any exception thrown for transport back to the enumerator.
  */
 template< class F >
-BOOL CALLBACK enumeration_callback( HWND window, LPARAM x )
+BOOL CALLBACK EnumerationCallback( HWND window, LPARAM x )
 {
   // LPARAM is always the same size as a pointer
-  ew_data< F > * data = reinterpret_cast< ew_data< F > * >( x ) ;
+  EWData< F > * data = reinterpret_cast< EWData< F > * >( x ) ;
   /*
    * Top-level try statement prevents exception from propagating back to system.
    */
@@ -546,10 +546,10 @@ BOOL CALLBACK enumeration_callback( HWND window, LPARAM x )
  * Enumerate windows, applying a function to each one.
  */
 template< class F >
-bool enumerate_windows( F f )
+bool EnumerateWindows( F f )
 {
-  ew_data< F > data( f ) ;
-  BOOL x( ::EnumWindows( enumeration_callback< F >, reinterpret_cast< LPARAM >( & data ) ) ) ;
+  EWData< F > data( f ) ;
+  BOOL x( ::EnumWindows( EnumerationCallback< F >, reinterpret_cast< LPARAM >( & data ) ) ) ;
   bool r ;
   if ( data.status != started )
   {
@@ -596,7 +596,7 @@ class ProcessCloser
   /**
    * Set of process identifiers matching one of the executable names.
    */
-  std::set< DWORD > pid_set ;
+  std::set< DWORD > pidSet ;
 
   /**
    * Set of executable names by which to filter.
@@ -604,14 +604,14 @@ class ProcessCloser
    * The argument of the filter constructor is a set by reference.
    * Since it does not make a copy for itself, we define it as a class member to provide its allocation.
    */
-  file_name_set process_names ;
+  FileNameSet processNames ;
 
-  process_by_any_exe_not_immersive filter ;
+  ProcessByAnyExeNotImmersive filter ;
 
   /**
    * Copy function object copies just the process ID.
    */
-  copy_PID copy ;
+  CopyPID copy ;
 
   /** 
    * Snapshot of running processes.
@@ -620,18 +620,18 @@ class ProcessCloser
 
   void update()
   {
-    initialize_process_set( pid_set, snapshot, filter, copy ) ;
+    InitializeProcessSet( pidSet, snapshot, filter, copy ) ;
   } ;
 
   template< class F >
-  class only_our_processes
+  class OnlyOurProcesses
   {
     ProcessCloser & self ;
 
     F f ;
 
   public:
-    only_our_processes( ProcessCloser & self, F f )
+    OnlyOurProcesses( ProcessCloser & self, F f )
       : f( f ), self( self )
     {}
 
@@ -640,26 +640,26 @@ class ProcessCloser
       bool b ;
       try
       {
-	b = self.contains( creator_process( window ) ) ;
+        b = self.Contains( CreatorProcess( window ) ) ;
       }
       catch ( ... )
       {
-	// ignore window handles that are no longer valid
-	return true ;
+        // ignore window handles that are no longer valid
+        return true ;
       }
       if ( ! b )
       {
-	// Assert the process that created the window is not in our pid_set
-	return true ;
+        // Assert the process that created the window is not in our pidSet
+        return true ;
       }
       return f( window ) ;
     }
   } ;
 
 public:
-  template <size_t n_file_names>
-  ProcessCloser(ProcessSnapshot & snapshot, const wchar_t * (&file_name_list)[n_file_names])
-    : snapshot(snapshot), process_names(file_name_list), filter(process_names)
+  template <size_t nFileNames>
+  ProcessCloser(ProcessSnapshot & snapshot, const wchar_t * (&fileNameList)[nFileNames])
+    : snapshot(snapshot), processNames(fileNameList), filter(processNames)
   {
     update() ;
   }
@@ -669,23 +669,23 @@ public:
    */
   void Refresh()
   {
-    pid_set.clear() ;
+    pidSet.clear() ;
     update() ;
   }
 
-  bool IsRunning() { return ! pid_set.empty() ; } ;
+  bool IsRunning() { return ! pidSet.empty() ; } ;
 
-  bool contains( DWORD pid ) const { return pid_set.find( pid ) != pid_set.end() ; } ;
+  bool Contains( DWORD pid ) const { return pidSet.find( pid ) != pidSet.end() ; } ;
 
   template< class F >
-  bool iterate_our_windows( F f )
+  bool IterateOurWindows( F f )
   {
-    only_our_processes< F > g( * this, f ) ;
-    return enumerate_windows( g ) ;
+    OnlyOurProcesses< F > g( * this, f ) ;
+    return EnumerateWindows( g ) ;
   }
 
   /*
-   * Shut down every process in the pid_set.
+   * Shut down every process in the pidSet.
    */
   bool ShutDown(ImmediateSession& session);
 

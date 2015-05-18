@@ -12,7 +12,7 @@
 //-------------------------------------------------------
 //-------------------------------------------------------
 typedef int (__stdcall *IsImmersiveDynamicFunc)(HANDLE);
-bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & process )
+bool ProcessByAnyExeNotImmersive::operator()( const PROCESSENTRY32W & process )
 {
   // If the name is not found in our list, it's filtered out
   if (processNames.find(process.szExeFile) == processNames.end()) return false;
@@ -20,7 +20,7 @@ bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & proce
   // Make sure the process is still alive
   HANDLE tmpHandle = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, process.th32ProcessID);
   if (tmpHandle == NULL) return false;
-  Windows_Handle procHandle(tmpHandle);
+  WindowsHandle procHandle(tmpHandle);
   DWORD exitCode;
   if (!GetExitCodeProcess(procHandle, &exitCode)) return false;
   if (exitCode != STILL_ACTIVE) return false;
@@ -34,9 +34,9 @@ bool process_by_any_exe_not_immersive::operator()( const PROCESSENTRY32W & proce
 }
 
 //-------------------------------------------------------
-// creator_process
+// CreatorProcess
 //-------------------------------------------------------
-DWORD creator_process( HWND window )
+DWORD CreatorProcess( HWND window )
 {
   DWORD pid ;
   DWORD r = GetWindowThreadProcessId( window, & pid ) ;
@@ -44,13 +44,13 @@ DWORD creator_process( HWND window )
   {
     // Assert GetWindowThreadProcessId returned an error
     // If the window handle is invalid, we end up here.
-    throw windows_api_error( "GetWindowThreadProcessId", r ) ;
+    throw WindowsApiError( "GetWindowThreadProcessId", r ) ;
   }
   return pid ;
 }
 
 //-------------------------------------------------------
-// send_message, send_endsession_messages
+// SendMessageAction, SendEndsessionMessagesAction
 //-------------------------------------------------------
 /**
 * Default process exit wait time (per message) 5000 ms
@@ -60,18 +60,18 @@ DWORD creator_process( HWND window )
 static const unsigned int timeout = 5000 ;    // milliseconds
 
 /**
-* An function object to process the results of sending window messages in send_message.
+* An function object to process the results of sending window messages in SendMessageAction.
 *
-* We are using send_message within a system iteration over windows.
+* We are using SendMessageAction within a system iteration over windows.
 * The system has its own convention for continuing/breaking the iteration.
-* This convention is assured consistently in send_message, which also provides default behavior.
+* This convention is assured consistently in SendMessageAction, which also provides default behavior.
 * This class provides the base for any variation from the default behavior.
 */
-struct message_accumulator
+struct MessageAccumulator
   : public std::binary_function< DWORD_PTR, bool, bool >
 {
-  virtual result_type operator()( first_argument_type result, second_argument_type return_value ) = 0 ;
-  virtual ~message_accumulator() {} ;
+  virtual result_type operator()( first_argument_type result, second_argument_type returnValue ) = 0 ;
+  virtual ~MessageAccumulator() {} ;
 } ;
 
 /**
@@ -81,18 +81,18 @@ struct message_accumulator
 * The goal is to close the process, and if the window is no longer present, then the process may have already closed.
 * Therefore, we're ignoring both the return value and the result.
 */
-class send_message
+class SendMessageAction
 {
   UINT message ;		///< Message type for windows message
   WPARAM p1 ;			///< Generic parameter 1 for windows message
   LPARAM p2 ;			///< Generic parameter 2 for windows message
-  message_accumulator * f ;	///< Processor for results of sending the message.
+  MessageAccumulator * f ;	///< Processor for results of sending the message.
 
 public:
   /**
   * Full contructor gathers message parameters and a message accumulator.
   */
-  send_message( UINT message, WPARAM p1, LPARAM p2, message_accumulator & f )
+  SendMessageAction( UINT message, WPARAM p1, LPARAM p2, MessageAccumulator & f )
     : message( message ), p1( p1 ), p2( p2 ), f( & f )
   {}
 
@@ -100,7 +100,7 @@ public:
   * Abbreviated contructor gathers only message parameters.
   * The message accumulator is absent.
   */
-  send_message( UINT message, WPARAM p1, LPARAM p2 )
+  SendMessageAction( UINT message, WPARAM p1, LPARAM p2 )
     : message( message ), p1( p1 ), p2( p2 ), f( 0 )
   {}
 
@@ -129,7 +129,7 @@ public:
 * This window processor tries to shut down each application individually.
 * The alternative, gathering all the query results first and only then ending sessions, cannot be done with a single window enumeration.
 */
-class send_endsession_messages
+class SendEndsessionMessagesAction
 {
 public:
   /*
@@ -141,7 +141,7 @@ public:
     if ( ! SendMessageTimeoutW( window, WM_QUERYENDSESSION, 0, ENDSESSION_CLOSEAPP, SMTO_BLOCK, timeout, & result ) )
     {
       // Assert sending the message failed
-      // Ignore failure, just as with send_message().
+      // Ignore failure, just as with SendMessageAction().
       return true ;
     }
     // Assert result is FALSE if the process has refused notice that it should shut down.
@@ -166,17 +166,17 @@ public:
 *   and the calculation is terminated at the first answer 'false'.
 * As usual, errors sending messages are ignored.
 */
-struct endsession_accumulator :
-  public message_accumulator
+struct EndsessionAccumulator :
+  public MessageAccumulator
 {
-  bool permit_end_session ; ///< Accumulator variable yields final result.
+  bool permitEndSession ; ///< Accumulator variable yields final result.
 
   /**
   * Enumeration function applied to each window.
   */
-  bool operator()( DWORD_PTR result, bool return_value )
+  bool operator()( DWORD_PTR result, bool returnValue )
   {
-    if ( ( ! return_value ) || result )
+    if ( ( ! returnValue ) || result )
     {
       // 1. If the result is true, then the process will permit WM_ENDSESSION
       // 2. An error sending the message counts as "no new information"
@@ -184,15 +184,15 @@ struct endsession_accumulator :
     }
     // The first false is the result of the calculation.
     // The second false means to terminate enumeration early.
-    permit_end_session = false ;
+    permitEndSession = false ;
     return false ;
   }
 
   /**
   * Ordinary constructor.
   */
-  endsession_accumulator()
-    : permit_end_session( true )
+  EndsessionAccumulator()
+    : permitEndSession( true )
   {}
 } ;
 
@@ -200,7 +200,7 @@ struct endsession_accumulator :
 // ProcessCloser
 //-------------------------------------------------------
 /**
-* Shut down all the processes in the pid_list.
+* Shut down all the processes in the pidSet.
 *
 * The method used here uses blocking system calls to send messages to target processes.
 * Message processing delays, therefore, are sequential and the total delay is their sum.
@@ -209,8 +209,8 @@ struct endsession_accumulator :
 * The present use of this method is not closing dozens of applications, so delay performance is not critical.
 *
 * \return
-*   The negation of is_running.
-*   If is_running() was true at the beginning, then this function will have run refresh() before returning.
+*   The negation of IsRunning().
+*   If IsRunning() was true at the beginning, then this function will have run refresh() before returning.
 *
 * \sa
 *   - MSDN [WM_QUERYENDSESSION message](http://msdn.microsoft.com/en-us/library/windows/desktop/aa376890%28v=vs.85%29.aspx)
@@ -236,7 +236,7 @@ bool ProcessCloser::ShutDown(ImmediateSession& session)
   */
   for ( unsigned int stage = 1 ; ; ++ stage )
   {
-    // Assert is_running()
+    // Assert IsRunning()
     switch( stage )
     {
     case 1 :
@@ -246,14 +246,14 @@ bool ProcessCloser::ShutDown(ImmediateSession& session)
       * We try this technique first, since this allows an application to restore its application state when it starts up again.
       */
       {
-        endsession_accumulator acc ;
-        send_message m1( WM_QUERYENDSESSION, 0, ENDSESSION_CLOSEAPP, acc ) ;
-        iterate_our_windows( m1 ) ;
+        EndsessionAccumulator acc ;
+        SendMessageAction m1( WM_QUERYENDSESSION, 0, ENDSESSION_CLOSEAPP, acc ) ;
+        IterateOurWindows( m1 ) ;
 
-        if ( acc.permit_end_session )
+        if ( acc.permitEndSession )
         {
-          send_message m2( WM_ENDSESSION, 0, ENDSESSION_CLOSEAPP ) ;
-          iterate_our_windows( m2 ) ;
+          SendMessageAction m2( WM_ENDSESSION, 0, ENDSESSION_CLOSEAPP ) ;
+          IterateOurWindows( m2 ) ;
         }
       }
       break ;
@@ -263,8 +263,8 @@ bool ProcessCloser::ShutDown(ImmediateSession& session)
         /*
         * Send WM_QUERYENDSESSION and WM_ENDSESSION to every admissible window singly, not accumulating results.
         */
-        send_endsession_messages m ;
-        iterate_our_windows( m ) ;
+        SendEndsessionMessagesAction m ;
+        IterateOurWindows( m ) ;
       }
       break ;
 
@@ -273,8 +273,8 @@ bool ProcessCloser::ShutDown(ImmediateSession& session)
         /*
         * Send WM_CLOSE to every admissible window.
         */
-        send_message m( WM_CLOSE, 0, 0 ) ;
-        iterate_our_windows( m ) ;
+        SendMessageAction m( WM_CLOSE, 0, 0 ) ;
+        IterateOurWindows( m ) ;
       }
       break ;
 
@@ -282,7 +282,7 @@ bool ProcessCloser::ShutDown(ImmediateSession& session)
       /*
       * Oh well. Take cover. It gets violent here. Try to kill all matching processes.
       */
-      for (auto it = pid_set.begin(); it != pid_set.end(); ++it)
+      for (auto it = pidSet.begin(); it != pidSet.end(); ++it)
       {
         HANDLE tmpHandle = OpenProcess(PROCESS_TERMINATE, FALSE, *it);
         if (!tmpHandle) 
@@ -292,7 +292,7 @@ bool ProcessCloser::ShutDown(ImmediateSession& session)
           session.Log(stream.str());
           continue;
         }
-        Windows_Handle procHandle(tmpHandle);
+        WindowsHandle procHandle(tmpHandle);
         if (!TerminateProcess(tmpHandle, 0))
         {
           std::ostringstream stream;
@@ -319,7 +319,7 @@ bool ProcessCloser::ShutDown(ImmediateSession& session)
         return true ;
       }
     }
-    // Assert is_running()
+    // Assert IsRunning()
   }
   // No control path leaves the for-loop.
 } ;

@@ -1,12 +1,12 @@
 /**
-* \file abp_ca.cpp Top-level source for custom actions. Includes DLL initialization.
+* \file DLL.cpp Top-level source for custom actions. Includes DLL initialization.
 */
 #include "DLL.h"
 #include <stdexcept>
 
 std::shared_ptr< DllModule > DllModule::singleton = 0 ;
 
-DllModule & DllModule::module()
+DllModule & DllModule::Module()
 { 
   if ( singleton )
   {
@@ -45,9 +45,9 @@ DllModule::DllModule( HINSTANCE handle )
 {
 }
 
-std::wstring DllModule::name() 
+std::wstring DllModule::Name() 
 {
-  if ( _name )
-    return *_name ;
+  if ( name )
+    return *name ;
   throw std::runtime_error( "Not yet implemented" );
 }

@@ -11,10 +11,10 @@
 
 const wchar_t exact_exe_name[] = L"installer-ca-tests.exe" ;
 const std::wstring exact_exe_string( exact_exe_name ) ;
-const wstring_ci exact_exe_string_ci( exact_exe_name ) ;
+const WstringCaseInsensitive exact_exe_string_ci( exact_exe_name ) ;
 
 const wchar_t mixedcase_exe_name[] = L"Installer-CA-Tests.exe" ;
-const wstring_ci mixedcase_exe_string_ci( mixedcase_exe_name ) ;
+const WstringCaseInsensitive mixedcase_exe_string_ci( mixedcase_exe_name ) ;
 
 const wchar_t unknown_name[] = L"non-matching-name" ;
 const wchar_t * multiple_exe_names[] = { mixedcase_exe_name, unknown_name } ;
@@ -39,7 +39,7 @@ struct our_process_by_name_CI
 {
   bool operator()( const PROCESSENTRY32W & process ) 
   {
-    return wstring_ci( process.szExeFile ) == mixedcase_exe_string_ci ;
+    return WstringCaseInsensitive( process.szExeFile ) == mixedcase_exe_string_ci ;
   } ;
 } ;
 
@@ -51,13 +51,13 @@ struct our_process_by_name_CI
 class process_by_any_file_name_CI
   : public std::unary_function< PROCESSENTRY32W, bool >
 {
-  const file_name_set & names ;
+  const FileNameSet & names ;
 public:
   bool operator()( const PROCESSENTRY32W & process)
   {
     return names.find( process.szExeFile ) != names.end() ;
   }
-  process_by_any_file_name_CI( const file_name_set & names )
+  process_by_any_file_name_CI( const FileNameSet & names )
     : names( names )
   {}
 } ;
@@ -68,11 +68,11 @@ public:
 class process_by_name_CI
   : public std::unary_function< PROCESSENTRY32W, bool >
 {
-  const wstring_ci _name ;
+  const WstringCaseInsensitive _name ;
 public:
   bool operator()( const PROCESSENTRY32W & process )
   {
-    return _name == wstring_ci( process.szExeFile ) ;
+    return _name == WstringCaseInsensitive( process.szExeFile ) ;
   }
 
   process_by_name_CI( const wchar_t * name )
@@ -96,9 +96,9 @@ PROCESSENTRY32 process_mixedcase = process_with_name( mixedcase_exe_name ) ;
 PROCESSENTRY32 process_explorer = process_with_name( L"explorer.exe" ) ;
 PROCESSENTRY32 process_absent = process_with_name( L"no_such_name" ) ;
 
-file_name_set multiple_name_set( multiple_exe_names ) ;
+FileNameSet multiple_name_set( multiple_exe_names ) ;
 process_by_any_file_name_CI find_in_set( multiple_name_set ) ;
-process_by_any_exe_not_immersive find_in_set_not_immersive( multiple_name_set ) ;
+ProcessByAnyExeNotImmersive find_in_set_not_immersive( multiple_name_set ) ;
 
 
 TEST( file_name_set, validate_setup )
@@ -112,7 +112,7 @@ TEST( file_name_set, validate_setup )
 
 TEST( process_by_any_file_name_CI, empty )
 {
-  file_name_set s ;
+  FileNameSet s ;
   process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( x( process_empty ) ) ;
@@ -125,7 +125,7 @@ TEST( process_by_any_file_name_CI, empty )
 TEST( process_by_any_file_name_CI, single_element_known )
 {
   const wchar_t * elements[ 1 ] = { exact_exe_name } ;
-  file_name_set s( elements ) ;
+  FileNameSet s( elements ) ;
   process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( x( process_empty ) ) ;
@@ -138,7 +138,7 @@ TEST( process_by_any_file_name_CI, single_element_known )
 TEST( process_by_any_file_name_CI, single_element_unknown )
 {
   const wchar_t * elements[ 1 ] = { unknown_name } ;
-  file_name_set s( elements ) ;
+  FileNameSet s( elements ) ;
   process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( x( process_empty ) ) ;
@@ -150,7 +150,7 @@ TEST( process_by_any_file_name_CI, single_element_unknown )
 
 TEST( process_by_any_file_name_CI, two_elements )
 {
-  file_name_set s( multiple_exe_names ) ;
+  FileNameSet s( multiple_exe_names ) ;
   process_by_any_file_name_CI x( s ) ;
 
   ASSERT_FALSE( find_in_set( process_empty ) ) ;
@@ -169,7 +169,7 @@ TEST( process_by_any_file_name_CI, two_elements )
 template< class T, class Admittance, class Extractor >
 void initialize_process_list( std::vector< T > & v, Admittance admit = Admittance(), Extractor extract = Extractor() )
 {
-  initialize_process_list( v, ProcessSnapshot(), admit, extract ) ;
+  InitializeProcessList( v, ProcessSnapshot(), admit, extract ) ;
 }
 
 /**
@@ -178,7 +178,7 @@ void initialize_process_list( std::vector< T > & v, Admittance admit = Admittanc
 template< class T, class Admittance, class Extractor >
 void initialize_process_set( std::set< T > & s, Admittance admit = Admittance(), Extractor extract = Extractor() )
 {
-  initialize_process_set( s, ProcessSnapshot(), admit, extract ) ;
+  InitializeProcessSet( s, ProcessSnapshot(), admit, extract ) ;
 }
 
 //-------------------------------------------------------
@@ -190,7 +190,7 @@ void initialize_process_set( std::set< T > & s, Admittance admit = Admittance(),
 TEST( Process_List_Test, construct_vector )
 {
   std::vector< PROCESSENTRY32W > v ;
-  initialize_process_list( v, every_process(), copy_all() ) ;
+  initialize_process_list( v, EveryProcess(), CopyAll() ) ;
   ASSERT_GE( v.size(), 1u );
 }
 
@@ -200,7 +200,7 @@ TEST( Process_List_Test, construct_vector )
 TEST( Process_List_Test, find_our_process )
 {
   std::vector< PROCESSENTRY32W > v ;
-  initialize_process_list( v, our_process_by_name(), copy_all() ) ;
+  initialize_process_list( v, our_process_by_name(), CopyAll() ) ;
   size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
@@ -213,7 +213,7 @@ TEST( Process_List_Test, find_our_process )
 TEST( Process_List_Test, find_our_process_CI_generic )
 {
   std::vector< PROCESSENTRY32W > v ;
-  initialize_process_list( v, process_by_name_CI( mixedcase_exe_name ), copy_all() ) ;
+  initialize_process_list( v, process_by_name_CI( mixedcase_exe_name ), CopyAll() ) ;
   size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
@@ -226,7 +226,7 @@ TEST( Process_List_Test, find_our_process_CI_generic )
 TEST( Process_List_Test, find_our_process_CI_as_used )
 {
   std::vector< PROCESSENTRY32W > v ;
-  initialize_process_list( v, process_by_any_file_name_CI( file_name_set( multiple_exe_names ) ), copy_all() ) ;
+  initialize_process_list( v, process_by_any_file_name_CI( FileNameSet( multiple_exe_names ) ), CopyAll() ) ;
   size_t size( v.size() );
   EXPECT_EQ( 1u, size );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( 1u, size );
@@ -238,7 +238,7 @@ TEST( Process_List_Test, find_our_process_CI_as_used )
 TEST( Process_List_Test, find_our_PID )
 {
   std::vector< DWORD > v ;
-  initialize_process_list( v, our_process_by_name(), copy_PID() ) ;
+  initialize_process_list( v, our_process_by_name(), CopyPID() ) ;
   size_t size( v.size() );
   EXPECT_EQ( size, 1u );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( size, 1u );
@@ -250,7 +250,7 @@ TEST( Process_List_Test, find_our_PID )
 TEST( Process_List_Test, find_our_process_in_set )
 {
   std::vector< DWORD > v ;
-  initialize_process_list( v, find_in_set, copy_PID() ) ;
+  initialize_process_list( v, find_in_set, CopyPID() ) ;
   size_t size( v.size() );
   EXPECT_EQ( size, 1u );    // Please, don't run multiple test executables simultaneously
   ASSERT_GE( size, 1u );
@@ -270,14 +270,14 @@ TEST( Process_List_Test, find_our_process_in_set )
 TEST( pid_set, construct_set )
 {
   std::set< DWORD > s ;
-  initialize_process_set( s, every_process(), copy_PID() ) ;
+  initialize_process_set( s, EveryProcess(), CopyPID() ) ;
   ASSERT_GE( s.size(), 1u );
 }
 
 TEST( pid_set, find_our_process_in_set )
 {
   std::set< DWORD > s ;
-  initialize_process_set( s, find_in_set, copy_PID() ) ;
+  initialize_process_set( s, find_in_set, CopyPID() ) ;
   size_t size( s.size() ) ;
   EXPECT_EQ( size, 1u );
   ASSERT_GE( size, 1u );
@@ -286,7 +286,7 @@ TEST( pid_set, find_our_process_in_set )
 TEST( pid_set, find_our_process_in_set_not_immersive )
 {
   std::set< DWORD > s ;
-  initialize_process_set( s, find_in_set_not_immersive, copy_PID() ) ;
+  initialize_process_set( s, find_in_set_not_immersive, CopyPID() ) ;
   size_t size( s.size() ) ;
   EXPECT_EQ( size, 1u );
   ASSERT_GE( size, 1u );

@@ -21,7 +21,7 @@ public:
   /**
   * Accessor function for the singleton.
   */
-  static DllModule & module();
+  static DllModule & Module();
 
   /**
   * Hook function to call on DLL attach.
@@ -36,7 +36,7 @@ public:
   /**
   * Textual name of the DLL as an OS module.
   */
-  std::wstring name();
+  std::wstring Name();
 
 private:
   /**
@@ -59,7 +59,7 @@ private:
   *
   * Implemented as a smart pointer for deferred evaluation of the system call to get the module name.
   */
-  std::shared_ptr< std::wstring > _name;
+  std::shared_ptr< std::wstring > name;
 };
 
 #endif

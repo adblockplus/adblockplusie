@@ -8,19 +8,19 @@
 //-----------------------------------------------------------------------------------------
 // Database
 //-----------------------------------------------------------------------------------------
-msi_handle Database::open_view( const wchar_t * query )
+MsiHandle Database::OpenView( const wchar_t * query )
 {
-  MSIHANDLE view_handle ;
-  UINT x = MsiDatabaseOpenView( handle, query, & view_handle ) ;
+  MSIHANDLE viewHandle ;
+  UINT x = MsiDatabaseOpenView( handle, query, & viewHandle ) ;
   if ( x == ERROR_BAD_QUERY_SYNTAX )
   {
-    throw windows_api_error( "MsiDatabaseOpenView", "ERROR_BAD_QUERY_SYNTAX" ) ;
+    throw WindowsApiError( "MsiDatabaseOpenView", "ERROR_BAD_QUERY_SYNTAX" ) ;
   }
   else if ( x == ERROR_INVALID_HANDLE )
   {
-    throw windows_api_error( "MsiDatabaseOpenView", "ERROR_INVALID_HANDLE" ) ;
+    throw WindowsApiError( "MsiDatabaseOpenView", "ERROR_INVALID_HANDLE" ) ;
   }
-  return msi_handle( view_handle ) ;
+  return MsiHandle( viewHandle ) ;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -34,14 +34,14 @@ msi_handle Database::open_view( const wchar_t * query )
 *    Return value of this function, a handle, must be released in order to avoid a resource leak.
 *    Passing it as an argument to the Database constructor is adequate.
 */
-msi_handle get_active_database( ImmediateSession & session )
+MsiHandle GetActiveDatabase( ImmediateSession & session )
 {
   MSIHANDLE h( MsiGetActiveDatabase( session.handle ) ) ;
   if ( h == 0 )
   {
-    throw windows_api_error( "MsiGetActiveDatabase", 0 ) ;
+    throw WindowsApiError( "MsiGetActiveDatabase", 0 ) ;
   }
-  return msi_handle( h ) ;
+  return MsiHandle( h ) ;
 }
 
 /**
@@ -49,7 +49,7 @@ msi_handle get_active_database( ImmediateSession & session )
 *    The only thing this constructor needs to do is to initialize the base class.
 */
 InstallationDatabase::InstallationDatabase( ImmediateSession & session )
-  : Database( get_active_database( session ) )
+  : Database( GetActiveDatabase( session ) )
 {
   // empty body
 } ;
@@ -58,40 +58,40 @@ InstallationDatabase::InstallationDatabase( ImmediateSession & session )
 // View
 //-----------------------------------------------------------------------------------------
 /**
-* Implementation function for View::first().
+* Implementation function for View::First().
 */
-void view_first_body( UINT x )
+void ViewFirstBody( UINT x )
 {
   if ( x != ERROR_SUCCESS )
   {
-    throw windows_api_error( "MsiViewExecute", x ) ;
+    throw WindowsApiError( "MsiViewExecute", x ) ;
   }
 }
 
-Record View::first()
+Record View::First()
 {
-  view_first_body( MsiViewExecute( _handle, 0 ) ) ;
-  return next() ;
+  ViewFirstBody( MsiViewExecute( handle, 0 ) ) ;
+  return Next() ;
 }
 
-Record View::first( Record & arguments )
+Record View::First( Record & arguments )
 {
-  view_first_body( MsiViewExecute( _handle, arguments._handle ) ) ;
-  return next() ;
+  ViewFirstBody( MsiViewExecute( handle, arguments.handle ) ) ;
+  return Next() ;
 }
 
-Record View::next()
+Record View::Next()
 {
   MSIHANDLE h ;
-  UINT x = MsiViewFetch( _handle, & h ) ;
+  UINT x = MsiViewFetch( handle, & h ) ;
   if ( x == ERROR_NO_MORE_ITEMS )
   {
-    return Record( Record::null_t() ) ;
+    return Record( Record::NullType() ) ;
   }
   else if ( x == ERROR_SUCCESS )
   {
-    return Record( msi_handle( h ) ) ;
+    return Record( MsiHandle( h ) ) ;
   }
-  throw windows_api_error( "MsiViewFetch", x ) ;
+  throw WindowsApiError( "MsiViewFetch", x ) ;
 }
 

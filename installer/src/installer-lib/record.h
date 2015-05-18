@@ -25,13 +25,13 @@ class View ;
 * Other constructors will be required to encapsulate records that are bound to databases.
 *
 * This class has exclusive-ownership semantics for the API handle to the record.
-* Every constructor has a postcondition that the _handle member points to an open record.
+* Every constructor has a postcondition that the handle member points to an open record.
 * The destructor closes the record.
 * The copy constructor syntax is used as a move constructor (since no C++11 yet).
 * Analogously, copy assignment has move semantics.
 *
 * \par Invariant
-*   - _handle is not null implies _handle points to a record open in the Windows Installer subsystem
+*   - handle is not null implies handle points to a record open in the Windows Installer subsystem
 *
 * \sa http://msdn.microsoft.com/en-us/library/windows/desktop/aa372881%28v=vs.85%29.aspx
 *    Windows Installer on MSDN: "Working with Records"
@@ -40,28 +40,28 @@ class Record {
   /**
   * 
   */
-  typedef handle< MSIHANDLE, Special_Null, MSI_Generic_Destruction > record_handle_type ;
+  typedef Handle< MSIHANDLE, SpecialNull, GenericMsiDestruction > RecordHandleType ;
 
   /**
   * The handle for the record as a Windows Installer resource.
   */
-  MSIHANDLE _handle ;
+  MSIHANDLE handle ;
 
   /**
   * Construct a record from its handle as returned by some MSI call.
   */
-  Record( msi_handle handle )
-    : _handle( handle )
+  Record( MsiHandle handle )
+    : handle( handle )
   {} 
 
   /**
   * Internal validation guard for operations that require a non-null handle.
   *
   * \post
-  *   - if _handle is zero, throw an exception
-  *   - if _handle is non-zero, nothing
+  *   - if handle is zero, throw an exception
+  *   - if handle is non-zero, nothing
   */
-  void only_non_null() ;
+  void OnlyNonNull() ;
 
   /**
   * Proxy class used to implement move semantics, prior to use of C++11.
@@ -69,19 +69,19 @@ class Record {
   * /sa
   *   - Wikibooks [More C++ Idioms/Move Constructor](http://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Move_Constructor)
   */
-  struct Proxy_Record
+  struct ProxyRecord
   {
-    MSIHANDLE _handle ;
+    MSIHANDLE handle ;
 
-    Proxy_Record( MSIHANDLE handle )
-      : _handle( handle )
+    ProxyRecord( MSIHANDLE handle )
+      : handle( handle )
     {}
   } ;
 
   /**
   * Tag class for null record constructor
   */
-  class null_t {} ;
+  class NullType {} ;
 
   /**
   * Null record constructor.
@@ -89,8 +89,8 @@ class Record {
   * The null record constructor avoids the ordinary check that an external handle not be zero.
   * It's declared private so that only friends can instantiate them.
   */
-  Record( null_t )
-    : _handle( 0 )
+  Record( NullType )
+    : handle( 0 )
   {}
 
   /**
@@ -103,12 +103,12 @@ public:
   * Ordinary constructor creates a free-standing record.
   * Use this for creating argument vectors.
   *
-  * \post _handle points to a record obtained from MsiCreateRecord
+  * \post handle points to a record obtained from MsiCreateRecord
   *
-  * \param[in] n_fields
+  * \param[in] nFields
   *    Number of fields in the created record.
   */
-  Record( unsigned int n_fields ) ;
+  Record( unsigned int nFields ) ;
 
   /**
   * Destructor
@@ -119,18 +119,18 @@ public:
   * Copy constructor syntax used as a move constructor.
   */
   Record( Record & r ) 
-    : _handle( r._handle )
+    : handle( r.handle )
   {
-    r._handle = 0 ;
+    r.handle = 0 ;
   }
 
   /**
   * Proxy move constructor.
   */
-  Record( Proxy_Record r )
-    : _handle( r._handle )
+  Record( ProxyRecord r )
+    : handle( r.handle )
   {
-    r._handle = 0 ;
+    r.handle = 0 ;
   }
 
   /**
@@ -139,29 +139,29 @@ public:
   Record & operator=( Record & r )
   {
     this -> ~Record() ;
-    _handle = r._handle ;
-    r._handle = 0 ;
+    handle = r.handle ;
+    r.handle = 0 ;
     return * this ;
   }
 
   /**
   * Proxy move assignment.
   */
-  Record & operator=( Proxy_Record pr )
+  Record & operator=( ProxyRecord pr )
   {
     this -> ~Record() ;
-    _handle = pr._handle ;
-    pr._handle = 0 ;
+    handle = pr.handle ;
+    pr.handle = 0 ;
     return * this ;
   }
 
   /**
   * Proxy conversion operator
   */
-  operator Proxy_Record()
+  operator ProxyRecord()
   {
-    Proxy_Record pr( _handle ) ;
-    _handle = 0 ;
+    ProxyRecord pr( handle ) ;
+    handle = 0 ;
     return pr ;
   }
 
@@ -170,7 +170,7 @@ public:
   */
   inline bool operator==( const Record & x ) const
   {
-    return _handle == x._handle ;
+    return handle == x.handle ;
   }
 
   /**
@@ -184,63 +184,63 @@ public:
   /**
   * Assign a string to a record, (regular) character pointer.
   *
-  * \param[in] field_index
+  * \param[in] fieldIndex
   *    Index into the record as a vector of fields
   * \param[in] value
   *    String to write into the field
   */
-  void assign_string( unsigned int field_index, const char *value ) ;
+  void AssignString( unsigned int fieldIndex, const char *value ) ;
 
   /**
   * Assign a string to a record, regular string version.
   *
-  * \param[in] field_index
+  * \param[in] fieldIndex
   *    Index into the record as a vector of fields
   * \param[in] value
   *    String to write into the field
   */
-  void assign_string( unsigned int field_index, const std::string value )
+  void AssignString(unsigned int fieldIndex, const std::string value)
   {
-    assign_string( field_index, value.c_str() );
+    AssignString(fieldIndex, value.c_str());
   }
 
   /**
   * Assign a string to a record, wide character pointer version.
   *
-  * \param[in] field_index
+  * \param[in] fieldIndex
   *    Index into the record as a vector of fields
   * \param[in] value
   *    String to write into the field
   */
-  void assign_string( unsigned int field_index, const wchar_t *value ) ;
+  void AssignString(unsigned int fieldIndex, const wchar_t *value) ;
 
   /**
   * Assign a string to a record, wide string version.
   *
-  * \param[in] field_index
+  * \param[in] fieldIndex
   *    Index into the record as a vector of fields
   * \param[in] value
   *    String to write into the field
   */
-  void assign_string( unsigned int field_index, const std::wstring value )
+  void AssignString( unsigned int fieldIndex, const std::wstring value)
   {
-    assign_string( field_index, value.c_str() );
+    AssignString(fieldIndex, value.c_str());
   }
 
   /**
   * Retrieve a wide string value from a record
   */
-  std::wstring value_string( unsigned int field_index ) ;
+  std::wstring ValueString( unsigned int fieldIndex) ;
 
   /**
   * The number of fields in the record.
   */
-  size_t n_fields() const ;
+  size_t NumberOfFields() const ;
 
   /**
   * Handle accessor.
   */
-  MSIHANDLE handle() { return _handle ; }
+  MSIHANDLE Handle() { return handle ; }
 };
 
 #endif

@@ -40,7 +40,7 @@ Property::operator std::wstring() const
     // Do nothing yet.
     break ;
   default:
-    throw windows_api_error( "MsiGetPropertyW", x, "fixed buffer" ) ;
+    throw WindowsApiError( "MsiGetPropertyW", x, "fixed buffer" ) ;
   }
   // Assert we received ERROR_MORE_DATA
   // unique_ptr handles deallocation transparently
@@ -51,7 +51,7 @@ Property::operator std::wstring() const
   case ERROR_SUCCESS:
     return std::wstring( buffer2.get(), length ) ;
   default:
-    throw windows_api_error( "MsiGetPropertyW", x, "allocated buffer" ) ;
+    throw WindowsApiError( "MsiGetPropertyW", x, "allocated buffer" ) ;
   }
 }
 
@@ -64,6 +64,6 @@ void Property::operator=( const std::wstring & value )
   UINT x = MsiSetPropertyW( handle, name.c_str(), value.c_str() ) ;
   if ( x != ERROR_SUCCESS )
   {
-    throw windows_api_error( "MsiSetPropertyW", x ) ;
+    throw WindowsApiError( "MsiSetPropertyW", x ) ;
   }
 }

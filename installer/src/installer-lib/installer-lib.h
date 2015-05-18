@@ -21,26 +21,26 @@
 * \par Example
 *   For a simple error, where there's not much to add over the API call and the error code itself, just omit the second argument.
 *   \code
-*     throw windows_api_error( "MsiDatabaseOpenView", "ERROR_BAD_QUERY_SYNTAX" )
+*     throw WindowsApiError( "MsiDatabaseOpenView", "ERROR_BAD_QUERY_SYNTAX" )
 *   \endcode
 *
 * \par
 *   Sometimes you don't have a symbolic error code.
 *   This example uses a numeric error and a clarifying message.
 *   \code
-*     throw windows_api_error( "MsiOpenDatabaseW", x, "MSI database is on file system" )
+*     throw WindowsApiError( "MsiOpenDatabaseW", x, "MSI database is on file system" )
 *   \endcode
 */
-class windows_api_error
+class WindowsApiError
   : public std::runtime_error
 {
   template< class T1, class T2, class T3 >
-  static std::string make_message( T1 api_function, T2 error_code, T3 message )
+  static std::string MakeMessage( T1 apiFunction, T2 errorCode, T3 message )
   {
     std::ostringstream r, t ;
     std::string s ;
 
-    t << api_function ;
+    t << apiFunction ;
     s = t.str() ;
     if ( s.empty() )
     {
@@ -49,7 +49,7 @@ class windows_api_error
     r << s <<  " returned " ;
 
     t = std::ostringstream() ;
-    t << error_code ;
+    t << errorCode ;
     s = t.str() ;
     if ( s.empty() )
     {
@@ -72,41 +72,41 @@ public:
   /**
   * Constructor with additional message.
   *
-  * \param api_function
+  * \param apiFunction
   *	The name of the API function that returned an error code or a null handle.
-  * \param error_code
+  * \param errorCode
   *    The error code that the function returned, either symbolic or numeric.
   *    Will be zero when the function returned a null handle.
   * \param message
   *    Extra message to clarify the error
   */
   template< class T1, class T2, class T3 >
-  windows_api_error( T1 api_function, T2 error_code, T3 message  )
-    : std::runtime_error( make_message( api_function, error_code, message ) )
+  WindowsApiError( T1 apiFunction, T2 errorCode, T3 message  )
+    : std::runtime_error( MakeMessage( apiFunction, errorCode, message ) )
   {}
 
   /**
   * Constructor without anything extra.
   *
-  * \param api_function
+  * \param apiFunction
   *	The name of the API function that returned an error code or a null handle.
-  * \param error_code
+  * \param errorCode
   *    The error code that the function returned, either symbolic or numeric.
   *    Will be zero when the function returned a null handle.
   */
   template< class T1, class T2 >
-  windows_api_error( T1 api_function, T2 error_code )
-    : std::runtime_error( make_message( api_function, error_code, "" ) )
+  WindowsApiError( T1 apiFunction, T2 errorCode)
+    : std::runtime_error( MakeMessage( apiFunction, errorCode, "" ) )
   {}
 } ;
 
 /**
 */
-class not_yet_supported
+class NotYetSupported
   : public std::runtime_error
 {
 public:
-  not_yet_supported( std::string message )
+  NotYetSupported( std::string message )
     : std::runtime_error( "Not yet supported: " + message )
   {}
 } ;

@@ -10,16 +10,16 @@
 //-----------------------------------------------------------------------------------------
 // Message
 //-----------------------------------------------------------------------------------------
-Message::Message( std::string message, INSTALLMESSAGE message_type )
-  : r( 1 ), message_type( message_type )
+Message::Message( std::string message, INSTALLMESSAGE messageType )
+  : r( 1 ), MessageTypeCode( messageType )
 {
-  r.assign_string( 0, message ) ;
+  r.AssignString( 0, message ) ;
 }
 
-Message::Message( std::wstring message, INSTALLMESSAGE message_type )
-  : r( 1 ), message_type( message_type )
+Message::Message( std::wstring message, INSTALLMESSAGE messageType )
+  : r( 1 ), MessageTypeCode( messageType )
 {
-  r.assign_string( 0, message ) ;
+  r.AssignString( 0, message ) ;
 }
 
 //-----------------------------------------------------------------------------------------
@@ -27,10 +27,10 @@ Message::Message( std::wstring message, INSTALLMESSAGE message_type )
 //-----------------------------------------------------------------------------------------
 Session::Session( MSIHANDLE handle, std::string name )
   : handle( handle ), 
-  log_prefix( name + ": " )
+  logPrefix( name + ": " )
 {
-  log_prefix_w.assign( name.begin(), name.end() ) ;
-  log_prefix_w += L": " ;
+  logPrefixW.assign( name.begin(), name.end() ) ;
+  logPrefixW += L": " ;
   LogNoexcept( "Entering custom action" ) ;
 }
 
@@ -46,46 +46,46 @@ Session::~Session()
 *
 * This class is not exposed outside this compilation unit because everything it can do is already exposed by the log functions.
 */
-struct Log_Message
+struct LogMessage
   : public Message
 {
-  Log_Message ( std::wstring message )
+  LogMessage ( std::wstring message )
     : Message( message, INSTALLMESSAGE_INFO )
   {}
 
-  Log_Message ( std::string message )
+  LogMessage ( std::string message )
     : Message( message, INSTALLMESSAGE_INFO )
   {}
 } ;
 
 void Session::Log( std::string message )
 {
-  WriteMessage( Log_Message( log_prefix + message ) ) ;
+  WriteMessage( LogMessage( logPrefix + message ) ) ;
 }
 
 void Session::Log( std::wstring message )
 {
-  WriteMessage( Log_Message( log_prefix_w + message ) ) ;
+  WriteMessage( LogMessage( logPrefixW + message ) ) ;
 }
 
 void Session::LogNoexcept( std::string message )
 {
-  write_message_noexcept( Log_Message( log_prefix + message ) ) ;
+  WriteMessageNoexcept( LogMessage( logPrefix + message ) ) ;
 }
 
 int Session::WriteMessage( Message & m )
 {
-  int x = write_message_noexcept( m ) ;
+  int x = WriteMessageNoexcept( m ) ;
   if ( x == -1 )
   {
-    throw windows_api_error( "MsiProcessMessage", x, "attempt to write to log file" ) ;
+    throw WindowsApiError( "MsiProcessMessage", x, "attempt to write to log file" ) ;
   }
   return x ;
 }
 
-int Session::write_message_noexcept( Message & m )
+int Session::WriteMessageNoexcept( Message & m )
 {
-  return MsiProcessMessage( handle, m.message_type, m.r.handle() ) ;
+  return MsiProcessMessage( handle, m.MessageTypeCode, m.r.Handle() ) ;
 }
 
 //-----------------------------------------------------------------------------------------

@@ -57,7 +57,7 @@ public:
 
   enum class Icon : long
   {
-    defaultIcon = 0,                        ///< use the default icon associated with the box_type
+    defaultIcon = 0,                        ///< use the default icon associated with the box type
     warningIcon = MB_ICONWARNING,           ///< exclamation point
     informationIcon = MB_ICONINFORMATION,   ///< lowercase letter "i" in a circle
     errorIcon = MB_ICONERROR                ///< stop sign
@@ -87,7 +87,7 @@ public:
 } ;
 
 /**
- * Error for any non-handled return value from Session.write_message().
+ * Error for any non-handled return value from Session.WriteMessage().
  */
 struct UnexpectedReturnValueFromMessageBox
   : std::logic_error

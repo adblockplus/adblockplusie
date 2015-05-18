@@ -36,7 +36,7 @@ class View ;
 class Database
 {
 protected:
-  typedef handle< MSIHANDLE, Disallow_Null, MSI_Generic_Destruction > handle_type ;
+  typedef Handle< MSIHANDLE, DisallowNull, GenericMsiDestruction > HandleType ;
 
   /**
   * Protected constructor. 
@@ -54,7 +54,7 @@ protected:
 
   /**
   */
-  handle_type handle ;
+  HandleType handle ;
 
 private:
   /**
@@ -76,7 +76,7 @@ private:
   * \sa
   *   - MSDN [MsiDatabaseOpenView function](http://msdn.microsoft.com/en-us/library/aa370082%28v=vs.85%29.aspx)
   */
-  msi_handle open_view( const wchar_t * query ) ;
+  MsiHandle OpenView( const wchar_t * query ) ;
 
   friend class View ;
 } ;
@@ -103,7 +103,7 @@ public:
 * Refactor the class to obtain other open-modes.
 *
 */
-class File_System_Database : public Database
+class FileSystemDatabase : public Database
 {
   /**
   * Open function is separate to enable initializing base class before constructor body.
@@ -111,20 +111,20 @@ class File_System_Database : public Database
   * \sa
   *   - MSDN [MsiOpenDatabase function](http://msdn.microsoft.com/en-us/library/aa370338%28v=vs.85%29.aspx)
   */
-  msi_handle handle_from_pathname( const wchar_t * pathname )
+  MsiHandle HandleFromPathname( const wchar_t * pathname )
   {
     MSIHANDLE handle ;
     UINT x = MsiOpenDatabaseW( pathname, MSIDBOPEN_READONLY, & handle ) ;
     if ( x != ERROR_SUCCESS )
     {
-      throw windows_api_error( "MsiOpenDatabaseW", x, "MSI database on file system" ) ;
+      throw WindowsApiError( "MsiOpenDatabaseW", x, "MSI database on file system" ) ;
     }
-    return msi_handle( handle ) ;
+    return MsiHandle( handle ) ;
   }
 
 public:
-  File_System_Database( const wchar_t * pathname )
-    : Database( handle_from_pathname( pathname ) )
+  FileSystemDatabase( const wchar_t * pathname )
+    : Database( HandleFromPathname( pathname ) )
   {}
 } ;
 
@@ -140,19 +140,19 @@ public:
 */
 class View
 {
-  typedef handle< MSIHANDLE, Disallow_Null, MSI_Generic_Destruction > handle_type ;
+  typedef Handle< MSIHANDLE, DisallowNull, GenericMsiDestruction > HandleType ;
 
   /**
   * Handle for the MSI view object
   */
-  handle_type _handle;
+  HandleType handle;
 
 public:
   /**
   * Ordinary constructor
   */
   View( Database & db, wchar_t * query )
-    : _handle( db.open_view( query ) )
+    : handle( db.OpenView( query ) )
   {}
 
   /**
@@ -161,26 +161,26 @@ public:
   * \param arguments
   *    List of parameters to supply as the query arguments (question marks).
   */
-  Record first( Record & arguments ) ;
+  Record First( Record & arguments ) ;
 
   /**
   * Execute the query and return the first record in its results.
   * 
   * With no arguments, this version of the function may only be used with a query that takes no arguments.
   */
-  Record first() ;
+  Record First() ;
 
   /**
   * Retrieve the next record.
   */
-  Record next() ;
+  Record Next() ;
 
   /**
   * End marker
   */
-  inline Record end()
+  inline Record End()
   {
-    return Record( Record::null_t() ) ;
+    return Record( Record::NullType() ) ;
   }
 } ;
 

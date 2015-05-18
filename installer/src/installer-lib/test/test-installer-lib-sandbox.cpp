@@ -45,7 +45,7 @@ void log_all_window_handles( ImmediateSession & session )
 {
   session.Log( "log_all_window_handles" ) ;
   log_single_window_handle lp( session ) ;
-  enumerate_windows( lp ) ;
+  EnumerateWindows( lp ) ;
 }
 
 //-------------------------------------------------------
@@ -65,8 +65,8 @@ public:
 
   bool operator()( HWND window )
   {
-    DWORD pid = creator_process( window ) ;
-    if ( pc.contains( pid ) )
+    DWORD pid = CreatorProcess( window ) ;
+    if ( pc.Contains( pid ) )
     {
       std::stringstream s ;
       s << "Window handle 0x" << std::hex << window ;
@@ -83,7 +83,7 @@ void log_IE_window_handles( ImmediateSession & session )
   ProcessSnapshot snapshot ;
   ProcessCloser iec(snapshot, IE_names) ;
   log_single_window_handle_only_if_IE lp( session, iec ) ;
-  enumerate_windows( lp ) ;
+  EnumerateWindows( lp ) ;
 }
 
 //-------------------------------------------------------
@@ -95,7 +95,7 @@ void log_only_window_handle_in_closer( ImmediateSession & session )
   const wchar_t * IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" } ;
   ProcessSnapshot snapshot ;
   ProcessCloser iec( snapshot, IE_names) ;
-  iec.iterate_our_windows( log_single_window_handle( session ) ) ;
+  iec.IterateOurWindows( log_single_window_handle( session ) ) ;
 }
 
 //-------------------------------------------------------
