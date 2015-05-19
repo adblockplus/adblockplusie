@@ -22,20 +22,20 @@
 extern "C" BOOL WINAPI DllMain(
   IN HINSTANCE moduleHandle,
   IN ULONG reason,
-  IN LPVOID reserved )
+  IN LPVOID reserved)
 {
   /*
    * Because this is an external API, we must ensure that there is a catch-all block for each execution path. There are two of these below.
    */
-  switch ( reason )
+  switch (reason)
   {
   case DLL_PROCESS_ATTACH:
     try
     {
-      DllModule::Attach( moduleHandle );
+      DllModule::Attach(moduleHandle);
       return TRUE;
     }
-    catch(...)
+    catch (...)
     {
       // We can't log to the installation log yet, and this couldn't shouldn't be executed except in rare cases such as out-of-memory.
       // Since it's a lot of code to do something useful (such as logging to the Windows system event log), we don't do anything but return a failure.
@@ -49,7 +49,7 @@ extern "C" BOOL WINAPI DllMain(
       DllModule::Detach();
       return TRUE;
     }
-    catch(...)
+    catch (...)
     {
       // See comment above in parallel catch-block.
       return FALSE;
