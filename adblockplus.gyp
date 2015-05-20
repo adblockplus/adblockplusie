@@ -242,6 +242,8 @@
       'src/plugin/PluginUserSettings.cpp',
       'src/plugin/PluginUserSettings.h',
       'test/plugin/UserSettingsTest.cpp',
+      'src/plugin/PluginUtil.h',
+      'test/plugin/UtilTest.cpp',
       #
       # required only for linking
       #

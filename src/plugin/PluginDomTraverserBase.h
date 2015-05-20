@@ -277,21 +277,19 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
 
           if (SUCCEEDED(pFrameEl->getAttribute(ATL::CComBSTR(L"src"), 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
           {
-            CString srcLegacy = vAttr.bstrVal;
+            std::wstring src(vAttr.bstrVal, SysStringLen(vAttr.bstrVal));
 
             // Some times, domain is missing. Should this be added on image src's as well?''
-
             // eg. gadgetzone.com.au
-            if (srcLegacy.Left(2) == L"//")
+            if (BeginsWith(src, L"//"))
             {
-              srcLegacy = L"http:" + srcLegacy;
+              src = L"http:" + src;
             }
             // eg. http://w3schools.com/html/html_examples.asp
-            else if (srcLegacy.Left(4) != L"http" && srcLegacy.Left(6) != L"res://")
+            else if (!(BeginsWith(src, L"http") || BeginsWith(src, L"res://")))
             {
-              srcLegacy = L"http://" + ToCString(m_domain) + srcLegacy;
+              src = L"http://" + m_domain + src;
             }
-            std::wstring src(ToWstring(srcLegacy));
             UnescapeUrl(src);
 
             // Check if Iframe should be traversed

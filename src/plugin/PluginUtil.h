@@ -17,6 +17,7 @@
 
 #pragma once
 #include <string>
+#include <ExDisp.h>
 
 std::wstring HtmlFolderPath();
 std::wstring UserSettingsFileUrl();
@@ -24,11 +25,16 @@ std::wstring FirstRunPageFileUrl();
 std::wstring FileUrl(const std::wstring& url);
 std::wstring GetLocationUrl(IWebBrowser2& browser);
 
+template<class CharT, class Traits, class Alloc, size_t N>
+bool BeginsWith(const std::basic_string<CharT, Traits, Alloc>& s, const CharT(&beginning)[N])
+{
+  return 0 == s.compare(0, N - 1, beginning);
+}
+
 /**
  * Wrapper around Microsoft API 'UrlUnescape'
  *
- * This function has modify-in-place semantics.
- * This behavior matches that of the legacy version of this function declared above.
+ * This function has modify-in-place behavior, which matches that of its legacy version.
  * At present, callers of this function have no code to handle error conditions that might arise here.
  * Because there's no error handling, therefore, this masks failures in UrlUnescape.
  */
