@@ -16,7 +16,7 @@
  */
 
 #include <gtest/gtest.h>
-#include "IE_Version.h"
+#include "IeVersion.h"
 
 /*
  * Exact version tests enabled by default.
