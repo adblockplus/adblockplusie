@@ -108,25 +108,54 @@ void CPluginTabBase::OnNavigate(const std::wstring& url)
   m_traverser->ClearCache();
 }
 
+namespace
+{
+  /**
+   * Determine if the HTML file is one of ours.
+   * The criterion is that it appear in the "html/templates" folder within our installation.
+   *
+   * Warning: This function may fail if the argument is not a "file://" URL.
+   * This is occasionally the case in circumstances yet to be characterized.
+   */
+  bool IsOurHtmlFile(const std::wstring& url)
+  {
+    // Declared static because the value is derived from an installation directory, which won't change during run-time.
+    static auto dir = FileUrl(HtmlFolderPath());
+
+    DEBUG_GENERAL([&]() -> std::wstring {
+      std::wstring log = L"InjectABP. Current URL: ";
+      log += url;
+      log += L", template directory URL: ";
+      log += dir;
+      return log;
+    }());
+
+    /*
+     * The length check here is defensive, in case the document URL is truncated for some reason.
+     */
+    if (url.length() < 5)
+    {
+      // We can't match ".html" at the end of the URL if it's too short.
+      return false;
+    }
+    auto urlCstr = url.c_str();
+    // Check the prefix to match our directory
+    // Check the suffix to be an HTML file
+    return (_wcsnicmp(urlCstr, dir.c_str(), dir.length()) == 0) &&
+      (_wcsnicmp(urlCstr + url.length() - 5, L".html", 5) == 0);
+  }
+}
+
 void CPluginTabBase::InjectABP(IWebBrowser2* browser)
 {
   CriticalSection::Lock lock(m_csInject);
   auto url = GetDocumentUrl();
-
-  std::wstring log = L"InjectABP. Current URL: ";
-  log += url;
-  log += L", settings URL: ";
-  log += UserSettingsFileUrl();
-  DEBUG_GENERAL(log);
-
-  CString urlLegacy = ToCString(url);
-  if (!(0 == urlLegacy.CompareNoCase(CString(UserSettingsFileUrl().c_str())) ||
-      0 == urlLegacy.CompareNoCase(CString(FirstRunPageFileUrl().c_str()))))
+  if (!IsOurHtmlFile(url))
   {
-    DEBUG_GENERAL(L"Not injecting");
+    DEBUG_GENERAL(L"InjectABP. Not injecting");
     return;
   }
-  DEBUG_GENERAL(L"Going to inject");
+  DEBUG_GENERAL(L"InjectABP. Injecting");
   CComPtr<IDispatch> pDocDispatch;
   browser->get_Document(&pDocDispatch);
   CComQIPtr<IHTMLDocument2> pDoc2 = pDocDispatch;
