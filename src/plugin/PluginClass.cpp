@@ -486,11 +486,6 @@ void STDMETHODCALLTYPE CPluginClass::OnBeforeNavigate2(
     std::wstring url(urlVariant->bstrVal, SysStringLen(urlVariant->bstrVal));
     UnescapeUrl(url);
 
-    //Register a mime filter if it's not registered yet
-    if (s_mimeFilter == nullptr)
-    {
-      s_mimeFilter = CPluginClientFactory::GetMimeFilterClientInstance();
-    }
     // If webbrowser2 is equal to top level browser (as set in SetSite), we are
     // navigating new page
     CPluginClient* client = CPluginClient::GetInstance();
