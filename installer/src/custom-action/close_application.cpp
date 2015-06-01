@@ -41,15 +41,15 @@ public:
     return browserCloser.IsRunning() || engineCloser.IsRunning() ;
   }
 
-  bool ShutDown()
+  bool ShutDown(ImmediateSession& session)
   {
-    if ( browserCloser.IsRunning() && ! browserCloser.ShutDown() )
+    if ( browserCloser.IsRunning() && ! browserCloser.ShutDown(session) )
     {
       // Assert IE is still running
       // This is after we've tried to shut it down, so we fail
       return false ;
     }
-    if ( engineCloser.IsRunning() && ! engineCloser.ShutDown() )
+    if ( engineCloser.IsRunning() && ! engineCloser.ShutDown(session) )
     {
       // Assert the engine is still running
       // This is after IE has shut down itself and after we've tried to shut down the engine. Whatever.
@@ -372,7 +372,7 @@ AbpCloseIe( MSIHANDLE sessionHandle )
 	 * Failed && not interactive -> Goto abort
 	 */
 	{
-	  bool ieWasClosed = iec.ShutDown() ;
+	  bool ieWasClosed = iec.ShutDown(session) ;
 	  if ( iec.IsRunning() )
 	  {
 	    session.Log( "Attempt to shut down IE automatically failed." ) ;
