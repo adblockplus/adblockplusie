@@ -216,7 +216,7 @@ struct endsession_accumulator :
 *   - MSDN [WM_QUERYENDSESSION message](http://msdn.microsoft.com/en-us/library/windows/desktop/aa376890%28v=vs.85%29.aspx)
 *   - MSDN [WM_ENDSESSION message](http://msdn.microsoft.com/en-us/library/windows/desktop/aa376889%28v=vs.85%29.aspx)
 */
-bool ProcessCloser::ShutDown()
+bool ProcessCloser::ShutDown(ImmediateSession& session)
 {
   /*
   * If we're not running, we don't need to shut down.
@@ -278,11 +278,33 @@ bool ProcessCloser::ShutDown()
       }
       break ;
 
-    default :
+    case 4:
       /*
-      * We're out of ways to try to shut down.
+      * Oh well. Take cover. It gets violent here. Try to kill all matching processes.
       */
-      return false ;
+      for (auto it = pid_set.begin(); it != pid_set.end(); ++it)
+      {
+        HANDLE tmpHandle = OpenProcess(PROCESS_TERMINATE, FALSE, *it);
+        if (!tmpHandle) 
+        {
+          std::ostringstream stream;
+          stream << "Can't open process for termination. Error: " << GetLastError();
+          session.Log(stream.str());
+          continue;
+        }
+        Windows_Handle procHandle(tmpHandle);
+        if (!TerminateProcess(tmpHandle, 0))
+        {
+          std::ostringstream stream;
+          stream << "Can't terminate process. Error: " << GetLastError();
+          session.Log(stream.str());
+        }
+      }
+      break;
+
+    default:
+      // We're out of ways to try to shut down. 
+      return false;
     }
 
     /*
@@ -290,7 +312,7 @@ bool ProcessCloser::ShutDown()
     */
     for ( unsigned int j = 0 ; j < 50 ; ++ j )
     {
-      std::this_thread::sleep_for( std::chrono::milliseconds( 100 ) ) ;
+      std::this_thread::sleep_for( std::chrono::milliseconds( 30 ) ) ;
       Refresh() ;
       if ( ! IsRunning() )
       {

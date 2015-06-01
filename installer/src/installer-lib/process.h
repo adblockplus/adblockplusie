@@ -7,6 +7,7 @@
 
 #include "installer-lib.h"
 #include "handle.h"
+#include "session.h"
 
 #include <string>
 #include <cctype>
@@ -686,7 +687,7 @@ public:
   /*
    * Shut down every process in the pid_set.
    */
-  bool ShutDown() ;
+  bool ShutDown(ImmediateSession& session);
 
 } ;
 
