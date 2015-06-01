@@ -1132,7 +1132,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
       {
         settings->AddWhiteListedDomain(ToCString(client->GetHostFromUrl(urlString)));
       }
-      GetBrowser()->Refresh();
     }
   default:
     break;
