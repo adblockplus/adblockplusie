@@ -56,7 +56,7 @@ goto End
 echo on
 msitran -g %MSI_BASE% %MSI_LOCALE% %MST%
 if errorlevel 1 GOTO :Error
-cscript ..\..\emb.vbs %LOCALE_ID% %MSI_INTERIM% %MST%
+python ..\..\emb.py %LOCALE_ID% %MSI_INTERIM% %MST%
 if errorlevel 1 GOTO :Error
 @echo off
 goto End
