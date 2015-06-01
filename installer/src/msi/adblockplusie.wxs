@@ -148,12 +148,12 @@
     
     <!--
       Icon for Add/Remove Programs
-      
-      It currently uses the blocking icon.
-      When #1538 is ready, we may have a separate icon file for this.
     -->
     <Icon Id="program_icon" SourceFile="$(var.plugin_dir)\src\res\blocking.ico"/>
     <Property Id="ARPPRODUCTICON" Value="program_icon"/>
+    <Property Id="ARPURLINFOABOUT" Value="https://adblockplus.org/en/about"/>
+    <Property Id="ARPURLUPDATEINFO" Value="https://adblockplus.org/category/adblock-plus-ie/"/>
+    <Property Id="ARPHELPLINK" Value="https://adblockplus.org/en/bugs"/>
 
     <!--
       Define and schedule a "Custom Action Type 1" to ensure that IE is closed before installation.
