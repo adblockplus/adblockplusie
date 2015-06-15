@@ -915,6 +915,10 @@ bool CPluginClass::CreateStatusBarPane()
 
 void CPluginClass::FirstRunThread()
 {
+  // Just return if the First Run Page should be suppressed
+  if (CPluginClient::GetInstance()->GetPref(L"suppress_first_run_page", false))
+    return;
+
   CoInitialize(NULL);
   VARIANT vFlags;
   vFlags.vt = VT_I4;

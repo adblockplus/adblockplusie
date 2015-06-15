@@ -31,6 +31,7 @@
 #include "AdblockPlus.h"
 #include "Debug.h"
 #include "Updater.h"
+#include "Registry.h"
 
 namespace
 {
@@ -428,6 +429,19 @@ namespace
 
     updater->Update(params[0]->AsString());
   }
+
+  std::wstring PreconfigurationValueFromRegistry(const std::wstring& preconfigName)
+  {
+    try
+    {
+      AdblockPlus::RegistryKey regKey(HKEY_CURRENT_USER, L"Software\\AdblockPlus");
+      return regKey.value_wstring(preconfigName);
+    }
+    catch (const std::runtime_error&)
+    {
+      return L"";
+    }
+  }
 }
 
 std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& locale)
@@ -453,7 +467,12 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
 
   std::string dataPath = ToUtf8String(GetAppDataPath());
   dynamic_cast<AdblockPlus::DefaultFileSystem*>(jsEngine->GetFileSystem().get())->SetBasePath(dataPath);
-  std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine));
+  std::map<std::string, AdblockPlus::JsValuePtr> preconfig;
+  preconfig["disable_auto_updates"] = jsEngine->NewValue(
+    PreconfigurationValueFromRegistry(L"disable_auto_updates") == L"true");
+  preconfig["suppress_first_run_page"] = jsEngine->NewValue(
+    PreconfigurationValueFromRegistry(L"suppress_first_run_page") == L"true");
+  std::auto_ptr<AdblockPlus::FilterEngine> filterEngine(new AdblockPlus::FilterEngine(jsEngine, preconfig));
   return filterEngine;
 }
 
