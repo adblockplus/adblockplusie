@@ -7,7 +7,7 @@ ads in Internet Explorer. The engine process embeds libadblockplus.
 Building
 --------
 
-You need Microsoft Visual C++ (Express is sufficient) 2012 and Python 2.6. Make
+You need Microsoft Visual C++ (Express is sufficient) 2012 and Python 2.7. Make
 sure that `python.exe` is on your `PATH`. When building with Express Edition
 you also need Windows 7.1 Device Kit (*not* version 8) to satisfy the ATL
 dependency, set `WINDDKDIR` environment variable to the installation directory
