@@ -5,6 +5,9 @@ set type=%2
 if "%type%"=="" set type=devbuild
 
 pushd %~dp0
+
+python ensure_dependencies.py
+
 if NOT EXIST build\ia32\libadblockplus\shell\nul mkdir build\ia32\libadblockplus\shell
 if NOT EXIST build\x64\libadblockplus\shell\nul mkdir build\x64\libadblockplus\shell
 

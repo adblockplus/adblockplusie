@@ -4,6 +4,15 @@ Adblock Plus for Internet Explorer
 This combines a Browser Helper Object with a singleton engine process to block
 ads in Internet Explorer. The engine process embeds libadblockplus.
 
+Getting/updating the dependencies
+---------------------------------
+
+adblockplusie has dependencies that aren't part of this repository. They are
+retrieved and updated when you're generating the VS solution for the build, but
+you can also manually update them by running the following:
+
+    ./ensure_dependencies.py
+
 Building
 --------
 
@@ -13,11 +22,11 @@ you also need Windows 7.1 Device Kit (*not* version 8) to satisfy the ATL
 dependency, set `WINDDKDIR` environment variable to the installation directory
 of the Device Kit.
 
-* Execute `createsolution.bat` to generate project files, this will create
-`build\ia32\adblockplus.sln` (solution for the 32 bit build) and
-`build\x64\adblockplus.sln` (solution for the 64 bit build). Unfortunately,
-V8 (which is used by libadblockplus) doesn't support creating both from the
-same project files.
+* Execute `createsolution.bat` to retrieve dependencies and generate project
+files, this will create `build\ia32\adblockplus.sln` (solution for the 32 bit
+build) and `build\x64\adblockplus.sln` (solution for the 64 bit build). 
+Unfortunately, V8 (which is used by libadblockplus) doesn't support creating 
+both from the same project files.
 * Open `build\ia32\adblockplus.sln` or `build\x64\adblockplus.sln` in
 Visual Studio and build the solution there. Alternatively you can use the
 `msbuild` command line tool, e.g. run `msbuild /m build\ia32\adblockplus.sln`
