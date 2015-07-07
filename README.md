@@ -16,11 +16,9 @@ you can also manually update them by running the following:
 Building
 --------
 
-You need Microsoft Visual C++ (Express is sufficient) 2012 and Python 2.7. Make
-sure that `python.exe` is on your `PATH`. When building with Express Edition
-you also need Windows 7.1 Device Kit (*not* version 8) to satisfy the ATL
-dependency, set `WINDDKDIR` environment variable to the installation directory
-of the Device Kit.
+You need Microsoft Visual C++ 2012 and Python 2.7. Make sure that `python.exe` 
+is on your `PATH`. Unfortunately until we move to Visual Studio 2013  you'll
+need to use Visual Studio 2012 version that comes with ATL (Proffessional etc). 
 
 * Execute `createsolution.bat` to retrieve dependencies and generate project
 files, this will create `build\ia32\adblockplus.sln` (solution for the 32 bit
