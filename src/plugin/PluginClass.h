@@ -79,15 +79,10 @@ public:
   CPluginClass();
   ~CPluginClass();
 
-  HRESULT FinalConstruct();
-  void FinalRelease();
-
   // IObjectWithSite
-
   STDMETHOD(SetSite)(IUnknown *pUnkSite);
 
   // IOleCommandTarget
-
   STDMETHOD(QueryStatus)(const GUID* pguidCmdGroup, ULONG cCmds, OLECMD prgCmds[], OLECMDTEXT* pCmdText);
   STDMETHOD(Exec)(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG* pvaOut);
 
@@ -96,7 +91,6 @@ public:
   CPluginTab* GetTab();
 
   void UpdateStatusBar();
-  static DWORD WINAPI MainThreadProc(LPVOID pParam);
 
 private:
 
@@ -108,9 +102,7 @@ private:
 
 public:
   HWND GetBrowserHWND() const;
-  HWND GetTabHWND() const;
-  CComQIPtr<IWebBrowser2> GetBrowser() const;
-
+  bool IsRootBrowser(IWebBrowser2*);
 
   static CPluginMimeFilterClient* s_mimeFilter;
 
@@ -146,9 +138,12 @@ private:
   void ShowStatusBar();
   bool IsStatusBarEnabled();
 
-public:
-  CComQIPtr<IWebBrowser2> m_webBrowser2;
-private:
+  /**
+   * A browser interface pointer to our site object
+   *
+   * It's values are set and reset solely in SetSite().
+   */
+  CComPtr<IWebBrowser2> m_webBrowser2;
   HWND m_hBrowserWnd;
   HWND m_hTabWnd;
   HWND m_hStatusBarWnd;
@@ -180,14 +175,10 @@ private:
   static HANDLE s_hMainThread;
   static bool s_isMainThreadDone;
 
-  static HANDLE GetMainThreadHandle();
-  static bool IsMainThreadDone(HANDLE mainThread);
-
   static HINSTANCE s_hUxtheme;
   static std::set<CPluginClass*> s_instances;
   static std::map<DWORD,CPluginClass*> s_threadInstances;
   static CComAutoCriticalSection s_criticalSectionLocal;
-  static CComAutoCriticalSection s_criticalSectionBrowser;
   static CComAutoCriticalSection s_criticalSectionWindow;
 
   // Async browser
