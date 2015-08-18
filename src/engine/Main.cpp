@@ -15,10 +15,17 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma comment(linker,"\"/manifestdependency:type='win32' \
+  name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
+  processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 #include <AdblockPlus.h>
 #include <functional>
 #include <vector>
+#include <deque>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 #include <Windows.h>
 
 #include "../shared/AutoHandle.h"
@@ -32,9 +39,54 @@
 #include "Debug.h"
 #include "Updater.h"
 #include "Registry.h"
+#include "NotificationWindow.h"
 
 namespace
 {
+  struct ScopedAtlAxInitializer
+  {
+    ScopedAtlAxInitializer()
+    {
+      ATL::AtlAxWinInit();
+    }
+    ~ScopedAtlAxInitializer()
+    {
+      ATL::AtlAxWinTerm();
+    }
+  };
+
+  class ABPAtlModule : public ATL::CAtlExeModuleT<ABPAtlModule>
+  {
+    enum CustomMessages
+    {
+      TASK_POSTED = WM_USER + 1
+    };
+
+  public:
+    ABPAtlModule() : m_msgHWnd(nullptr)
+    {
+    }
+    void Finalize();
+    HRESULT PreMessageLoop(int showCmd) throw();
+    void RunMessageLoop() throw();
+    static HRESULT InitializeCom() throw()
+    {
+      // The default implementation initializes multithreaded version but
+      // in this case hosted ActiveX does not properly work.
+      return CoInitialize(nullptr);
+    }
+  private:
+    void onNewNotification(const AdblockPlus::NotificationPtr& notification);
+    void DispatchTask(std::function<void()>&& task);
+    void ProcessTasks();
+
+    ScopedAtlAxInitializer m_scopedAtlAxInit;
+    HWND m_msgHWnd;
+    std::recursive_mutex m_tasksMutex;
+    std::deque<std::function<void()>> m_tasks;
+    std::unique_ptr<NotificationBorderWindow> m_notificationWindow;
+  } _AtlModule;
+
   std::auto_ptr<AdblockPlus::FilterEngine> filterEngine;
   std::auto_ptr<Updater> updater;
   int activeConnections = 0;
@@ -412,6 +464,15 @@ namespace
       {
         Debug("No connections left, shutting down the engine");
         activeConnections = 0;
+
+        // The following exit(0) calls the destructor of _AtlModule from the
+        // current thread which results in the disaster because there is a
+        // running message loop as well as there can be alive notification
+        // window which holds v8::Value as well as m_tasks can hold v8::Value
+        // but JS Engine is destroyed before _AtlModule. BTW, various free
+        // running threads like Timeout also cause the crash because the engine
+        // is already destroyed.
+        _AtlModule.Finalize();
         exit(0);
       }
     }
@@ -442,7 +503,6 @@ namespace
       return L"";
     }
   }
-}
 
 std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& locale)
 {
@@ -476,7 +536,144 @@ std::auto_ptr<AdblockPlus::FilterEngine> CreateFilterEngine(const std::wstring& 
   return filterEngine;
 }
 
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+void ABPAtlModule::Finalize()
+{
+  std::condition_variable cv;
+  std::mutex cvMutex;
+  std::unique_lock<std::mutex> lock(cvMutex);
+  DispatchTask([&cvMutex, &cv, this]
+  {
+    if (m_notificationWindow)
+    {
+      m_notificationWindow->SendMessage(WM_CLOSE);
+    }
+    SendMessage(m_msgHWnd, WM_QUIT, 0, 0);
+    {
+      std::lock_guard<std::recursive_mutex> lock(m_tasksMutex);
+      m_tasks.clear();
+    }
+    std::unique_lock<std::mutex> lock(cvMutex);
+    cv.notify_one();
+  });
+  cv.wait(lock);
+}
+
+HRESULT ABPAtlModule::PreMessageLoop(int showCmd) throw()
+{
+  const std::wstring className = L"ABPEngineMessageWindow";
+  WNDCLASS wc;
+  wc.style = 0;
+  wc.lpfnWndProc = DefWindowProcW;
+  wc.cbClsExtra = 0;
+  wc.cbWndExtra = 0;
+  wc.hInstance = ATL::_AtlBaseModule.GetModuleInstance();
+  wc.hIcon = nullptr;
+  wc.hCursor = nullptr;
+  wc.hbrBackground = nullptr;
+  wc.lpszMenuName = nullptr;
+  wc.lpszClassName = className.c_str();
+  ATOM atom = RegisterClass(&wc);
+  if (!atom)
+  {
+    DebugLastError("Cannot register class for message only window");
+    return E_FAIL;
+  }
+  m_msgHWnd = CreateWindowW(className.c_str(),
+    nullptr,      // window name
+    0,            // style
+    0, 0, 0, 0,   // geometry (x, y, w, h)
+    HWND_MESSAGE, // parent
+    nullptr,      // menu handle
+    wc.hInstance,
+    0);           // windows creation data.
+  if (!m_msgHWnd)
+  {
+    DebugLastError("Cannot create message only window");
+    return E_FAIL;
+  }
+
+  filterEngine->SetShowNotificationCallback([this](const AdblockPlus::NotificationPtr& notification)
+  {
+    if (!notification)
+    {
+      return;
+    }
+    DispatchTask([notification, this]
+    {
+      onNewNotification(notification);
+    });
+  });
+
+  HRESULT retValue = __super::PreMessageLoop(showCmd);
+  // __super::PreMessageLoop returns S_FALSE because there is nothing to
+  // register but S_OK is required to run message loop.
+  return FAILED(retValue) ? retValue : S_OK;
+}
+
+void ABPAtlModule::RunMessageLoop() throw()
+{
+  MSG msg = {};
+  while (GetMessage(&msg, /*hwnd*/nullptr, /*msgFilterMin*/0, /*msgFilterMax*/0))
+  {
+    if (msg.hwnd == m_msgHWnd && msg.message == CustomMessages::TASK_POSTED)
+    {
+      ProcessTasks();
+    }
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+  }
+}
+
+void ABPAtlModule::onNewNotification(const AdblockPlus::NotificationPtr& notification)
+{
+  m_notificationWindow.reset(new NotificationBorderWindow(*notification, GetExeDir() + L"html\\templates\\"));
+  m_notificationWindow->SetOnDestroyed([notification, this]
+  {
+    notification->MarkAsShown();
+    m_notificationWindow.reset();
+  });
+  m_notificationWindow->SetOnLinkClicked([](const std::wstring& url)
+  {
+    ATL::CComPtr<IWebBrowser2> webBrowser;
+    if (SUCCEEDED(webBrowser.CoCreateInstance(__uuidof(InternetExplorer))) && webBrowser)
+    {
+      ATL::CComVariant emptyVariant;
+      webBrowser->Navigate(ATL::CComBSTR(url.c_str()), &emptyVariant, &emptyVariant, &emptyVariant, &emptyVariant);
+      webBrowser->put_Visible(VARIANT_TRUE);
+    }
+  });
+  m_notificationWindow->Create(/*parent window*/nullptr);
+  if (m_notificationWindow->operator HWND() != nullptr)
+  {
+    m_notificationWindow->ShowWindow(SW_SHOWNOACTIVATE);
+    m_notificationWindow->UpdateWindow();
+  }
+}
+
+void ABPAtlModule::DispatchTask(std::function<void()>&& task)
+{
+  {
+    std::lock_guard<std::recursive_mutex> lock(m_tasksMutex);
+    m_tasks.emplace_back(std::move(task));
+  }
+  PostMessageW(m_msgHWnd, CustomMessages::TASK_POSTED, 0, 0);
+}
+
+void ABPAtlModule::ProcessTasks()
+{
+  std::lock_guard<std::recursive_mutex> lock(m_tasksMutex);
+  while(!m_tasks.empty())
+  {
+    auto task = *m_tasks.begin();
+    m_tasks.pop_front();
+    if (task)
+      task();
+  }
+}
+
+} // namespace {
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int cmdShow)
 {
   AutoHandle mutex(CreateMutexW(0, false, L"AdblockPlusEngine"));
   if (!mutex)
@@ -499,32 +696,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   filterEngine = CreateFilterEngine(locale);
   updater.reset(new Updater(filterEngine->GetJsEngine()));
 
-  for (;;)
+  std::thread communicationThread([]
   {
-    try
+    for (;;)
     {
-      auto pipe = std::make_shared<Communication::Pipe>(Communication::pipeName, Communication::Pipe::MODE_CREATE);
-
-      // TODO: we should wait for the finishing of the thread before exiting from this function.
-      // It works now in most cases because the browser waits for the response in the pipe, and the
-      // thread has time to finish while this response is being processed and the browser is
-      // disposing all its stuff.
-      std::thread([pipe]()
+      try
       {
-        ClientThread(pipe.get());
-      }).detach();
+        auto pipe = std::make_shared<Communication::Pipe>(Communication::pipeName, Communication::Pipe::MODE_CREATE);
+    
+        // TODO: we should wait for the finishing of the thread before exiting from this function.
+        // It works now in most cases because the browser waits for the response in the pipe, and the
+        // thread has time to finish while this response is being processed and the browser is
+        // disposing all its stuff.
+        std::thread([pipe]()
+        {
+          ClientThread(pipe.get());
+        }).detach();
+      }
+      catch(const std::system_error& ex)
+      {
+        DebugException(ex);
+        return 1;
+      }
+      catch (const std::runtime_error& e)
+      {
+        DebugException(e);
+        return 1;
+      }
     }
-    catch(const std::system_error& ex)
-    {
-      DebugException(ex);
-      return 1;
-    }
-    catch (const std::runtime_error& e)
-    {
-      DebugException(e);
-      return 1;
-    }
+  });
+
+  int retValue = _AtlModule.WinMain(cmdShow);
+  if (communicationThread.joinable())
+  {
+    communicationThread.join();
   }
 
-  return 0;
+  return retValue;
 }

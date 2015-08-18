@@ -379,6 +379,7 @@
       <ComponentRef Id="html_static_js_vendor_html5shiv.js"/>
       <ComponentRef Id="html_templates_firstRun.html"/>
       <ComponentRef Id="html_templates_index.html"/>
+      <ComponentRef Id="html_templates_NotificationWindow.html"/>
     </ComponentGroup>
 
     <DirectoryRef Id="HTML_Folder">
@@ -474,6 +475,9 @@
           </Component>
           <Component Id="html_templates_index.html" Guid="ba2259a0-d713-11e2-8b8b-0800200c9a66">
             <File Name="index.html"/>
+          </Component>
+          <Component Id="html_templates_NotificationWindow.html" Guid="f45572c0-d712-11e2-8b8b-0800200c9a67">
+            <File Id="NotificationWindow.html"/>
           </Component>
          </Directory>
       </Directory>

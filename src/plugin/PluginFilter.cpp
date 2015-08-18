@@ -26,54 +26,11 @@
 #include "mlang.h"
 #include "..\shared\CriticalSection.h"
 #include "..\shared\Utils.h"
+#include "..\shared\MsHTMLUtils.h"
 
 // The filters are described at http://adblockplus.org/en/filters
 
 static CriticalSection s_criticalSectionFilterMap;
-
-namespace
-{
-  struct GetHtmlElementAttributeResult
-  {
-    GetHtmlElementAttributeResult() : isAttributeFound(false)
-    {
-    }
-    std::wstring attributeValue;
-    bool isAttributeFound;
-  };
-
-  GetHtmlElementAttributeResult GetHtmlElementAttribute(IHTMLElement& htmlElement,
-    const ATL::CComBSTR& attributeName)
-  {
-    GetHtmlElementAttributeResult retValue;
-    ATL::CComVariant vAttr;
-    ATL::CComPtr<IHTMLElement4> htmlElement4;
-    if (FAILED(htmlElement.QueryInterface(&htmlElement4)) || !htmlElement4)
-    {
-      return retValue;
-    }
-    ATL::CComPtr<IHTMLDOMAttribute> attributeNode;
-    if (FAILED(htmlElement4->getAttributeNode(attributeName, &attributeNode)) || !attributeNode)
-    {
-      return retValue;
-    }
-    // we set that attribute found but it's not necessary that we can retrieve its value
-    retValue.isAttributeFound = true;
-    if (FAILED(attributeNode->get_nodeValue(&vAttr)))
-    {
-      return retValue;
-    }
-    if (vAttr.vt == VT_BSTR && vAttr.bstrVal)
-    {
-      retValue.attributeValue = vAttr.bstrVal;
-    }
-    else if (vAttr.vt == VT_I4)
-    {
-      retValue.attributeValue = std::to_wstring(vAttr.iVal);
-    }
-    return retValue;
-  }
-}
 
 // ============================================================================
 // CFilterElementHideAttrSelector

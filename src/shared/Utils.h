@@ -55,8 +55,9 @@ std::string ToUtf8String(const std::wstring& str);
 std::wstring ToUtf16String(const std::string& str);
 std::vector<std::wstring> ToUtf16Strings(const std::vector<std::string>& value);
 std::wstring GetDllDir();
+std::wstring GetExeDir();
 std::wstring GetAppDataPath();
-void ReplaceString(std::wstring& input, const std::wstring placeholder, const std::wstring replacement);
+void ReplaceString(std::wstring& input, const std::wstring& placeholder, const std::wstring& replacement);
 
 /**
  * Returns the beginning of the URL which includes the scheme and hierarchical

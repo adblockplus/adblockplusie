@@ -50,6 +50,8 @@
       'src/shared/Utils.cpp',
       'src/shared/Utils.h',
       'src/shared/Version.h',
+      'src/shared/MsHTMLUtils.cpp',
+      'src/shared/MsHTMLUtils.h',
       ]
   },
 
@@ -62,6 +64,8 @@
     ],
     'sources': [
       'src/engine/Main.cpp',
+      'src/engine/NotificationWindow.cpp',
+      'src/engine/NotificationWindow.h',
       'src/engine/Debug.cpp',
       'src/engine/UpdateInstallDialog.cpp',
       'src/engine/Updater.cpp',

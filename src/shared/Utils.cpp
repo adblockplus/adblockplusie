@@ -91,33 +91,46 @@ std::vector<std::wstring> ToUtf16Strings(const std::vector<std::string>& values)
   return result;
 }
 
+namespace
+{
+  std::wstring GetModulePath(HINSTANCE hInstance)
+  {
+    std::vector<WCHAR> path(MAX_PATH);
+    int length = GetModuleFileNameW(hInstance, &path[0], static_cast<DWORD>(path.size()));
+
+    while (length == path.size())
+    {
+      // Buffer too small, double buffer size
+      path.resize(path.size() * 2);
+      length = GetModuleFileNameW(hInstance, &path[0], static_cast<DWORD>(path.size()));
+    }
+
+    try
+    {
+      if (length == 0)
+        throw std::runtime_error("Failed determining module path");
+
+      std::vector<WCHAR>::reverse_iterator it = std::find(path.rbegin(), path.rend(), L'\\');
+      if (it == path.rend())
+        throw std::runtime_error("Unexpected plugin path, no backslash found");
+
+      return std::wstring(path.begin(), it.base());
+    }
+    catch (const std::exception&)
+    {
+      return std::wstring();
+    }
+  }
+}
+
 std::wstring GetDllDir()
 {
-  std::vector<WCHAR> path(MAX_PATH);
-  int length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], static_cast<DWORD>(path.size()));
+  return GetModulePath((HINSTANCE)&__ImageBase);
+}
 
-  while (length == path.size())
-  {
-    // Buffer too small, double buffer size
-    path.resize(path.size() * 2);
-    length = GetModuleFileNameW((HINSTANCE)&__ImageBase, &path[0], static_cast<DWORD>(path.size()));
-  }
-
-  try
-  {
-    if (length == 0)
-      throw std::runtime_error("Failed determining module path");
-
-    std::vector<WCHAR>::reverse_iterator it = std::find(path.rbegin(), path.rend(), L'\\');
-    if (it == path.rend())
-      throw std::runtime_error("Unexpected plugin path, no backslash found");
-
-    return std::wstring(path.begin(), it.base());
-  }
-  catch (const std::exception&)
-  {
-    return std::wstring();
-  }
+std::wstring GetExeDir()
+{
+  return GetModulePath(nullptr);
 }
 
 std::wstring GetAppDataPath()
@@ -147,7 +160,7 @@ std::wstring GetAppDataPath()
   return appDataPath;
 }
 
-void ReplaceString(std::wstring& input, const std::wstring placeholder, const std::wstring replacement)
+void ReplaceString(std::wstring& input, const std::wstring& placeholder, const std::wstring& replacement)
 {
   size_t replaceStart = input.find(placeholder);
   if (replaceStart != std::string::npos)

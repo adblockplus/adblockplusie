@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="IE=8">
+    <style>
+    * {
+      cursor: default;
+    }
+
+    a {
+      cursor: pointer;
+    }
+
+    html, body, div {
+      margin: 0;
+    }
+    .caption {
+      background-color: white;
+      min-height: 18px;
+      clear: both;
+    }
+    .closeButton {
+      background-color: grey;
+      color: white;
+      font-weight: bold;
+      font-family: "Consolas, monaco, monospace";
+      text-decoration: none;
+      width: 18px;
+      height: 18px;
+      vertical-align: middle;
+      text-align: center;
+      margin-right: 10px;
+      cursor: default;
+    }
+    .closeButton:hover {
+      background-color: red;
+      text-decoration: none;
+    }
+    .title {
+      color: #000000;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 16px 20px 0px 0px;
+    }
+    .body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      font-weight: normal;
+      overflow-x: hidden;
+      overflow-y: auto;
+      text-align: justify;
+      padding: 2px 20px 20px 0px;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="caption">
+      <a class="closeButton" style="float: right;" href="#">&times;</a>
+      <div class="title"><!--Title--></div>
+    </div>
+    <div class="body"><!--Body--></div>
+  </body>
+</html>

@@ -26,74 +26,42 @@
 
 namespace
 {
+  class ScopedProcessInformation : public PROCESS_INFORMATION {
+  public:
+    ScopedProcessInformation()
+    {
+      hProcess = hThread = 0;
+      dwProcessId = dwThreadId = 0;
+    }
+    ~ScopedProcessInformation()
+    {
+      if (hThread != nullptr)
+      {
+        CloseHandle(hThread);
+      }
+      if (hProcess != nullptr)
+      {
+        CloseHandle(hProcess);
+      }
+    }
+  };
+
   void SpawnAdblockPlusEngine()
   {
     std::wstring engineExecutablePath = GetDllDir() + L"AdblockPlusEngine.exe";
-    CString params = ToCString(L"AdblockPlusEngine.exe " + GetBrowserLanguage());
+    std::wstring params = L"AdblockPlusEngine.exe " + GetBrowserLanguage();
 
     STARTUPINFO startupInfo = {};
-    PROCESS_INFORMATION processInformation = {};
+    ScopedProcessInformation processInformation;
 
-    HANDLE token;
-    OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE | TOKEN_ADJUST_DEFAULT | TOKEN_QUERY | TOKEN_ASSIGN_PRIMARY, &token);
-
-    TOKEN_APPCONTAINER_INFORMATION *acs = NULL;
-    DWORD length = 0;
-
-    // Get AppContainer SID
-    if (!GetTokenInformation(token, TokenAppContainerSid, acs, 0, &length) && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
-    {
-        acs = (TOKEN_APPCONTAINER_INFORMATION*) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, length);
-        if (acs != NULL)
-        {
-          GetTokenInformation(token, TokenAppContainerSid, acs, length, &length);
-        }
-        else
-        {
-          throw std::runtime_error("Out of memory");
-        }
-    }
-
-    BOOL createProcRes = 0;
-    // Running inside AppContainer or in Windows XP
-    if ((acs != NULL && acs->TokenAppContainer != NULL) || !IsWindowsVistaOrLater())
-    {
-      // We need to break out from AppContainer. Launch with default security - registry entry will eat the user prompt
-      // See http://msdn.microsoft.com/en-us/library/bb250462(v=vs.85).aspx#wpm_elebp
-      createProcRes = CreateProcessW(engineExecutablePath.c_str(), params.GetBuffer(params.GetLength() + 1),
-                              0, 0, false, 0, 0, 0, (STARTUPINFOW*)&startupInfo, &processInformation);
-    }
-    else
-    {
-      // Launch with Low Integrity explicitly
-      HANDLE newToken;
-      DuplicateTokenEx(token, 0, 0, SecurityImpersonation, TokenPrimary, &newToken);
-
-      PSID integritySid = 0;
-      ConvertStringSidToSid(L"S-1-16-4096", &integritySid);
-      std::tr1::shared_ptr<SID> sharedIntegritySid(static_cast<SID*>(integritySid), FreeSid); // Just to simplify cleanup
-
-      TOKEN_MANDATORY_LABEL tml = {};
-      tml.Label.Attributes = SE_GROUP_INTEGRITY;
-      tml.Label.Sid = integritySid;
-
-      // Set the process integrity level
-      SetTokenInformation(newToken, TokenIntegrityLevel, &tml, sizeof(tml));
-
-      STARTUPINFO startupInfo = {};
-      PROCESS_INFORMATION processInformation = {};
-
-      createProcRes = CreateProcessAsUserW(newToken, engineExecutablePath.c_str(), params.GetBuffer(params.GetLength() + 1),
-                              0, 0, false, 0, 0, 0, (STARTUPINFOW*)&startupInfo, &processInformation);
-    }
-
+    // We need to break out from AppContainer. Launch with default security - registry entry will eat the user prompt
+    // See http://msdn.microsoft.com/en-us/library/bb250462(v=vs.85).aspx#wpm_elebp
+    BOOL createProcRes = CreateProcessW(engineExecutablePath.c_str(), &params[0],
+      0, 0, false, 0, 0, 0, &startupInfo, &processInformation);
     if (!createProcRes)
     {
       throw std::runtime_error("Failed to start Adblock Plus Engine");
     }
-
-    CloseHandle(processInformation.hProcess);
-    CloseHandle(processInformation.hThread);
   }
 
   Communication::Pipe* OpenEnginePipe()
