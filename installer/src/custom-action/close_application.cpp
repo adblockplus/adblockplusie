@@ -368,7 +368,7 @@ extern "C" UINT __stdcall AbpCloseIe(MSIHANDLE sessionHandle)
          * Failed && not interactive -> Goto abort
          */
         {
-	  bool ieWasClosed = iec.ShutDown(session);
+          bool ieWasClosed = iec.ShutDown(session);
           if (iec.IsRunning())
           {
             session.Log("Attempt to shut down IE automatically failed.");

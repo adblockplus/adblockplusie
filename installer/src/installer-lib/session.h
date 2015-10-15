@@ -22,7 +22,7 @@
  * All of them use the same call, MsiProcessMessage.
  * This class encapsulates its arguments.
  *
- * \sa 
+ * \sa
  *    * MSDN [MsiProcessMessage function](http://msdn.microsoft.com/en-us/library/windows/desktop/aa370354%28v=vs.85%29.aspx)
  *    * MSDN [Sending Messages to Windows Installer Using MsiProcessMessage](http://msdn.microsoft.com/en-us/library/windows/desktop/aa371614%28v=vs.85%29.aspx)
  */
@@ -32,22 +32,22 @@ protected:
   /**
   * The flags used by MsiProcessMessage as the box type.
   */
-  INSTALLMESSAGE MessageTypeCode ;
+  INSTALLMESSAGE MessageTypeCode;
 
   /**
   * The record argument to MsiProcessMessage
   */
-  Record r ;
+  Record r;
 
-  Message( std::string message, INSTALLMESSAGE MessageTypeCode ) ;
+  Message(std::string message, INSTALLMESSAGE MessageTypeCode);
 
-  Message( std::wstring message, INSTALLMESSAGE MessageTypeCode ) ;
+  Message(std::wstring message, INSTALLMESSAGE MessageTypeCode);
 
   /**
   * This class is a helper for Session, mustering all the arguments for MsiProcessMessage except for the session handle.
   */
-  friend Session ;
-} ;
+  friend Session;
+};
 
 //-----------------------------------------------------------------------------------------
 // Session
@@ -56,7 +56,7 @@ protected:
 * A Windows Installer session
 *
 * Always instantiate an instance of this class at the start of each custom action.
-* Copy and assignment are disabled, so session objects are always passed by reference. 
+* Copy and assignment are disabled, so session objects are always passed by reference.
 *
 * This class is the base for both immediate and deferred custom actions.
 * Immediate custom actions always have an installer database associated with them; deferred actions never do.
@@ -68,22 +68,23 @@ protected:
 *   - Extract the file version information from the DLL using GetModuleFileName* and GetFileVersionInfo* system calls.
 *   - Set a "global atom" (a Windows system object) to store the logging state, later to be accessed by deferred actions.
 */
-class Session {
+class Session
+{
 public:
   /**
   * Destructor.
   */
-  ~Session() ;
+  ~Session();
 
   /**
   * Write a message to the installation log, regular string version.
   */
-  void Log( std::string message ) ;
+  void Log(std::string message);
 
   /**
   * Write a message to the installation log, wide string version.
   */
-  void Log( std::wstring message ) ;
+  void Log(std::wstring message);
 
   /**
   * Write a message to the installation log without raising an exception.
@@ -96,12 +97,12 @@ public:
   * The session must be in scope in the catch-block to allow logging error messages.
   * In all other cases, use the exception mechanism.
   */
-  void LogNoexcept( std::string message ) ;
+  void LogNoexcept(std::string message);
 
   /**
   * Write to a MessageBox dialog.
   */
-  int WriteMessage( Message & ) ;
+  int WriteMessage(Message&);
 
 protected:
   /**
@@ -114,7 +115,7 @@ protected:
   *    The name of the custom action, used for logging.
   *    This string must be ASCII characters only, so that its wide-character version displays identically.
   */
-  Session( MSIHANDLE handle, std::string name ) ;
+  Session(MSIHANDLE handle, std::string name);
 
   /**
   * Handle for the Windows Installer session.
@@ -123,25 +124,25 @@ protected:
   * In an interactive session, the handle is provided as an argument to the custom action entry point, and we do not manage its life cycle.
   * In an offline session, the handle is created in the (subclass) constructor.
   */
-  MSIHANDLE handle ;
+  MSIHANDLE handle;
 
 private:
   /**
   * Prefix for log messages, regular string. Contains the name of the custom action.
   */
-  std::string logPrefix ;
+  std::string logPrefix;
 
   /**
   * Prefix for log messages, wide string. Contains the name of the custom action.
   */
-  std::wstring logPrefixW ;
+  std::wstring logPrefixW;
 
   /**
   * Private copy constructor is declared but not defined.
   *
   * C++11: declare with <b>= delete</b>.
   */
-  Session( const Session & ) ;
+  Session(const Session&);
 
   /**
   * Write a message with MsiProcessMessage and throw no exceptions.
@@ -150,19 +151,19 @@ private:
   *
   * C++11: declare with **noexcept**.
   */
-  int WriteMessageNoexcept( Message & m ) ;
+  int WriteMessageNoexcept(Message& m);
 
   /**
   * Private assignment operator is declared but not defined.
   *
   * C++11: declare with <b>= delete</b>.
   */
-  Session & operator=( const Session & ) ;
+  Session& operator=(const Session&);
 
   /**
   * The Property class requires access to the session handle.
   */
-  friend Property::Property( Session & session, std::wstring name ) ;
+  friend Property::Property(Session& session, std::wstring name);
 };
 
 //-----------------------------------------------------------------------------------------
@@ -183,16 +184,16 @@ public:
   *    Handle for the Windows Installer session provided as an argument to a custom action.
   * \param[in] name
   *    The name of the custom action, used for logging.
-  * 
+  *
   * **noexcept** declaration to be added for C++11.
   */
-  ImmediateSession( MSIHANDLE handle, std::string name ) ;
+  ImmediateSession(MSIHANDLE handle, std::string name);
 
 private:
   /*
   * Allow helper function for InstallationDatabase constructor to have access to the handle.
   */
-  friend MsiHandle GetActiveDatabase( ImmediateSession & session ) ;
+  friend MsiHandle GetActiveDatabase(ImmediateSession& session);
 };
 
 
@@ -223,7 +224,7 @@ public:
   * \param[in] name
   *    The name of the custom action, used for logging.
   */
-  DeferredSession( MSIHANDLE handle, std::wstring name ) ;
+  DeferredSession(MSIHANDLE handle, std::wstring name);
 };
 
 

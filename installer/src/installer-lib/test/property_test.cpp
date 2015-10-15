@@ -3,7 +3,7 @@
 #include "../database.h"
 #include "../property.h"
 
-TEST( Property_Test, null )
+TEST(Property_Test, null)
 {
   /*
    * This is an extract of manual test code originally run from AbpCloseIe DLL entry point.
@@ -14,27 +14,27 @@ TEST( Property_Test, null )
   /*
    * DISABLED. Refactor into proper tests.
    */
-  if ( false )
+  if (false)
   {
     // This variable was the argument to the entry point.
     MSIHANDLE session_handle = 0;
 
     // The code in the body.
-    ImmediateSession session( session_handle, "AbpCloseIe" ) ;
-    session.Log( L"Have session object" ) ;
-    InstallationDatabase db( session ) ;
-    session.Log( L"Have database object" ) ;
+    ImmediateSession session(session_handle, "AbpCloseIe");
+    session.Log(L"Have session object");
+    InstallationDatabase db(session);
+    session.Log(L"Have database object");
 
     // Test: ensure that a property is present with its expected value. Exercises the conversion operator to String.
-    session.Log( L"VersionMsi = " + Property( session, L"VersionMsi" ) ) ;
+    session.Log(L"VersionMsi = " + Property(session, L"VersionMsi"));
 
     // Test: create a property dynamically from within the CA. Not sure if this can be done offline.
-    Property tv( session, L"TESTVARIABLE" ) ;
-    session.Log( L"TESTVARIABLE = " + tv ) ;
+    Property tv(session, L"TESTVARIABLE");
+    session.Log(L"TESTVARIABLE = " + tv);
 
     // Test: assign a new value to a property.
-    session.Log( L"Setting TESTVARIABLE to 'testvalue'" ) ;
-    tv = L"testvalue" ;
-    session.Log( L"TESTVARIABLE = " + tv ) ;
+    session.Log(L"Setting TESTVARIABLE to 'testvalue'");
+    tv = L"testvalue";
+    session.Log(L"TESTVARIABLE = " + tv);
   }
 }

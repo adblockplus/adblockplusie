@@ -4,32 +4,32 @@
 #include "DLL.h"
 #include <stdexcept>
 
-std::shared_ptr< DllModule > DllModule::singleton = 0 ;
+std::shared_ptr<DllModule> DllModule::singleton = 0;
 
-DllModule & DllModule::Module()
-{ 
-  if ( singleton )
+DllModule& DllModule::Module()
+{
+  if (singleton)
   {
     return * singleton;
   }
-  throw std::runtime_error( "DllModule::module() called when DLL module was not attached." );
+  throw std::runtime_error("DllModule::module() called when DLL module was not attached.");
 }
 
 /**
-* The attachment function is the _de facto_ equivalent of initialization. Under ordinary circumstances, this should 
+* The attachment function is the _de facto_ equivalent of initialization. Under ordinary circumstances, this should
 * only be called once, and called before everything else.
 */
-void DllModule::Attach( HINSTANCE handle )
+void DllModule::Attach(HINSTANCE handle)
 {
-  if ( singleton )
+  if (singleton)
   {
-    throw std::runtime_error( "May not call DllModule::attach() in an attached state." );
+    throw std::runtime_error("May not call DllModule::attach() in an attached state.");
   }
-  singleton = std::shared_ptr< DllModule >( new DllModule( handle ) ) ;
+  singleton = std::shared_ptr<DllModule>(new DllModule(handle));
 }
 
 /**
-* The detachment function is the _de facto_ equivalent of finalization. Under ordinary circumstances, this should 
+* The detachment function is the _de facto_ equivalent of finalization. Under ordinary circumstances, this should
 * only be called once, and called after everything else.
 */
 void DllModule::Detach()
@@ -40,14 +40,16 @@ void DllModule::Detach()
 /**
 * Since this class is mostly a replacement for a global variable, it's no surprising the constructor is almost trivial.
 */
-DllModule::DllModule( HINSTANCE handle )
-  : handle( handle )
+DllModule::DllModule(HINSTANCE handle)
+  : handle(handle)
 {
 }
 
-std::wstring DllModule::Name() 
+std::wstring DllModule::Name()
 {
-  if ( name )
-    return *name ;
-  throw std::runtime_error( "Not yet implemented" );
+  if (name)
+  {
+    return *name;
+  }
+  throw std::runtime_error("Not yet implemented");
 }

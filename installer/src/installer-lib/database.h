@@ -17,7 +17,7 @@
 #include "session.h"
 
 // Forward declarations
-class View ;
+class View;
 
 //-------------------------------------------------------
 // Database
@@ -36,36 +36,36 @@ class View ;
 class Database
 {
 protected:
-  typedef Handle< MSIHANDLE, DisallowNull, GenericMsiDestruction > HandleType ;
+  typedef Handle<MSIHANDLE, DisallowNull, GenericMsiDestruction> HandleType;
 
   /**
-  * Protected constructor. 
+  * Protected constructor.
   *
   * An MSI database handle is an overloaded type, used both for installation databases and one opened outside an installation.
   * These database handles, while both databases, have different capabilities and are thus defined in subclasses.
   * Each subclass has the responsibility for obtaining a database handle appropriate to its circumstance.
-  * 
+  *
   * \sa MSDN "Obtaining a Database Handle"
   *    http://msdn.microsoft.com/en-us/library/windows/desktop/aa370541(v=vs.85).aspx
   */
-  Database( MSIHANDLE handle )
-    : handle( handle )
+  Database(MSIHANDLE handle)
+    : handle(handle)
   {}
 
   /**
   */
-  HandleType handle ;
+  HandleType handle;
 
 private:
   /**
   * Private copy constructor is declared but not defined.
   */
-  Database( const Database & ) ;
+  Database(const Database&);
 
   /**
   * Private assignment operator is declared but not defined.
   */
-  Database & operator=( const Database & ) ;
+  Database& operator=(const Database&);
 
   /**
   * Open a new view for this database.
@@ -76,10 +76,10 @@ private:
   * \sa
   *   - MSDN [MsiDatabaseOpenView function](http://msdn.microsoft.com/en-us/library/aa370082%28v=vs.85%29.aspx)
   */
-  MsiHandle OpenView( const wchar_t * query ) ;
+  MsiHandle OpenView(const wchar_t* query);
 
-  friend class View ;
-} ;
+  friend class View;
+};
 
 /**
 * A Windows Installer database in an installation context.
@@ -90,8 +90,8 @@ public:
   /**
   * The constructor of a database in an installation context has no arguments because the database is a part of that context.
   */
-  InstallationDatabase( ImmediateSession & session ) ;
-} ;
+  InstallationDatabase(ImmediateSession& session);
+};
 
 //-------------------------------------------------------
 //
@@ -111,22 +111,22 @@ class FileSystemDatabase : public Database
   * \sa
   *   - MSDN [MsiOpenDatabase function](http://msdn.microsoft.com/en-us/library/aa370338%28v=vs.85%29.aspx)
   */
-  MsiHandle HandleFromPathname( const wchar_t * pathname )
+  MsiHandle HandleFromPathname(const wchar_t* pathname)
   {
-    MSIHANDLE handle ;
-    UINT x = MsiOpenDatabaseW( pathname, MSIDBOPEN_READONLY, & handle ) ;
-    if ( x != ERROR_SUCCESS )
+    MSIHANDLE handle;
+    UINT x = MsiOpenDatabaseW(pathname, MSIDBOPEN_READONLY, & handle);
+    if (x != ERROR_SUCCESS)
     {
-      throw WindowsApiError( "MsiOpenDatabaseW", x, "MSI database on file system" ) ;
+      throw WindowsApiError("MsiOpenDatabaseW", x, "MSI database on file system");
     }
-    return MsiHandle( handle ) ;
+    return MsiHandle(handle);
   }
 
 public:
-  FileSystemDatabase( const wchar_t * pathname )
-    : Database( HandleFromPathname( pathname ) )
+  FileSystemDatabase(const wchar_t* pathname)
+    : Database(HandleFromPathname(pathname))
   {}
-} ;
+};
 
 //-------------------------------------------------------
 // View
@@ -140,7 +140,7 @@ public:
 */
 class View
 {
-  typedef Handle< MSIHANDLE, DisallowNull, GenericMsiDestruction > HandleType ;
+  typedef Handle<MSIHANDLE, DisallowNull, GenericMsiDestruction> HandleType;
 
   /**
   * Handle for the MSI view object
@@ -151,38 +151,38 @@ public:
   /**
   * Ordinary constructor
   */
-  View( Database & db, wchar_t * query )
-    : handle( db.OpenView( query ) )
+  View(Database& db, wchar_t* query)
+    : handle(db.OpenView(query))
   {}
 
   /**
   * Execute the query and return the first record in its results.
-  * 
+  *
   * \param arguments
   *    List of parameters to supply as the query arguments (question marks).
   */
-  Record First( Record & arguments ) ;
+  Record First(Record& arguments);
 
   /**
   * Execute the query and return the first record in its results.
-  * 
+  *
   * With no arguments, this version of the function may only be used with a query that takes no arguments.
   */
-  Record First() ;
+  Record First();
 
   /**
   * Retrieve the next record.
   */
-  Record Next() ;
+  Record Next();
 
   /**
   * End marker
   */
   inline Record End()
   {
-    return Record( Record::NullType() ) ;
+    return Record(Record::NullType());
   }
-} ;
+};
 
 
 #endif

@@ -13,14 +13,14 @@
 #include "handle.h"
 
 // Forward
-class View ;
+class View;
 
 /**
-* An abstract record entity. 
+* An abstract record entity.
 * It represents both records in the installation database and as argument vectors for API functions.
 *
 * The ordinary constructor creates a free-standing record.
-* It takes only the number of fields in the created record. 
+* It takes only the number of fields in the created record.
 * The fields of the record are dynamically typed according to how they're assigned.
 * Other constructors will be required to encapsulate records that are bound to databases.
 *
@@ -36,23 +36,24 @@ class View ;
 * \sa http://msdn.microsoft.com/en-us/library/windows/desktop/aa372881%28v=vs.85%29.aspx
 *    Windows Installer on MSDN: "Working with Records"
 */
-class Record {
+class Record
+{
   /**
-  * 
+  *
   */
-  typedef Handle< MSIHANDLE, SpecialNull, GenericMsiDestruction > RecordHandleType ;
+  typedef Handle<MSIHANDLE, SpecialNull, GenericMsiDestruction> RecordHandleType;
 
   /**
   * The handle for the record as a Windows Installer resource.
   */
-  MSIHANDLE handle ;
+  MSIHANDLE handle;
 
   /**
   * Construct a record from its handle as returned by some MSI call.
   */
-  Record( MsiHandle handle )
-    : handle( handle )
-  {} 
+  Record(MsiHandle handle)
+    : handle(handle)
+  {}
 
   /**
   * Internal validation guard for operations that require a non-null handle.
@@ -61,7 +62,7 @@ class Record {
   *   - if handle is zero, throw an exception
   *   - if handle is non-zero, nothing
   */
-  void OnlyNonNull() ;
+  void OnlyNonNull();
 
   /**
   * Proxy class used to implement move semantics, prior to use of C++11.
@@ -71,17 +72,17 @@ class Record {
   */
   struct ProxyRecord
   {
-    MSIHANDLE handle ;
+    MSIHANDLE handle;
 
-    ProxyRecord( MSIHANDLE handle )
-      : handle( handle )
+    ProxyRecord(MSIHANDLE handle)
+      : handle(handle)
     {}
-  } ;
+  };
 
   /**
   * Tag class for null record constructor
   */
-  class NullType {} ;
+  class NullType {};
 
   /**
   * Null record constructor.
@@ -89,14 +90,14 @@ class Record {
   * The null record constructor avoids the ordinary check that an external handle not be zero.
   * It's declared private so that only friends can instantiate them.
   */
-  Record( NullType )
-    : handle( 0 )
+  Record(NullType)
+    : handle(0)
   {}
 
   /**
   * View class needs access to constructor-from-handle.
   */
-  friend class View ;
+  friend class View;
 
 public:
   /**
@@ -108,51 +109,51 @@ public:
   * \param[in] nFields
   *    Number of fields in the created record.
   */
-  Record( unsigned int nFields ) ;
+  Record(unsigned int nFields);
 
   /**
   * Destructor
   */
-  ~Record() ;
+  ~Record();
 
   /**
   * Copy constructor syntax used as a move constructor.
   */
-  Record( Record & r ) 
-    : handle( r.handle )
+  Record(Record& r)
+    : handle(r.handle)
   {
-    r.handle = 0 ;
+    r.handle = 0;
   }
 
   /**
   * Proxy move constructor.
   */
-  Record( ProxyRecord r )
-    : handle( r.handle )
+  Record(ProxyRecord r)
+    : handle(r.handle)
   {
-    r.handle = 0 ;
+    r.handle = 0;
   }
 
   /**
-  * Copy assignment syntax has move assignment semantics. 
+  * Copy assignment syntax has move assignment semantics.
   */
-  Record & operator=( Record & r )
+  Record& operator=(Record& r)
   {
-    this -> ~Record() ;
-    handle = r.handle ;
-    r.handle = 0 ;
-    return * this ;
+    this -> ~Record();
+    handle = r.handle;
+    r.handle = 0;
+    return * this;
   }
 
   /**
   * Proxy move assignment.
   */
-  Record & operator=( ProxyRecord pr )
+  Record& operator=(ProxyRecord pr)
   {
-    this -> ~Record() ;
-    handle = pr.handle ;
-    pr.handle = 0 ;
-    return * this ;
+    this -> ~Record();
+    handle = pr.handle;
+    pr.handle = 0;
+    return * this;
   }
 
   /**
@@ -160,25 +161,25 @@ public:
   */
   operator ProxyRecord()
   {
-    ProxyRecord pr( handle ) ;
-    handle = 0 ;
-    return pr ;
+    ProxyRecord pr(handle);
+    handle = 0;
+    return pr;
   }
 
   /**
   * Two records are equal exactly when their handles are equal.
   */
-  inline bool operator==( const Record & x ) const
+  inline bool operator==(const Record& x) const
   {
-    return handle == x.handle ;
+    return handle == x.handle;
   }
 
   /**
   * Standard inequality operator defined by negating the equality operator.
   */
-  inline bool operator!=( const Record & x ) const
+  inline bool operator!=(const Record& x) const
   {
-    return ! operator==( x ) ;
+    return ! operator==(x);
   }
 
   /**
@@ -189,7 +190,7 @@ public:
   * \param[in] value
   *    String to write into the field
   */
-  void AssignString( unsigned int fieldIndex, const char *value ) ;
+  void AssignString(unsigned int fieldIndex, const char* value);
 
   /**
   * Assign a string to a record, regular string version.
@@ -212,7 +213,7 @@ public:
   * \param[in] value
   *    String to write into the field
   */
-  void AssignString(unsigned int fieldIndex, const wchar_t *value) ;
+  void AssignString(unsigned int fieldIndex, const wchar_t* value);
 
   /**
   * Assign a string to a record, wide string version.
@@ -222,7 +223,7 @@ public:
   * \param[in] value
   *    String to write into the field
   */
-  void AssignString( unsigned int fieldIndex, const std::wstring value)
+  void AssignString(unsigned int fieldIndex, const std::wstring value)
   {
     AssignString(fieldIndex, value.c_str());
   }
@@ -230,17 +231,20 @@ public:
   /**
   * Retrieve a wide string value from a record
   */
-  std::wstring ValueString( unsigned int fieldIndex) ;
+  std::wstring ValueString(unsigned int fieldIndex);
 
   /**
   * The number of fields in the record.
   */
-  size_t NumberOfFields() const ;
+  size_t NumberOfFields() const;
 
   /**
   * Handle accessor.
   */
-  MSIHANDLE Handle() { return handle ; }
+  MSIHANDLE Handle()
+  {
+    return handle ;
+  }
 };
 
 #endif

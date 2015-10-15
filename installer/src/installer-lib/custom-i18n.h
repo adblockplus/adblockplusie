@@ -19,29 +19,30 @@
  */
 class CustomMessageText
 {
-  Database & db ;
-  const std::wstring component ;
+  Database& db;
+  const std::wstring component;
 
 public:
-  CustomMessageText( Database & db, const std::wstring component )
-    : db( db ), component( component )
+  CustomMessageText(Database& db, const std::wstring component)
+    : db(db), component(component)
   {}
 
-  std::wstring Text( const std::wstring id )
+  std::wstring Text(const std::wstring id)
   {
-    try {
-      View v( db, L"SELECT `content` FROM `AbpUIText` WHERE `component`=? and `id`=?" ) ;
-      Record arg( 2 ) ;
-      arg.AssignString( 1, component ) ;
-      arg.AssignString( 2, id.c_str() ) ;
-      Record r( v.First( arg ) ) ;
-      return r.ValueString( 1 ) ;
-    }
-    catch( ... )
+    try
     {
-      return L" " ;
+      View v(db, L"SELECT `content` FROM `AbpUIText` WHERE `component`=? and `id`=?");
+      Record arg(2);
+      arg.AssignString(1, component);
+      arg.AssignString(2, id.c_str());
+      Record r(v.First(arg));
+      return r.ValueString(1);
+    }
+    catch (...)
+    {
+      return L" ";
     }
   }
-} ;
+};
 
 #endif

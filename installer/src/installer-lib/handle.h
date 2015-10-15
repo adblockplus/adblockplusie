@@ -19,21 +19,21 @@
 */
 class MsiHandle
 {
-  MSIHANDLE handle ;
+  MSIHANDLE handle;
 
 public:
   /**
   * Ordinary constructor is explicit to avoid inadvertent conversions.
   */
-  explicit MsiHandle( MSIHANDLE handle )
-    : handle( handle )
+  explicit MsiHandle(MSIHANDLE handle)
+    : handle(handle)
   {}
 
   operator MSIHANDLE()
   {
-    return handle ;
+    return handle;
   }
-} ;
+};
 
 //-------------------------------------------------------
 // Handle Policies
@@ -41,68 +41,86 @@ public:
 /**
 * Policy class that indicates that a raw handle may not be zero.
 */
-template< class T >
+template<class T>
 struct DisallowNull
 {
-  inline static bool ProhibitedAlways() { return true ; }
-  inline static bool ProhibitedFromOutside() { return true ; }
-} ;
+  inline static bool ProhibitedAlways()
+  {
+    return true ;
+  }
+  inline static bool ProhibitedFromOutside()
+  {
+    return true ;
+  }
+};
 
 /**
 * Policy class that indicates that a raw handle may be zero only when constructed internally.
 */
-template< class T >
+template<class T>
 struct SpecialNull
 {
-  inline static bool ProhibitedAlways() { return false ; }
-  inline static bool ProhibitedFromOutside() { return true ; }
-} ;
+  inline static bool ProhibitedAlways()
+  {
+    return false ;
+  }
+  inline static bool ProhibitedFromOutside()
+  {
+    return true ;
+  }
+};
 
 /**
 * Policy class that indicates that a raw handle is permitted to be zero.
 */
-template< class T >
+template<class T>
 struct AllowNull
 {
-  inline static bool ProhibitedAlways() { return false ; }
-  inline static bool ProhibitedFromOutside() { return false ; }
-} ;
+  inline static bool ProhibitedAlways()
+  {
+    return false ;
+  }
+  inline static bool ProhibitedFromOutside()
+  {
+    return false ;
+  }
+};
 
 /**
 * Policy class that does not close a handle at all.
 */
-template< class T >
+template<class T>
 class NoDestruction
 {
 public:
-  inline static void Close( T handle ) {} ;
-} ;
+  inline static void Close(T handle) {};
+};
 
 /**
 * Policy class that closes an MSI handle when it goes out of scope.
 */
-template< class T >
+template<class T>
 class GenericMsiDestruction
 {
 public:
-  inline static void Close( T handle )
+  inline static void Close(T handle)
   {
-    MsiCloseHandle( handle ) ;
-  } ;
-} ;
+    MsiCloseHandle(handle);
+  };
+};
 
 /**
 * Policy class that closes a Windows handle when it goes out of scope.
 */
-template< class T >
+template<class T>
 class GenericWindowsDestruction
 {
 public:
-  inline static void Close( T handle )
+  inline static void Close(T handle)
   {
-    CloseHandle( handle ) ;
-  } ;
-} ;
+    CloseHandle(handle);
+  };
+};
 
 
 //-------------------------------------------------------
@@ -113,7 +131,7 @@ public:
 *
 * Raw handles always allow null, so that generic handles may allow or disallow them as they please.
 */
-template< class T >
+template<class T>
 class HandleRaw
 {
 protected:
@@ -123,13 +141,13 @@ protected:
   * This is the only data member of the class.
   * Everything else is for life cycle and type conversion.
   */
-  T handle ;
+  T handle;
 
   /**
   * Basic constructor is protected to cede creation policy entirely to subclasses.
   */
-  HandleRaw( T handle )
-    : handle( handle )
+  HandleRaw(T handle)
+    : handle(handle)
   {}
 
 public:
@@ -138,7 +156,7 @@ public:
   */
   operator T()
   {
-    return handle ;
+    return handle;
   }
 
   /**
@@ -153,10 +171,10 @@ public:
     : public std::logic_error
   {
     NullHandleError()
-      : std::logic_error( "May not initialize with null handle" ) 
+      : std::logic_error("May not initialize with null handle")
     {}
-  } ;
-} ;
+  };
+};
 
 /*
 * Handle class
@@ -165,9 +183,9 @@ template<
   class T,
   template <class> class NullPolicy,
   template <class> class DestructionPolicy = NoDestruction
->
+  >
 class Handle
-  : public HandleRaw< T >
+  : public HandleRaw<T>
 {
   /**
    * Copy constructor prohibited.
@@ -180,7 +198,7 @@ class Handle
    *   Currently, declared private and not defined.
    *   Add "= delete" for C++11.
    */
-  Handle( Handle & ) ;
+  Handle(Handle&);
 
   /**
    * Copy assignment not implemented.
@@ -190,25 +208,25 @@ class Handle
    * \par Implementation
    *   Currently, declared private and not defined.
    */
-  Handle operator=( const Handle & ) ;
+  Handle operator=(const Handle&);
 
   /**
    * Validate initial handle values, both for construction and reinitialization assignment.
    */
-  T ValidateHandle( T handle )
+  T ValidateHandle(T handle)
   {
-    if ( NullPolicy< T >::ProhibitedFromOutside() && handle == 0 )
+    if (NullPolicy<T>::ProhibitedFromOutside() && handle == 0)
     {
-      throw NullHandleError() ;
+      throw NullHandleError();
     }
-    return handle ;
+    return handle;
   }
 
 protected:
   /**
    * Tag class for null record constructor
    */
-  class NullType {} ;
+  class NullType {};
 
   /**
    * Null handle constructor initializes its handle to zero.
@@ -217,12 +235,12 @@ protected:
    * It's declared protected so that it's not ordinarily visible.
    * To use this constructor, derive from it and add a friend declaration.
    */
-  Handle( NullType )
-    : HandleRaw( 0 )
+  Handle(NullType)
+    : HandleRaw(0)
   {
-    if ( NullPolicy< T >::ProhibitedAlways() )
+    if (NullPolicy<T>::ProhibitedAlways())
     {
-      throw NullHandleError() ;
+      throw NullHandleError();
     }
   }
 
@@ -232,8 +250,8 @@ public:
    *
    * A check for a non-zero handle compiles in conditionally based on the NullPolicy.
    */
-  Handle( T handle )
-    : HandleRaw( ValidateHandle( handle ) )
+  Handle(T handle)
+    : HandleRaw(ValidateHandle(handle))
   {}
 
   /**
@@ -241,12 +259,12 @@ public:
    *
    * If we had C++11 move constructors, we wouldn't need this, since this acts exactly as construct-plus-move would.
    */
-  Handle & operator=( T handle )
+  Handle& operator=(T handle)
   {
-    ValidateHandle( handle ) ;
-    this -> ~Handle() ;
-    this -> handle = handle ;
-    return * this ;
+    ValidateHandle(handle);
+    this -> ~Handle();
+    this -> handle = handle;
+    return * this;
   }
 
   /**
@@ -257,20 +275,21 @@ public:
    */
   ~Handle()
   {
-    if ( NullPolicy< T >::ProhibitedAlways() || ( handle != 0 ) ) {
-      DestructionPolicy< T >::Close( handle ) ;
+    if (NullPolicy<T>::ProhibitedAlways() || (handle != 0))
+    {
+      DestructionPolicy<T>::Close(handle);
     }
   }
 
   /**
    * Expose the underlying handle type.
    */
-  typedef T HandleType ;
-} ;
+  typedef T HandleType;
+};
 
 //-------------------------------------------------------
 // Common instantiations of handle
 //-------------------------------------------------------
-typedef Handle< HANDLE, DisallowNull, GenericWindowsDestruction > WindowsHandle ;
+typedef Handle<HANDLE, DisallowNull, GenericWindowsDestruction> WindowsHandle;
 
 #endif

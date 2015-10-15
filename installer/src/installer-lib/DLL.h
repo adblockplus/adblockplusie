@@ -21,12 +21,12 @@ public:
   /**
   * Accessor function for the singleton.
   */
-  static DllModule & Module();
+  static DllModule& Module();
 
   /**
   * Hook function to call on DLL attach.
   */
-  static void Attach( HINSTANCE handle );
+  static void Attach(HINSTANCE handle);
 
   /**
   * Hook function to call on DLL detach.
@@ -42,12 +42,12 @@ private:
   /**
   * The singleton value.
   */
-  static std::shared_ptr< DllModule > singleton;
+  static std::shared_ptr<DllModule> singleton;
 
   /**
   * Private constructor ensures use of accessor function only.
   */
-  DllModule( HINSTANCE handle );
+  DllModule(HINSTANCE handle);
 
   /**
   * Windows handle for the instance of the DLL.
@@ -59,7 +59,7 @@ private:
   *
   * Implemented as a smart pointer for deferred evaluation of the system call to get the module name.
   */
-  std::shared_ptr< std::wstring > name;
+  std::shared_ptr<std::wstring> name;
 };
 
 #endif
