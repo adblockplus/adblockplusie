@@ -8,49 +8,49 @@
 
 #include "../installer-lib.h"
 
-TEST(Exception_Test, empty_two)
+TEST(ExceptionTest, EmptyTwo)
 {
   ::SetLastError(0);
   WindowsApiError e("", "");
   ASSERT_STREQ("<unspecified> returned <unknown> with last error code 0", e.what());
 }
 
-TEST(Exception_Test, empty_three)
+TEST(ExceptionTest, EmptyThree)
 {
   ::SetLastError(1);
   WindowsApiError e("", "", "");
   ASSERT_STREQ("<unspecified> returned <unknown> with last error code 1", e.what());
 }
 
-TEST(Exception_Test, empty_empty_message)
+TEST(ExceptionTest, EmptyEmptyMessage)
 {
   ::SetLastError(2);
   WindowsApiError e("", "", "message");
   ASSERT_STREQ("<unspecified> returned <unknown> with last error code 2: message", e.what());
 }
 
-TEST(Exception_Test, string_number)
+TEST(ExceptionTest, StringNumber)
 {
   ::SetLastError(3);
   WindowsApiError e("Beep", 1);
   ASSERT_STREQ("Beep returned 1 with last error code 3", e.what());
 }
 
-TEST(Exception_Test, string_number_message)
+TEST(ExceptionTest, StringNumberMessage)
 {
   ::SetLastError(4);
   WindowsApiError e("Beep", 1, "message");
   ASSERT_STREQ("Beep returned 1 with last error code 4: message", e.what());
 }
 
-TEST(Exception_Test, string_string)
+TEST(ExceptionTest, StringString)
 {
   ::SetLastError(5);
   WindowsApiError e("GetErrorMode", "SEM_FAILCRITICALERRORS");
   ASSERT_STREQ("GetErrorMode returned SEM_FAILCRITICALERRORS with last error code 5", e.what());
 }
 
-TEST(Exception_Test, string_string_message)
+TEST(ExceptionTest, StringStringMessage)
 {
   ::SetLastError(6);
   WindowsApiError e("GetErrorMode", "SEM_FAILCRITICALERRORS", "message");

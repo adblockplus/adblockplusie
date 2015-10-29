@@ -17,10 +17,10 @@ TEST(Property_Test, null)
   if (false)
   {
     // This variable was the argument to the entry point.
-    MSIHANDLE session_handle = 0;
+    MSIHANDLE sessionHandle = 0;
 
     // The code in the body.
-    ImmediateSession session(session_handle, "AbpCloseIe");
+    ImmediateSession session(sessionHandle, "AbpCloseIe");
     session.Log(L"Have session object");
     InstallationDatabase db(session);
     session.Log(L"Have database object");

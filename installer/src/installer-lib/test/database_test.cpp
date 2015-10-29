@@ -11,18 +11,18 @@ TEST(Database, open)
   FileSystemDatabase db(L"test-installer-lib.msi");
 }
 
-class Database_F
+class DatabaseF
   : public ::testing::Test
 {
 protected:
   FileSystemDatabase db;
 
-  Database_F()
+  DatabaseF()
     : db(L"test-installer-lib.msi")
   {}
 };
 
-TEST_F(Database_F, view_n_columns_and_n_rows)
+TEST_F(DatabaseF, CountColumnsAndRows)
 {
   View v(db, L"SELECT * FROM AbpUIText");
   Record r(v.First());
@@ -35,7 +35,7 @@ TEST_F(Database_F, view_n_columns_and_n_rows)
   ASSERT_EQ(4, j);
 }
 
-TEST_F(Database_F, view_single_record)
+TEST_F(DatabaseF, ViewSingleRecord)
 {
   View v(db, L"SELECT `content` FROM `AbpUIText` WHERE `component`='close_ie' and `id`='dialog_unknown'");
   Record r(v.First());
@@ -49,7 +49,7 @@ TEST_F(Database_F, view_single_record)
   ASSERT_EQ(v.End(), r);
 }
 
-TEST_F(Database_F, view_single_record_parametric)
+TEST_F(DatabaseF, ViewSingleRecordParametric)
 {
   View v(db, L"SELECT `content` FROM `AbpUIText` WHERE `component`='close_ie' and `id`=?");
   Record arg(1);

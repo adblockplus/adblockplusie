@@ -1,5 +1,5 @@
 /**
- * \file close_application.cpp
+ * \file custom-action-fail.cpp
  */
 
 #include "session.h"
@@ -11,7 +11,7 @@
  * A custom action that always and immediately fails.
  * Use during testing to ensure that the installer terminates.
  *
- * \param[in] session_handle
+ * \param[in] sessionHandle
  *     Windows installer session handle
  *
  * \return
@@ -21,9 +21,9 @@
  *   - MSDN [Custom Action Return Values](http://msdn.microsoft.com/en-us/library/aa368072%28v=vs.85%29.aspx)
  */
 extern "C" UINT __stdcall
-fail(MSIHANDLE session_handle)
+fail(MSIHANDLE sessionHandle)
 {
   // Instantiate the session object in order to get begin/end log entries.
-  ImmediateSession session(session_handle, "fail");
+  ImmediateSession session(sessionHandle, "fail");
   return ERROR_INSTALL_FAILURE;
 }

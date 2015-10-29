@@ -28,7 +28,7 @@ Property::operator std::wstring() const
   * We use only a modest fixed-size buffer for the first step, because we handle arbitrary-length property values in a second step.
   */
   // This buffer allocates on the stack, so we don't want it too large; 64 characters is enough for most properties anyway.
-  WCHAR buffer1[64] = { L'\0' };
+  WCHAR buffer1[64] = {L'\0'};
   DWORD length = sizeof(buffer1) / sizeof(WCHAR);
   UINT x = MsiGetPropertyW(handle, name.c_str(), buffer1, & length);
   switch (x)

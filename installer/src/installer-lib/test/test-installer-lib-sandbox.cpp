@@ -20,14 +20,14 @@
 #include "interaction.h"
 
 //-------------------------------------------------------
-// log_all_window_handles
+// LogAllWindowHandles
 //-------------------------------------------------------
-class log_single_window_handle
+class LogSingleWindowHandle
 {
   ImmediateSession& session;
 
 public:
-  log_single_window_handle(ImmediateSession& session)
+  LogSingleWindowHandle(ImmediateSession& session)
     : session(session)
   {
   }
@@ -41,24 +41,24 @@ public:
   }
 };
 
-void log_all_window_handles(ImmediateSession& session)
+void LogAllWindowHandles(ImmediateSession& session)
 {
-  session.Log("log_all_window_handles");
-  log_single_window_handle lp(session);
+  session.Log("LogAllWindowHandles");
+  LogSingleWindowHandle lp(session);
   EnumerateWindows(lp);
 }
 
 //-------------------------------------------------------
-// log_IE_window_handles
+// LogIeWindowHandles
 //-------------------------------------------------------
-class log_single_window_handle_only_if_IE
+class LogSingleWindowHandleOnlyIfIe
 {
   ImmediateSession& session;
 
   ProcessCloser& pc;
 
 public:
-  log_single_window_handle_only_if_IE(ImmediateSession& session, ProcessCloser& pc)
+  LogSingleWindowHandleOnlyIfIe(ImmediateSession& session, ProcessCloser& pc)
     : session(session), pc(pc)
   {
   }
@@ -76,26 +76,26 @@ public:
   }
 };
 
-void log_IE_window_handles(ImmediateSession& session)
+void LogIeWindowHandles(ImmediateSession& session)
 {
-  session.Log("log_IE_window_handles");
-  const wchar_t* IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" };
+  session.Log("LogIeWindowHandles");
+  const wchar_t* IeNames[] = {L"IExplore.exe", L"AdblockPlusEngine.exe"};
   ProcessSnapshot snapshot;
-  ProcessCloser iec(snapshot, IE_names);
-  log_single_window_handle_only_if_IE lp(session, iec);
+  ProcessCloser iec(snapshot, IeNames);
+  LogSingleWindowHandleOnlyIfIe lp(session, iec);
   EnumerateWindows(lp);
 }
 
 //-------------------------------------------------------
-// log_only_window_handle_in_closer
+// LogOnlyWindowHandleInCloser
 //-------------------------------------------------------
-void log_only_window_handle_in_closer(ImmediateSession& session)
+void LogOnlyWindowHandleInCloser(ImmediateSession& session)
 {
-  session.Log("log_only_window_handle_in_closer");
-  const wchar_t* IE_names[] = { L"IExplore.exe", L"AdblockPlusEngine.exe" };
+  session.Log("LogOnlyWindowHandleInCloser");
+  const wchar_t* IeNames[] = {L"IExplore.exe", L"AdblockPlusEngine.exe"};
   ProcessSnapshot snapshot;
-  ProcessCloser iec(snapshot, IE_names);
-  iec.IterateOurWindows(log_single_window_handle(session));
+  ProcessCloser iec(snapshot, IeNames);
+  iec.IterateOurWindows(LogSingleWindowHandle(session));
 }
 
 //-------------------------------------------------------
@@ -105,7 +105,7 @@ void log_only_window_handle_in_closer(ImmediateSession& session)
  * Exposed DLL entry point for custom action.
  * The function signature matches the calling convention used by Windows Installer.
 
- * \param[in] session_handle
+ * \param[in] sessionHandle
  *     Windows installer session handle
  *
  * \return
@@ -115,14 +115,14 @@ void log_only_window_handle_in_closer(ImmediateSession& session)
  *   - MSDN [Custom Action Return Values](http://msdn.microsoft.com/en-us/library/aa368072%28v=vs.85%29.aspx)
  */
 extern "C" UINT __stdcall
-sandbox(MSIHANDLE session_handle)
+sandbox(MSIHANDLE sessionHandle)
 {
-  ImmediateSession session(session_handle, "sandbox");
+  ImmediateSession session(sessionHandle, "sandbox");
 
   try
   {
     session.Log("Sandbox timestamp " __TIMESTAMP__);
-    log_only_window_handle_in_closer(session);
+    LogOnlyWindowHandleInCloser(session);
   }
   catch (std::exception& e)
   {

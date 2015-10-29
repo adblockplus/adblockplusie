@@ -208,7 +208,7 @@ extern "C" UINT __stdcall AbpCloseIe(MSIHANDLE sessionHandle)
     if (uilevel == L"5" || uilevel == L"4")
     {
       interactive = true;
-      // Assert state is one of { notKnown, allow, passive, active, automatic }
+      // Assert state is one of {notKnown, allow, passive, active, automatic}
     }
     else if (uilevel == L"3" || uilevel == L"2")
     {

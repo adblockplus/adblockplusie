@@ -144,7 +144,7 @@ struct CopyAll
 /**
  * Extractor that copies only the PID.
  */
-struct CopyPID
+struct CopyPid
   : public std::unary_function<PROCESSENTRY32W, DWORD>
 {
   inline DWORD operator()(const PROCESSENTRY32W& process)
@@ -620,7 +620,7 @@ class ProcessCloser
   /**
    * Copy function object copies just the process ID.
    */
-  CopyPID copy;
+  CopyPid copy;
 
   /**
    * Snapshot of running processes.
