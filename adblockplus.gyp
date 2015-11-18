@@ -123,6 +123,7 @@
       'src/plugin/ATL_Deprecate.cpp',
       'src/plugin/ATL_Deprecate.h',
       'src/plugin/Config.h',
+      'src/plugin/Instances.h',
       'src/plugin/NotificationMessage.cpp',
       'src/plugin/NotificationMessage.h',
       'src/plugin/Plugin.cpp',
@@ -234,6 +235,8 @@
     'sources': [
       'src/plugin/PluginDebug.cpp',
       'test/plugin/DebugTest.cpp',
+      'src/plugin/Instances.h',
+      'test/plugin/InstancesTest.cpp',
       'src/plugin/PluginUserSettings.cpp',
       'src/plugin/PluginUserSettings.h',
       'test/plugin/UserSettingsTest.cpp',

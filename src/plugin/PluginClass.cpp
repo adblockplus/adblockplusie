@@ -30,6 +30,7 @@
 #include "../shared/Dictionary.h"
 #include "IeVersion.h"
 #include "../shared/Version.h"
+#include "Instances.h"
 #include <thread>
 #include <array>
 
@@ -57,12 +58,44 @@ OPENTHEMEDATA pfnOpenThemeData = NULL;
 ATOM CPluginClass::s_atomPaneClass = NULL;
 HINSTANCE CPluginClass::s_hUxtheme = NULL;
 std::set<CPluginClass*> CPluginClass::s_instances;
-std::map<DWORD, CPluginClass*> CPluginClass::s_threadInstances;
 
 CComAutoCriticalSection CPluginClass::s_criticalSectionLocal;
 CComAutoCriticalSection CPluginClass::s_criticalSectionWindow;
 
 CComQIPtr<IWebBrowser2> CPluginClass::s_asyncWebBrowser2;
+
+namespace
+{
+  /**
+   * A synchronized map whose key is always the current thread ID.
+   */
+  class CurrentThreadMap
+    : public SyncMap<DWORD, CPluginClass*, nullptr>
+  {
+    typedef SyncMap<DWORD, CPluginClass*, nullptr> Base;
+
+  public:
+    bool AddIfAbsent(CPluginClass* p)
+    {
+      return Base::AddIfAbsent(::GetCurrentThreadId(), p);
+    }
+
+    bool RemoveAndCheck()
+    {
+      return Base::RemoveIfPresent(::GetCurrentThreadId());
+    }
+
+    CPluginClass* Locate()
+    {
+      return Base::Locate(::GetCurrentThreadId());
+    }
+  };
+
+  /**
+   * Map from thread ID's to CPluginClass instances
+   */
+  CurrentThreadMap threadMap;
+}
 
 /*
  * Without namespace declaration, the identifier "Rectangle" is ambiguous
@@ -118,10 +151,7 @@ CPluginClass::CPluginClass()
   m_pWndProcStatus = NULL;
   m_hTheme = NULL;
   m_isInitializedOk = false;
-
-
   m_tab = new CPluginTab();
-
   Dictionary::Create(GetBrowserLanguage());
 }
 
@@ -246,6 +276,14 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
           return ss.str();
         }());
 
+      /*
+       * Add ourselves to the thread map.
+       */
+      if (!threadMap.AddIfAbsent(this))
+      {
+        throw std::logic_error("CPluginClass::SetSite - May not overwrite existing entry in thread map");
+      }
+
       //register the mimefilter
       //and only mimefilter
       //on some few computers the mimefilter does not get properly registered when it is done on another thread
@@ -319,15 +357,14 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       HANDLE hMainThread = NULL;
       HANDLE hTabThread = NULL;
 
+      if (!threadMap.RemoveAndCheck())
+      {
+        throw std::logic_error("CPluginClass::SetSite - Missing entry in thread map");
+      }
+
       s_criticalSectionLocal.Lock();
       {
         s_instances.erase(this);
-
-        std::map<DWORD,CPluginClass*>::iterator it = s_threadInstances.find(::GetCurrentThreadId());
-        if (it != s_threadInstances.end())
-        {
-          s_threadInstances.erase(it);
-        }
         if (s_instances.empty())
         {
           // TODO: Explicitly releasing a resource when a container becomes empty looks like a job better suited for shared_ptr
@@ -564,16 +601,11 @@ void STDMETHODCALLTYPE CPluginClass::OnWindowStateChanged(unsigned long flags, u
       && flags == (OLECMDIDF_WINDOWSTATE_USERVISIBLE | OLECMDIDF_WINDOWSTATE_ENABLED);
     if (newtabshown)
     {
-      std::map<DWORD,CPluginClass*>::const_iterator it = s_threadInstances.find(GetCurrentThreadId());
-      if (it == s_threadInstances.end())
+      if (!m_isInitializedOk)
       {
-        s_threadInstances[::GetCurrentThreadId()] = this;
-        if (!m_isInitializedOk)
-        {
-          m_isInitializedOk = true;
-          InitObject();
-          UpdateStatusBar();
-        }
+        m_isInitializedOk = true;
+        InitObject();
+        UpdateStatusBar();
       }
     }
     notificationMessage.Hide();
@@ -992,21 +1024,10 @@ CPluginTab* CPluginClass::GetTab()
   return m_tab;
 }
 
-CPluginTab* CPluginClass::GetTab(DWORD dwThreadId)
+CPluginTab* CPluginClass::GetTabForCurrentThread()
 {
-  CPluginTab* tab = NULL;
-
-  s_criticalSectionLocal.Lock();
-  {
-    std::map<DWORD,CPluginClass*>::const_iterator it = s_threadInstances.find(dwThreadId);
-    if (it != s_threadInstances.end())
-    {
-      tab = it->second->m_tab;
-    }
-  }
-  s_criticalSectionLocal.Unlock();
-
-  return tab;
+  auto p = threadMap.Locate();
+  return p ? p->m_tab : nullptr;
 }
 
 // Entry point
@@ -1417,7 +1438,7 @@ HICON CPluginClass::GetStatusBarIcon(const std::wstring& url)
   // use the disable icon as defualt, if the client doesn't exists
   HICON hIcon = GetIcon(ICON_PLUGIN_DEACTIVATED);
 
-  CPluginTab* tab = GetTab(::GetCurrentThreadId());
+  CPluginTab* tab = GetTabForCurrentThread();
   if (tab)
   {
     CPluginClient* client = CPluginClient::GetInstance();
@@ -1581,7 +1602,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
 
     case WM_UPDATEUISTATE:
       {
-        CPluginTab* tab = GetTab(::GetCurrentThreadId());
+        CPluginTab* tab = GetTabForCurrentThread();
         if (tab)
         {
           tab->OnActivate();

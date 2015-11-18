@@ -41,7 +41,6 @@
 
 class CPluginMimeFilterClient;
 
-
 class ATL_NO_VTABLE CPluginClass :
   public ATL::CComObjectRootEx<ATL::CComMultiThreadModel>,
   public ATL::CComCoClass<CPluginClass, &CLSID_PluginClass>,
@@ -87,7 +86,7 @@ public:
   STDMETHOD(Exec)(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG* pvaOut);
 
 
-  static CPluginTab* GetTab(DWORD dwThreadId);
+  static CPluginTab* GetTabForCurrentThread();
   CPluginTab* GetTab();
 
   void UpdateStatusBar();
@@ -177,7 +176,6 @@ private:
 
   static HINSTANCE s_hUxtheme;
   static std::set<CPluginClass*> s_instances;
-  static std::map<DWORD,CPluginClass*> s_threadInstances;
   static CComAutoCriticalSection s_criticalSectionLocal;
   static CComAutoCriticalSection s_criticalSectionWindow;
 
@@ -187,6 +185,5 @@ private:
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(PluginClass), CPluginClass)
-
 
 #endif // _PLUGIN_CLASS_H_

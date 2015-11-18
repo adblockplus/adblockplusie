@@ -356,7 +356,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
   m_boundDomain = TrimString(m_boundDomain);
   m_contentType = InferContentType(ToUtf16String(ExtractHttpAcceptHeader(m_spTargetProtocol)), m_boundDomain, src);
 
-  CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
+  CPluginTab* tab = CPluginClass::GetTabForCurrentThread();
   CPluginClient* client = CPluginClient::GetInstance();
 
   if (tab && client)
