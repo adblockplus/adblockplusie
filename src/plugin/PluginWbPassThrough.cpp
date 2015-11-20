@@ -40,10 +40,10 @@ namespace
     T textlower;
     std::transform(text.begin(), text.end(), std::back_inserter(textlower), 
       [](T::value_type ch)
-	  { 
-	    return std::tolower(ch, std::locale());
-	  }
-	);
+      {
+        return std::tolower(ch, std::locale());
+      }
+    );
     return textlower;
   }
 
@@ -142,30 +142,30 @@ WBPassthruSink::WBPassthruSink()
 {
 }
 
-ContentType WBPassthruSink::GetContentTypeFromMimeType(const CString& mimeType)
+ContentType WBPassthruSink::GetContentTypeFromMimeType(const std::wstring& mimeType)
 {
-  if (mimeType.Find(L"image/") >= 0)
+  if (mimeType.find(L"image/") != std::wstring::npos)
   {
     return ContentType::CONTENT_TYPE_IMAGE;
   }
-  if (mimeType.Find(L"text/css") >= 0)
+  if (mimeType.find(L"text/css") != std::wstring::npos)
   {
     return ContentType::CONTENT_TYPE_STYLESHEET;
   }
-  if ((mimeType.Find(L"application/javascript") >= 0) || (mimeType.Find(L"application/json") >= 0))
+  if ((mimeType.find(L"application/javascript") != std::wstring::npos) || (mimeType.find(L"application/json") != std::wstring::npos))
   {
     return ContentType::CONTENT_TYPE_SCRIPT;
   }
-  if (mimeType.Find(L"application/x-shockwave-flash") >= 0)
+  if (mimeType.find(L"application/x-shockwave-flash") != std::wstring::npos)
   {
     return ContentType::CONTENT_TYPE_OBJECT;
   }
-  if (mimeType.Find(L"text/html") >= 0)
+  if (mimeType.find(L"text/html") != std::wstring::npos)
   {
     return ContentType::CONTENT_TYPE_SUBDOCUMENT;
   }
   // It is important to have this check last, since it is rather generic, and might overlay text/html, for example
-  if (mimeType.Find(L"xml") >= 0)
+  if (mimeType.find(L"xml") != std::wstring::npos)
   {
     return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
   }
@@ -196,11 +196,11 @@ ContentType WBPassthruSink::GetContentTypeFromURL(const std::wstring& src)
   return contentType;
 }
 
-ContentType WBPassthruSink::GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src)
+ContentType WBPassthruSink::GetContentType(const std::wstring& mimeType, const std::wstring& domain, const std::wstring& src)
 {
   // No referer or mime type
   // BINDSTRING_XDR_ORIGIN works only for IE v8+
-  if (mimeType.IsEmpty() && domain.empty() && AdblockPlus::IE::InstalledMajorVersion() >= 8)
+  if (mimeType.empty() && domain.empty() && AdblockPlus::IE::InstalledMajorVersion() >= 8)
   {
     return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
   }
@@ -328,8 +328,6 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
   UnescapeUrl(src);
   DEBUG_GENERAL(src);
 
-  std::string acceptHeader = ExtractHttpAcceptHeader(m_spTargetProtocol);
-
   if (pszAdditionalHeaders)
   {
     *pszAdditionalHeaders = nullptr;
@@ -346,7 +344,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     m_boundDomain = ExtractHttpHeader<std::wstring>(*pszAdditionalHeaders, L"Referer:", L"\n");
   }
   m_boundDomain = TrimString(m_boundDomain);
-  m_contentType = GetContentType(ATL::CString(acceptHeader.c_str()), m_boundDomain, src);
+  m_contentType = GetContentType(ToUtf16String(ExtractHttpAcceptHeader(m_spTargetProtocol)), m_boundDomain, src);
 
   CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
   CPluginClient* client = CPluginClient::GetInstance();

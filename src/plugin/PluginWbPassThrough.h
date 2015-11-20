@@ -23,62 +23,65 @@
 #define IE_MAX_URL_LENGTH 2048
 
 class WBPassthruSink :
-	public PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink, CComMultiThreadModel>,
-	public IHttpNegotiate
+  public PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink, CComMultiThreadModel>,
+  public IHttpNegotiate
 {
-	typedef PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink, CComMultiThreadModel> BaseClass;
+  typedef PassthroughAPP::CInternetProtocolSinkWithSP<WBPassthruSink, CComMultiThreadModel> BaseClass;
 
 public:
-	WBPassthruSink();
+  WBPassthruSink();
 
-	uint64_t m_currentPositionOfSentPage;
-	CComPtr<IInternetProtocol> m_pTargetProtocol;
-	AdblockPlus::FilterEngine::ContentType m_contentType;
-	std::wstring m_boundDomain;
-	bool m_isCustomResponse;
+  uint64_t m_currentPositionOfSentPage;
+  CComPtr<IInternetProtocol> m_pTargetProtocol;
+  AdblockPlus::FilterEngine::ContentType m_contentType;
+  std::wstring m_boundDomain;
+  bool m_isCustomResponse;
 
-	AdblockPlus::FilterEngine::ContentType GetContentTypeFromMimeType(const CString& mimeType);
-	AdblockPlus::FilterEngine::ContentType GetContentTypeFromURL(const std::wstring& src);
-	AdblockPlus::FilterEngine::ContentType GetContentType(const CString& mimeType, const std::wstring& domain, const std::wstring& src);
-	bool IsFlashRequest(const wchar_t* const* additionalHeaders);
+private:
+  AdblockPlus::FilterEngine::ContentType GetContentTypeFromMimeType(const std::wstring& mimeType);
+  AdblockPlus::FilterEngine::ContentType GetContentTypeFromURL(const std::wstring& src);
+  AdblockPlus::FilterEngine::ContentType GetContentType(const std::wstring& mimeType, const std::wstring& domain, const std::wstring& src);
+  bool IsFlashRequest(const wchar_t* const* additionalHeaders);
+
 public:
-	BEGIN_COM_MAP(WBPassthruSink)
-		COM_INTERFACE_ENTRY(IHttpNegotiate)
-		COM_INTERFACE_ENTRY_CHAIN(BaseClass)
-	END_COM_MAP()
+  BEGIN_COM_MAP(WBPassthruSink)
+    COM_INTERFACE_ENTRY(IHttpNegotiate)
+    COM_INTERFACE_ENTRY_CHAIN(BaseClass)
+  END_COM_MAP()
 
-	BEGIN_SERVICE_MAP(WBPassthruSink)
-		SERVICE_ENTRY(IID_IHttpNegotiate)
-	END_SERVICE_MAP()
+  BEGIN_SERVICE_MAP(WBPassthruSink)
+    SERVICE_ENTRY(IID_IHttpNegotiate)
+  END_SERVICE_MAP()
 
-	STDMETHODIMP BeginningTransaction(
-		/* [in] */ LPCWSTR szURL,
-		/* [in] */ LPCWSTR szHeaders,
-		/* [in] */ DWORD dwReserved,
-		/* [out] */ LPWSTR *pszAdditionalHeaders);
+  STDMETHODIMP BeginningTransaction(
+    /* [in] */ LPCWSTR szURL,
+    /* [in] */ LPCWSTR szHeaders,
+    /* [in] */ DWORD dwReserved,
+    /* [out] */ LPWSTR *pszAdditionalHeaders);
 
-	STDMETHODIMP OnResponse(
-		/* [in] */ DWORD dwResponseCode,
-		/* [in] */ LPCWSTR szResponseHeaders,
-		/* [in] */ LPCWSTR szRequestHeaders,
-		/* [out] */ LPWSTR *pszAdditionalRequestHeaders);
+  STDMETHODIMP OnResponse(
+    /* [in] */ DWORD dwResponseCode,
+    /* [in] */ LPCWSTR szResponseHeaders,
+    /* [in] */ LPCWSTR szRequestHeaders,
+    /* [out] */ LPWSTR *pszAdditionalRequestHeaders);
 
-	HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-		IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
-		IInternetProtocol* pTargetProtocol, bool& handled);
-	HRESULT OnRead(void *pv, ULONG cb, ULONG* pcbRead);
+  HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
+    IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
+    IInternetProtocol* pTargetProtocol, bool& handled);
 
-	STDMETHODIMP ReportProgress(
-		/* [in] */ ULONG ulStatusCode,
-		/* [in] */ LPCWSTR szStatusText);
+  HRESULT OnRead(void *pv, ULONG cb, ULONG* pcbRead);
 
-	STDMETHODIMP ReportResult(
-		/* [in] */ HRESULT hrResult,
-		/* [in] */ DWORD dwError,
-		/* [in] */ LPCWSTR szResult);
+  STDMETHODIMP ReportProgress(
+    /* [in] */ ULONG ulStatusCode,
+    /* [in] */ LPCWSTR szStatusText);
 
-	STDMETHODIMP Switch(
-		/* [in] */ PROTOCOLDATA *pProtocolData);
+  STDMETHODIMP ReportResult(
+    /* [in] */ HRESULT hrResult,
+    /* [in] */ DWORD dwError,
+    /* [in] */ LPCWSTR szResult);
+
+  STDMETHODIMP Switch(
+    /* [in] */ PROTOCOLDATA *pProtocolData);
 };
 
 class WBPassthru;
@@ -93,7 +96,7 @@ public:
   STDMETHODIMP Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
     IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved) override;
 
-  //IInternetProtocol
+  // IInternetProtocol
   STDMETHODIMP Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead) override;
 
   bool m_shouldSupplyCustomContent;
