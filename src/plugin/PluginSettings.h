@@ -71,7 +71,7 @@ public:
 
   bool IsPluginEnabled() const;
 
-  std::map<CString, CString> GetFilterLanguageTitleList() const;
+  std::map<std::wstring, std::wstring> GetFilterLanguageTitleList() const;
 
   void SetWorkingThreadId();
   void SetWorkingThreadId(DWORD id);
@@ -91,18 +91,15 @@ private:
   bool ReadWhitelist(bool bDebug=true);
 
 public:
-  void AddWhiteListedDomain(const CString& domain);
-  void RemoveWhiteListedDomain(const CString& domain);
+  void AddWhiteListedDomain(const std::wstring& domain);
+  void RemoveWhiteListedDomain(const std::wstring& domain);
   int GetWhiteListedDomainCount() const;
   std::vector<std::wstring> GetWhiteListedDomainList();
 
   bool RefreshWhitelist();
 
   void SetSubscription(const std::wstring& url);
-  void SetDefaultSubscription();
-  CString GetSubscription();
-  CString GetAppLocale();
-  CString GetDocumentationLink();
+  std::wstring GetSubscription();
 };
 
 std::wstring GetDataPath(const std::wstring& filename=L"");

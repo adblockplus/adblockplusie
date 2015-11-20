@@ -93,7 +93,6 @@ public:
   bool GetPref(const std::wstring& name, bool defaultValue = false);
   int64_t GetPref(const std::wstring& name, int64_t defaultValue = 0);
   void CheckForUpdates(HWND callbackWindow);
-  std::wstring GetAppLocale();
   std::wstring GetDocumentationLink();
   bool TogglePluginEnabled();
   std::wstring GetHostFromUrl(const std::wstring& url);

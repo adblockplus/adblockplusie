@@ -19,7 +19,9 @@
 #include "PluginUserSettings.h"
 #include "AdblockPlusClient.h"
 #include "PluginSettings.h"
+#include "PluginSystem.h"
 #include "../shared/Dictionary.h"
+#include "../shared/Utils.h"
 #include <unordered_map>
 
 namespace
@@ -150,12 +152,6 @@ STDMETHODIMP CPluginUserSettings::GetIDsOfNames(REFIID, LPOLESTR* name, UINT cou
   return S_OK;
 }
 
-CStringW sGetMessage(const CString& section, const CString& key)
-{
-  Dictionary* dictionary = Dictionary::GetInstance();
-  return CStringW(dictionary->Lookup(std::string(CW2A(section)), std::string(CW2A(key))).c_str());
-}
-
 STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pDispparams, VARIANT* pVarResult,
                                          EXCEPINFO* pExcepinfo, UINT* pArgErr)
 {
@@ -186,10 +182,14 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         {
           CComBSTR key = pDispparams->rgvarg[0].bstrVal;
           CComBSTR section = pDispparams->rgvarg[1].bstrVal;
-          CStringW message = sGetMessage((BSTR)section, (BSTR)key);
+          Dictionary* dictionary = Dictionary::GetInstance();
+          std::wstring message = dictionary->Lookup(
+            ToUtf8String(std::wstring(section, ::SysStringLen(section))),
+            ToUtf8String(std::wstring(key, ::SysStringLen(key)))
+          );
 
           pVarResult->vt = VT_BSTR;
-          pVarResult->bstrVal = SysAllocString(message);
+          pVarResult->bstrVal = SysAllocString(message.c_str());
         }
       }
       break;
@@ -201,7 +201,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         }
         if (pVarResult)
         {
-          std::map<CString, CString> languageList = settings->GetFilterLanguageTitleList();
+          auto languageList = settings->GetFilterLanguageTitleList();
 
           pVarResult->vt = VT_I4;
           pVarResult->lVal = static_cast<LONG>(languageList.size());
@@ -222,15 +222,15 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         {
           int index = pDispparams->rgvarg[0].lVal;
 
-          std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
+          auto languageTitleList = settings->GetFilterLanguageTitleList();
 
           if (index < 0  ||  index >= static_cast<int>(languageTitleList.size()))
             return DISP_E_EXCEPTION;
 
-          CString language;
+          std::wstring language;
 
           int loopIndex = 0;
-          for (std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+          for (auto it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
           {
             if (loopIndex == index)
             {
@@ -241,7 +241,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
           }
 
           pVarResult->vt = VT_BSTR;
-          pVarResult->bstrVal = SysAllocString(language);
+          pVarResult->bstrVal = SysAllocString(language.c_str());
         }
       }
       break;
@@ -259,15 +259,14 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         {
           int index = pDispparams->rgvarg[0].lVal;
 
-          std::map<CString, CString> languageTitleList = settings->GetFilterLanguageTitleList();
+          auto languageTitleList = settings->GetFilterLanguageTitleList();
 
           if (index < 0  ||  index >= static_cast<int>(languageTitleList.size()))
             return DISP_E_EXCEPTION;
 
-          CString languageTitle;
-
+          std::wstring languageTitle;
           int loopIndex = 0;
-          for (std::map<CString, CString>::const_iterator it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
+          for (auto it = languageTitleList.begin(); it != languageTitleList.end(); ++it)
           {
             if (loopIndex == index)
             {
@@ -278,7 +277,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
           }
 
           pVarResult->vt = VT_BSTR;
-          pVarResult->bstrVal = SysAllocString(languageTitle);
+          pVarResult->bstrVal = SysAllocString(languageTitle.c_str());
         }
       }
       break;
@@ -304,9 +303,9 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         }
         if (pVarResult)
         {
-          CString url = settings->GetSubscription();
+          std::wstring url = settings->GetSubscription();
           pVarResult->vt = VT_BSTR;
-          pVarResult->bstrVal = SysAllocString(url);
+          pVarResult->bstrVal = SysAllocString(url.c_str());
         }
       }
       break;
@@ -318,18 +317,18 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         }
         if (pVarResult)
         {
-          std::vector<std::wstring> whiteList = settings->GetWhiteListedDomainList();
-          CString sWhiteList;
-          for (size_t i = 0; i < whiteList.size(); i++)
+          auto whiteListDomains = settings->GetWhiteListedDomainList();
+          std::wstring commaSeparatedDomains;
+          for (size_t i = 0; i < whiteListDomains.size(); i++)
           {
-            if (!sWhiteList.IsEmpty())
+            if (!commaSeparatedDomains.empty())
             {
-              sWhiteList += ',';
+              commaSeparatedDomains += ',';
             }
-            sWhiteList += CString(whiteList[i].c_str());
+            commaSeparatedDomains += whiteListDomains[i];
           }
           pVarResult->vt = VT_BSTR;
-          pVarResult->bstrVal = SysAllocString(sWhiteList);
+          pVarResult->bstrVal = SysAllocString(commaSeparatedDomains.c_str());
         }
       }
       break;
@@ -363,7 +362,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         CComBSTR domain = pDispparams->rgvarg[0].bstrVal;
         if (domain.Length())
         {
-          settings->RemoveWhiteListedDomain((BSTR)domain);
+          settings->RemoveWhiteListedDomain(std::wstring(domain));
         }
       }
       break;
@@ -376,7 +375,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         if (pVarResult)
         {
           pVarResult->vt = VT_BSTR;
-          pVarResult->bstrVal = SysAllocString(settings->GetAppLocale());
+          pVarResult->bstrVal = SysAllocString(GetBrowserLanguage().c_str());
         }
       }
       break;
@@ -389,7 +388,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
         if (pVarResult)
         {
           pVarResult->vt = VT_BSTR;
-          pVarResult->bstrVal = SysAllocString(settings->GetDocumentationLink());
+          pVarResult->bstrVal = SysAllocString(CPluginClient::GetInstance()->GetDocumentationLink().c_str());
         }
       }
       break;

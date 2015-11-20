@@ -1125,7 +1125,6 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
     }
   case ID_MENU_DISABLE_ON_SITE:
     {
-      CPluginSettings* settings = CPluginSettings::GetInstance();
       std::wstring urlString = GetTab()->GetDocumentUrl();
       std::string filterText = client->GetWhitelistingFilter(urlString);
       if (!filterText.empty())
@@ -1134,7 +1133,7 @@ void CPluginClass::DisplayPluginMenu(HMENU hMenu, int nToolbarCmdID, POINT pt, U
       }
       else
       {
-        settings->AddWhiteListedDomain(ToCString(client->GetHostFromUrl(urlString)));
+        CPluginSettings::GetInstance()->AddWhiteListedDomain(client->GetHostFromUrl(urlString));
       }
     }
   default:

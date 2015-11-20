@@ -25,9 +25,9 @@
 
 namespace
 {
-  std::wstring CreateDomainWhitelistingFilter(const CString& domain)
+  std::wstring CreateDomainWhitelistingFilter(const std::wstring& domain)
   {
-    return L"@@||" + ToWstring(domain) + L"^$document";
+    return L"@@||" + domain + L"^$document";
   }
 }
 
@@ -94,15 +94,15 @@ bool CPluginSettings::IsPluginEnabled() const
   return GetPluginEnabled();
 }
 
-std::map<CString, CString> CPluginSettings::GetFilterLanguageTitleList() const
+std::map<std::wstring, std::wstring> CPluginSettings::GetFilterLanguageTitleList() const
 {
-  std::vector<SubscriptionDescription> subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
+  auto subscriptions = CPluginClient::GetInstance()->FetchAvailableSubscriptions();
 
-  std::map<CString, CString> filterList;
+  std::map<std::wstring, std::wstring> filterList;
   for (size_t i = 0; i < subscriptions.size(); i ++)
   {
-    SubscriptionDescription it = subscriptions[i];
-    filterList.insert(std::make_pair(CString(it.url.c_str()), CString(it.title.c_str())));
+    auto it = subscriptions[i];
+    filterList.insert(std::make_pair(it.url, it.title));
   }
   return filterList;
 }
@@ -135,12 +135,10 @@ bool CPluginSettings::GetPluginEnabled() const
   return CPluginClient::GetInstance()->GetPref(L"enabled", true);
 }
 
-
 void CPluginSettings::AddError(const CString& error, const CString& errorCode)
 {
   DEBUG_SETTINGS(L"SettingsTab::AddError error:" + error + " code:" + errorCode)
 }
-
 
 // ============================================================================
 // Whitelist settings
@@ -183,13 +181,13 @@ bool CPluginSettings::ReadWhitelist(bool isDebug)
     return isRead;
 }
 
-void CPluginSettings::AddWhiteListedDomain(const CString& domain)
+void CPluginSettings::AddWhiteListedDomain(const std::wstring& domain)
 {
   DEBUG_SETTINGS("SettingsWhitelist::AddWhiteListedDomain domain:" + domain)
   CPluginClient::GetInstance()->AddFilter(CreateDomainWhitelistingFilter(domain));
 }
 
-void CPluginSettings::RemoveWhiteListedDomain(const CString& domain)
+void CPluginSettings::RemoveWhiteListedDomain(const std::wstring& domain)
 {
   DEBUG_SETTINGS("SettingsWhitelist::RemoveWhiteListedDomain domain:" + domain)
   CPluginClient::GetInstance()->RemoveFilter(CreateDomainWhitelistingFilter(domain));
@@ -232,27 +230,17 @@ void CPluginSettings::SetSubscription(const std::wstring& url)
   RefreshWhitelist();
 }
 
-CString CPluginSettings::GetSubscription()
+std::wstring CPluginSettings::GetSubscription()
 {
-  std::vector<SubscriptionDescription> subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
+  auto subscriptions = CPluginClient::GetInstance()->GetListedSubscriptions();
   std::wstring aaUrl = CPluginClient::GetInstance()->GetPref(L"subscriptions_exceptionsurl", L"");
 
-  for (std::vector<SubscriptionDescription>::iterator subscription = subscriptions.begin(); subscription != subscriptions.end(); subscription++)
+  for (auto subscription = subscriptions.begin(); subscription != subscriptions.end(); subscription++)
   {
     if (subscription->url != aaUrl)
     {
-      return CString(subscription->url.c_str());
+      return subscription->url;
     }
   }
-  return CString(L"");
-}
-
-CString CPluginSettings::GetAppLocale()
-{
-  return ToCString(GetBrowserLanguage());
-}
-
-CString CPluginSettings::GetDocumentationLink()
-{
-  return CString(CPluginClient::GetInstance()->GetDocumentationLink().c_str());
+  return std::wstring();
 }
