@@ -18,8 +18,8 @@
 #pragma once
 #include <cstdint>
 #include <AdblockPlus/FilterEngine.h>
-#include "ProtocolCF.h"
-#include "ProtocolImpl.h"
+#include "passthroughapp/ProtocolCF.h"
+#include "passthroughapp/ProtocolImpl.h"
 #define IE_MAX_URL_LENGTH 2048
 
 class WBPassthruSink :
