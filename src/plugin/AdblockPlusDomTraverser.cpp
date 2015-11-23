@@ -68,7 +68,6 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
     if (SUCCEEDED(pEl->getAttribute(ATL::CComBSTR(L"src"), 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
     {
       std::wstring src(vAttr.bstrVal, SysStringLen(vAttr.bstrVal));
-      UnescapeUrl(src);
 
       // If src should be blocked, set style display:none on image
       cache->m_isHidden = client->ShouldBlock(src,

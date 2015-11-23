@@ -188,7 +188,6 @@ std::wstring CPluginClass::GetBrowserUrl() const
     if (SUCCEEDED(browser->get_LocationURL(&bstrURL)) && bstrURL)
     {
       url = std::wstring(bstrURL, SysStringLen(bstrURL));
-      UnescapeUrl(url);
     }
   }
   else
@@ -484,7 +483,6 @@ void STDMETHODCALLTYPE CPluginClass::OnBeforeNavigate2(
       return;
     }
     std::wstring url(urlVariant->bstrVal, SysStringLen(urlVariant->bstrVal));
-    UnescapeUrl(url);
 
     // If webbrowser2 is equal to top level browser (as set in SetSite), we are
     // navigating new page
@@ -545,7 +543,6 @@ void STDMETHODCALLTYPE CPluginClass::OnDocumentComplete(IDispatch* frameBrowserD
       return;
     }
     std::wstring frameSrc = GetLocationUrl(*webBrowser2);
-    UnescapeUrl(frameSrc);
     bool isRootPageBrowser = GetBrowser().IsEqualObject(webBrowser2);
     m_tab->OnDocumentComplete(webBrowser2, frameSrc, isRootPageBrowser);
   }

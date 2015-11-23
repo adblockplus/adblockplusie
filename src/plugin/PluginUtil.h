@@ -30,13 +30,3 @@ bool BeginsWith(const std::basic_string<CharT, Traits, Alloc>& s, const CharT(&b
 {
   return 0 == s.compare(0, N - 1, beginning);
 }
-
-/**
- * Wrapper around Microsoft API 'UrlUnescape'
- *
- * This function has modify-in-place behavior, which matches that of its legacy version.
- * At present, callers of this function have no code to handle error conditions that might arise here.
- * Because there's no error handling, therefore, this masks failures in UrlUnescape.
- */
-void UnescapeUrl(std::wstring& url);
-

@@ -240,7 +240,6 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
           if (SUCCEEDED(pFrameBrowser->get_LocationURL(&bstrSrc)) && bstrSrc)
           {
             src = std::wstring(bstrSrc,SysStringLen(bstrSrc));
-            UnescapeUrl(src);
           }
           if (!src.empty())
           {
@@ -290,7 +289,6 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
             {
               src = L"http://" + m_domain + src;
             }
-            UnescapeUrl(src);
 
             // Check if Iframe should be traversed
             if (OnIFrame(pFrameEl, src, indent))

@@ -325,7 +325,6 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     return E_POINTER;
   }
   std::wstring src = szURL;
-  UnescapeUrl(src);
   DEBUG_GENERAL(src);
 
   if (pszAdditionalHeaders)
@@ -376,7 +375,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     m_contentType = ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
   }
 
-  if (client->ShouldBlock(szURL, m_contentType, m_boundDomain, /*debug flag but must be set*/true))
+  if (client->ShouldBlock(src, m_contentType, m_boundDomain, /*debug flag but must be set*/true))
   {
     // NOTE: Feeding custom HTML to Flash, instead of original object subrequest
     // doesn't have much sense. It also can manifest in unwanted result
