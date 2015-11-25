@@ -44,7 +44,6 @@ CComAutoCriticalSection CPluginSettings::s_criticalSectionLocal;
 CPluginSettings::CPluginSettings() : m_dwWorkingThreadId(0)
 {
   s_instance = NULL;
-  m_WindowsBuildNumber = 0;
   ClearWhitelist();
 }
 
@@ -225,21 +224,6 @@ bool CPluginSettings::RefreshWhitelist()
   }
 
   return true;
-}
-
-DWORD CPluginSettings::GetWindowsBuildNumber()
-{
-  if (m_WindowsBuildNumber == 0)
-  {
-    OSVERSIONINFOEX osvi = {};
-    osvi.dwOSVersionInfoSize = sizeof(osvi);
-    if (GetVersionExW(reinterpret_cast<OSVERSIONINFO*>(&osvi)) != 0)
-    {
-      m_WindowsBuildNumber = osvi.dwBuildNumber;
-    }
-  }
-
-  return m_WindowsBuildNumber;
 }
 
 void CPluginSettings::SetSubscription(const std::wstring& url)

@@ -77,8 +77,6 @@ public:
   void SetWorkingThreadId(DWORD id);
   bool IsWorkingThread(DWORD dwThread=0) const;
 
-  DWORD m_WindowsBuildNumber;
-
 public:
 
   void TogglePluginEnabled();
@@ -99,7 +97,6 @@ public:
   std::vector<std::wstring> GetWhiteListedDomainList();
 
   bool RefreshWhitelist();
-  DWORD GetWindowsBuildNumber();
 
   void SetSubscription(const std::wstring& url);
   void SetDefaultSubscription();
