@@ -225,7 +225,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
           auto languageTitleList = settings->GetFilterLanguageTitleList();
 
           if (index < 0  ||  index >= static_cast<int>(languageTitleList.size()))
-            return DISP_E_EXCEPTION;
+            return DISP_E_BADINDEX;
 
           std::wstring language;
 
@@ -262,7 +262,7 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
           auto languageTitleList = settings->GetFilterLanguageTitleList();
 
           if (index < 0  ||  index >= static_cast<int>(languageTitleList.size()))
-            return DISP_E_EXCEPTION;
+            return DISP_E_BADINDEX;
 
           std::wstring languageTitle;
           int loopIndex = 0;
