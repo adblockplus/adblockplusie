@@ -34,21 +34,17 @@ enum CFilterElementHideAttrType
 // CFilterElementHideAttrSelector
 // ============================================================================
 
-class CFilterElementHideAttrSelector
+struct CFilterElementHideAttrSelector
 {
-
-public:
-
   CFilterElementHideAttrPos m_pos;
-
   CFilterElementHideAttrType m_type;
+  std::wstring m_attr;
+  std::wstring m_value;
 
-  CComBSTR m_bstrAttr;
-  CString m_value;
-
-  CFilterElementHideAttrSelector();
-  CFilterElementHideAttrSelector(const CFilterElementHideAttrSelector& filter);
-  ~CFilterElementHideAttrSelector();
+  CFilterElementHideAttrSelector()
+    : m_type(TYPE_NONE), m_pos(POS_NONE)
+  {
+  }
 };
 
 
@@ -68,18 +64,17 @@ public:
     TRAVERSER_TYPE_ERROR
   };
 
-
-  CString m_filterText;
+  std::wstring m_filterText;
 
   // For domain specific filters only
-  CString m_tagId;
-  CString m_tagClassName;
-  CString m_tag;
+  std::wstring m_tagId;
+  std::wstring m_tagClassName;
+  std::wstring m_tag;
 
   std::vector<CFilterElementHideAttrSelector> m_attributeSelectors;
   std::shared_ptr<CFilterElementHide> m_predecessor;
 
-  CFilterElementHide(const CString& filterText="");
+  CFilterElementHide(const std::wstring& filterText = L"");
   CFilterElementHide(const CFilterElementHide& filter);
   ETraverserComplexType m_type;
 
@@ -112,7 +107,7 @@ public:
   bool m_isFromStart;
   bool m_isFromEnd;
   int m_hitCount;
-  CString m_filterText;
+  std::wstring m_filterText;
 
   CFilter(const CFilter&);
   CFilter();
@@ -127,13 +122,13 @@ class CPluginFilter
 
 private:
 
-  CString m_dataPath;
+  std::wstring m_dataPath;
 
   // (Tag,Name) -> Filter
-  typedef std::multimap<std::pair<CString,CString>, CFilterElementHide> TFilterElementHideTagsNamed;
+  typedef std::multimap<std::pair<std::wstring, std::wstring>, CFilterElementHide> TFilterElementHideTagsNamed;
 
   // Tag -> Filter
-  typedef std::multimap<CString, CFilterElementHide> TFilterElementHideTags;
+  typedef std::multimap<std::wstring, CFilterElementHide> TFilterElementHideTags;
 
 
   TFilterElementHideTagsNamed m_elementHideTagsId;
@@ -143,9 +138,9 @@ private:
   void ClearFilters();
 
 public:
-  CPluginFilter(const CString& dataPath = "");
+  CPluginFilter(const std::wstring& dataPath = L"");
   bool LoadHideFilters(std::vector<std::wstring> filters);
-  bool AddFilterElementHide(CString filter);
+  bool AddFilterElementHide(std::wstring filter);
   bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent) const;
   HANDLE hideFiltersLoadedEvent;
 };

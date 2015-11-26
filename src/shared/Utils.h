@@ -69,15 +69,55 @@ std::wstring GetSchemeAndHierarchicalPart(const std::wstring& url);
 
 std::wstring GetQueryString(const std::wstring& url);
 
+/*
+ * The method used below for trimming strings is taken from here:
+ *   http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+ */
+template<class C>
+bool isNotWhitespace(C x)
+{
+  return !std::isspace(x, std::locale::classic());
+};
+
+template<class T>
+void TrimStringInPlaceLeft(T& text)
+{
+  text.erase(text.begin(), std::find_if(text.begin(), text.end(), isNotWhitespace<T::value_type>));
+}
+
+template<class T>
+void TrimStringInPlaceRight(T& text)
+{
+  text.erase(std::find_if(text.rbegin(), text.rend(), isNotWhitespace<T::value_type>).base(), text.end());
+}
+
+template<class T>
+void TrimStringInPlace(T& text)
+{
+  TrimStringInPlaceRight(text);
+  TrimStringInPlaceLeft(text);
+}
+
+template<class T>
+T TrimStringLeft(T text)
+{
+  TrimStringInPlaceLeft(text);
+  return text;
+}
+
+template<class T>
+T TrimStringRight(T text)
+{
+  TrimStringInPlaceRight(text);
+  return text;
+}
+
 template<class T>
 T TrimString(T text)
 {
-  // Via http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-  T trimmed(text);
-  std::function<bool(T::value_type)> isspace = std::bind(&std::isspace<T::value_type>, std::placeholders::_1, std::locale::classic());
-  trimmed.erase(trimmed.begin(), std::find_if(trimmed.begin(), trimmed.end(), std::not1(isspace)));
-  trimmed.erase(std::find_if(trimmed.rbegin(), trimmed.rend(), std::not1(isspace)).base(), trimmed.end());
-  return trimmed;
+  TrimStringInPlaceRight(text);
+  TrimStringInPlaceLeft(text);
+  return text;
 }
 
 #endif // UTILS_H

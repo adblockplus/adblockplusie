@@ -23,6 +23,7 @@
 #include "PluginSettings.h"
 #include "PluginSystem.h"
 #include "PluginClass.h"
+#include "PluginUtil.h"
 #include "mlang.h"
 #include "..\shared\CriticalSection.h"
 #include "..\shared\Utils.h"
@@ -33,176 +34,177 @@
 static CriticalSection s_criticalSectionFilterMap;
 
 // ============================================================================
-// CFilterElementHideAttrSelector
-// ============================================================================
-
-CFilterElementHideAttrSelector::CFilterElementHideAttrSelector() : m_type(TYPE_NONE), m_pos(POS_NONE), m_bstrAttr(NULL)
-{
-}
-
-CFilterElementHideAttrSelector::CFilterElementHideAttrSelector(const CFilterElementHideAttrSelector& filter)
-{
-  m_type = filter.m_type;
-  m_pos = filter.m_pos;
-  m_bstrAttr = filter.m_bstrAttr;
-
-  m_value = filter.m_value;
-}
-
-CFilterElementHideAttrSelector::~CFilterElementHideAttrSelector()
-{
-}
-
-
-// ============================================================================
 // CFilterElementHide
 // ============================================================================
-
-CFilterElementHide::CFilterElementHide(const CString& filterText) : m_filterText(filterText), m_type(ETraverserComplexType::TRAVERSER_TYPE_ERROR)
+namespace
 {
-  // Find tag name, class or any (*)
-  CString filterString = filterText;
+  class ElementHideParseException
+    : public std::runtime_error
+  {
+    std::string message(const std::wstring& filterText, const std::string& reason)
+    {
+      std::string s(
+        "CFilterElementHide::CFilterElementHide, error parsing selector \""
+        + ToUtf8String(filterText) + "\" (" + reason + ")"
+        );
+      DEBUG_FILTER(ToUtf16String(s));
+      return s;
+    }
+  public:
+    ElementHideParseException(const std::wstring& filterText, const std::string& reason)
+      : std::runtime_error(message(filterText, reason))
+    {}
+  };
+}
 
-  wchar_t firstTag = filterString.GetAt(0);
-  // Any tag
+CFilterElementHide::CFilterElementHide(const std::wstring& filterText)
+  : m_filterText(filterText), m_type(ETraverserComplexType::TRAVERSER_TYPE_ERROR)
+{
+  std::wstring filterSuffix(filterText); // The unparsed remainder of the input filter text
+
+  // Find tag name, class or any (*)
+  wchar_t firstTag = filterText[0];
   if (firstTag == '*')
   {
-    filterString = filterString.Mid(1);
+    // Any tag
+    filterSuffix = filterSuffix.substr(1);
   }
-  // Any tag (implicitely)
   else if (firstTag == '[' || firstTag == '.' || firstTag == '#')
   {
+    // Any tag (implicitly)
   }
-  // Real tag
   else if (isalnum(firstTag))
   {
-    //TODO: Add support for descendant selectors
-    int pos = filterString.FindOneOf(L".#[(");
-
-    if (pos < 0)
-      pos = filterString.GetLength();
-    m_tag = filterString.Left(pos).MakeLower();
-
-    filterString = filterString.Mid(pos);
+    // Real tag
+    // TODO: Add support for descendant selectors
+    auto pos = filterSuffix.find_first_of(L".#[(");
+    if (pos == std::wstring::npos)
+    {
+      pos = filterSuffix.length();
+    }
+    m_tag = ToLowerString(filterSuffix.substr(0, pos));
+    filterSuffix = filterSuffix.substr(pos);
   }
-  // Error
   else
   {
-    DEBUG_FILTER("Filter::Error parsing selector:" + filterText + " (invalid tag)");
-    throw std::runtime_error(CStringA("Filter::Error parsing selector:" + filterText + " (invalid tag)").GetString());
+    // Error
+    throw ElementHideParseException(filterText, "invalid tag");
   }
 
   // Find Id and class name
-
-  if (!filterString.IsEmpty())
+  if (!filterSuffix.empty())
   {
-    wchar_t firstId = filterString.GetAt(0);
+    wchar_t firstId = filterSuffix[0];
 
     // Id
     if (firstId == '#')
     {
-      int pos = filterString.Find('[');
-      if (pos < 0)
+      auto pos = filterSuffix.find('[');
+      if (pos == std::wstring::npos)
       {
-        pos = filterString.GetLength();
+        pos = filterSuffix.length();
       }
-      m_tagId = filterString.Mid(1, pos - 1);
-      filterString = filterString.Mid(pos);
-      pos = m_tagId.Find(L".");
-      if (pos > 0)
+      m_tagId = filterSuffix.substr(1, pos - 1);
+      filterSuffix = filterSuffix.substr(pos);
+      pos = m_tagId.find(L".");
+      if (pos != std::wstring::npos)
       {
-        m_tagClassName = m_tagId.Mid(pos + 1);
-        m_tagId = m_tagId.Left(pos);
+        if (pos == 0)
+        {
+          throw ElementHideParseException(filterText, "empty tag id");
+        }
+        m_tagClassName = m_tagId.substr(pos + 1);
+        m_tagId = m_tagId.substr(0, pos);
       }
     }
     // Class name
     else if (firstId == '.')
     {
-      int pos = filterString.Find('[');
-      if (pos < 0)
+      auto pos = filterSuffix.find('[');
+      if (pos == std::wstring::npos)
       {
-        pos = filterString.GetLength();
+        pos = filterSuffix.length();
       }
-      m_tagClassName = filterString.Mid(1, pos - 1);
-      filterString = filterString.Mid(pos);
+      m_tagClassName = filterSuffix.substr(1, pos - 1);
+      filterSuffix = filterSuffix.substr(pos);
     }
   }
 
-  char chAttrStart = '[';
-  char chAttrEnd   = ']';
-
-  while (!filterString.IsEmpty())
+  while (!filterSuffix.empty())
   {
-    if (filterString.GetAt(0) != chAttrStart)
+    if (filterSuffix[0] != '[')
     {
-      DEBUG_FILTER("Filter::Error parsing selector:" + filterText + " (more data)");
-      throw std::runtime_error(CStringA("Filter::Error parsing selector:" + filterText + " (more data)").GetString());
+      throw ElementHideParseException(filterText, "expected '['");
     }
-    int endPos = filterString.Find(']') ;
-    if (endPos < 0)
+    auto endPos = filterSuffix.find(']') ;
+    if (endPos == std::wstring::npos)
     {
-      DEBUG_FILTER("Filter::Error parsing selector:" + filterText + " (more data)");
-      throw std::runtime_error(CStringA("Filter::Error parsing selector:" + filterText + " (more data)").GetString());
+      throw ElementHideParseException(filterText, "expected ']'");
     }
-        
+    std::wstring arg = filterSuffix.substr(1, endPos - 1);
+    filterSuffix = filterSuffix.substr(endPos + 1);
+
     CFilterElementHideAttrSelector attrSelector;
-
-    CString arg = filterString.Mid(1, endPos - 1);
-    filterString = filterString.Mid(endPos + 1);
-
-    int delimiterPos = arg.Find('=');
-    if (delimiterPos > 0)
+    auto posEquals = arg.find('=');
+    if (posEquals != std::wstring::npos)
     {
-      attrSelector.m_value = arg.Mid(delimiterPos + 1);
-      if (attrSelector.m_value.GetLength() >= 2 && attrSelector.m_value.GetAt(0) == '\"' && attrSelector.m_value.GetAt(attrSelector.m_value.GetLength() - 1) == '\"')
+      if (posEquals == 0)
       {
-        attrSelector.m_value = attrSelector.m_value.Mid(1, attrSelector.m_value.GetLength() - 2);
+        throw ElementHideParseException(filterText, "empty attribute name before '='");
+      }
+      attrSelector.m_value = arg.substr(posEquals + 1);
+      if (attrSelector.m_value.length() >= 2 && attrSelector.m_value[0] == '\"' && attrSelector.m_value[attrSelector.m_value.length() - 1] == '\"')
+      {
+        attrSelector.m_value = attrSelector.m_value.substr(1, attrSelector.m_value.length() - 2);
       }
 
-      if (arg.GetAt(delimiterPos - 1) == '^')
+      if (arg[posEquals - 1] == '^')
       {
-        attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
         attrSelector.m_pos = CFilterElementHideAttrPos::STARTING;
       }
-      else if (arg.GetAt(delimiterPos - 1) == '*')
+      else if (arg[posEquals - 1] == '*')
       {
-        attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
         attrSelector.m_pos = CFilterElementHideAttrPos::ANYWHERE;
       }
-      else if (arg.GetAt(delimiterPos - 1) == '$')
+      else if (arg[posEquals - 1] == '$')
       {
-        attrSelector.m_bstrAttr = arg.Left(delimiterPos - 1);
         attrSelector.m_pos = CFilterElementHideAttrPos::ENDING;
+      }
+      if (attrSelector.m_pos != CFilterElementHideAttrPos::POS_NONE)
+      {
+        if (posEquals == 1)
+        {
+          throw ElementHideParseException(filterText, "empty attribute name before " + std::string(1, static_cast<char>(arg[0])) + "'='");
+        }
+        attrSelector.m_attr = arg.substr(0, posEquals - 1);
       }
       else
       {
-        attrSelector.m_bstrAttr = arg.Left(delimiterPos);
         attrSelector.m_pos = CFilterElementHideAttrPos::EXACT;
+        attrSelector.m_attr = arg.substr(0, posEquals);
       }
     }
-    CString tag = attrSelector.m_bstrAttr;
-    if (tag == "style")
+
+    if (attrSelector.m_attr == L"style")
     {
       attrSelector.m_type = CFilterElementHideAttrType::STYLE;
-      attrSelector.m_value.MakeLower();
+      attrSelector.m_value = ToLowerString(attrSelector.m_value);
     }
-    else if (tag == "id")
+    else if (attrSelector.m_attr == L"id")
     {
       attrSelector.m_type = CFilterElementHideAttrType::ID;
     }
-    else if (tag == "class")
+    else if (attrSelector.m_attr == L"class")
     {
       attrSelector.m_type = CFilterElementHideAttrType::CLASS;
     }
     m_attributeSelectors.push_back(attrSelector);
-
   }
 
   // End check
-  if (!filterString.IsEmpty())
+  if (!filterSuffix.empty())
   {
-    DEBUG_FILTER("Filter::Error parsing selector:" + filterFile + "/" + filterText + " (more data)")
-    throw new std::runtime_error(CStringA("Filter::Error parsing selector:"  + filterText + " (more data)").GetString());
+    throw ElementHideParseException(filterText, "extra characters at end");
   }
 }
 
@@ -250,96 +252,115 @@ CFilter::CFilter() : m_isMatchCase(false), m_isFirstParty(false),
 bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
 {
   HRESULT hr;
-
-  if (!m_tagId.IsEmpty())
+  /*
+   * If a tag id is specified, it must match
+   */
+  if (!m_tagId.empty())
   {
-    CComBSTR id;
-    hr = pEl->get_id(&id);
-    if ((hr != S_OK) || (id != CComBSTR(m_tagId)))
+    CComBSTR idBstr;
+    if (FAILED(pEl->get_id(&idBstr)) || !idBstr || m_tagId != ToWstring(idBstr))
     {
       return false;
     }
   }
-  if (!m_tagClassName.IsEmpty())
+  /*
+   * If a class name is specified, it must match
+   */
+  if (!m_tagClassName.empty())
   {
-    CComBSTR classNameBSTR;
-    hr = pEl->get_className(&classNameBSTR);
-    if (hr == S_OK)
+    CComBSTR classNameListBstr;
+    hr = pEl->get_className(&classNameListBstr);
+    if (FAILED(hr) || !classNameListBstr)
     {
-      CString className = classNameBSTR;
-      int start = 0;
-      CString specificClass;
-      bool foundMatch = false;
-      while ((specificClass = className.Tokenize(L" ", start)) != L"")
-      {
-        // TODO: Consider case of multiple classes. (m_tagClassName can be something like "foo.bar")
-        if (specificClass == m_tagClassName)
-        {
-          foundMatch = true;
-        }
-      }
-      if (!foundMatch)
-      {
-        return false;
-      }
+      return false; // We can't match a class name if there's no class name
     }
-  }
-  if (!m_tag.IsEmpty())
-  {
-    CComBSTR tagName;
-    hr = pEl->get_tagName(&tagName);
-    tagName.ToLower();
-    if ((hr != S_OK) || (tagName != CComBSTR(m_tag)))
+    std::wstring classNameList(ToWstring(classNameListBstr));
+    if (classNameList.empty())
+    {
+      return false;
+    }
+    // TODO: Consider case of multiple classes. (m_tagClassName can be something like "foo.bar")
+    /*
+     * Match when 'm_tagClassName' appears as a token within classNameList
+     */
+    bool foundMatch = false;
+    wchar_t* nextToken = nullptr;
+    const wchar_t* token = wcstok_s(&classNameList[0], L" ", &nextToken);
+    while (token != nullptr)
+    {
+      if (std::wstring(token) == m_tagClassName)
+      {
+        foundMatch = true;
+        break;
+      }
+      token = wcstok_s(nullptr, L" ", &nextToken);
+    }
+    if (!foundMatch)
     {
       return false;
     }
   }
-
-  // Check attributes
-  for (std::vector<CFilterElementHideAttrSelector>::const_iterator attrIt = m_attributeSelectors.begin(); 
-        attrIt != m_attributeSelectors.end(); ++ attrIt)
+  /*
+   * If a tag name is specified, it must match
+   */
+  if (!m_tag.empty())
   {
-    ATL::CString value;
+    CComBSTR tagNameBstr;
+    if (FAILED(pEl->get_tagName(&tagNameBstr)) || !tagNameBstr)
+    {
+      return false;
+    }
+    if (m_tag != ToLowerString(ToWstring(tagNameBstr)))
+    {
+      return false;
+    }
+  }
+  /*
+   * Match each attribute
+   */
+  for (auto attrIt = m_attributeSelectors.begin(); attrIt != m_attributeSelectors.end(); ++attrIt)
+  {
+    std::wstring value;
     bool attrFound = false;
     if (attrIt->m_type == CFilterElementHideAttrType::STYLE)
     {
       CComPtr<IHTMLStyle> pStyle;
       if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
       {
-        CComBSTR bstrStyle;
-
-        if (SUCCEEDED(pStyle->get_cssText(&bstrStyle)) && bstrStyle)
+        CComBSTR styleBstr;
+        if (SUCCEEDED(pStyle->get_cssText(&styleBstr)) && styleBstr)
         {
-          value = bstrStyle;
-          value.MakeLower();
+          value = ToLowerString(ToWstring(styleBstr));
           attrFound = true;
         }
       }
     }
     else if (attrIt->m_type == CFilterElementHideAttrType::CLASS)
     {
-      CComBSTR bstrClassNames;
-      if (SUCCEEDED(pEl->get_className(&bstrClassNames)) && bstrClassNames)
+      CComBSTR classNamesBstr;
+      if (SUCCEEDED(pEl->get_className(&classNamesBstr)) && classNamesBstr)
       {
-        value = bstrClassNames;
+        value = ToWstring(classNamesBstr);
         attrFound = true;
       }
     }
     else if (attrIt->m_type == CFilterElementHideAttrType::ID)
     {
-      CComBSTR bstrId;
-      if (SUCCEEDED(pEl->get_id(&bstrId)) && bstrId)
+      CComBSTR idBstr;
+      if (SUCCEEDED(pEl->get_id(&idBstr)) && idBstr)
       {
-        value = bstrId;
+        value = ToWstring(idBstr);
         attrFound = true;
       }
     }
     else
     {
-      auto attributeValue = GetHtmlElementAttribute(*pEl, attrIt->m_bstrAttr);
-      if (attrFound = attributeValue.isAttributeFound)
+      CComBSTR attrArgument(attrIt->m_attr.length(), attrIt->m_attr.c_str());
+      auto x = GetHtmlElementAttribute(*pEl, attrArgument);
+      attrFound = x.isAttributeFound;
+      if (attrFound)
       {
-        value = ToCString(attributeValue.attributeValue);
+        value = x.attributeValue;
       }
     }
 
@@ -353,20 +374,24 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
       }
       else if (attrIt->m_pos == CFilterElementHideAttrPos::STARTING)
       {
-        if (value.Left(attrIt->m_value.GetLength()) != attrIt->m_value)
+        if (value.compare(0, attrIt->m_value.length(), attrIt->m_value) != 0)
           return false;
       }
       else if (attrIt->m_pos == CFilterElementHideAttrPos::ENDING)
       {
-        if (value.Right(attrIt->m_value.GetLength()) != attrIt->m_value)
+        size_t valueLength = value.length();
+        size_t attrLength = attrIt->m_value.length();
+        if (valueLength < attrLength)
+          return false;
+        if (value.compare(valueLength - attrLength, attrLength, attrIt->m_value) != 0)
           return false;
       }
       else if (attrIt->m_pos == CFilterElementHideAttrPos::ANYWHERE)
       {
-        if (value.Find(attrIt->m_value) < 0)
+        if (value.find(attrIt->m_value) == std::wstring::npos)
           return false;
       }
-      else if (attrIt->m_value.IsEmpty())
+      else if (attrIt->m_value.empty())
       {
         return true;
       }
@@ -423,41 +448,36 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
 // CPluginFilter
 // ============================================================================
 
-CPluginFilter::CPluginFilter(const CString& dataPath) : m_dataPath(dataPath)
+CPluginFilter::CPluginFilter(const std::wstring& dataPath)
+  : m_dataPath(dataPath)
 {
   ClearFilters();
 }
 
 
-bool CPluginFilter::AddFilterElementHide(CString filterText)
+bool CPluginFilter::AddFilterElementHide(std::wstring filterText)
 {
-  DEBUG_FILTER("Input: " + filterText + " filterFile" + filterFile);
+  DEBUG_FILTER(L"Input: " + filterText + L" filterFile" + filterFile);
   CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
   {
-    CString filterString  = filterText;
     // Create filter descriptor
     std::auto_ptr<CFilterElementHide> filter;
-
-    CString wholeFilterString = filterString;
     wchar_t separatorChar;
     do
     {
-      int chunkEnd = filterText.FindOneOf(L"+>");
-      if (chunkEnd > 0)
+      auto chunkEnd = filterText.find_first_of(L"+>");
+      if (chunkEnd != std::wstring::npos && chunkEnd > 0)
       {
-        separatorChar = filterText.GetAt(chunkEnd);
+        separatorChar = filterText[chunkEnd];
       }
       else
       {
-        chunkEnd = filterText.GetLength();
+        chunkEnd = filterText.length();
         separatorChar = L'\0';
       }
 
-      CString filterChunk = filterText.Left(chunkEnd).TrimRight();
       std::auto_ptr<CFilterElementHide> filterParent(filter);
-
-      filter.reset(new CFilterElementHide(filterChunk));
-
+      filter.reset(new CFilterElementHide(TrimStringRight(filterText.substr(0, chunkEnd))));
       if (filterParent.get() != 0)
       {
         filter->m_predecessor.reset(filterParent.release());
@@ -465,7 +485,7 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
 
       if (separatorChar != L'\0') // complex selector
       {
-        filterText = filterText.Mid(chunkEnd + 1).TrimLeft();
+        filterText = TrimStringLeft(filterText.substr(chunkEnd + 1));
         if (separatorChar == '+')
           filter->m_type = CFilterElementHide::TRAVERSER_TYPE_IMMEDIATE;
         else if (separatorChar == '>')
@@ -473,18 +493,17 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
       }
       else // Terminating element (simple selector)
       {
-        if (!filter->m_tagId.IsEmpty())
+        if (!filter->m_tagId.empty())
         {
           m_elementHideTagsId.insert(std::make_pair(std::make_pair(filter->m_tag, filter->m_tagId), *filter));
         }
-        else if (!filter->m_tagClassName.IsEmpty())
+        else if (!filter->m_tagClassName.empty())
         {
           m_elementHideTagsClass.insert(std::make_pair(std::make_pair(filter->m_tag, filter->m_tagClassName), *filter));
         }
         else
         {
-          std::pair<CString, CFilterElementHide> pair = std::make_pair(filter->m_tag, *filter);
-          m_elementHideTags.insert(pair);
+          m_elementHideTags.insert(std::make_pair(filter->m_tag, *filter));
         }
       }
     } while (separatorChar != '\0');
@@ -495,50 +514,46 @@ bool CPluginFilter::AddFilterElementHide(CString filterText)
 
 bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent) const
 {
-  CString tagCString = ToCString(tag);
-
-  CString id;
-  CComBSTR bstrId;
-  if (SUCCEEDED(pEl->get_id(&bstrId)) && bstrId)
+  std::wstring id;
+  CComBSTR idBstr;
+  if (SUCCEEDED(pEl->get_id(&idBstr)) && idBstr)
   {
-    id = bstrId;
+    id = ToWstring(idBstr);
   }
-
-  CString classNames;
-  CComBSTR bstrClassNames;
-  if (SUCCEEDED(pEl->get_className(&bstrClassNames)) && bstrClassNames)
+  std::wstring classNames;
+  CComBSTR classNamesBstr;
+  if (SUCCEEDED(pEl->get_className(&classNamesBstr)) && classNamesBstr)
   {
-    classNames = bstrClassNames;
+    classNames = ToWstring(classNamesBstr);
   }
 
   CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
   {
     // Search tag/id filters
-    if (!id.IsEmpty())
+    if (!id.empty())
     {
-      std::pair<TFilterElementHideTagsNamed::const_iterator, TFilterElementHideTagsNamed::const_iterator> idItEnum =
-        m_elementHideTagsId.equal_range(std::make_pair(tagCString, id));
-      for (TFilterElementHideTagsNamed::const_iterator idIt = idItEnum.first; idIt != idItEnum.second; idIt ++)
+      auto idItEnum = m_elementHideTagsId.equal_range(std::make_pair(tag, id));
+      for (auto idIt = idItEnum.first; idIt != idItEnum.second; ++idIt)
       {
         if (idIt->second.IsMatchFilterElementHide(pEl))
         {
 #ifdef ENABLE_DEBUG_RESULT
-          DEBUG_HIDE_EL(indent + "HideEl::Found (tag/id) filter:" + idIt->second.m_filterText)
-            CPluginDebug::DebugResultHiding(tag, L"id:" + ToWstring(id), ToWstring(idIt->second.m_filterText));
+          DEBUG_HIDE_EL(indent + L"HideEl::Found (tag/id) filter:" + idIt->second.m_filterText);
+          CPluginDebug::DebugResultHiding(tag, L"id:" + id, idIt->second.m_filterText);
 #endif
           return true;
         }
       }
 
       // Search general id
-      idItEnum = m_elementHideTagsId.equal_range(std::make_pair("", id));
-      for (TFilterElementHideTagsNamed::const_iterator idIt = idItEnum.first; idIt != idItEnum.second; idIt ++)
+      idItEnum = m_elementHideTagsId.equal_range(std::make_pair(L"", id));
+      for (auto idIt = idItEnum.first; idIt != idItEnum.second; ++idIt)
       {
         if (idIt->second.IsMatchFilterElementHide(pEl))
         {
 #ifdef ENABLE_DEBUG_RESULT
-          DEBUG_HIDE_EL(indent + "HideEl::Found (?/id) filter:" + idIt->second.m_filterText)
-            CPluginDebug::DebugResultHiding(tag, L"id:" + ToWstring(id), ToWstring(idIt->second.m_filterText));
+          DEBUG_HIDE_EL(indent + L"HideEl::Found (?/id) filter:" + idIt->second.m_filterText);
+          CPluginDebug::DebugResultHiding(tag, L"id:" + id, idIt->second.m_filterText);
 #endif
           return true;
         }
@@ -546,56 +561,52 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
     }
 
     // Search tag/className filters
-    if (!classNames.IsEmpty())
+    if (!classNames.empty())
     {
-      int pos = 0;
-      CString className = classNames.Tokenize(L" \t\n\r", pos);
-      while (pos >= 0)
+      wchar_t* nextToken = nullptr;
+      const wchar_t* token = wcstok_s(&classNames[0], L" \t\n\r", &nextToken);
+      while (token != nullptr)
       {
-        std::pair<TFilterElementHideTagsNamed::const_iterator, TFilterElementHideTagsNamed::const_iterator> classItEnum = 
-          m_elementHideTagsClass.equal_range(std::make_pair(tagCString, className));
-
-        for (TFilterElementHideTagsNamed::const_iterator classIt = classItEnum.first; classIt != classItEnum.second; ++classIt)
+        std::wstring className(token);
+        auto classItEnum = m_elementHideTagsClass.equal_range(std::make_pair(tag, className));
+        for (auto classIt = classItEnum.first; classIt != classItEnum.second; ++classIt)
         {
           if (classIt->second.IsMatchFilterElementHide(pEl))
           {
 #ifdef ENABLE_DEBUG_RESULT
-            DEBUG_HIDE_EL(indent + "HideEl::Found (tag/class) filter:" + classIt->second.m_filterText)
-              CPluginDebug::DebugResultHiding(tag, L"class:" + ToWstring(className), ToWstring(classIt->second.m_filterText));
+            DEBUG_HIDE_EL(indent + L"HideEl::Found (tag/class) filter:" + classIt->second.m_filterText);
+            CPluginDebug::DebugResultHiding(tag, L"class:" + className, classIt->second.m_filterText);
 #endif
             return true;
           }
         }
 
         // Search general class name
-        classItEnum = m_elementHideTagsClass.equal_range(std::make_pair("", className));
-        for (TFilterElementHideTagsNamed::const_iterator classIt = classItEnum.first; classIt != classItEnum.second; ++ classIt)
+        classItEnum = m_elementHideTagsClass.equal_range(std::make_pair(L"", className));
+        for (auto classIt = classItEnum.first; classIt != classItEnum.second; ++ classIt)
         {
           if (classIt->second.IsMatchFilterElementHide(pEl))
           {
 #ifdef ENABLE_DEBUG_RESULT
-            DEBUG_HIDE_EL(indent + L"HideEl::Found (?/class) filter:" + ToWString(classIt->second.m_filterText));
-            CPluginDebug::DebugResultHiding(tag, L"class:" + ToWstring(className), ToWstring(classIt->second.m_filterText));
+            DEBUG_HIDE_EL(indent + L"HideEl::Found (?/class) filter:" + classIt->second.m_filterText);
+            CPluginDebug::DebugResultHiding(tag, L"class:" + className, classIt->second.m_filterText);
 #endif
             return true;
           }
         }
-
-        // Next class name
-        className = classNames.Tokenize(L" \t\n\r", pos);
+        token = wcstok_s(nullptr, L" \t\n\r", &nextToken);
       }
     }
 
     // Search tag filters
-    std::pair<TFilterElementHideTags::const_iterator, TFilterElementHideTags::const_iterator> tagItEnum 
-      = m_elementHideTags.equal_range(tagCString);
-    for (TFilterElementHideTags::const_iterator tagIt = tagItEnum.first; tagIt != tagItEnum.second; ++ tagIt)
+    auto tagItEnum = m_elementHideTags.equal_range(tag);
+    for (auto tagIt = tagItEnum.first; tagIt != tagItEnum.second; ++tagIt)
     {
       if (tagIt->second.IsMatchFilterElementHide(pEl))
       {
 #ifdef ENABLE_DEBUG_RESULT
-        DEBUG_HIDE_EL(indent + "HideEl::Found (tag) filter:" + tagIt->second.m_filterText)
-          CPluginDebug::DebugResultHiding(tag, L"-", ToWstring(tagIt->second.m_filterText));
+        DEBUG_HIDE_EL(indent + L"HideEl::Found (tag) filter:" + tagIt->second.m_filterText);
+        CPluginDebug::DebugResultHiding(tag, L"-", tagIt->second.m_filterText);
 #endif
         return true;
       }
@@ -615,11 +626,11 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
   int pos = 0;
   CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
   {
-    for (std::vector<std::wstring>::iterator it = filters.begin(); it < filters.end(); ++it)
+    for (auto it = filters.begin(); it < filters.end(); ++it)
     {
-      CString filter((*it).c_str());
+      std::wstring filter(TrimString(*it));
       // If the line is not commented out
-      if (!filter.Trim().IsEmpty() && filter.GetAt(0) != '!' && filter.GetAt(0) != '[')
+      if (!filter.empty() && filter[0] != '!' && filter[0] != '[')
       {
         int filterType = 0;
 
@@ -632,7 +643,7 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
         catch(...)
         {
 #ifdef ENABLE_DEBUG_RESULT
-          CPluginDebug::DebugResult(L"Error loading hide filter: " + ToWstring(filter));
+          CPluginDebug::DebugResult(L"Error loading hide filter: " + filter);
 #endif
         }
       }

@@ -19,84 +19,170 @@
 
 namespace
 {
-  void TrimTestBody(std::wstring input, std::wstring expected)
+  void TrimTestBody(const std::wstring& input, const std::wstring& expected)
   {
     std::wstring trimmed = TrimString(input);
-    ASSERT_EQ(expected, trimmed);
+    EXPECT_EQ(expected, trimmed);
+  }
+
+  void TrimLeftTestBody(const std::wstring& input, const std::wstring& expected)
+  {
+    std::wstring trimmed = TrimStringLeft(input);
+    EXPECT_EQ(expected, trimmed);
+  }
+
+  void TrimRightTestBody(const std::wstring& input, const std::wstring& expected)
+  {
+    std::wstring trimmed = TrimStringRight(input);
+    EXPECT_EQ(expected, trimmed);
   }
 }
 
 TEST(TrimTest, Trim00)
 {
-  TrimTestBody(L"", L"");
+  const std::wstring x = L"";
+  TrimTestBody(x, L"");
+  TrimLeftTestBody(x, L"");
+  TrimRightTestBody(x, L"");
 }
 
 TEST(TrimTest, Trim01)
 {
-  TrimTestBody(L" ", L"");
+  const std::wstring x = L" ";
+  TrimTestBody(x, L"");
+  TrimLeftTestBody(x, L"");
+  TrimRightTestBody(x, L"");
 }
 
 TEST(TrimTest, Trim02)
 {
-  TrimTestBody(L"\n", L"");
+  const std::wstring x = L"\n";
+  TrimTestBody(x, L"");
+  TrimLeftTestBody(x, L"");
+  TrimRightTestBody(x, L"");
 }
 
 TEST(TrimTest, Trim03)
 {
-  TrimTestBody(L"\r", L"");
+  const std::wstring x = L"\r";
+  TrimTestBody(x, L"");
+  TrimLeftTestBody(x, L"");
+  TrimRightTestBody(x, L"");
 }
 
 TEST(TrimTest, Trim04)
 {
-  TrimTestBody(L"\t", L"");
+  const std::wstring x = L"\t";
+  TrimTestBody(x, L"");
+  TrimLeftTestBody(x, L"");
+  TrimRightTestBody(x, L"");
 }
 
 TEST(TrimTest, Trim05)
 {
-  TrimTestBody(L"foo", L"foo");
+  const std::wstring x = L"foo";
+  TrimTestBody(x, L"foo");
+  TrimLeftTestBody(x, L"foo");
+  TrimRightTestBody(x, L"foo");
 }
 
 TEST(TrimTest, Trim06)
 {
-  TrimTestBody(L" foo", L"foo");
+  const std::wstring x = L" foo";
+  TrimTestBody(x, L"foo");
+  TrimLeftTestBody(x, L"foo");
+  TrimRightTestBody(x, L" foo");
 }
 
 TEST(TrimTest, Trim07)
 {
-  TrimTestBody(L"\r\nfoo", L"foo");
+  const std::wstring x = L"\r\nfoo";
+  TrimTestBody(x, L"foo");
+  TrimLeftTestBody(x, L"foo");
+  TrimRightTestBody(x, L"\r\nfoo");
 }
 
 TEST(TrimTest, Trim08)
 {
-  TrimTestBody(L"\tfoo", L"foo");
+  const std::wstring x = L"\tfoo";
+  TrimTestBody(x, L"foo");
+  TrimLeftTestBody(x, L"foo");
+  TrimRightTestBody(x, L"\tfoo");
 }
 
 TEST(TrimTest, Trim09)
 {
-  TrimTestBody(L"foo  ", L"foo");
+  const std::wstring x = L"foo  ";
+  TrimTestBody(x, L"foo");
+  TrimLeftTestBody(x, L"foo  ");
+  TrimRightTestBody(x, L"foo");
 }
 
 TEST(TrimTest, Trim10)
 {
-  TrimTestBody(L"foo\r\n", L"foo");
+  const std::wstring x = L"foo\r\n";
+  TrimTestBody(x, L"foo");
+  TrimLeftTestBody(x, L"foo\r\n");
+  TrimRightTestBody(x, L"foo");
 }
 
 TEST(TrimTest, Trim11)
 {
-  TrimTestBody(L"foo\t", L"foo");
+  const std::wstring x = L"foo\t";
+  TrimTestBody(x, L"foo");
+  TrimLeftTestBody(x, L"foo\t");
+  TrimRightTestBody(x, L"foo");
 }
 
 TEST(TrimTest, Trim12)
 {
-  TrimTestBody(L"foo bar", L"foo bar");
+  const std::wstring x = L"foo bar";
+  TrimTestBody(x, L"foo bar");
+  TrimLeftTestBody(x, L"foo bar");
+  TrimRightTestBody(x, L"foo bar");
 }
 
 TEST(TrimTest, Trim13)
 {
-  TrimTestBody(L"foo bar \r\n", L"foo bar");
+  const std::wstring x = L"foo bar \r\n";
+  TrimTestBody(x, L"foo bar");
+  TrimLeftTestBody(x, L"foo bar \r\n");
+  TrimRightTestBody(x, L"foo bar");
 }
 
 TEST(TrimTest, Trim14)
 {
-  TrimTestBody(L"  foo bar \r\n", L"foo bar");
+  const std::wstring x = L"  foo bar \r\n";
+  TrimTestBody(x, L"foo bar");
+  TrimLeftTestBody(x, L"foo bar \r\n");
+  TrimRightTestBody(x, L"  foo bar");
+}
+
+/*
+ * First of two tests verifying that TrimString() does not alter its argument.
+ * This one tests an ordinary, non-const variable as an argument.
+ * It differs from its companion only in the one line that declares the variable used as an argument.
+ */
+TEST(TrimTest, TrimPassesByValue)
+{
+  std::wstring x = L"foo bar  "; // not declared 'const', could alter
+  const std::wstring y = x;
+  ASSERT_EQ(y, x);
+  std::wstring trimmed = TrimString(x); // expect here pass by value
+  EXPECT_EQ(L"foo bar", trimmed);
+  ASSERT_EQ(y, x); // argument variable not altered
+}
+
+/*
+ * Second of two tests verifying that TrimString() does not alter its argument.
+ * This one tests a const variable as an argument.
+ */
+TEST(TrimTest, TrimBindsOnConstArg)
+{
+  const std::wstring x = L"foo bar  "; // declared 'const'
+  const std::wstring y = x;
+  ASSERT_EQ(y, x);
+  std::wstring trimmed = TrimString(x);
+  EXPECT_EQ(L"foo bar", trimmed);
+  ASSERT_EQ(y, x);
 }
