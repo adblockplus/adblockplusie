@@ -57,19 +57,19 @@ public:
     /* [in] */ LPCWSTR szURL,
     /* [in] */ LPCWSTR szHeaders,
     /* [in] */ DWORD dwReserved,
-    /* [out] */ LPWSTR *pszAdditionalHeaders);
+    /* [out] */ LPWSTR* pszAdditionalHeaders);
 
   STDMETHODIMP OnResponse(
     /* [in] */ DWORD dwResponseCode,
     /* [in] */ LPCWSTR szResponseHeaders,
     /* [in] */ LPCWSTR szRequestHeaders,
-    /* [out] */ LPWSTR *pszAdditionalRequestHeaders);
+    /* [out] */ LPWSTR* pszAdditionalRequestHeaders);
 
-  HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-    IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
+  HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink* pOIProtSink,
+    IInternetBindInfo* pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
     IInternetProtocol* pTargetProtocol);
 
-  HRESULT OnRead(void *pv, ULONG cb, ULONG* pcbRead);
+  HRESULT OnRead(void* pv, ULONG cb, ULONG* pcbRead);
 
   STDMETHODIMP ReportProgress(
     /* [in] */ ULONG ulStatusCode,
@@ -84,20 +84,42 @@ public:
     /* [in] */ PROTOCOLDATA *pProtocolData);
 };
 
-class WBPassthru;
-typedef PassthroughAPP::CustomSinkStartPolicy<WBPassthru, WBPassthruSink> WBStartPolicy;
+class WbPassthroughProtocol;
 
-class WBPassthru : public PassthroughAPP::CInternetProtocol<WBStartPolicy>
+class WbPassthroughSinkStartPolicy
+  : public PassthroughAPP::CustomSinkStartPolicy<WbPassthroughProtocol, WBPassthruSink>
 {
-  typedef PassthroughAPP::CInternetProtocol<WBStartPolicy> BaseClass;
+  typedef PassthroughAPP::CustomSinkStartPolicy<WbPassthroughProtocol, WBPassthruSink> BaseClass;
 public:
-  WBPassthru();
-  // IInternetProtocolRoot
-  STDMETHODIMP Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
-    IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved) override;
+  HRESULT OnStart(LPCWSTR szUrl,
+    IInternetProtocolSink* pOIProtSink, IInternetBindInfo* pOIBindInfo,
+    DWORD grfPI, HANDLE_PTR dwReserved,
+    IInternetProtocol* pTargetProtocol);
+};
 
-  // IInternetProtocol
-  STDMETHODIMP Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead) override;
+/**
+ * Implementation of "Protocol" interfaces
+ */
+class WbPassthroughProtocol
+  : public PassthroughAPP::CInternetProtocol<WbPassthroughSinkStartPolicy>
+{
+  typedef PassthroughAPP::CInternetProtocol<WbPassthroughSinkStartPolicy> BaseClass;
+public:
+  WbPassthroughProtocol()
+    : m_shouldSupplyCustomContent(false)
+  {
+  }
+
+  // derived from IInternetProtocolRoot
+  STDMETHODIMP Start(LPCWSTR szUrl, IInternetProtocolSink* pOIProtSink,
+    IInternetBindInfo* pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved) override;
+
+  // derived from IInternetProtocol
+  STDMETHODIMP Read(/* [in, out] */ void* pv,/* [in] */ ULONG cb,/* [out] */ ULONG* pcbRead) override;
 
   bool m_shouldSupplyCustomContent;
 };
+
+typedef PassthroughAPP::CMetaFactory<PassthroughAPP::CComClassFactoryProtocol, WbPassthroughProtocol> MetaFactory;
+
+

@@ -234,7 +234,7 @@ HRESULT WBPassthruSink::OnRead(void* pv, ULONG cb, ULONG* pcbRead)
   }
   *pcbRead = 0;
 
-  if (PassthroughAPP::CustomSinkStartPolicy<WBPassthru, WBPassthruSink>::GetProtocol(this)->m_shouldSupplyCustomContent)
+  if (PassthroughAPP::CustomSinkStartPolicy<WbPassthroughProtocol, WBPassthruSink>::GetProtocol(this)->m_shouldSupplyCustomContent)
   {
     ULONG blockedByABPPageSize = static_cast<ULONG>(g_blockedByABPPage.size());
     auto positionGrow = std::min<ULONG>(cb, static_cast<ULONG>(blockedByABPPageSize - m_currentPositionOfSentPage));
@@ -418,13 +418,24 @@ STDMETHODIMP WBPassthruSink::ReportResult(/* [in] */ HRESULT hrResult, /* [in] *
   return BaseClass::ReportResult(hrResult, dwError, szResult);
 }
 
-
-WBPassthru::WBPassthru()
-  : m_shouldSupplyCustomContent(false)
+HRESULT WbPassthroughSinkStartPolicy::OnStart(LPCWSTR szUrl,
+  IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
+  DWORD grfPI, HANDLE_PTR dwReserved,
+  IInternetProtocol* pTargetProtocol)
 {
+  HRESULT hr = BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
+  WBPassthruSink* pSink = GetSink();
+  if (hr == E_ABORT && pSink->m_isCustomResponse)
+  {
+    GetProtocol(pSink)->m_shouldSupplyCustomContent = true;
+    pSink->m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
+    pSink->m_spInternetProtocolSink->ReportData(BSCF_FIRSTDATANOTIFICATION, 0, static_cast<ULONG>(g_blockedByABPPage.size()));
+    return S_OK;
+  }
+  return hr;
 }
 
-STDMETHODIMP WBPassthru::Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
+STDMETHODIMP WbPassthroughProtocol::Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
     IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved)
 {
   ATLASSERT(m_spInternetProtocol != 0);
@@ -436,7 +447,7 @@ STDMETHODIMP WBPassthru::Start(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink
   return OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, m_spInternetProtocol);
 }
 
-STDMETHODIMP WBPassthru::Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead)
+STDMETHODIMP WbPassthroughProtocol::Read(/* [in, out] */ void *pv,/* [in] */ ULONG cb,/* [out] */ ULONG *pcbRead)
 {
   WBPassthruSink* pSink = GetSink();
   return pSink->OnRead(pv, cb, pcbRead);

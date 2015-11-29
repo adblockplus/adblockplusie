@@ -375,7 +375,7 @@ template <class Protocol, class Sink>
 inline HRESULT CustomSinkStartPolicy<Protocol, Sink>::OnStart(LPCWSTR szUrl,
 	IInternetProtocolSink *pOIProtSink, IInternetBindInfo *pOIBindInfo,
 	DWORD grfPI, HANDLE_PTR dwReserved,
-	IInternetProtocol* pTargetProtocol)
+	IInternetProtocol* pTargetProtocol) const
 {
 	ATLASSERT(pTargetProtocol != 0);
 
@@ -398,13 +398,6 @@ inline HRESULT CustomSinkStartPolicy<Protocol, Sink>::OnStart(LPCWSTR szUrl,
 	if (SUCCEEDED(hr))
 	{
 		hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI, dwReserved);
-	}
-	if (E_ABORT == hr && pSink->m_isCustomResponse)
-	{
-		static_cast<Protocol*>(this)->m_shouldSupplyCustomContent = true;
-		pSink->m_spInternetProtocolSink->ReportProgress(BINDSTATUS_MIMETYPEAVAILABLE, L"text/html");
-		pSink->m_spInternetProtocolSink->ReportData(BSCF_FIRSTDATANOTIFICATION, 0, static_cast<ULONG>(g_blockedByABPPage.size()));
-		return S_OK;
 	}
 	return hr;
 }

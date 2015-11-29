@@ -20,10 +20,6 @@
 #include "PluginClientBase.h"
 #include "PluginWbPassThrough.h"
 
-
-typedef PassthroughAPP::CMetaFactory<PassthroughAPP::CComClassFactoryProtocol,WBPassthru> MetaFactory;
-
-
 CPluginMimeFilterClient::CPluginMimeFilterClient() : m_classFactory(NULL), m_spCFHTTP(NULL),  m_spCFHTTPS(NULL)
 {
   // Should only be called once
