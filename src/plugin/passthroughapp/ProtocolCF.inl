@@ -23,7 +23,7 @@
  #error ProtocolCF.inl requires ProtocolCF.h to be included first
 #endif
 
-#include "PluginPassthroughObject.h"
+#include "PassthroughObject.h"
 
 
 namespace PassthroughAPP
