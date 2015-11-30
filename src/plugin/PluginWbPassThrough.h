@@ -67,7 +67,7 @@ public:
 
   HRESULT OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
     IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
-    IInternetProtocol* pTargetProtocol, bool& handled);
+    IInternetProtocol* pTargetProtocol);
 
   HRESULT OnRead(void *pv, ULONG cb, ULONG* pcbRead);
 

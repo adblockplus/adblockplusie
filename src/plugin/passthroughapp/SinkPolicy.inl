@@ -379,10 +379,9 @@ inline HRESULT CustomSinkStartPolicy<Protocol, Sink>::OnStart(LPCWSTR szUrl,
 {
 	ATLASSERT(pTargetProtocol != 0);
 
-	bool handled = false;
 	Sink* pSink = GetSink(static_cast<const Protocol*>(this));
 	HRESULT hr = pSink->OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI,
-		dwReserved, pTargetProtocol, handled);
+		dwReserved, pTargetProtocol);
 
 	CComPtr<IInternetProtocolSink> spSink;
 	CComPtr<IInternetBindInfo> spBindInfo;
@@ -396,7 +395,7 @@ inline HRESULT CustomSinkStartPolicy<Protocol, Sink>::OnStart(LPCWSTR szUrl,
 		hr = pSink->QueryInterface(IID_IInternetBindInfo, reinterpret_cast<void**>(&spBindInfo));
 		ATLASSERT(SUCCEEDED(hr) && spBindInfo != 0);
 	}
-	if (SUCCEEDED(hr) && !handled)
+	if (SUCCEEDED(hr))
 	{
 		hr = pTargetProtocol->Start(szUrl, spSink, spBindInfo, grfPI, dwReserved);
 	}

@@ -219,7 +219,7 @@ ContentType WBPassthruSink::GetContentType(const std::wstring& mimeType, const s
 ////////////////////////////////////////////////////////////////////////////////////////
 HRESULT WBPassthruSink::OnStart(LPCWSTR szUrl, IInternetProtocolSink *pOIProtSink,
                                 IInternetBindInfo *pOIBindInfo, DWORD grfPI, HANDLE_PTR dwReserved,
-                                IInternetProtocol* pTargetProtocol, bool& handled)
+                                IInternetProtocol* pTargetProtocol)
 {
   m_pTargetProtocol = pTargetProtocol;
   return BaseClass::OnStart(szUrl, pOIProtSink, pOIBindInfo, grfPI, dwReserved, pTargetProtocol);
