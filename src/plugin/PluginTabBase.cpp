@@ -159,7 +159,7 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
   DEBUG_GENERAL(L"InjectABP. Injecting");
   CComPtr<IDispatch> pDocDispatch;
   browser->get_Document(&pDocDispatch);
-  CComQIPtr<IHTMLDocument2> pDoc2 = pDocDispatch;
+  CComQIPtr<IHTMLDocument2> pDoc2(pDocDispatch);
   if (!pDoc2)
   {
     DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to QI document");
@@ -172,7 +172,7 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
     DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to get parent window");
     return;
   }
-  CComQIPtr<IDispatchEx> pWndEx = pWnd2;
+  CComQIPtr<IDispatchEx> pWndEx(pWnd2);
   if (!pWndEx)
   {
     DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to QI dispatch");
@@ -284,22 +284,24 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const std::wstrin
       return;
     }
 
-    CComQIPtr<IHTMLDocument2> pDoc = pDocDispatch;
+    CComQIPtr<IHTMLDocument2> pDoc(pDocDispatch);
     if (!pDoc)
     {
       return;
     }
+
     CComPtr<IOleObject> pOleObj;
-
-    pDocDispatch->QueryInterface(IID_IOleObject, (void**)&pOleObj);
-
-
+    pDocDispatch->QueryInterface(&pOleObj);
+    if (!pOleObj)
+    {
+      return;
+    }
     CComPtr<IOleClientSite> pClientSite;
     pOleObj->GetClientSite(&pClientSite);
     if (pClientSite != NULL)
     {
       CComPtr<IDocHostUIHandler> docHostUIHandler;
-      pClientSite->QueryInterface(IID_IDocHostUIHandler, (void**)&docHostUIHandler);
+      pClientSite->QueryInterface(&docHostUIHandler);
       if (docHostUIHandler != NULL)
       {
         docHostUIHandler->UpdateUI();

@@ -181,7 +181,7 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
       return;
     }
 
-    if (FAILED(pBodyDispatch->QueryInterface(IID_IHTMLElement, (LPVOID*)&pBodyEl)) || !pBodyEl)
+    if (FAILED(pBodyDispatch->QueryInterface(&pBodyEl)) || !pBodyEl)
     {
       return;
     }
@@ -361,7 +361,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
   {
     CComPtr<IHTMLElementCollection> pAllCollection;
 
-    if (SUCCEEDED(pAllCollectionDisp->QueryInterface(IID_IHTMLElementCollection, (LPVOID*)&pAllCollection)) && pAllCollection)
+    if (SUCCEEDED(pAllCollectionDisp->QueryInterface(&pAllCollection)) && pAllCollection)
     {
       // If number of elements = cached number, return
       if (SUCCEEDED(pAllCollection->get_length(&allElementsCount)) && allElementsCount == cacheAllElementsCount)
@@ -421,7 +421,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
     if (SUCCEEDED(pEl->get_children(&pChildCollectionDisp)) && pChildCollectionDisp)
     {
       CComPtr<IHTMLElementCollection> pChildCollection;
-      if (SUCCEEDED(pChildCollectionDisp->QueryInterface(IID_IHTMLElementCollection, (LPVOID*)&pChildCollection)) && pChildCollection)
+      if (SUCCEEDED(pChildCollectionDisp->QueryInterface(&pChildCollection)) && pChildCollection)
       {
         pChildCollection->get_length(&childElementsCount);
 
@@ -438,7 +438,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
           if (SUCCEEDED(pChildCollection->item(vIndex, vRetIndex, &pChildElDispatch)) && pChildElDispatch)
           {
             CComPtr<IHTMLElement> pChildEl;
-            if (SUCCEEDED(pChildElDispatch->QueryInterface(IID_IHTMLElement, (LPVOID*)&pChildEl)) && pChildEl)
+            if (SUCCEEDED(pChildElDispatch->QueryInterface(&pChildEl)) && pChildEl)
             {
               TraverseChild(pChildEl, pBrowser, indent + "  ", isCached);
             }
