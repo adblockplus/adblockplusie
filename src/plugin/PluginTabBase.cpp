@@ -22,6 +22,7 @@
 #include "AdblockPlusDomTraverser.h"
 #include "PluginTabBase.h"
 #include "IeVersion.h"
+#include "../shared/Utils.h"
 #include <Mshtmhst.h>
 
 CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
@@ -200,6 +201,52 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
   if (FAILED(hr))
   {
     DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to create Settings in JavaScript");
+  }
+}
+
+namespace
+{
+  ATL::CComPtr<IWebBrowser2> GetParent(IWebBrowser2& browser)
+  {
+    ATL::CComPtr<IDispatch> parentDispatch;
+    if (FAILED(browser.get_Parent(&parentDispatch)) || !parentDispatch)
+    {
+      return nullptr;
+    }
+    // The InternetExplorer application always returns a pointer to itself.
+    // https://msdn.microsoft.com/en-us/library/aa752136(v=vs.85).aspx
+    if (parentDispatch.IsEqualObject(&browser))
+    {
+      return nullptr;
+    }
+    ATL::CComQIPtr<IServiceProvider> parentDocumentServiceProvider = parentDispatch;
+    if (!parentDocumentServiceProvider)
+    {
+      return nullptr;
+    }
+    ATL::CComPtr<IWebBrowser2> parentBrowser;
+    if (FAILED(parentDocumentServiceProvider->QueryService(SID_SWebBrowserApp, &parentBrowser)))
+    {
+      return nullptr;
+    }
+    return parentBrowser;
+  }
+
+  bool IsFrameWhiteListed(ATL::CComPtr<IWebBrowser2> frame)
+  {
+    if (!frame)
+    {
+      return false;
+    }
+    auto url = GetLocationUrl(*frame);
+    std::vector<std::string> frameHierarchy;
+    while(frame = GetParent(*frame))
+    {
+      frameHierarchy.push_back(ToUtf8String(GetLocationUrl(*frame)));
+    }
+    CPluginClient* client = CPluginClient::GetInstance();
+    return client->IsWhitelistedUrl(url, frameHierarchy)
+        || client->IsElemhideWhitelistedOnDomain(url, frameHierarchy);
   }
 }
 

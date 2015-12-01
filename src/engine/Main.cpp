@@ -93,6 +93,40 @@ namespace
   CriticalSection activeConnectionsLock;
   HWND callbackWindow;
 
+  // it's a helper for the function below.
+  std::string GetWhitelistingFilter(const std::string& url, const std::string& parent, AdblockPlus::FilterEngine::ContentType type)
+  {
+    AdblockPlus::FilterPtr match = filterEngine->Matches(url, type, parent);
+    if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
+    {
+      return match->GetProperty("text")->AsString();
+    }
+    return "";
+  };
+
+  std::string GetWhitelistingFilter(const std::string& urlArg,
+    const std::vector<std::string>& frameHierarchy, AdblockPlus::FilterEngine::ContentType type)
+  {
+    if (frameHierarchy.empty())
+    {
+      return GetWhitelistingFilter(urlArg, "", type);
+    }
+    auto frameIterator = frameHierarchy.begin();
+    std::string url = urlArg;
+    do
+    {
+      std::string parentUrl = *frameIterator++;
+      auto filterText = GetWhitelistingFilter(url, parentUrl, type);
+      if (!filterText.empty())
+      {
+        return filterText;
+      }
+      url = parentUrl;
+    }
+    while (frameIterator != frameHierarchy.end());
+    return "";
+  }
+
   void WriteSubscriptions(Communication::OutputBuffer& response,
       const std::vector<AdblockPlus::SubscriptionPtr>& subscriptions)
   {
@@ -256,23 +290,18 @@ namespace
       {
         std::string url;
         request >> url;
-        AdblockPlus::FilterPtr match = filterEngine->Matches(url,
-          AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_DOCUMENT, url);
-        std::string filterText;
-        if (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION)
-        {
-          filterText = match->GetProperty("text")->AsString();
-        }
-        response << filterText;
+        std::vector<std::string> frameHierarchy;
+        request >> frameHierarchy;
+        response << GetWhitelistingFilter(url, frameHierarchy, AdblockPlus::FilterEngine::CONTENT_TYPE_DOCUMENT);
         break;
       }
       case Communication::PROC_IS_ELEMHIDE_WHITELISTED_ON_URL:
       {
         std::string url;
         request >> url;
-        AdblockPlus::FilterPtr match = filterEngine->Matches(url,
-          AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_ELEMHIDE, url);
-        response << (match && match->GetType() == AdblockPlus::Filter::TYPE_EXCEPTION);
+        std::vector<std::string> frameHierarchy;
+        request >> frameHierarchy;
+        response << !GetWhitelistingFilter(url, frameHierarchy, AdblockPlus::FilterEngine::CONTENT_TYPE_ELEMHIDE).empty();
         break;
       }
       case Communication::PROC_ADD_FILTER:

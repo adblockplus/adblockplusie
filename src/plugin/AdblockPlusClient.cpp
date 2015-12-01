@@ -224,16 +224,16 @@ bool CAdblockPlusClient::IsElementHidden(const std::wstring& tag, IHTMLElement* 
   return isHidden;
 }
 
-bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url)
+bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url, const std::vector<std::string>& frameHierarchy)
 {
-  return !GetWhitelistingFilter(url).empty();
+  return !GetWhitelistingFilter(url, frameHierarchy).empty();
 }
 
-std::string CAdblockPlusClient::GetWhitelistingFilter(const std::wstring& url)
+std::string CAdblockPlusClient::GetWhitelistingFilter(const std::wstring& url, const std::vector<std::string>& frameHierarchy)
 {
   DEBUG_GENERAL((L"IsWhitelistedUrl: " + url + L" start").c_str());
   Communication::OutputBuffer request;
-  request << Communication::PROC_GET_WHITELISTING_FITER << ToUtf8String(url);
+  request << Communication::PROC_GET_WHITELISTING_FITER << ToUtf8String(url) << frameHierarchy;
 
   Communication::InputBuffer response;
   if (!CallEngine(request, response)) 
@@ -246,10 +246,10 @@ std::string CAdblockPlusClient::GetWhitelistingFilter(const std::wstring& url)
   return filterText;
 }
 
-bool CAdblockPlusClient::IsElemhideWhitelistedOnDomain(const std::wstring& url)
+bool CAdblockPlusClient::IsElemhideWhitelistedOnDomain(const std::wstring& url, const std::vector<std::string>& frameHierarchy)
 {
   Communication::OutputBuffer request;
-  request << Communication::PROC_IS_ELEMHIDE_WHITELISTED_ON_URL << ToUtf8String(url);
+  request << Communication::PROC_IS_ELEMHIDE_WHITELISTED_ON_URL << ToUtf8String(url) << frameHierarchy;
 
   Communication::InputBuffer response;
   if (!CallEngine(request, response)) 
