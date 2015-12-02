@@ -105,7 +105,7 @@ CPluginClass::CPluginClass()
   m_isInitializedOk = false;
 
 
-  m_tab = new CPluginTab(this);
+  m_tab = new CPluginTab();
 
   Dictionary::Create(GetBrowserLanguage());
 }

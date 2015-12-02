@@ -25,13 +25,11 @@
 #include "../shared/Utils.h"
 #include <Mshtmhst.h>
 
-CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
-  : m_plugin(plugin)
-  , m_isActivated(false)
+CPluginTab::CPluginTab()
+  : m_isActivated(false)
   , m_continueThreadRunning(true)
 {
-  m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
-  m_filter->hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
+  m_filter.hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
 
   CPluginClient* client = CPluginClient::GetInstance();
   if (AdblockPlus::IE::InstalledMajorVersion() < 10)
@@ -41,7 +39,7 @@ CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
 
   try
   {
-    m_thread = std::thread(&CPluginTabBase::ThreadProc, this);
+    m_thread = std::thread(&CPluginTab::ThreadProc, this);
   }
   catch (const std::system_error& ex)
   {
@@ -52,7 +50,7 @@ CPluginTabBase::CPluginTabBase(CPluginClass* plugin)
 }
 
 
-CPluginTabBase::~CPluginTabBase()
+CPluginTab::~CPluginTab()
 {
   delete m_traverser;
   m_traverser = NULL;
@@ -62,13 +60,13 @@ CPluginTabBase::~CPluginTabBase()
   }
 }
 
-void CPluginTabBase::OnActivate()
+void CPluginTab::OnActivate()
 {
   m_isActivated = true;
 }
 
 
-void CPluginTabBase::OnUpdate()
+void CPluginTab::OnUpdate()
 {
   m_isActivated = true;
 }
@@ -76,12 +74,12 @@ void CPluginTabBase::OnUpdate()
 namespace
 {
   // Entry Point
-  void FilterLoader(CPluginTabBase* tabBase)
+  void FilterLoader(CPluginFilter* filter, const std::wstring& domain)
   {
     try
     {
-      tabBase->m_filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(tabBase->GetDocumentDomain()));
-      SetEvent(tabBase->m_filter->hideFiltersLoadedEvent);
+      filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(domain));
+      SetEvent(filter->hideFiltersLoadedEvent);
     }
     catch (...)
     {
@@ -90,15 +88,15 @@ namespace
   }
 }
 
-void CPluginTabBase::OnNavigate(const std::wstring& url)
+void CPluginTab::OnNavigate(const std::wstring& url)
 {
   SetDocumentUrl(url);
   ClearFrameCache(GetDocumentDomain());
   std::wstring domainString = GetDocumentDomain();
-  ResetEvent(m_filter->hideFiltersLoadedEvent);
+  ResetEvent(m_filter.hideFiltersLoadedEvent);
   try
   {
-    std::thread filterLoaderThread(&FilterLoader, this);
+    std::thread filterLoaderThread(&FilterLoader, &m_filter, GetDocumentDomain());
     filterLoaderThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
   }
   catch (const std::system_error& ex)
@@ -147,7 +145,7 @@ namespace
   }
 }
 
-void CPluginTabBase::InjectABP(IWebBrowser2* browser)
+void CPluginTab::InjectABP(IWebBrowser2* browser)
 {
   CriticalSection::Lock lock(m_csInject);
   auto url = GetDocumentUrl();
@@ -162,20 +160,20 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
   CComQIPtr<IHTMLDocument2> pDoc2(pDocDispatch);
   if (!pDoc2)
   {
-    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to QI document");
+    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTab::InjectABP - Failed to QI document");
     return;
   }
   CComPtr<IHTMLWindow2> pWnd2;
   pDoc2->get_parentWindow(&pWnd2);
   if (!pWnd2)
   {
-    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to get parent window");
+    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTab::InjectABP - Failed to get parent window");
     return;
   }
   CComQIPtr<IDispatchEx> pWndEx(pWnd2);
   if (!pWndEx)
   {
-    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to QI dispatch");
+    DEBUG_ERROR_LOG(0, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTab::InjectABP - Failed to QI dispatch");
     return;
   }
   // Create "Settings" object in JavaScript.
@@ -184,7 +182,7 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
   HRESULT hr = pWndEx->GetDispID(L"Settings", fdexNameEnsure, &dispid);
   if (FAILED(hr))
   {
-    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to get dispatch");
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTab::InjectABP - Failed to get dispatch");
     return;
   }
   CComVariant var((IDispatch*)&m_pluginUserSettings);
@@ -200,7 +198,7 @@ void CPluginTabBase::InjectABP(IWebBrowser2* browser)
   DEBUG_GENERAL("Invoke");
   if (FAILED(hr))
   {
-    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTabBase::InjectABP - Failed to create Settings in JavaScript");
+    DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT, PLUGIN_ERROR_CREATE_SETTINGS_JAVASCRIPT_INVOKE, "CPluginTab::InjectABP - Failed to create Settings in JavaScript");
   }
 }
 
@@ -250,7 +248,7 @@ namespace
   }
 }
 
-void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
+void CPluginTab::OnDownloadComplete(IWebBrowser2* browser)
 {
   CPluginClient* client = CPluginClient::GetInstance();
   std::wstring url = GetDocumentUrl();
@@ -261,7 +259,7 @@ void CPluginTabBase::OnDownloadComplete(IWebBrowser2* browser)
   InjectABP(browser);
 }
 
-void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const std::wstring& url, bool isDocumentBrowser)
+void CPluginTab::OnDocumentComplete(IWebBrowser2* browser, const std::wstring& url, bool isDocumentBrowser)
 {
   std::wstring documentUrl = GetDocumentUrl();
 
@@ -273,44 +271,44 @@ void CPluginTabBase::OnDocumentComplete(IWebBrowser2* browser, const std::wstrin
     }
     InjectABP(browser);
   }
-  CString urlLegacy = ToCString(url);
-  if (urlLegacy.Left(6) != "res://")
+  if (BeginsWith(url, L"res://"))
   {
-    // Get document
-    CComPtr<IDispatch> pDocDispatch;
-    HRESULT hr = browser->get_Document(&pDocDispatch);
-    if (FAILED(hr) || !pDocDispatch)
-    {
-      return;
-    }
+    return;
+  }
+  // Get document
+  CComPtr<IDispatch> pDocDispatch;
+  HRESULT hr = browser->get_Document(&pDocDispatch);
+  if (FAILED(hr) || !pDocDispatch)
+  {
+    return;
+  }
 
-    CComQIPtr<IHTMLDocument2> pDoc(pDocDispatch);
-    if (!pDoc)
-    {
-      return;
-    }
+  CComQIPtr<IHTMLDocument2> pDoc(pDocDispatch);
+  if (!pDoc)
+  {
+    return;
+  }
 
-    CComPtr<IOleObject> pOleObj;
-    pDocDispatch->QueryInterface(&pOleObj);
-    if (!pOleObj)
+  CComPtr<IOleObject> pOleObj;
+  pDocDispatch->QueryInterface(&pOleObj);
+  if (!pOleObj)
+  {
+    return;
+  }
+  CComPtr<IOleClientSite> pClientSite;
+  pOleObj->GetClientSite(&pClientSite);
+  if (pClientSite != NULL)
+  {
+    CComPtr<IDocHostUIHandler> docHostUIHandler;
+    pClientSite->QueryInterface(&docHostUIHandler);
+    if (docHostUIHandler != NULL)
     {
-      return;
-    }
-    CComPtr<IOleClientSite> pClientSite;
-    pOleObj->GetClientSite(&pClientSite);
-    if (pClientSite != NULL)
-    {
-      CComPtr<IDocHostUIHandler> docHostUIHandler;
-      pClientSite->QueryInterface(&docHostUIHandler);
-      if (docHostUIHandler != NULL)
-      {
-        docHostUIHandler->UpdateUI();
-      }
+      docHostUIHandler->UpdateUI();
     }
   }
 }
 
-std::wstring CPluginTabBase::GetDocumentDomain()
+std::wstring CPluginTab::GetDocumentDomain()
 {
   std::wstring domain;
 
@@ -323,7 +321,7 @@ std::wstring CPluginTabBase::GetDocumentDomain()
   return domain;
 }
 
-void CPluginTabBase::SetDocumentUrl(const std::wstring& url)
+void CPluginTab::SetDocumentUrl(const std::wstring& url)
 {
   m_criticalSection.Lock();
   {
@@ -333,7 +331,7 @@ void CPluginTabBase::SetDocumentUrl(const std::wstring& url)
   m_criticalSection.Unlock();
 }
 
-std::wstring CPluginTabBase::GetDocumentUrl()
+std::wstring CPluginTab::GetDocumentUrl()
 {
   std::wstring url;
 
@@ -350,7 +348,7 @@ std::wstring CPluginTabBase::GetDocumentUrl()
 // ============================================================================
 // Frame caching
 // ============================================================================
-bool CPluginTabBase::IsFrameCached(const std::wstring& url)
+bool CPluginTab::IsFrameCached(const std::wstring& url)
 {
   bool isFrame;
 
@@ -363,7 +361,7 @@ bool CPluginTabBase::IsFrameCached(const std::wstring& url)
   return isFrame;
 }
 
-void CPluginTabBase::CacheFrame(const std::wstring& url)
+void CPluginTab::CacheFrame(const std::wstring& url)
 {
   m_criticalSectionCache.Lock();
   {
@@ -372,7 +370,7 @@ void CPluginTabBase::CacheFrame(const std::wstring& url)
   m_criticalSectionCache.Unlock();
 }
 
-void CPluginTabBase::ClearFrameCache(const std::wstring& domain)
+void CPluginTab::ClearFrameCache(const std::wstring& domain)
 {
   m_criticalSectionCache.Lock();
   {
@@ -385,7 +383,7 @@ void CPluginTabBase::ClearFrameCache(const std::wstring& domain)
   m_criticalSectionCache.Unlock();
 }
 
-void CPluginTabBase::ThreadProc()
+void CPluginTab::ThreadProc()
 {
   // Force loading/creation of settings
   CPluginSettings::GetInstance();

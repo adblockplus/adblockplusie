@@ -26,45 +26,34 @@ class CPluginDomTraverser;
 #include <thread>
 #include <atomic>
 
-class CPluginClass;
-
-
-class CPluginTabBase
+class CPluginTab
 {
-
-  friend class CPluginClass;
-
-protected:
-
   CComAutoCriticalSection m_criticalSection;
   CriticalSection m_csInject;
 
   std::wstring m_documentDomain;
   std::wstring m_documentUrl;
   CPluginUserSettings m_pluginUserSettings;
-public:
-  CPluginClass* m_plugin;
-protected:
   bool m_isActivated;
 
   std::thread m_thread;
   std::atomic<bool> m_continueThreadRunning;
   CPluginDomTraverser* m_traverser;
 public:
-  std::auto_ptr<CPluginFilter> m_filter;
+  CPluginFilter m_filter;
 private:
   void ThreadProc();
   CComAutoCriticalSection m_criticalSectionCache;
   std::set<std::wstring> m_cacheFrames;
   std::wstring m_cacheDomain;
-  void SetDocumentUrl(const std::wstring& url);
   void InjectABP(IWebBrowser2* browser);
 public:
 
-  CPluginTabBase(CPluginClass* plugin);
-  ~CPluginTabBase();
+  CPluginTab();
+  ~CPluginTab();
 
   std::wstring GetDocumentDomain();
+  void SetDocumentUrl(const std::wstring& url);
   std::wstring GetDocumentUrl();
   virtual void OnActivate();
   virtual void OnUpdate();
@@ -75,22 +64,6 @@ public:
   void CacheFrame(const std::wstring& url);
   bool IsFrameCached(const std::wstring& url);
   void ClearFrameCache(const std::wstring& domain=L"");
-
 };
-
-/**
- * Temporary class used during refactoring.
- * This is the definition previously in AdblockPlusTab.h
- * Defining this class during refactoring alleviates the need to rename CPluginTabBase in the first change set.
- */
-class CPluginTab : public CPluginTabBase
-{
-
-public:
-  CPluginTab(CPluginClass* plugin) : CPluginTabBase(plugin) {};
-  ~CPluginTab() {};
-};
-
-
 
 #endif // _PLUGIN_TAB_BASE_H_
