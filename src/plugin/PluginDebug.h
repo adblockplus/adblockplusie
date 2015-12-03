@@ -43,5 +43,12 @@ public:
 #endif
 };
 
+/**
+* Convert a pointer to a hexadecimal literal (0x...)
+*
+* The length of the literal varies with pointer size:
+*   10 characters for WIN32, and 18 for WIN64.
+*/
+std::wstring ToHexLiteral(const void*);
 
 #endif // _PLUGIN_DEBUG_H_

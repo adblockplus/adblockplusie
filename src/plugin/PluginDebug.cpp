@@ -324,3 +324,29 @@ void CPluginDebug::DebugResultIgnoring(const std::wstring& type, const std::wstr
 }
 
 #endif // ENABLE_DEBUG_RESULT_IGNORED
+
+namespace
+{
+  /*
+   * To convert a pointer to a hexadecimal number, we need an integral type that has the same size as that of the pointer.
+   */
+#if defined(_WIN64)
+  typedef uint64_t voidIntegral;
+  static_assert(sizeof(void*)==sizeof(voidIntegral),"WIN64: sizeof(uint64_t) is not the same as sizeof(void*)");
+#elif defined(_WIN32)
+  typedef uint32_t voidIntegral;
+  static_assert(sizeof(void*)==sizeof(voidIntegral),"WIN32: sizeof(uint32_t) is not the same as sizeof(void*)");
+#else
+#error Must compile with either _WIN32 or _WIN64
+#endif
+}
+
+std::wstring ToHexLiteral(void const* p)
+{
+  std::wstringstream ss;
+  ss << L"0x";
+  ss.width(sizeof(p) * 2);
+  ss.fill(L'0');
+  ss << std::hex << reinterpret_cast<voidIntegral>(p);
+  return ss.str();
+}

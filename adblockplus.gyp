@@ -232,6 +232,8 @@
       'libadblockplus/third_party/googletest.gyp:googletest_main',
     ],
     'sources': [
+      'src/plugin/PluginDebug.cpp',
+      'test/plugin/DebugTest.cpp',
       'src/plugin/PluginUserSettings.cpp',
       'src/plugin/PluginUserSettings.h',
       'test/plugin/UserSettingsTest.cpp',
@@ -248,7 +250,6 @@
       'src/plugin/PluginClientBase.cpp',
       'src/plugin/PluginClientFactory.cpp',
       'src/plugin/PluginClass.cpp',
-      'src/plugin/PluginDebug.cpp',
       'src/plugin/PluginFilter.cpp',
       'src/plugin/PluginMimeFilterClient.cpp',
       'src/plugin/PluginMutex.cpp',
