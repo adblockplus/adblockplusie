@@ -4,6 +4,42 @@ Adblock Plus for Internet Explorer
 This combines a Browser Helper Object with a singleton engine process to block
 ads in Internet Explorer. The engine process embeds libadblockplus.
 
+Requirements to work with the repository and the code
+-----------------------------------------------------
+
+### Python
+You need to have installed python 2.7. It should be the version available by
+default from Visual Studio as well as in your command line environment.
+Simply put, make sure that path to `python.exe` is in your `PATH` environment
+variable.
+
+### Visual C++ toolset
+There should be available v110 and v110_xp toolsets. For instance, they are
+contained in freely available Visual Studio 2012 Express for Windows Desktop
+and in any paid edition of Visual Studio 2012. Take into account that you might
+need to get the recent updates of mentioned editions, more details about
+v110_xp https://msdn.microsoft.com/en-us/library/jj851139.aspx.
+
+### ATL versions
+It works with ATL shipped with any paid edition of Visual Studio 2012 as well
+as with ATL shipped with Visual Studio 2013 Community edition.
+If you use Visual Studio 2013 Community Edition as the source of ATL then set
+`ADBLOCKPLUS_ATL` environment variable to the directory of the corresponding
+ATL (e.g, `C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\atlmfc`)
+Attention:
+- ATL is not shipped with Express edition of any Visual Studio.
+- ATL from Visual Studio 2015 is not supported.
+More information about libraies and headers in Visual Studios:
+2015 - https://msdn.microsoft.com/en-us/library/hs24szh9(v=vs.140).aspx
+2013 - https://msdn.microsoft.com/en-us/library/hs24szh9(v=vs.120).aspx
+2012 - https://msdn.microsoft.com/en-us/library/hs24szh9(v=vs.110).aspx
+
+### Visual Studio as an IDE
+Currently the project configured to work with MS Visual Studio 2012 as an IDE
+because the main development and release builds are in Visual Studio 2012.
+However one can also use any higher version of Visual Studio as and IDE, the
+caveat is to disable "Upgrade C++ Compilers and Libraries".
+
 Getting/updating the dependencies
 ---------------------------------
 
@@ -16,9 +52,13 @@ you can also manually update them by running the following:
 Building
 --------
 
-You need Microsoft Visual C++ 2012 and Python 2.7. Make sure that `python.exe` 
-is on your `PATH`. Unfortunately until we move to Visual Studio 2013  you'll
-need to use Visual Studio 2012 version that comes with ATL (Proffessional etc). 
+Building is tested on the following configurations
+- [free for everybody] "Microsoft Visual Studio Express 2012 for Windows
+Desktop" as the source of toolset with "Microsoft Visual Studio Community 2013"
+as the source of ATL. Pay attention to the configuring of the environment
+described in "ATL versions" section.
+- "Microsoft Visual Studio Professional 2012"
+- "Microsoft Visual Studio Ultimate 2012"
 
 * Execute `createsolution.bat` to retrieve dependencies and generate project
 files, this will create `build\ia32\adblockplus.sln` (solution for the 32 bit

@@ -52,7 +52,10 @@
       'src/shared/Version.h',
       'src/shared/MsHTMLUtils.cpp',
       'src/shared/MsHTMLUtils.h',
-      ]
+    ],
+    'include_dirs': [
+      '$(ADBLOCKPLUS_ATL)/include',
+    ],
   },
 
   {
@@ -71,6 +74,9 @@
       'src/engine/Updater.cpp',
       'src/engine/engine.rc',
     ],
+    'include_dirs': [
+      '$(ADBLOCKPLUS_ATL)/include',
+    ],
     'libraries': [
       '-ladvapi32',
       '-lole32',
@@ -82,6 +88,17 @@
     'msvs_settings': {
       'VCLinkerTool': {
         'DelayLoadDLLs': ['Shell32.dll'],
+        'conditions': [[
+          'target_arch=="ia32"', {
+            'AdditionalLibraryDirectories': [
+              '$(ADBLOCKPLUS_ATL)/lib',
+            ],
+          }, {
+            'AdditionalLibraryDirectories': [
+              '$(ADBLOCKPLUS_ATL)/lib/amd64',
+            ],
+          }
+        ]],
       },
     },
   },
@@ -151,9 +168,7 @@
       'src/plugin/passthroughapp/SinkPolicy.inl',
     ],
     'include_dirs': [
-      '$(WindowsSDK_IncludePath)',
-      '$(VCInstallDir)atlmfc/include',
-      '$(WINDDKDIR)/inc/atl71',
+      '$(ADBLOCKPLUS_ATL)/include',
     ],
     # See "Adding Visual Style Support to an Extension, Plug-in, MMC Snap-in or a DLL
     # That Is Brought into a Process" on the link here:
@@ -165,37 +180,16 @@
       '-lComctl32',
       '-lGdi32',
     ],
-    'configurations': {
-      # 'libraries' is not allowed under 'configurations' :-(
-      'Debug': {
-        'msvs_settings': {
-          'VCLinkerTool': {
-            'AdditionalDependencies': ['atlsd.lib'],
-          },
-        },
-      },
-      'Release': {
-        'msvs_settings': {
-          'VCLinkerTool': {
-            'AdditionalDependencies': ['atls.lib'],
-          },
-        },
-      },
-    },
     'msvs_settings': {
       'VCLinkerTool': {
         'conditions': [[
           'target_arch=="ia32"', {
             'AdditionalLibraryDirectories': [
-              '$(VCInstallDir)atlmfc/lib',
-              '$(WindowsSDK_LibraryPath_x86)',
-              '$(WINDDKDIR)/lib/ATL/i386',
+              '$(ADBLOCKPLUS_ATL)/lib',
             ],
           }, {
             'AdditionalLibraryDirectories': [
-              '$(VCInstallDir)atlmfc/lib/amd64',
-              '$(WindowsSDK_LibraryPath_x64)',
-              '$(WINDDKDIR)/lib/ATL/amd64',
+              '$(ADBLOCKPLUS_ATL)/lib/amd64',
             ],
           }
         ]],
@@ -266,7 +260,7 @@
       'src/plugin/PluginWbPassthrough.cpp',
     ],
     'include_dirs': [
-      '$(WINDDKDIR)/inc/atl71',
+      '$(ADBLOCKPLUS_ATL)/include',
     ],
     'defines': [
       'WINVER=0x0501',
@@ -282,35 +276,14 @@
         'conditions': [[
           'target_arch=="ia32"', {
             'AdditionalLibraryDirectories': [
-              '$(VCInstallDir)atlmfc/lib',
-              '$(WindowsSDK_LibraryPath_x86)',
-              '$(WINDDKDIR)/lib/ATL/i386',
+              '$(ADBLOCKPLUS_ATL)/lib',
             ],
           }, {
             'AdditionalLibraryDirectories': [
-              '$(VCInstallDir)atlmfc/lib/amd64',
-              '$(WindowsSDK_LibraryPath_x64)',
-              '$(WINDDKDIR)/lib/ATL/amd64',
+              '$(ADBLOCKPLUS_ATL)/lib/amd64',
             ],
           }
         ]],
-      },
-    },
-    'configurations': {
-      # 'libraries' is not allowed under 'configurations' :-(
-      'Debug': {
-        'msvs_settings': {
-          'VCLinkerTool': {
-            'AdditionalDependencies': ['atlsd.lib'],
-          },
-        },
-      },
-      'Release': {
-        'msvs_settings': {
-          'VCLinkerTool': {
-            'AdditionalDependencies': ['atls.lib'],
-          },
-        },
       },
     },
   }]
