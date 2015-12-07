@@ -42,27 +42,27 @@ public:
 
   void TraverseHeader(bool isHeaderTraversed);
 
-  void TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentName);
-  void TraverseSubdocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName);
+  void TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentUrl);
+  void TraverseSubdocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentUrl);
 
   virtual void ClearCache();
 
 protected:
 
-  virtual bool OnIFrame(IHTMLElement* pEl, const std::wstring& url, CString& indent) { return true; }
-  virtual bool OnElement(IHTMLElement* pEl, const CString& tag, T* cache, bool isDebug, CString& indent) { return true; }
+  virtual bool OnIFrame(IHTMLElement* pEl, const std::wstring& url, const std::wstring& indent) { return true; }
+  virtual bool OnElement(IHTMLElement* pEl, const std::wstring& tag, T* cache, bool isDebug, const std::wstring& indent) { return true; }
 
   virtual bool IsEnabled();
 
 protected:
 
-  void TraverseDocument(IWebBrowser2* pBrowser, bool isMainDoc, CString indent);
-  void TraverseChild(IHTMLElement* pEl, IWebBrowser2* pBrowser, CString& indent, bool isCached=true);
+  void TraverseDocument(IWebBrowser2* pBrowser, bool isMainDoc, const std::wstring& indent);
+  void TraverseChild(IHTMLElement* pEl, IWebBrowser2* pBrowser, const std::wstring& indent, bool isCached=true);
 
   CComAutoCriticalSection m_criticalSection;
 
   std::wstring m_domain;
-  CString m_documentName;
+  std::wstring m_documentName;
 
   bool m_isHeaderTraversed;
 
@@ -71,8 +71,8 @@ protected:
 
   int m_cacheIndexLast;
   int m_cacheElementsMax;
-  std::set<CString> m_cacheDocumentHasFrames;
-  std::set<CString> m_cacheDocumentHasIframes;
+  std::set<std::wstring> m_cacheDocumentHasFrames;
+  std::set<std::wstring> m_cacheDocumentHasIframes;
 
   T* m_cacheElements;
 
@@ -101,20 +101,20 @@ void CPluginDomTraverserBase<T>::TraverseHeader(bool isHeaderTraversed)
 }
 
 template <class T>
-void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentName)
+void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentUrl)
 {
   m_domain = domain;
 
-  TraverseDocument(pBrowser, true, "");
+  TraverseDocument(pBrowser, true, L"");
 }
 
 
 template <class T>
-void CPluginDomTraverserBase<T>::TraverseSubdocument(IWebBrowser2* pBrowser, const std::wstring& domain, const CString& documentName)
+void CPluginDomTraverserBase<T>::TraverseSubdocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentUrl)
 {
   m_domain = domain;
 
-  TraverseDocument(pBrowser, false, "");
+  TraverseDocument(pBrowser, false, L"");
 }
 
 
@@ -126,7 +126,7 @@ bool CPluginDomTraverserBase<T>::IsEnabled()
 
 
 template <class T>
-void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool isMainDoc, CString indent)
+void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool isMainDoc, const std::wstring& indent)
 {
   DWORD res = WaitForSingleObject(m_tab->m_filter->hideFiltersLoadedEvent, ENGINE_STARTUP_TIMEOUT);
   if (!IsEnabled()) return;
@@ -306,9 +306,8 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
   }
 }
 
-
 template <class T>
-void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* pBrowser, CString& indent, bool isCached)
+void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* pBrowser, const std::wstring& indent, bool isCached)
 {
   int  cacheIndex = -1;
   long cacheAllElementsCount = -1;
@@ -384,9 +383,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
   {
     return;
   }
-
-  CString tag = bstrTag;
-  tag.MakeLower();
+  std::wstring tag = ToLowerString(ToWstring(bstrTag));
 
   // Custom OnElement
   if (!OnElement(pEl, tag, &m_cacheElements[cacheIndex], false, indent))
@@ -395,7 +392,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
   }
 
   // Update frame/iframe cache
-  if (tag == "iframe")
+  if (tag == L"iframe")
   {
     m_criticalSection.Lock();
     {
@@ -403,7 +400,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
     }
     m_criticalSection.Unlock();
   }
-  else if (tag == "frame")
+  else if (tag == L"frame")
   {
     m_criticalSection.Lock();
     {
@@ -440,7 +437,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
             CComPtr<IHTMLElement> pChildEl;
             if (SUCCEEDED(pChildElDispatch->QueryInterface(&pChildEl)) && pChildEl)
             {
-              TraverseChild(pChildEl, pBrowser, indent + "  ", isCached);
+              TraverseChild(pChildEl, pBrowser, indent + L"  ", isCached);
             }
           }
         }

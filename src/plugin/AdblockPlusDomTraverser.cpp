@@ -20,6 +20,7 @@
 #include "AdblockPlusClient.h"
 #include "PluginFilter.h"
 #include "PluginSettings.h"
+#include "..\shared\Utils.h"
 
 
 CPluginDomTraverser::CPluginDomTraverser(CPluginTab* tab) : CPluginDomTraverserBase(tab)
@@ -27,7 +28,7 @@ CPluginDomTraverser::CPluginDomTraverser(CPluginTab* tab) : CPluginDomTraverserB
 }
 
 
-bool CPluginDomTraverser::OnIFrame(IHTMLElement* pEl, const std::wstring& url, CString& indent)
+bool CPluginDomTraverser::OnIFrame(IHTMLElement* pEl, const std::wstring& url, const std::wstring& indent)
 {
   CPluginClient* client = CPluginClient::GetInstance();
 
@@ -36,14 +37,14 @@ bool CPluginDomTraverser::OnIFrame(IHTMLElement* pEl, const std::wstring& url, C
     AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_SUBDOCUMENT, m_domain);
   if (isBlocked)
   {
-    HideElement(pEl, "iframe", url, true, indent);
+    HideElement(pEl, L"iframe", url, true, indent);
   }
 
   return !isBlocked;
 }
 
 
-bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPluginDomTraverserCache* cache, bool isDebug, CString& indent)
+bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const std::wstring& tag, CPluginDomTraverserCache* cache, bool isDebug, const std::wstring& indent)
 {
   if (cache->m_isHidden)
   {
@@ -53,7 +54,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
   // Check if element is hidden
   CPluginClient* client = CPluginClient::GetInstance();
 
-  cache->m_isHidden = client->IsElementHidden(ToWstring(tag), pEl, m_domain, ToWstring(indent), m_tab->m_filter.get());
+  cache->m_isHidden = client->IsElementHidden(tag, pEl, m_domain, indent, m_tab->m_filter.get());
   if (cache->m_isHidden)
   {
     HideElement(pEl, tag, L"", false, indent);
@@ -61,7 +62,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
   }
 
   // Images
-  if (tag == "img")
+  if (tag == L"img")
   {
     CComVariant vAttr;
 
@@ -74,47 +75,47 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const CString& tag, CPlug
         AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_IMAGE, m_domain);
       if (cache->m_isHidden)
       {
-        HideElement(pEl, "image", src, true, indent);
+        HideElement(pEl, L"image", src, true, indent);
         return false;
       }
     }
   }
   // Objects
-  else if (tag == "object")
+  else if (tag == L"object")
   {
     CComBSTR bstrInnerHtml;
-
     if (SUCCEEDED(pEl->get_innerHTML(&bstrInnerHtml)) && bstrInnerHtml)
     {
-      CString sObjectHtml = bstrInnerHtml;
-      CString src;
-
-      int posBegin = sObjectHtml.Find(L"VALUE=\"");
-      int posEnd = posBegin >= 0 ? sObjectHtml.Find('\"', posBegin + 7) : -1;
-
-      while (posBegin >= 0 && posEnd >= 0)
+      const std::wstring objectInnerHtml(ToWstring(bstrInnerHtml));
+      std::wstring::size_type posBegin = 0;
+      while (true)
       {
-        posBegin += 7;
-
-        src = sObjectHtml.Mid(posBegin, posEnd - posBegin);
-
+        posBegin = objectInnerHtml.find(L"VALUE=\"", posBegin);
+        if (posBegin == std::wstring::npos)
+        {
+          // No more "value" attributes to scan
+          break;
+        }
+        auto posPostInitialQuote = posBegin + 7;
+        auto posFinalQuote = objectInnerHtml.find(L'\"', posPostInitialQuote);
+        if (posFinalQuote == std::wstring::npos)
+        {
+          // We have an initial quotation mark but no final one.
+          // Ignore this tag because it has an HTML syntax error.
+          break;
+        }
+        auto src = objectInnerHtml.substr(posPostInitialQuote, posFinalQuote - posPostInitialQuote);
         // eg. http://w3schools.com/html/html_examples.asp
-        if (src.Left(2) == "//")
+        if (BeginsWith(src, L"//"))
         {
-          src = "http:" + src;
+          src = L"http:" + src;
         }
-
-        if (!src.IsEmpty())
+        if (!src.empty() && cache->m_isHidden)
         {
-          if (cache->m_isHidden)
-          {
-            HideElement(pEl, "object", ToWstring(src), true, indent);
-            return false;
-          }
+          HideElement(pEl, L"object", src, true, indent);
+          return false;
         }
-
-        posBegin = sObjectHtml.Find(L"VALUE=\"", posBegin);
-        posEnd = posBegin >= 0 ? sObjectHtml.Find(L"\"", posBegin + 7) : -1;
+        posBegin = posFinalQuote; // Don't scan content of quoted string
       }
     }
   }
@@ -130,15 +131,14 @@ bool CPluginDomTraverser::IsEnabled()
 }
 
 
-void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const CString& type, const std::wstring& url, bool isDebug, CString& indent)
+void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const std::wstring& type, const std::wstring& url, bool isDebug, const std::wstring& indent)
 {
   CComPtr<IHTMLStyle> pStyle;
 
   if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
   {
     CComBSTR bstrDisplay;
-
-    if (SUCCEEDED(pStyle->get_display(&bstrDisplay)) && bstrDisplay && CString(bstrDisplay) == L"none")
+    if (SUCCEEDED(pStyle->get_display(&bstrDisplay)) && bstrDisplay && ToWstring(bstrDisplay) == L"none")
     {
       return;
     }
@@ -152,7 +152,7 @@ void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const CString& type, co
 #ifdef ENABLE_DEBUG_RESULT
         if (isDebug)
         {
-          CPluginDebug::DebugResultHiding(ToWstring(type), url, L"-");
+          CPluginDebug::DebugResultHiding(type, url, L"-");
         }
 #endif // ENABLE_DEBUG_RESULT
     }

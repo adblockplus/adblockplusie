@@ -52,3 +52,9 @@ std::wstring GetLocationUrl(IWebBrowser2& browser)
   }
   return std::wstring(locationUrl, locationUrl.Length());
 }
+
+std::wstring ToLowerString(const std::wstring& s)
+{
+  return ToWstring(ToCString(s).MakeLower());
+}
+

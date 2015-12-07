@@ -30,3 +30,9 @@ bool BeginsWith(const std::basic_string<CharT, Traits, Alloc>& s, const CharT(&b
 {
   return 0 == s.compare(0, N - 1, beginning);
 }
+
+/**
+ * Return a lower-case version of the argument string.
+ * Current version uses 'CString::MakeLower()' to preserve legacy behavior during refactoring.
+ */
+std::wstring ToLowerString(const std::wstring& s);
