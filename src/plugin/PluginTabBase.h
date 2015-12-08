@@ -64,6 +64,10 @@ public:
   void CacheFrame(const std::wstring& url);
   bool IsFrameCached(const std::wstring& url);
   void ClearFrameCache(const std::wstring& domain=L"");
+  /**
+   * Is it possible to disable the current content of the present tab on a per-site basis?
+   */
+  bool IsPossibleToDisableOnSite();
 };
 
 #endif // _PLUGIN_TAB_BASE_H_

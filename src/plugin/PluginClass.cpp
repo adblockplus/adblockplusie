@@ -1162,10 +1162,19 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const std::wstring& url)
   CPluginSettings* settings = CPluginSettings::GetInstance();
   {
     ctext = dictionary->Lookup("menu", "menu-disable-on-site");
-    // Is domain in white list?
     ReplaceString(ctext, L"?1?", client->GetHostFromUrl(url));
-    if (client->IsWhitelistedUrl(GetTab()->GetDocumentUrl()))
+    /*
+     * The display state of the "disable on this site" menu item depends upon tab content
+     */
+    if (!GetTab()->IsPossibleToDisableOnSite())
     {
+      // Since we can't disable the present content,
+      // it makes no sense to offer the user an option to block it.
+      fmii.fState = MFS_UNCHECKED | MFS_DISABLED;
+    }
+    else if (client->IsWhitelistedUrl(GetTab()->GetDocumentUrl()))
+    {
+      // Domain is in white list, indicated by a check mark
       fmii.fState = MFS_CHECKED | MFS_ENABLED;
     }
     else

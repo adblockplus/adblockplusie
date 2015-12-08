@@ -60,6 +60,17 @@ CPluginTab::~CPluginTab()
   }
 }
 
+/**
+ * ABP only intercepts protocols "http:" and "https:".
+ * We can disable any domain used in those protocol with an appropriate whitelist filter.
+ * Thus, the possibility to disable on a particular site depends only on the protocol.
+ */
+bool CPluginTabBase::IsPossibleToDisableOnSite()
+{
+  auto url = GetDocumentUrl();
+  return BeginsWith(url, L"http:") || BeginsWith(url, L"https:");
+}
+
 void CPluginTab::OnActivate()
 {
   m_isActivated = true;
