@@ -53,6 +53,16 @@ bool IsWindows8OrLater()
   return (osvi->dwMajorVersion == 6 && osvi->dwMinorVersion >= 2) || osvi->dwMajorVersion > 6;
 }
 
+std::wstring ToWstring(const BSTR b)
+{
+  if (!b)
+  {
+    // A null BSTR pointer is considered semantically equal to the zero-length string.
+    return std::wstring();
+  }
+  return std::wstring(b, ::SysStringLen(b));
+}
+
 std::string ToUtf8String(const std::wstring& str)
 {
   int length = static_cast<int>(str.size());

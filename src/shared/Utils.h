@@ -23,6 +23,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <wtypes.h>
 
 #define WM_ALREADY_UP_TO_DATE WM_APP+1
 #define WM_UPDATE_CHECK_ERROR WM_APP+2
@@ -51,6 +52,7 @@
 bool IsWindowsVistaOrLater();
 bool IsWindows8OrLater();
 
+std::wstring ToWstring(const BSTR b);
 std::string ToUtf8String(const std::wstring& str);
 std::wstring ToUtf16String(const std::string& str);
 std::vector<std::wstring> ToUtf16Strings(const std::vector<std::string>& value);
