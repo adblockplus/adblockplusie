@@ -92,6 +92,13 @@ namespace AdblockPlus
 CPluginClass::CPluginClass()
   : m_webBrowser2(nullptr)
 {
+  DEBUG_GENERAL([this]() -> std::wstring
+    {
+      std::wstring s = L"CPluginClass::<constructor>, this = ";
+      s += ToHexLiteral(this);
+      return s;
+    }());
+
   //Use this line to debug memory leaks
   //	_CrtDumpMemoryLeaks();
 
@@ -112,6 +119,13 @@ CPluginClass::CPluginClass()
 
 CPluginClass::~CPluginClass()
 {
+  DEBUG_GENERAL([this]() -> std::wstring
+    {
+      std::wstring s = L"CPluginClass::<destructor>, this = ";
+      s += ToHexLiteral(this);
+      return s;
+    }());
+
   delete m_tab;
 }
 
@@ -197,8 +211,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
   {
     if (unknownSite)
     {
-
-      DEBUG_GENERAL(L"================================================================================\nNEW TAB UI\n================================================================================")
+      DEBUG_GENERAL(L"================================================================================\nNEW TAB UI\n================================================================================");
 
       HRESULT hr = ::CoInitialize(NULL);
       if (FAILED(hr))
@@ -214,6 +227,13 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       {
         throw std::logic_error("CPluginClass::SetSite - Unable to convert site pointer to IWebBrowser2*");
       }
+      DEBUG_GENERAL([this]() -> std::wstring
+        {
+          std::wstringstream ss;
+          ss << L"CPluginClass::SetSite, this = " << ToHexLiteral(this);
+          ss << L", browser = " << ToHexLiteral(m_webBrowser2);
+          return ss.str();
+        }());
 
       //register the mimefilter
       //and only mimefilter
@@ -229,7 +249,6 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
       try
       {
-        DEBUG_GENERAL("Loaded as BHO");
         HRESULT hr = DispEventAdvise(m_webBrowser2);
         if (SUCCEEDED(hr))
         {
@@ -258,6 +277,14 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
     }
     else
     {
+      DEBUG_GENERAL([this]() -> std::wstring
+      {
+        std::wstringstream ss;
+        ss << L"CPluginClass::SetSite, this = " << ToHexLiteral(this);
+        ss << L", browser = nullptr";
+        return ss.str();
+      }());
+
       Unadvise();
 
       // Destroy window
