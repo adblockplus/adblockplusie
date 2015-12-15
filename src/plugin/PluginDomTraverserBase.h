@@ -62,7 +62,7 @@ protected:
   CComAutoCriticalSection m_criticalSection;
 
   std::wstring m_domain;
-  std::wstring m_documentName;
+  std::wstring m_documentUrl;
 
   bool m_isHeaderTraversed;
 
@@ -104,7 +104,7 @@ template <class T>
 void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentUrl)
 {
   m_domain = domain;
-
+  m_documentUrl = documentUrl;
   TraverseDocument(pBrowser, true, L"");
 }
 
@@ -113,7 +113,7 @@ template <class T>
 void CPluginDomTraverserBase<T>::TraverseSubdocument(IWebBrowser2* pBrowser, const std::wstring& domain, const std::wstring& documentUrl)
 {
   m_domain = domain;
-
+  m_documentUrl = documentUrl;
   TraverseDocument(pBrowser, false, L"");
 }
 
@@ -207,8 +207,8 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
 
   m_criticalSection.Lock();
   {
-    hasFrames = m_cacheDocumentHasFrames.find(m_documentName) != m_cacheDocumentHasFrames.end();
-    hasIframes = m_cacheDocumentHasIframes.find(m_documentName) != m_cacheDocumentHasIframes.end();
+    hasFrames = m_cacheDocumentHasFrames.find(m_documentUrl) != m_cacheDocumentHasFrames.end();
+    hasIframes = m_cacheDocumentHasIframes.find(m_documentUrl) != m_cacheDocumentHasIframes.end();
   }
   m_criticalSection.Unlock();
 
@@ -396,7 +396,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
   {
     m_criticalSection.Lock();
     {
-      m_cacheDocumentHasIframes.insert(m_documentName);
+      m_cacheDocumentHasIframes.insert(m_documentUrl);
     }
     m_criticalSection.Unlock();
   }
@@ -404,7 +404,7 @@ void CPluginDomTraverserBase<T>::TraverseChild(IHTMLElement* pEl, IWebBrowser2* 
   {
     m_criticalSection.Lock();
     {
-      m_cacheDocumentHasFrames.insert(m_documentName);
+      m_cacheDocumentHasFrames.insert(m_documentUrl);
     }
     m_criticalSection.Unlock();
   }

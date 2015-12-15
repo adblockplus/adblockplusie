@@ -144,6 +144,11 @@ WBPassthruSink::WBPassthruSink()
 
 ContentType WBPassthruSink::GetContentTypeFromMimeType(const std::wstring& mimeType)
 {
+  if ((mimeType.find(L"text/html") != std::wstring::npos) ||
+      (mimeType.find(L"application/xhtml+xml") != std::wstring::npos))
+  {
+    return ContentType::CONTENT_TYPE_SUBDOCUMENT;
+  }
   if (mimeType.find(L"image/") != std::wstring::npos)
   {
     return ContentType::CONTENT_TYPE_IMAGE;
@@ -159,10 +164,6 @@ ContentType WBPassthruSink::GetContentTypeFromMimeType(const std::wstring& mimeT
   if (mimeType.find(L"application/x-shockwave-flash") != std::wstring::npos)
   {
     return ContentType::CONTENT_TYPE_OBJECT;
-  }
-  if (mimeType.find(L"text/html") != std::wstring::npos)
-  {
-    return ContentType::CONTENT_TYPE_SUBDOCUMENT;
   }
   // It is important to have this check last, since it is rather generic, and might overlay text/html, for example
   if (mimeType.find(L"xml") != std::wstring::npos)
