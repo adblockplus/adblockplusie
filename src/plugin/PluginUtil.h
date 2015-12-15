@@ -33,6 +33,7 @@ bool BeginsWith(const std::basic_string<CharT, Traits, Alloc>& s, const CharT(&b
 
 /**
  * Return a lower-case version of the argument string.
- * Current version uses 'CString::MakeLower()' to preserve legacy behavior during refactoring.
+ * Lowers case according to the current locale.
+ * This function has an undefined return value if the argument string contains embedded null characters.
  */
 std::wstring ToLowerString(const std::wstring& s);

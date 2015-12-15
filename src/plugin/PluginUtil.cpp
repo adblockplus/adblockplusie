@@ -55,6 +55,18 @@ std::wstring GetLocationUrl(IWebBrowser2& browser)
 
 std::wstring ToLowerString(const std::wstring& s)
 {
-  return ToWstring(ToCString(s).MakeLower());
+  std::wstring lower(s); // Copy the argument
+  /*
+   * Documentation for '_wcslwr_s' https://msdn.microsoft.com/en-us/library/y889wzfw.aspx
+   * This documentation is incorrect on an important point.
+   * Regarding parameter validation, it says "length of string" where it should say "length of buffer".
+   * The call below has argument "length + 1" to include the terminating null character in the buffer.
+   */
+  auto e = _wcslwr_s(const_cast<wchar_t*>(lower.c_str()), lower.length() + 1); // uses the current locale
+  if (e != 0)
+  {
+    throw std::logic_error("Error code returned from _wcslwr_s()");
+  }
+  return lower;
 }
 

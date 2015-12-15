@@ -71,3 +71,37 @@ TEST(BeginsWith, LongerBad)
 {
   ASSERT_FALSE(BeginsWithForTesting(L"foo", L"barfoo"));
 }
+
+TEST(ToLowerString, Empty)
+{
+  ASSERT_EQ(L"", ToLowerString(L""));
+}
+
+TEST(ToLowerString, NotEmpty)
+{
+  ASSERT_EQ(L"foobar", ToLowerString(L"FooBAR"));
+}
+
+TEST(ToLowerString, NullWithExtra)
+{
+  std::wstring input(L"\0BAR", 4);
+  ASSERT_EQ(4, input.length());
+
+  std::wstring actual;
+  ASSERT_NO_THROW({ actual = ToLowerString(input); });
+  // White-box tests for further verification of no-crash behavior
+  ASSERT_EQ(4, actual.length());
+  ASSERT_EQ(L"", std::wstring(actual.c_str()));
+}
+
+TEST(ToLowerString, InternalNull)
+{
+  std::wstring input(L"Foo\0BAR", 7);
+  ASSERT_EQ(7, input.length());
+
+  std::wstring actual;
+  ASSERT_NO_THROW({ actual = ToLowerString(input); });
+  // White-box tests for further verification of no-crash behavior
+  ASSERT_EQ(7, actual.length());
+  ASSERT_EQ(L"foo", std::wstring(actual.c_str()));
+}
