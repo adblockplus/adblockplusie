@@ -142,75 +142,85 @@ WBPassthruSink::WBPassthruSink()
 {
 }
 
-ContentType WBPassthruSink::GetContentTypeFromMimeType(const std::wstring& mimeType)
+namespace
 {
-  if ((mimeType.find(L"text/html") != std::wstring::npos) ||
-      (mimeType.find(L"application/xhtml+xml") != std::wstring::npos))
+  /**
+   * Heuristic to infer an ABP content type from the media type list of an Accept: header field.
+   *
+   * Known IE Accept: strings for documents and images:
+   *     text/html, application/xhtml+xml, image/jxr, *\/*
+   *     image/png, image/svg+xml, image/jxr, image/*;q=0.8, *\/*;q = 0.5
+   * In IE9 the image/jxr part is missing.
+   */
+  ContentType InferContentTypeFromMediaTypeList(const std::wstring& mediaTypeList)
   {
-    return ContentType::CONTENT_TYPE_SUBDOCUMENT;
-  }
-  if (mimeType.find(L"image/") != std::wstring::npos)
-  {
-    return ContentType::CONTENT_TYPE_IMAGE;
-  }
-  if (mimeType.find(L"text/css") != std::wstring::npos)
-  {
-    return ContentType::CONTENT_TYPE_STYLESHEET;
-  }
-  if ((mimeType.find(L"application/javascript") != std::wstring::npos) || (mimeType.find(L"application/json") != std::wstring::npos))
-  {
-    return ContentType::CONTENT_TYPE_SCRIPT;
-  }
-  if (mimeType.find(L"application/x-shockwave-flash") != std::wstring::npos)
-  {
-    return ContentType::CONTENT_TYPE_OBJECT;
-  }
-  // It is important to have this check last, since it is rather generic, and might overlay text/html, for example
-  if (mimeType.find(L"xml") != std::wstring::npos)
-  {
-    return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
-  }
-
-  return ContentType::CONTENT_TYPE_OTHER;
-}
-
-ContentType WBPassthruSink::GetContentTypeFromURL(const std::wstring& src)
-{
-  std::wstring schemeAndHierarchicalPart = GetSchemeAndHierarchicalPart(src);
-  auto contentType = GetContentTypeFromString(schemeAndHierarchicalPart);
-  if (contentType == ContentType::CONTENT_TYPE_OTHER &&
-    AdblockPlus::IE::InstalledMajorVersion() == 8)
-  {
-    std::wstring queryString = GetQueryString(src);
-    wchar_t* nextToken = nullptr;
-    const wchar_t* token = wcstok_s(&queryString[0], L"&=", &nextToken);
-    while (token != nullptr)
+    if ((mediaTypeList.find(L"text/html") != std::wstring::npos) ||
+      (mediaTypeList.find(L"application/xhtml+xml") != std::wstring::npos))
     {
-      contentType = GetContentTypeFromString(token);
-      if (contentType != ContentType::CONTENT_TYPE_OTHER)
-      {
-         return contentType;
-      }
-      token = wcstok_s(nullptr, L"&=", &nextToken);
+      return ContentType::CONTENT_TYPE_SUBDOCUMENT;
     }
+    if (mediaTypeList.find(L"image/") != std::wstring::npos)
+    {
+      return ContentType::CONTENT_TYPE_IMAGE;
+    }
+    if (mediaTypeList.find(L"text/css") != std::wstring::npos)
+    {
+      return ContentType::CONTENT_TYPE_STYLESHEET;
+    }
+    if ((mediaTypeList.find(L"application/javascript") != std::wstring::npos) || (mediaTypeList.find(L"application/json") != std::wstring::npos))
+    {
+      return ContentType::CONTENT_TYPE_SCRIPT;
+    }
+    if (mediaTypeList.find(L"application/x-shockwave-flash") != std::wstring::npos)
+    {
+      return ContentType::CONTENT_TYPE_OBJECT;
+    }
+    // It is important to have this check last, since it is rather generic, and might overlay text/html, for example
+    if (mediaTypeList.find(L"xml") != std::wstring::npos)
+    {
+      return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
+    }
+    return ContentType::CONTENT_TYPE_OTHER;
   }
-  return contentType;
-}
 
-ContentType WBPassthruSink::GetContentType(const std::wstring& mimeType, const std::wstring& domain, const std::wstring& src)
-{
-  // No referer or mime type
-  // BINDSTRING_XDR_ORIGIN works only for IE v8+
-  if (mimeType.empty() && domain.empty() && AdblockPlus::IE::InstalledMajorVersion() >= 8)
+  ContentType InferContentTypeFromUrl(const std::wstring& src)
   {
-    return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
+    std::wstring schemeAndHierarchicalPart = GetSchemeAndHierarchicalPart(src);
+    auto contentType = GetContentTypeFromString(schemeAndHierarchicalPart);
+    if (contentType == ContentType::CONTENT_TYPE_OTHER &&
+      AdblockPlus::IE::InstalledMajorVersion() == 8)
+    {
+      std::wstring queryString = GetQueryString(src);
+      wchar_t* nextToken = nullptr;
+      const wchar_t* token = wcstok_s(&queryString[0], L"&=", &nextToken);
+      while (token != nullptr)
+      {
+        contentType = GetContentTypeFromString(token);
+        if (contentType != ContentType::CONTENT_TYPE_OTHER)
+        {
+           return contentType;
+        }
+        token = wcstok_s(nullptr, L"&=", &nextToken);
+      }
+    }
+    return contentType;
   }
-  ContentType contentType = GetContentTypeFromMimeType(mimeType);
-  if (contentType == ContentType::CONTENT_TYPE_OTHER)
+
+  ContentType InferContentType(const std::wstring& mediaTypeList, const std::wstring& domain, const std::wstring& src)
   {
-    contentType = GetContentTypeFromURL(src);
+    // No referer or mime type
+    // BINDSTRING_XDR_ORIGIN works only for IE v8+
+    if (mediaTypeList.empty() && domain.empty() && AdblockPlus::IE::InstalledMajorVersion() >= 8)
+    {
+      return ContentType::CONTENT_TYPE_XMLHTTPREQUEST;
+    }
+    ContentType contentType = InferContentTypeFromMediaTypeList(mediaTypeList);
+    if (contentType == ContentType::CONTENT_TYPE_OTHER)
+    {
+      contentType = InferContentTypeFromUrl(src);
+    }
+    return contentType;
   }
-  return contentType;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -344,7 +354,7 @@ STDMETHODIMP WBPassthruSink::BeginningTransaction(LPCWSTR szURL, LPCWSTR szHeade
     m_boundDomain = ExtractHttpHeader<std::wstring>(*pszAdditionalHeaders, L"Referer:", L"\n");
   }
   m_boundDomain = TrimString(m_boundDomain);
-  m_contentType = GetContentType(ToUtf16String(ExtractHttpAcceptHeader(m_spTargetProtocol)), m_boundDomain, src);
+  m_contentType = InferContentType(ToUtf16String(ExtractHttpAcceptHeader(m_spTargetProtocol)), m_boundDomain, src);
 
   CPluginTab* tab = CPluginClass::GetTab(::GetCurrentThreadId());
   CPluginClient* client = CPluginClient::GetInstance();

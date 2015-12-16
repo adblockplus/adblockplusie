@@ -31,16 +31,13 @@ class WBPassthruSink :
 public:
   WBPassthruSink();
 
+  bool m_isCustomResponse;
+
+private:
   uint64_t m_currentPositionOfSentPage;
   CComPtr<IInternetProtocol> m_pTargetProtocol;
   AdblockPlus::FilterEngine::ContentType m_contentType;
   std::wstring m_boundDomain;
-  bool m_isCustomResponse;
-
-private:
-  AdblockPlus::FilterEngine::ContentType GetContentTypeFromMimeType(const std::wstring& mimeType);
-  AdblockPlus::FilterEngine::ContentType GetContentTypeFromURL(const std::wstring& src);
-  AdblockPlus::FilterEngine::ContentType GetContentType(const std::wstring& mimeType, const std::wstring& domain, const std::wstring& src);
   bool IsFlashRequest(const wchar_t* const* additionalHeaders);
 
 public:
