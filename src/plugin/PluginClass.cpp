@@ -998,14 +998,21 @@ CPluginTab* CPluginClass::GetTab(DWORD dwThreadId)
   return tab;
 }
 
-
+// Entry point
 STDMETHODIMP CPluginClass::QueryStatus(const GUID* pguidCmdGroup, ULONG cCmds, OLECMD prgCmds[], OLECMDTEXT* pCmdText)
 {
-  if (cCmds == 0) return E_INVALIDARG;
-  if (prgCmds == 0) return E_POINTER;
+  try
+  {
+    if (cCmds == 0) return E_INVALIDARG;
+    if (prgCmds == 0) return E_POINTER;
 
-  prgCmds[0].cmdf = OLECMDF_ENABLED;
-
+    prgCmds[0].cmdf = OLECMDF_ENABLED;
+  }
+  catch (...)
+  {
+    DEBUG_GENERAL(L"CPluginClass::QueryStatus - exception");
+    return E_FAIL;
+  }
   return S_OK;
 }
 
@@ -1207,167 +1214,181 @@ bool CPluginClass::SetMenuBar(HMENU hMenu, const std::wstring& url)
   return true;
 }
 
-
+// Entry point
 STDMETHODIMP CPluginClass::Exec(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, VARIANTARG*)
 {
-  HWND hBrowserWnd = GetBrowserHWND();
-  if (!hBrowserWnd)
+  try
   {
-    return E_FAIL;
-  }
-
-  // Create menu
-  HMENU hMenu = CreatePluginMenu(m_tab->GetDocumentUrl());
-  if (!hMenu)
-  {
-    return E_FAIL;
-  }
-
-  // Check if button in toolbar was pressed
-  int nIDCommand = -1;
-  BOOL bRightAlign = FALSE;
-
-  POINT pt;
-  GetCursorPos(&pt);
-
-  HWND hWndToolBar = ::WindowFromPoint(pt);
-
-  DWORD nProcessId;
-  ::GetWindowThreadProcessId(hWndToolBar, &nProcessId);
-
-  if (hWndToolBar && ::GetCurrentProcessId() == nProcessId)
-  {
-    ::ScreenToClient(hWndToolBar, &pt);
-    int nButton = (int)::SendMessage(hWndToolBar, TB_HITTEST, 0, (LPARAM)&pt);
-
-    if (nButton > 0)
+    HWND hBrowserWnd = GetBrowserHWND();
+    if (!hBrowserWnd)
     {
-      TBBUTTON pTBBtn = {};
+      return E_FAIL;
+    }
 
-      if (SendMessage(hWndToolBar, TB_GETBUTTON, nButton, (LPARAM)&pTBBtn))
+    // Create menu
+    HMENU hMenu = CreatePluginMenu(m_tab->GetDocumentUrl());
+    if (!hMenu)
+    {
+      return E_FAIL;
+    }
+
+    // Check if button in toolbar was pressed
+    int nIDCommand = -1;
+    BOOL bRightAlign = FALSE;
+
+    POINT pt;
+    GetCursorPos(&pt);
+
+    HWND hWndToolBar = ::WindowFromPoint(pt);
+
+    DWORD nProcessId;
+    ::GetWindowThreadProcessId(hWndToolBar, &nProcessId);
+
+    if (hWndToolBar && ::GetCurrentProcessId() == nProcessId)
+    {
+      ::ScreenToClient(hWndToolBar, &pt);
+      int nButton = (int)::SendMessage(hWndToolBar, TB_HITTEST, 0, (LPARAM)&pt);
+
+      if (nButton > 0)
       {
-        RECT rcButton;
-        nIDCommand = pTBBtn.idCommand;
+        TBBUTTON pTBBtn = {};
 
-        if (SendMessage(hWndToolBar, TB_GETRECT, nIDCommand, (LPARAM)&rcButton))
+        if (SendMessage(hWndToolBar, TB_GETBUTTON, nButton, (LPARAM)&pTBBtn))
         {
-          pt.x = rcButton.left;
-          pt.y = rcButton.bottom;
-          ClientToScreen(hWndToolBar, &pt);
+          RECT rcButton;
+          nIDCommand = pTBBtn.idCommand;
 
-          RECT rcWorkArea;
-          SystemParametersInfo(SPI_GETWORKAREA, 0, (LPVOID)&rcWorkArea, 0);
-          if (rcWorkArea.right - pt.x < 150)
+          if (SendMessage(hWndToolBar, TB_GETRECT, nIDCommand, (LPARAM)&rcButton))
           {
-            bRightAlign = TRUE;
-            pt.x = rcButton.right;
+            pt.x = rcButton.left;
             pt.y = rcButton.bottom;
             ClientToScreen(hWndToolBar, &pt);
+
+            RECT rcWorkArea;
+            SystemParametersInfo(SPI_GETWORKAREA, 0, (LPVOID)&rcWorkArea, 0);
+            if (rcWorkArea.right - pt.x < 150)
+            {
+              bRightAlign = TRUE;
+              pt.x = rcButton.right;
+              pt.y = rcButton.bottom;
+              ClientToScreen(hWndToolBar, &pt);
+            }
           }
         }
       }
+      else
+      {
+        GetCursorPos(&pt);
+      }
+    }
+
+    // Display menu
+    UINT nFlags = 0;
+    if (bRightAlign)
+    {
+      nFlags |= TPM_RIGHTALIGN;
     }
     else
     {
-      GetCursorPos(&pt);
+      nFlags |= TPM_LEFTALIGN;
     }
-  }
 
-  // Display menu
-  UINT nFlags = 0;
-  if (bRightAlign)
-  {
-    nFlags |= TPM_RIGHTALIGN;
+    DisplayPluginMenu(hMenu, nIDCommand, pt, nFlags);
   }
-  else
+  catch (...)
   {
-    nFlags |= TPM_LEFTALIGN;
+    // Suppress exception, log only
+    DEBUG_GENERAL(L"CPluginClass::Exec - exception");
+    return E_FAIL;
   }
-
-  DisplayPluginMenu(hMenu, nIDCommand, pt, nFlags);
 
   return S_OK;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Window procedures
-
+// Entry point
 LRESULT CALLBACK CPluginClass::NewStatusProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-  // Find tab
-  CPluginClass *pClass = FindInstance(hWnd);
-  if (!pClass)
+  CPluginClass *pClass;
+  try
   {
-    return DefWindowProc(hWnd, message, wParam, lParam);
-  }
-
-  // Process message
-  switch (message)
-  {
-  case SB_SIMPLE:
+    // Find tab
+    pClass = FindInstance(hWnd);
+    if (!pClass)
     {
-      ShowWindow(pClass->m_hPaneWnd, !wParam);
+      /*
+       * Race condition if reached.
+       * We did not unhook the window procedure for the status bar when the last BHO instance using it terminated.
+       * The next best thing is to call the system default window function.
+       */
+      return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+
+    // Process message
+    switch (message)
+    {
+    case SB_SIMPLE:
+      {
+        ShowWindow(pClass->m_hPaneWnd, !wParam);
+        break;
+      }
+
+    case WM_SYSCOLORCHANGE:
+      {
+        pClass->UpdateTheme();
+        break;
+      }
+
+    case SB_SETPARTS:
+      {
+        if (!lParam || !wParam || wParam > 30 || !IsWindow(pClass->m_hPaneWnd))
+        {
+          return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+        }
+
+        WPARAM nParts = wParam;
+        if (STATUSBAR_PANE_NUMBER >= nParts)
+        {
+          return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
+        }
+
+        HLOCAL hLocal = LocalAlloc(LHND, sizeof(int) * (nParts + 1));
+        LPINT lpParts = (LPINT)LocalLock(hLocal);
+        memcpy(lpParts, (void*)lParam, wParam*sizeof(int));
+
+        for (unsigned i = 0; i < STATUSBAR_PANE_NUMBER; i++)
+        {
+          lpParts[i] -= pClass->m_nPaneWidth;
+        }
+        LRESULT hRet = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, (LPARAM)lpParts);
+
+        AdblockPlus::Rectangle rcPane;
+        ::SendMessage(hWnd, SB_GETRECT, STATUSBAR_PANE_NUMBER, (LPARAM)&rcPane);
+
+        AdblockPlus::Rectangle rcClient;
+        ::GetClientRect(hWnd, &rcClient);
+
+        ::MoveWindow(
+          pClass->m_hPaneWnd,
+          lpParts[STATUSBAR_PANE_NUMBER] - pClass->m_nPaneWidth,
+          0,
+          pClass->m_nPaneWidth,
+          rcClient.Height(),
+          TRUE);
+
+        ::LocalFree(hLocal);
+        return hRet;
+      }
+
+    default:
       break;
     }
-
-  case WM_SYSCOLORCHANGE:
-    {
-      pClass->UpdateTheme();
-      break;
-    }
-
-  case SB_SETPARTS:
-    {
-      if (!lParam || !wParam || wParam > 30 || !IsWindow(pClass->m_hPaneWnd))
-      {
-        return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
-      }
-
-      WPARAM nParts = wParam;
-      if (STATUSBAR_PANE_NUMBER >= nParts)
-      {
-        return CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
-      }
-
-      HLOCAL hLocal = LocalAlloc(LHND, sizeof(int) * (nParts+1));
-      LPINT lpParts = (LPINT)LocalLock(hLocal);
-      memcpy(lpParts, (void*)lParam, wParam*sizeof(int));
-
-      for (unsigned i = 0; i < STATUSBAR_PANE_NUMBER; i++)
-      {
-        lpParts[i] -= pClass->m_nPaneWidth;
-      }
-      LRESULT hRet = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, (LPARAM)lpParts);
-
-      AdblockPlus::Rectangle rcPane;
-      ::SendMessage(hWnd, SB_GETRECT, STATUSBAR_PANE_NUMBER, (LPARAM)&rcPane);
-
-      AdblockPlus::Rectangle rcClient;
-      ::GetClientRect(hWnd, &rcClient);
-
-      ::MoveWindow(
-        pClass->m_hPaneWnd,
-        lpParts[STATUSBAR_PANE_NUMBER] - pClass->m_nPaneWidth,
-        0,
-        pClass->m_nPaneWidth,
-        rcClient.Height(),
-        TRUE);
-
-      ::LocalFree(hLocal);
-
-
-      return hRet;
-    }
-
-  default:
-    break;
   }
-
-  LRESULT result = CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
-
-
-  return result;
-
+  catch (...)
+  {
+    // Suppress exception. Fall through to default handler.
+    DEBUG_GENERAL(L"CPluginClass::NewStatusProc - exception");
+  }
+  return ::CallWindowProc(pClass->m_pWndProcStatus, hWnd, message, wParam, lParam);
 }
 
 
@@ -1396,209 +1417,215 @@ HICON CPluginClass::GetStatusBarIcon(const std::wstring& url)
   return hIcon;
 }
 
-
+// Entry point
 LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-  // Find tab
-  CPluginClass *pClass = FindInstance(GetParent(hWnd));
-  if (!pClass)
+  try
   {
-    return ::DefWindowProc(hWnd, message, wParam, lParam);
-  }
-
-  // Process message
-  switch (message)
-  {
-
-  case WM_SETCURSOR:
+    // Find tab
+    CPluginClass *pClass = FindInstance(GetParent(hWnd));
+    if (!pClass)
     {
-      ::SetCursor(::LoadCursor(NULL, IDC_ARROW));
-      return TRUE;
+      return ::DefWindowProc(hWnd, message, wParam, lParam);
     }
-  case WM_PAINT:
+
+    // Process message
+    switch (message)
     {
-      PAINTSTRUCT ps;
-      HDC hDC = ::BeginPaint(hWnd, &ps);
-
-      AdblockPlus::Rectangle rcClient;
-      ::GetClientRect(hWnd, &rcClient);
-
-      int nDrawEdge = 0;
-
-      // Old Windows background drawing
-      if (pClass->m_hTheme == NULL)
+    case WM_SETCURSOR:
       {
-        ::FillRect(hDC, &rcClient, (HBRUSH)(COLOR_BTNFACE + 1));
-        ::DrawEdge(hDC, &rcClient, BDR_RAISEDINNER, BF_LEFT);
-
-        nDrawEdge = 3;
-        rcClient.left += 3;
-
-        ::DrawEdge(hDC, &rcClient, BDR_SUNKENOUTER, BF_RECT);
+        ::SetCursor(::LoadCursor(NULL, IDC_ARROW));
+        return TRUE;
       }
-      // Themed background drawing
-      else
+    case WM_PAINT:
       {
-        // Draw background
-        if (pfnDrawThemeBackground)
+        PAINTSTRUCT ps;
+        HDC hDC = ::BeginPaint(hWnd, &ps);
+
+        AdblockPlus::Rectangle rcClient;
+        ::GetClientRect(hWnd, &rcClient);
+
+        int nDrawEdge = 0;
+
+        // Old Windows background drawing
+        if (pClass->m_hTheme == NULL)
         {
-          AdblockPlus::Rectangle rc = rcClient;
-          rc.right -= 2;
-          pfnDrawThemeBackground(pClass->m_hTheme, hDC, 0, 0, &rc, NULL);
+          ::FillRect(hDC, &rcClient, (HBRUSH)(COLOR_BTNFACE + 1));
+          ::DrawEdge(hDC, &rcClient, BDR_RAISEDINNER, BF_LEFT);
+
+          nDrawEdge = 3;
+          rcClient.left += 3;
+
+          ::DrawEdge(hDC, &rcClient, BDR_SUNKENOUTER, BF_RECT);
         }
-
-        // Copy separator picture to left side
-        int nHeight = rcClient.Height();
-        int nWidth = rcClient.Width() - 2;
-
-        for (int i = 0; i < 2; i++)
+        // Themed background drawing
+        else
         {
-          for (int j = 0; j < nHeight; j++)
+          // Draw background
+          if (pfnDrawThemeBackground)
           {
-            COLORREF clr = ::GetPixel(hDC, i + nWidth, j);
+            AdblockPlus::Rectangle rc = rcClient;
+            rc.right -= 2;
+            pfnDrawThemeBackground(pClass->m_hTheme, hDC, 0, 0, &rc, NULL);
+          }
 
-            // Ignore black boxes (if source is obscured by other windows)
-            if (clr != -1 && (GetRValue(clr) > 8 || GetGValue(clr) > 8 || GetBValue(clr) > 8))
+          // Copy separator picture to left side
+          int nHeight = rcClient.Height();
+          int nWidth = rcClient.Width() - 2;
+
+          for (int i = 0; i < 2; i++)
+          {
+            for (int j = 0; j < nHeight; j++)
             {
-              ::SetPixel(hDC, i, j, clr);
+              COLORREF clr = ::GetPixel(hDC, i + nWidth, j);
+
+              // Ignore black boxes (if source is obscured by other windows)
+              if (clr != -1 && (GetRValue(clr) > 8 || GetGValue(clr) > 8 || GetBValue(clr) > 8))
+              {
+                ::SetPixel(hDC, i, j, clr);
+              }
             }
           }
         }
-      }
 
-      // Draw icon
-      if (CPluginClient::GetInstance())
-      {
-        HICON hIcon = GetStatusBarIcon(pClass->GetTab()->GetDocumentUrl());
-
-        int offx = nDrawEdge;
-        if (hIcon)
+        // Draw icon
+        if (CPluginClient::GetInstance())
         {
-          //Get the RECT for the leftmost pane (the status text pane)
-          RECT rect;
-          BOOL rectRes = ::SendMessage(pClass->m_hStatusBarWnd, SB_GETRECT, 0, (LPARAM)&rect);
-          ::DrawIconEx(hDC, 0, rect.bottom - rect.top - iconHeight, hIcon, iconWidth, iconHeight, NULL, NULL, DI_NORMAL);
-          offx += iconWidth;
-        }
+          HICON hIcon = GetStatusBarIcon(pClass->GetTab()->GetDocumentUrl());
+
+          int offx = nDrawEdge;
+          if (hIcon)
+          {
+            //Get the RECT for the leftmost pane (the status text pane)
+            RECT rect;
+            BOOL rectRes = ::SendMessage(pClass->m_hStatusBarWnd, SB_GETRECT, 0, (LPARAM)&rect);
+            ::DrawIconEx(hDC, 0, rect.bottom - rect.top - iconHeight, hIcon, iconWidth, iconHeight, NULL, NULL, DI_NORMAL);
+            offx += iconWidth;
+          }
 #ifdef _DEBUG
-        // Display version
-        HFONT hFont = (HFONT)::SendMessage(pClass->m_hStatusBarWnd, WM_GETFONT, 0, 0);
-        HGDIOBJ hOldFont = ::SelectObject(hDC,hFont);
+          // Display version
+          HFONT hFont = (HFONT)::SendMessage(pClass->m_hStatusBarWnd, WM_GETFONT, 0, 0);
+          HGDIOBJ hOldFont = ::SelectObject(hDC, hFont);
 
-        AdblockPlus::Rectangle rcText = rcClient;
-        rcText.left += offx;
-        ::SetBkMode(hDC, TRANSPARENT);
-        ::DrawTextW(hDC, IEPLUGIN_VERSION, -1, &rcText, DT_WORD_ELLIPSIS|DT_LEFT|DT_SINGLELINE|DT_VCENTER);
+          AdblockPlus::Rectangle rcText = rcClient;
+          rcText.left += offx;
+          ::SetBkMode(hDC, TRANSPARENT);
+          ::DrawTextW(hDC, IEPLUGIN_VERSION, -1, &rcText, DT_WORD_ELLIPSIS | DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 
-        ::SelectObject(hDC, hOldFont);
+          ::SelectObject(hDC, hOldFont);
 #endif // _DEBUG
-      }
+        }
 
-      // Done!
-      EndPaint(hWnd, &ps);
+        // Done!
+        EndPaint(hWnd, &ps);
 
-      return 0;
-    }
-
-  case WM_LBUTTONUP:
-  case WM_RBUTTONUP:
-    {
-      std::wstring url = pClass->GetBrowserUrl();
-      if (url != pClass->GetTab()->GetDocumentUrl())
-      {
-        pClass->GetTab()->SetDocumentUrl(url);
-      }
-
-      // Create menu
-      HMENU hMenu = pClass->CreatePluginMenu(url);
-      if (!hMenu)
-      {
         return 0;
       }
 
-      // Display menu
-      POINT pt;
-      ::GetCursorPos(&pt);
-
-      RECT rc;
-      ::GetWindowRect(hWnd, &rc);
-
-      if (rc.left >= 0 && rc.top >= 0)
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
       {
-        pt.x = rc.left;
-        pt.y = rc.top;
+        std::wstring url = pClass->GetBrowserUrl();
+        if (url != pClass->GetTab()->GetDocumentUrl())
+        {
+          pClass->GetTab()->SetDocumentUrl(url);
+        }
+
+        // Create menu
+        HMENU hMenu = pClass->CreatePluginMenu(url);
+        if (!hMenu)
+        {
+          return 0;
+        }
+
+        // Display menu
+        POINT pt;
+        ::GetCursorPos(&pt);
+
+        RECT rc;
+        ::GetWindowRect(hWnd, &rc);
+
+        if (rc.left >= 0 && rc.top >= 0)
+        {
+          pt.x = rc.left;
+          pt.y = rc.top;
+        }
+
+        pClass->DisplayPluginMenu(hMenu, -1, pt, TPM_LEFTALIGN | TPM_BOTTOMALIGN);
+        break;
       }
+    case WM_DESTROY:
+      break;
+    case SC_CLOSE:
+      break;
 
-      pClass->DisplayPluginMenu(hMenu, -1, pt, TPM_LEFTALIGN|TPM_BOTTOMALIGN);
-    }
-    break;
-  case WM_DESTROY:
-    break;
-  case SC_CLOSE:
-    break;
-
-  case WM_UPDATEUISTATE:
-    {
-      CPluginTab* tab = GetTab(::GetCurrentThreadId());
-      if (tab)
+    case WM_UPDATEUISTATE:
       {
-        tab->OnActivate();
+        CPluginTab* tab = GetTab(::GetCurrentThreadId());
+        if (tab)
+        {
+          tab->OnActivate();
+          RECT rect;
+          GetWindowRect(pClass->m_hPaneWnd, &rect);
+          pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2);
+        }
+        if (LOWORD(wParam) == UIS_CLEAR)
+        {
+          pClass->notificationMessage.Hide();
+        }
+        break;
+      }
+    case WM_WINDOWPOSCHANGING:
+      {
         RECT rect;
         GetWindowRect(pClass->m_hPaneWnd, &rect);
-        pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2); 
+        if (pClass->notificationMessage.IsVisible())
+        {
+          pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2);
+        }
+        break;
       }
-      if (LOWORD(wParam) == UIS_CLEAR)
+    case WM_WINDOWPOSCHANGED:
       {
-        pClass->notificationMessage.Hide();
+        WINDOWPOS* wndPos = reinterpret_cast<WINDOWPOS*>(lParam);
+        if (wndPos->flags & SWP_HIDEWINDOW)
+        {
+          pClass->notificationMessage.Hide();
+        }
+        break;
       }
-    }
-    break;
-  case WM_WINDOWPOSCHANGING:
-    {
-      RECT rect;
-      GetWindowRect(pClass->m_hPaneWnd, &rect);
-      if (pClass->notificationMessage.IsVisible())
+    case WM_ALREADY_UP_TO_DATE:
       {
-        pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2); 
+        Dictionary* dictionary = Dictionary::GetInstance();
+        std::wstring upToDateText = dictionary->Lookup("updater", "update-already-up-to-date-text");
+        std::wstring upToDateTitle = dictionary->Lookup("updater", "update-already-up-to-date-title");
+        pClass->notificationMessage.SetTextAndIcon(upToDateText, upToDateTitle, TTI_INFO);
+        break;
       }
-    }
-    break;
-  case WM_WINDOWPOSCHANGED:
-    {
-      WINDOWPOS* wndPos = reinterpret_cast<WINDOWPOS*>(lParam);
-      if (wndPos->flags & SWP_HIDEWINDOW)
+    case WM_UPDATE_CHECK_ERROR:
       {
-        pClass->notificationMessage.Hide();
+        Dictionary* dictionary = Dictionary::GetInstance();
+        std::wstring errorText = dictionary->Lookup("updater", "update-error-text");
+        std::wstring errorTitle = dictionary->Lookup("updater", "update-error-title");
+        pClass->notificationMessage.SetTextAndIcon(errorText, errorText, TTI_ERROR);
+        break;
+      }
+    case WM_DOWNLOADING_UPDATE:
+      {
+        Dictionary* dictionary = Dictionary::GetInstance();
+        std::wstring downloadingText = dictionary->Lookup("updater", "downloading-update-text");
+        std::wstring downloadingTitle = dictionary->Lookup("updater", "downloading-update-title");
+        pClass->notificationMessage.SetTextAndIcon(downloadingText, downloadingTitle, TTI_INFO);
+        break;
       }
     }
-    break;
-  case WM_ALREADY_UP_TO_DATE:
-    {
-      Dictionary* dictionary = Dictionary::GetInstance();
-      std::wstring upToDateText = dictionary->Lookup("updater", "update-already-up-to-date-text");
-      std::wstring upToDateTitle = dictionary->Lookup("updater", "update-already-up-to-date-title");
-      pClass->notificationMessage.SetTextAndIcon(upToDateText, upToDateTitle, TTI_INFO);
-    }
-    break;
-  case WM_UPDATE_CHECK_ERROR:
-    {
-      Dictionary* dictionary = Dictionary::GetInstance();
-      std::wstring errorText = dictionary->Lookup("updater", "update-error-text");
-      std::wstring errorTitle = dictionary->Lookup("updater", "update-error-title");
-      pClass->notificationMessage.SetTextAndIcon(errorText, errorText, TTI_ERROR);
-    }
-    break;
-  case WM_DOWNLOADING_UPDATE:
-    {
-      Dictionary* dictionary = Dictionary::GetInstance();
-      std::wstring downloadingText = dictionary->Lookup("updater", "downloading-update-text");
-      std::wstring downloadingTitle = dictionary->Lookup("updater", "downloading-update-title");
-      pClass->notificationMessage.SetTextAndIcon(downloadingText, downloadingTitle, TTI_INFO);
-    }
-    break;
   }
-
-  return DefWindowProc(hWnd, message, wParam, lParam);
+  catch (...)
+  {
+    // Suppress exception. Fall through to default handler.
+    DEBUG_GENERAL(L"CPluginClass::PaneWindowProc - exception");
+  }
+  return ::DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 
