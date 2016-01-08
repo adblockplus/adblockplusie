@@ -65,7 +65,7 @@ CPluginTab::~CPluginTab()
  * We can disable any domain used in those protocol with an appropriate whitelist filter.
  * Thus, the possibility to disable on a particular site depends only on the protocol.
  */
-bool CPluginTabBase::IsPossibleToDisableOnSite()
+bool CPluginTab::IsPossibleToDisableOnSite()
 {
   auto url = GetDocumentUrl();
   return BeginsWith(url, L"http:") || BeginsWith(url, L"https:");
