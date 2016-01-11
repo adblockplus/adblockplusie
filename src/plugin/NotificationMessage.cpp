@@ -68,7 +68,7 @@ bool NotificationMessage::Show(std::wstring message, std::wstring title, int ico
 
   RECT rect;
   GetWindowRect(parentWindow, &rect);
-  Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2);
+  MoveToCenter(rect);
 
   SetTextAndIcon(message, title, icon);
   res = ::SendMessage(toolTipWindow, TTM_TRACKACTIVATE, TRUE, (LPARAM)&ti);
@@ -113,5 +113,5 @@ bool NotificationMessage::IsVisible()
 {
   if (toolTipWindow == 0)
     return false;
-  return IsWindowVisible(toolTipWindow);
+  return IsWindowVisible(toolTipWindow) != FALSE;
 }

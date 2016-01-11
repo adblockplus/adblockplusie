@@ -28,6 +28,10 @@ public:
   bool Show(std::wstring message, std::wstring title, int icon);
   void Hide();
   void Move(short x, short y);
+  void MoveToCenter(const RECT& r)
+  {
+    Move(static_cast<short>((r.left + r.right) / 2), static_cast<short>((r.top + r.bottom) / 2));
+  }
   bool SetTextAndIcon(std::wstring text, std::wstring title, int icon);
   void SetParent(HWND parent);
   bool IsVisible();

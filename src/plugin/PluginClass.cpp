@@ -77,14 +77,22 @@ namespace AdblockPlus
     : public RECT
   {
   public:
-    int Height() const
+    unsigned long Height() const
     {
-      return bottom - top;
+      if (bottom < top)
+      {
+        throw std::runtime_error("invariant violation: rectangle bottom < top");
+      }
+      return static_cast<unsigned long>(bottom - top);
     }
 
-    int Width() const
+    unsigned long Width() const
     {
-      return right - left;
+      if (right < left)
+      {
+        throw std::runtime_error("invariant violation: rectangle right < left");
+      }
+      return static_cast<unsigned long>(right - left);
     }
   };
 }
@@ -1576,7 +1584,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
           tab->OnActivate();
           RECT rect;
           GetWindowRect(pClass->m_hPaneWnd, &rect);
-          pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2);
+          pClass->notificationMessage.MoveToCenter(rect);
         }
         if (LOWORD(wParam) == UIS_CLEAR)
         {
@@ -1590,7 +1598,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         GetWindowRect(pClass->m_hPaneWnd, &rect);
         if (pClass->notificationMessage.IsVisible())
         {
-          pClass->notificationMessage.Move(rect.left + (rect.right - rect.left) / 2, rect.top + (rect.bottom - rect.top) / 2);
+          pClass->notificationMessage.MoveToCenter(rect);
         }
         break;
       }
