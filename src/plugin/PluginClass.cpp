@@ -178,14 +178,17 @@ std::wstring CPluginClass::GetBrowserUrl() const
   if (m_webBrowser2)
   {
     CComBSTR bstrURL;
-    if (SUCCEEDED(m_webBrowser2->get_LocationURL(&bstrURL)) && bstrURL)
+    if (SUCCEEDED(m_webBrowser2->get_LocationURL(&bstrURL)))
     {
-      url = std::wstring(bstrURL, SysStringLen(bstrURL));
+      url = ToWstring(bstrURL);
     }
   }
   else
   {
-    DEBUG_ERROR_LOG(0, 0, 0, "CPluginClass::GetBrowserUrl - Reached with m_webBrowser2 == nullptr");
+    DEBUG_GENERAL(L"CPluginClass::GetBrowserUrl - Reached with m_webBrowser2 == nullptr (probable invariant violation)");
+  }
+  if (url.empty())
+  {
     url = m_tab->GetDocumentUrl();
   }
   return url;
@@ -482,7 +485,7 @@ void STDMETHODCALLTYPE CPluginClass::OnBeforeNavigate2(
     {
       return;
     }
-    std::wstring url(urlVariant->bstrVal, SysStringLen(urlVariant->bstrVal));
+    std::wstring url = ToWstring(urlVariant->bstrVal);
 
     // If webbrowser2 is equal to top level browser (as set in SetSite), we are
     // navigating new page

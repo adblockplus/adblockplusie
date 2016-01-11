@@ -65,18 +65,19 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const std::wstring& tag, 
   if (tag == L"img")
   {
     CComVariant vAttr;
-
-    if (SUCCEEDED(pEl->getAttribute(ATL::CComBSTR(L"src"), 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
+    if (SUCCEEDED(pEl->getAttribute(ATL::CComBSTR(L"src"), 0, &vAttr)) && vAttr.vt == VT_BSTR)
     {
-      std::wstring src(vAttr.bstrVal, SysStringLen(vAttr.bstrVal));
-
-      // If src should be blocked, set style display:none on image
-      cache->m_isHidden = client->ShouldBlock(src,
-        AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_IMAGE, m_documentUrl);
-      if (cache->m_isHidden)
+      std::wstring src = ToWstring(vAttr.bstrVal);
+      if (!src.empty())
       {
-        HideElement(pEl, L"image", src, true, indent);
-        return false;
+        // If src should be blocked, set style display:none on image
+        cache->m_isHidden = client->ShouldBlock(src,
+          AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_IMAGE, m_documentUrl);
+        if (cache->m_isHidden)
+        {
+          HideElement(pEl, L"image", src, true, indent);
+          return false;
+        }
       }
     }
   }
@@ -138,17 +139,14 @@ void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const std::wstring& typ
   if (SUCCEEDED(pEl->get_style(&pStyle)) && pStyle)
   {
     CComBSTR bstrDisplay;
-    if (SUCCEEDED(pStyle->get_display(&bstrDisplay)) && bstrDisplay && ToWstring(bstrDisplay) == L"none")
+    if (SUCCEEDED(pStyle->get_display(&bstrDisplay)) && ToWstring(bstrDisplay) == L"none")
     {
       return;
     }
-
     static const CComBSTR sbstrNone(L"none");
-
     if (SUCCEEDED(pStyle->put_display(sbstrNone)))
     {
       DEBUG_HIDE_EL(ToWstring(indent) + L"HideEl::Hiding " + ToWstring(type) + L" url:" + url)
-
 #ifdef ENABLE_DEBUG_RESULT
         if (isDebug)
         {

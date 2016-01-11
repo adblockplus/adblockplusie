@@ -237,9 +237,9 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
         {
           std::wstring src;
           CComBSTR bstrSrc;
-          if (SUCCEEDED(pFrameBrowser->get_LocationURL(&bstrSrc)) && bstrSrc)
+          if (SUCCEEDED(pFrameBrowser->get_LocationURL(&bstrSrc)))
           {
-            src = std::wstring(bstrSrc,SysStringLen(bstrSrc));
+            src = ToWstring(bstrSrc);
           }
           if (!src.empty())
           {
@@ -274,29 +274,31 @@ void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool i
         {
           CComVariant vAttr;
 
-          if (SUCCEEDED(pFrameEl->getAttribute(ATL::CComBSTR(L"src"), 0, &vAttr)) && vAttr.vt == VT_BSTR && ::SysStringLen(vAttr.bstrVal) > 0)
+          if (SUCCEEDED(pFrameEl->getAttribute(ATL::CComBSTR(L"src"), 0, &vAttr)) && vAttr.vt == VT_BSTR)
           {
-            std::wstring src(vAttr.bstrVal, SysStringLen(vAttr.bstrVal));
-
-            // Some times, domain is missing. Should this be added on image src's as well?''
-            // eg. gadgetzone.com.au
-            if (BeginsWith(src, L"//"))
+            std::wstring src = ToWstring(vAttr.bstrVal);
+            if (!src.empty())
             {
-              src = L"http:" + src;
-            }
-            // eg. http://w3schools.com/html/html_examples.asp
-            else if (!(BeginsWith(src, L"http") || BeginsWith(src, L"res://")))
-            {
-              src = L"http://" + m_domain + src;
-            }
-
-            // Check if Iframe should be traversed
-            if (OnIFrame(pFrameEl, src, indent))
-            {
-              CComQIPtr<IWebBrowser2> pFrameBrowser = pFrameDispatch;
-              if (pFrameBrowser)
+              // Some times, domain is missing. Should this be added on image src's as well?''
+              // eg. gadgetzone.com.au
+              if (BeginsWith(src, L"//"))
               {
-                TraverseDocument(pFrameBrowser, false, indent);
+                src = L"http:" + src;
+              }
+              // eg. http://w3schools.com/html/html_examples.asp
+              else if (!(BeginsWith(src, L"http") || BeginsWith(src, L"res://")))
+              {
+                src = L"http://" + m_domain + src;
+              }
+
+              // Check if Iframe should be traversed
+              if (OnIFrame(pFrameEl, src, indent))
+              {
+                CComQIPtr<IWebBrowser2> pFrameBrowser = pFrameDispatch;
+                if (pFrameBrowser)
+                {
+                  TraverseDocument(pFrameBrowser, false, indent);
+                }
               }
             }
           }

@@ -184,8 +184,8 @@ STDMETHODIMP CPluginUserSettings::Invoke(DISPID dispidMember, REFIID riid, LCID 
           CComBSTR section = pDispparams->rgvarg[1].bstrVal;
           Dictionary* dictionary = Dictionary::GetInstance();
           std::wstring message = dictionary->Lookup(
-            ToUtf8String(std::wstring(section, ::SysStringLen(section))),
-            ToUtf8String(std::wstring(key, ::SysStringLen(key)))
+            ToUtf8String(ToWstring(section)),
+            ToUtf8String(ToWstring(key))
           );
 
           pVarResult->vt = VT_BSTR;
