@@ -1624,7 +1624,7 @@ LRESULT CALLBACK CPluginClass::PaneWindowProc(HWND hWnd, UINT message, WPARAM wP
         Dictionary* dictionary = Dictionary::GetInstance();
         std::wstring errorText = dictionary->Lookup("updater", "update-error-text");
         std::wstring errorTitle = dictionary->Lookup("updater", "update-error-title");
-        pClass->notificationMessage.SetTextAndIcon(errorText, errorText, TTI_ERROR);
+        pClass->notificationMessage.SetTextAndIcon(errorText, errorTitle, TTI_ERROR);
         break;
       }
     case WM_DOWNLOADING_UPDATE:
