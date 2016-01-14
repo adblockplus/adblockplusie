@@ -118,11 +118,6 @@ namespace
 CAdblockPlusClient* CAdblockPlusClient::s_instance = NULL;
 CComAutoCriticalSection CAdblockPlusClient::s_criticalSectionLocal;
 
-CAdblockPlusClient::CAdblockPlusClient()
-{
-  m_filter = std::auto_ptr<CPluginFilter>(new CPluginFilter());
-}
-
 bool CAdblockPlusClient::CallEngine(Communication::OutputBuffer& message, Communication::InputBuffer& inputBuffer)
 {
   DEBUG_GENERAL("CallEngine start");
@@ -176,6 +171,42 @@ CAdblockPlusClient* CAdblockPlusClient::GetInstance()
   return instance;
 }
 
+namespace
+{
+  bool ShouldBlockLocal(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug)
+  {
+    std::wstring srcTrimmed = TrimString(src);
+
+    // We should not block the empty string, so all filtering does not make sense
+    // Therefore we just return
+    if (srcTrimmed.empty())
+    {
+      return false;
+    }
+
+    CPluginSettings* settings = CPluginSettings::GetInstance();
+
+    CPluginClient* client = CPluginClient::GetInstance();
+    bool result = client->Matches(srcTrimmed, contentType, domain);
+
+#ifdef ENABLE_DEBUG_RESULT
+    if (addDebug)
+    {
+      std::wstring type = ToUtf16String(AdblockPlus::FilterEngine::ContentTypeToString(contentType));
+      if (result)
+      {
+        CPluginDebug::DebugResultBlocking(type, srcTrimmed, domain);
+      }
+      else
+      {
+        CPluginDebug::DebugResultIgnoring(type, srcTrimmed, domain);
+      }
+    }
+#endif
+    return result;
+  }
+}
+
 bool CAdblockPlusClient::ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug)
 {
   bool isBlocked = false;
@@ -196,7 +227,7 @@ bool CAdblockPlusClient::ShouldBlock(const std::wstring& src, AdblockPlus::Filte
   {
     m_criticalSectionFilter.Lock();
     {
-      isBlocked = m_filter->ShouldBlock(src, contentType, domain, addDebug);
+      isBlocked = ShouldBlockLocal(src, contentType, domain, addDebug);
     }
     m_criticalSectionFilter.Unlock();
 

@@ -38,8 +38,6 @@ class CAdblockPlusClient
 
 private:
 
-  std::auto_ptr<CPluginFilter> m_filter;
-
   CComAutoCriticalSection m_criticalSectionFilter;
   CComAutoCriticalSection m_criticalSectionCache;
   static CComAutoCriticalSection s_criticalSectionLocal;
@@ -51,7 +49,7 @@ private:
 
 
   // Private constructor used by the singleton pattern
-  CAdblockPlusClient();
+  CAdblockPlusClient() {};
 
   bool CallEngine(Communication::OutputBuffer& message, Communication::InputBuffer& inputBuffer = Communication::InputBuffer());
   bool CallEngine(Communication::ProcType proc, Communication::InputBuffer& inputBuffer = Communication::InputBuffer());

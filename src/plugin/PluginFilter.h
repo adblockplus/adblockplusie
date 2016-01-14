@@ -143,19 +143,10 @@ private:
   void ClearFilters();
 
 public:
-
   CPluginFilter(const CString& dataPath = "");
-
   bool LoadHideFilters(std::vector<std::wstring> filters);
-
   bool AddFilterElementHide(CString filter);
-
-
   bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent) const;
-
-
-  bool ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug=false) const;
-
   HANDLE hideFiltersLoadedEvent;
 };
 
