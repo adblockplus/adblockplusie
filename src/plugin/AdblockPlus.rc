@@ -39,7 +39,7 @@ BEGIN
             VALUE "FileDescription", "Adblock Plus BHO for Internet Explorer"
             VALUE "FileVersion", VERSIONINFO_VERSION_STR
             VALUE "InternalName", "Adblock Plus BHO"
-            VALUE "LegalCopyright", "Copyright (C) 2006-2015 Eyeo GmbH"                           
+            VALUE "LegalCopyright", "Copyright (C) 2006-2016 Eyeo GmbH"                           
             VALUE "OriginalFilename", "AdblockPlus.dll"
             VALUE "ProductName", "Adblock Plus"
             VALUE "ProductVersion", VERSIONINFO_VERSION_STR
