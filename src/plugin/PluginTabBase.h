@@ -38,7 +38,7 @@ class CPluginTab
 
   std::thread m_thread;
   std::atomic<bool> m_continueThreadRunning;
-  CPluginDomTraverser* m_traverser;
+  std::unique_ptr<CPluginDomTraverser> m_traverser;
 public:
   CPluginFilter m_filter;
 private:

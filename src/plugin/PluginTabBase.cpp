@@ -46,14 +46,11 @@ CPluginTab::CPluginTab()
     DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_TAB_THREAD_CREATE_PROCESS,
       "Tab::Thread - Failed to create tab thread");
   }
-  m_traverser = new CPluginDomTraverser(static_cast<CPluginTab*>(this));
 }
 
 
 CPluginTab::~CPluginTab()
 {
-  delete m_traverser;
-  m_traverser = NULL;
   m_continueThreadRunning = false;
   if (m_thread.joinable()) {
     m_thread.join();
@@ -115,7 +112,7 @@ void CPluginTab::OnNavigate(const std::wstring& url)
     DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS,
       "Class::Thread - Failed to start filter loader thread");
   }
-  m_traverser->ClearCache();
+  m_traverser.reset();
 }
 
 namespace
@@ -265,6 +262,8 @@ void CPluginTab::OnDownloadComplete(IWebBrowser2* browser)
   std::wstring url = GetDocumentUrl();
   if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
   {
+    if (!m_traverser)
+      m_traverser.reset(new CPluginDomTraverser(static_cast<CPluginTab*>(this)));
     m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
   }
   InjectABP(browser);
