@@ -23,15 +23,69 @@
 #include "PluginTabBase.h"
 #include "IeVersion.h"
 #include "../shared/Utils.h"
+#include "../shared/EventWithSetter.h"
 #include <Mshtmhst.h>
+#include <mutex>
+
+class CPluginTab::AsyncPluginFilter
+{
+public:
+  static std::shared_ptr<AsyncPluginFilter> CreateAsync(const std::wstring& domain)
+  {
+    std::shared_ptr<AsyncPluginFilter> asyncFilter = std::make_shared<AsyncPluginFilter>();
+    std::weak_ptr<AsyncPluginFilter> weakAsyncData = asyncFilter;
+    auto eventSetter = asyncFilter->event.CreateSetter();
+    try
+    {
+      std::thread([domain, weakAsyncData, eventSetter]
+      {
+        try
+        {
+          CreateAsyncImpl(domain, weakAsyncData, eventSetter);
+        }
+	catch (...)
+        {
+          // As a thread-main function, we truncate any C++ exception.
+        }
+      }).detach();
+      // TODO: we should do something with that `detach` above.
+    }
+    catch (const std::system_error& ex)
+    {
+      DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS,
+        "Class::Thread - Failed to start filter loader thread");
+    }
+    return asyncFilter;
+  }
+  PluginFilterPtr GetFilter()
+  {
+    if (!event.Wait())
+      return PluginFilterPtr();
+    std::lock_guard<std::mutex> lock(mutex);
+    return filter;
+  }
+private:
+  static void CreateAsyncImpl(const std::wstring& domain, std::weak_ptr<AsyncPluginFilter> weakAsyncData, const std::shared_ptr<EventWithSetter::Setter>& setter)
+  {
+    std::unique_ptr<CPluginFilter> pluginFilter(new CPluginFilter(CPluginClient::GetInstance()->GetElementHidingSelectors(domain)));
+    if (auto asyncData = weakAsyncData.lock())
+    {
+      {
+        std::lock_guard<std::mutex> lock(asyncData->mutex);
+        asyncData->filter = move(pluginFilter);
+      }
+      setter->Set();
+    }
+  }
+  EventWithSetter event;
+  std::mutex mutex;
+  PluginFilterPtr filter;
+};
 
 CPluginTab::CPluginTab()
   : m_isActivated(false)
   , m_continueThreadRunning(true)
 {
-  m_pluginFilter = std::make_shared<CPluginFilter>();
-  m_pluginFilter->hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
-
   CPluginClient* client = CPluginClient::GetInstance();
   if (AdblockPlus::IE::InstalledMajorVersion() < 10)
   {
@@ -80,39 +134,12 @@ void CPluginTab::OnUpdate()
   m_isActivated = true;
 }
 
-namespace
-{
-  // Entry Point
-  void FilterLoader(CPluginFilter* filter, const std::wstring& domain)
-  {
-    try
-    {
-      filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(domain));
-      SetEvent(filter->hideFiltersLoadedEvent);
-    }
-    catch (...)
-    {
-      // As a thread-main function, we truncate any C++ exception.
-    }
-  }
-}
-
 void CPluginTab::OnNavigate(const std::wstring& url)
 {
   SetDocumentUrl(url);
-  ClearFrameCache(GetDocumentDomain());
-  std::wstring domainString = GetDocumentDomain();
-  ResetEvent(m_pluginFilter->hideFiltersLoadedEvent);
-  try
-  {
-    std::thread filterLoaderThread(&FilterLoader, m_pluginFilter.get(), GetDocumentDomain());
-    filterLoaderThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
-  }
-  catch (const std::system_error& ex)
-  {
-    DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS,
-      "Class::Thread - Failed to start filter loader thread");
-  }
+  std::wstring domain = GetDocumentDomain();
+  ClearFrameCache(domain);
+  m_asyncPluginFilter = AsyncPluginFilter::CreateAsync(domain);
   m_traverser.reset();
 }
 
@@ -263,10 +290,20 @@ void CPluginTab::OnDownloadComplete(IWebBrowser2* browser)
   std::wstring url = GetDocumentUrl();
   if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
   {
-    DWORD res = WaitForSingleObject(m_pluginFilter->hideFiltersLoadedEvent, ENGINE_STARTUP_TIMEOUT);
     if (!m_traverser)
-      m_traverser.reset(new CPluginDomTraverser(m_pluginFilter));
-    m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
+    {
+      assert(m_asyncPluginFilter && "Filter initialization should be already at least started");
+      if (m_asyncPluginFilter)
+      {
+        auto pluginFilter = m_asyncPluginFilter->GetFilter();
+        assert(pluginFilter && "Plugin filter should be a valid object");
+        if (pluginFilter)
+          m_traverser.reset(new CPluginDomTraverser(pluginFilter));
+      }
+    }
+    assert(m_traverser && "Traverser should be a valid object");
+    if (m_traverser)
+      m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
   }
   InjectABP(browser);
 }

@@ -47,6 +47,8 @@
       'src/shared/CriticalSection.h',
       'src/shared/Dictionary.cpp',
       'src/shared/Dictionary.h',
+      'src/shared/EventWithSetter.cpp',
+      'src/shared/EventWithSetter.h',
       'src/shared/Utils.cpp',
       'src/shared/Utils.h',
       'src/shared/Version.h',

@@ -127,8 +127,6 @@ class CPluginFilter
 
 private:
 
-  CString m_dataPath;
-
   // (Tag,Name) -> Filter
   typedef std::multimap<std::pair<CString,CString>, CFilterElementHide> TFilterElementHideTagsNamed;
 
@@ -139,15 +137,16 @@ private:
   TFilterElementHideTagsNamed m_elementHideTagsId;
   TFilterElementHideTagsNamed m_elementHideTagsClass;
   TFilterElementHideTags m_elementHideTags;
+  std::vector<std::wstring> m_hideFilters;
 
-  void ClearFilters();
 
 public:
-  CPluginFilter(const CString& dataPath = "");
-  bool LoadHideFilters(std::vector<std::wstring> filters);
+  explicit CPluginFilter(const std::vector<std::wstring>& filters);
   bool AddFilterElementHide(CString filter);
   bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent) const;
-  HANDLE hideFiltersLoadedEvent;
+  const std::vector<std::wstring>& GetHideFilters() const {
+    return m_hideFilters;
+  }
 };
 
 typedef std::shared_ptr<CPluginFilter> PluginFilterPtr;
