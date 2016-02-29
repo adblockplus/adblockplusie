@@ -66,9 +66,6 @@ protected:
 
   bool m_isHeaderTraversed;
 
-  // Caching	
-  long m_cacheDomElementCount;
-
   int m_cacheIndexLast;
   int m_cacheElementsMax;
   std::set<std::wstring> m_cacheDocumentHasFrames;
@@ -77,12 +74,11 @@ protected:
   T* m_cacheElements;
 
   CPluginTab* m_tab;
-  CComPtr<IWebBrowser2> m_pBrowser;
 };
 
 template <class T>
 CPluginDomTraverserBase<T>::CPluginDomTraverserBase(CPluginTab* tab) : 
-  m_tab(tab), m_isHeaderTraversed(false), m_cacheDomElementCount(0), m_cacheIndexLast(0), m_cacheElementsMax(5000)
+  m_tab(tab), m_isHeaderTraversed(false), m_cacheIndexLast(0), m_cacheElementsMax(5000)
 {
   m_cacheElements = new T[m_cacheElementsMax];
 }
