@@ -244,17 +244,6 @@ bool CAdblockPlusClient::ShouldBlock(const std::wstring& src, AdblockPlus::Filte
   return isBlocked;
 }
 
-bool CAdblockPlusClient::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent, const CPluginFilter* filter)
-{
-  bool isHidden;
-  m_criticalSectionFilter.Lock();
-  {
-    isHidden = filter && filter->IsElementHidden(tag, pEl, domain, indent);
-  }
-  m_criticalSectionFilter.Unlock();
-  return isHidden;
-}
-
 bool CAdblockPlusClient::IsWhitelistedUrl(const std::wstring& url, const std::vector<std::string>& frameHierarchy)
 {
   return !GetWhitelistingFilter(url, frameHierarchy).empty();

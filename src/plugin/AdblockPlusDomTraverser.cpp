@@ -51,10 +51,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const std::wstring& tag, 
     return false;
   }
 
-  // Check if element is hidden
-  CPluginClient* client = CPluginClient::GetInstance();
-
-  cache->m_isHidden = client->IsElementHidden(tag, pEl, m_domain, indent, m_pluginFilter.get());
+  cache->m_isHidden = m_pluginFilter->IsElementHidden(tag, pEl, m_domain, indent);
   if (cache->m_isHidden)
   {
     HideElement(pEl, tag, L"", false, indent);
@@ -71,7 +68,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const std::wstring& tag, 
       if (!src.empty())
       {
         // If src should be blocked, set style display:none on image
-        cache->m_isHidden = client->ShouldBlock(src,
+        cache->m_isHidden = CPluginClient::GetInstance()->ShouldBlock(src,
           AdblockPlus::FilterEngine::ContentType::CONTENT_TYPE_IMAGE, m_documentUrl);
         if (cache->m_isHidden)
         {

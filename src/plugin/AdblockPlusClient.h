@@ -65,7 +65,6 @@ public:
   // Only called from ui thread
   bool ShouldBlock(const std::wstring& src, AdblockPlus::FilterEngine::ContentType contentType, const std::wstring& domain, bool addDebug=false);
 
-  bool IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent, const CPluginFilter* filter);
   bool IsWhitelistedUrl(const std::wstring& url, const std::vector<std::string>& frameHierarchy = std::vector<std::string>());
   std::string GetWhitelistingFilter(const std::wstring& url, const std::vector<std::string>& frameHierarchy = std::vector<std::string>());
   bool IsElemhideWhitelistedOnDomain(const std::wstring& url, const std::vector<std::string>& frameHierarchy = std::vector<std::string>());
