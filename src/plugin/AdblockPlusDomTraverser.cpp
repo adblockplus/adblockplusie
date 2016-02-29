@@ -23,7 +23,7 @@
 #include "..\shared\Utils.h"
 
 
-CPluginDomTraverser::CPluginDomTraverser(CPluginTab* tab) : CPluginDomTraverserBase(tab)
+CPluginDomTraverser::CPluginDomTraverser(const PluginFilterPtr& pluginFilter) : CPluginDomTraverserBase(pluginFilter)
 {
 }
 
@@ -54,7 +54,7 @@ bool CPluginDomTraverser::OnElement(IHTMLElement* pEl, const std::wstring& tag, 
   // Check if element is hidden
   CPluginClient* client = CPluginClient::GetInstance();
 
-  cache->m_isHidden = client->IsElementHidden(tag, pEl, m_domain, indent, &(m_tab->m_filter));
+  cache->m_isHidden = client->IsElementHidden(tag, pEl, m_domain, indent, m_pluginFilter.get());
   if (cache->m_isHidden)
   {
     HideElement(pEl, tag, L"", false, indent);

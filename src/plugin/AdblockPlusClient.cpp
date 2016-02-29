@@ -244,7 +244,7 @@ bool CAdblockPlusClient::ShouldBlock(const std::wstring& src, AdblockPlus::Filte
   return isBlocked;
 }
 
-bool CAdblockPlusClient::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent, CPluginFilter* filter)
+bool CAdblockPlusClient::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, const std::wstring& domain, const std::wstring& indent, const CPluginFilter* filter)
 {
   bool isHidden;
   m_criticalSectionFilter.Lock();

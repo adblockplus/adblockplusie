@@ -150,5 +150,6 @@ public:
   HANDLE hideFiltersLoadedEvent;
 };
 
+typedef std::shared_ptr<CPluginFilter> PluginFilterPtr;
 
 #endif // _PLUGIN_FILTER_H_

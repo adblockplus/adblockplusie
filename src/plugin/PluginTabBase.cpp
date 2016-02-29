@@ -29,7 +29,8 @@ CPluginTab::CPluginTab()
   : m_isActivated(false)
   , m_continueThreadRunning(true)
 {
-  m_filter.hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
+  m_pluginFilter = std::make_shared<CPluginFilter>();
+  m_pluginFilter->hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
 
   CPluginClient* client = CPluginClient::GetInstance();
   if (AdblockPlus::IE::InstalledMajorVersion() < 10)
@@ -101,10 +102,10 @@ void CPluginTab::OnNavigate(const std::wstring& url)
   SetDocumentUrl(url);
   ClearFrameCache(GetDocumentDomain());
   std::wstring domainString = GetDocumentDomain();
-  ResetEvent(m_filter.hideFiltersLoadedEvent);
+  ResetEvent(m_pluginFilter->hideFiltersLoadedEvent);
   try
   {
-    std::thread filterLoaderThread(&FilterLoader, &m_filter, GetDocumentDomain());
+    std::thread filterLoaderThread(&FilterLoader, m_pluginFilter.get(), GetDocumentDomain());
     filterLoaderThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
   }
   catch (const std::system_error& ex)
@@ -262,8 +263,9 @@ void CPluginTab::OnDownloadComplete(IWebBrowser2* browser)
   std::wstring url = GetDocumentUrl();
   if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
   {
+    DWORD res = WaitForSingleObject(m_pluginFilter->hideFiltersLoadedEvent, ENGINE_STARTUP_TIMEOUT);
     if (!m_traverser)
-      m_traverser.reset(new CPluginDomTraverser(static_cast<CPluginTab*>(this)));
+      m_traverser.reset(new CPluginDomTraverser(m_pluginFilter));
     m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
   }
   InjectABP(browser);

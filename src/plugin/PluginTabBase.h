@@ -40,7 +40,7 @@ class CPluginTab
   std::atomic<bool> m_continueThreadRunning;
   std::unique_ptr<CPluginDomTraverser> m_traverser;
 public:
-  CPluginFilter m_filter;
+  PluginFilterPtr m_pluginFilter;
 private:
   void ThreadProc();
   CComAutoCriticalSection m_criticalSectionCache;
