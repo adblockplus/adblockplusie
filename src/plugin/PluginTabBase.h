@@ -48,6 +48,8 @@ private:
   std::set<std::wstring> m_cacheFrames;
   std::wstring m_cacheDomain;
   void InjectABP(IWebBrowser2* browser);
+  bool IsTraverserEnabled();
+  bool IsCSSInjectionEnabled();
 public:
 
   CPluginTab();

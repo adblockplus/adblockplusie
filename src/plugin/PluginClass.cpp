@@ -32,6 +32,7 @@
 #include "../shared/Version.h"
 #include <thread>
 #include <array>
+#include "WebBrowserEventsListener.h"
 
 #ifdef DEBUG_HIDE_EL
 DWORD profileTime = 0;
@@ -98,7 +99,7 @@ namespace AdblockPlus
 }
 
 CPluginClass::CPluginClass()
-  : m_webBrowser2(nullptr)
+  : m_data(std::make_shared<Data>())
 {
   DEBUG_GENERAL([this]() -> std::wstring
     {
@@ -120,7 +121,7 @@ CPluginClass::CPluginClass()
   m_isInitializedOk = false;
 
 
-  m_tab = new CPluginTab();
+  m_data->tab.reset(new CPluginTab());
 
   Dictionary::Create(GetBrowserLanguage());
 }
@@ -134,18 +135,18 @@ CPluginClass::~CPluginClass()
       return s;
     }());
 
-  delete m_tab;
+  m_data.reset();
 }
 
 HWND CPluginClass::GetBrowserHWND() const
 {
-  if (!m_webBrowser2)
+  if (!m_data->webBrowser2)
   {
-    DEBUG_ERROR_LOG(0, 0, 0, "CPluginClass::GetBrowserHWND - Reached with m_webBrowser2 == nullptr");
+    DEBUG_ERROR_LOG(0, 0, 0, "CPluginClass::GetBrowserHWND - Reached with webBrowser2 == nullptr");
     return nullptr;
   }
   SHANDLE_PTR hBrowserWndHandle = 0;
-  HRESULT hr = m_webBrowser2->get_HWND(&hBrowserWndHandle);
+  HRESULT hr = m_data->webBrowser2->get_HWND(&hBrowserWndHandle);
   if (FAILED(hr))
   {
     DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_UI, PLUGIN_ERROR_UI_GET_BROWSER_WINDOW, "Class::GetBrowserHWND - failed");
@@ -156,7 +157,7 @@ HWND CPluginClass::GetBrowserHWND() const
 
 bool CPluginClass::IsRootBrowser(IWebBrowser2* otherBrowser)
 {
-  return m_webBrowser2.IsEqualObject(otherBrowser);
+  return m_data->webBrowser2.IsEqualObject(otherBrowser);
 }
 
 CComQIPtr<IWebBrowser2> CPluginClass::GetAsyncBrowser()
@@ -175,21 +176,21 @@ CComQIPtr<IWebBrowser2> CPluginClass::GetAsyncBrowser()
 std::wstring CPluginClass::GetBrowserUrl() const
 {
   std::wstring url;
-  if (m_webBrowser2)
+  if (m_data->webBrowser2)
   {
     CComBSTR bstrURL;
-    if (SUCCEEDED(m_webBrowser2->get_LocationURL(&bstrURL)))
+    if (SUCCEEDED(m_data->webBrowser2->get_LocationURL(&bstrURL)))
     {
       url = ToWstring(bstrURL);
     }
   }
   else
   {
-    DEBUG_GENERAL(L"CPluginClass::GetBrowserUrl - Reached with m_webBrowser2 == nullptr (probable invariant violation)");
+    DEBUG_GENERAL(L"CPluginClass::GetBrowserUrl - Reached with webBrowser2 == nullptr (probable invariant violation)");
   }
   if (url.empty())
   {
-    url = m_tab->GetDocumentUrl();
+    url = m_data->tab->GetDocumentUrl();
   }
   return url;
 }
@@ -233,8 +234,8 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       /*
        * We were instantiated as a BHO, so our site is always of type IWebBrowser2.
        */
-      m_webBrowser2 = ATL::CComQIPtr<IWebBrowser2>(unknownSite);
-      if (!m_webBrowser2)
+      m_data->webBrowser2 = ATL::CComQIPtr<IWebBrowser2>(unknownSite);
+      if (!m_data->webBrowser2)
       {
         throw std::logic_error("CPluginClass::SetSite - Unable to convert site pointer to IWebBrowser2*");
       }
@@ -242,7 +243,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
         {
           std::wstringstream ss;
           ss << L"CPluginClass::SetSite, this = " << ToHexLiteral(this);
-          ss << L", browser = " << ToHexLiteral(m_webBrowser2);
+          ss << L", browser = " << ToHexLiteral(m_data->webBrowser2);
           return ss.str();
         }());
 
@@ -260,7 +261,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
 
       try
       {
-        HRESULT hr = DispEventAdvise(m_webBrowser2);
+        HRESULT hr = DispEventAdvise(m_data->webBrowser2);
         if (SUCCEEDED(hr))
         {
           m_isAdvised = true;
@@ -336,7 +337,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       }
       s_criticalSectionLocal.Unlock();
 
-      m_webBrowser2 = nullptr;
+      m_data->webBrowser2 = nullptr;
 
       DEBUG_GENERAL("================================================================================\nNEW TAB UI - END\n================================================================================")
 
@@ -486,6 +487,7 @@ void STDMETHODCALLTYPE CPluginClass::OnBeforeNavigate2(
       return;
     }
     std::wstring url = ToWstring(urlVariant->bstrVal);
+    EnsureWebBrowserConnected(webBrowser);
 
     // If webbrowser2 is equal to top level browser (as set in SetSite), we are
     // navigating new page
@@ -495,7 +497,7 @@ void STDMETHODCALLTYPE CPluginClass::OnBeforeNavigate2(
     }
     else if (IsRootBrowser(webBrowser))
     {
-      m_tab->OnNavigate(url);
+      m_data->tab->OnNavigate(url);
       DEBUG_GENERAL(
       L"================================================================================\n"
       L"Begin main navigation url:" + url + L"\n"
@@ -509,7 +511,7 @@ void STDMETHODCALLTYPE CPluginClass::OnBeforeNavigate2(
     else
     {
       DEBUG_NAVI(L"Navi::Begin navigation url:" + url)
-      m_tab->CacheFrame(url);
+      m_data->tab->CacheFrame(url);
     }
   }
   catch (...)
@@ -522,32 +524,13 @@ void STDMETHODCALLTYPE CPluginClass::OnDownloadComplete()
 {
   try
   {
-    if (!m_webBrowser2)
+    if (!m_data->webBrowser2)
     {
-      DEBUG_ERROR_LOG(0, 0, 0, "CPluginClass::OnDownloadComplete - Reached with m_webBrowser2 == nullptr");
+      DEBUG_ERROR_LOG(0, 0, 0, "CPluginClass::OnDownloadComplete - Reached with webBrowser2 == nullptr");
       return;
     }
     DEBUG_NAVI(L"Navi::Download Complete")
-    m_tab->OnDownloadComplete(m_webBrowser2);
-  }
-  catch (...)
-  {
-  }
-}
-
-// Entry point
-void STDMETHODCALLTYPE CPluginClass::OnDocumentComplete(IDispatch* frameBrowserDisp, VARIANT* /*urlOrPidl*/)
-{
-  try
-  {
-    DEBUG_NAVI(L"Navi::Document Complete");
-    ATL::CComQIPtr<IWebBrowser2> webBrowser2 = frameBrowserDisp;
-    if (!webBrowser2)
-    {
-      return;
-    }
-    std::wstring frameSrc = GetLocationUrl(*webBrowser2);
-    m_tab->OnDocumentComplete(webBrowser2, frameSrc, IsRootBrowser(webBrowser2));
+      m_data->tab->OnDownloadComplete(m_data->webBrowser2);
   }
   catch (...)
   {
@@ -989,7 +972,7 @@ CPluginClass* CPluginClass::FindInstance(HWND hStatusBarWnd)
 
 CPluginTab* CPluginClass::GetTab()
 {
-  return m_tab;
+  return m_data->tab.get();
 }
 
 CPluginTab* CPluginClass::GetTab(DWORD dwThreadId)
@@ -1001,7 +984,7 @@ CPluginTab* CPluginClass::GetTab(DWORD dwThreadId)
     std::map<DWORD,CPluginClass*>::const_iterator it = s_threadInstances.find(dwThreadId);
     if (it != s_threadInstances.end())
     {
-      tab = it->second->m_tab;
+      tab = it->second->m_data->tab.get();
     }
   }
   s_criticalSectionLocal.Unlock();
@@ -1246,7 +1229,7 @@ STDMETHODIMP CPluginClass::Exec(const GUID*, DWORD nCmdID, DWORD, VARIANTARG*, V
     }
 
     // Create menu
-    HMENU hMenu = CreatePluginMenu(m_tab->GetDocumentUrl());
+    HMENU hMenu = CreatePluginMenu(m_data->tab->GetDocumentUrl());
     if (!hMenu)
     {
       return E_FAIL;
@@ -1662,19 +1645,18 @@ void CPluginClass::UpdateStatusBar()
   }
 }
 
-
 void CPluginClass::Unadvise()
 {
-  if (!m_webBrowser2)
+  if (!m_data->webBrowser2)
   {
-    DEBUG_ERROR_LOG(0, 0, 0, "CPluginClass::Unadvise - Reached with m_webBrowser2 == nullptr");
+    DEBUG_ERROR_LOG(0, 0, 0, "CPluginClass::Unadvise - Reached with webBrowser2 == nullptr");
     return;
   }
   s_criticalSectionLocal.Lock();
   {
     if (m_isAdvised)
     {
-      HRESULT hr = DispEventUnadvise(m_webBrowser2);
+      HRESULT hr = DispEventUnadvise(m_data->webBrowser2);
       if (FAILED(hr))
       {
         DEBUG_ERROR_LOG(hr, PLUGIN_ERROR_SET_SITE, PLUGIN_ERROR_SET_SITE_UNADVISE, "Class::Unadvise - Unadvise");
@@ -1683,6 +1665,42 @@ void CPluginClass::Unadvise()
     }
   }
   s_criticalSectionLocal.Unlock();
+}
+
+void CPluginClass::EnsureWebBrowserConnected(const ATL::CComPtr<IWebBrowser2>& webBrowser)
+{
+  auto it = m_data->connectedWebBrowsersCache.find(webBrowser);
+  if (it != m_data->connectedWebBrowsersCache.end())
+  {
+    return;
+  }
+  ATL::CComObject<WebBrowserEventsListener>* listenerImpl = nullptr;
+  if (FAILED(ATL::CComObject<WebBrowserEventsListener>::CreateInstance(&listenerImpl)))
+  {
+    return;
+  }
+  ATL::CComPtr<IUnknown> listenerRefCounterGuard(listenerImpl->GetUnknown());
+  std::weak_ptr<Data> dataForCapturing = m_data;
+  auto onListenerDestroy = [webBrowser, dataForCapturing]
+  {
+    if (auto data = dataForCapturing.lock())
+    {
+      data->connectedWebBrowsersCache.erase(webBrowser);
+    }
+  };
+  auto onReloaded = [webBrowser, dataForCapturing]
+  {
+    if (auto data = dataForCapturing.lock())
+    {
+      auto frameSrc = GetLocationUrl(*webBrowser);
+      data->tab->OnDocumentComplete(webBrowser, frameSrc, data->webBrowser2.IsEqualObject(webBrowser));
+    }
+  };
+  if (FAILED(listenerImpl->Init(webBrowser, onListenerDestroy, onReloaded)))
+  {
+    return;
+  }
+  m_data->connectedWebBrowsersCache.emplace(webBrowser, listenerImpl);
 }
 
 HICON CPluginClass::GetIcon(int type)

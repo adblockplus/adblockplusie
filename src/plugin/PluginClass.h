@@ -40,7 +40,7 @@
 #define WM_LAUNCH_INFO					(WM_APP + 10)
 
 class CPluginMimeFilterClient;
-
+class WebBrowserEventsListener;
 
 class ATL_NO_VTABLE CPluginClass :
   public ATL::CComObjectRootEx<ATL::CComMultiThreadModel>,
@@ -51,10 +51,6 @@ class ATL_NO_VTABLE CPluginClass :
 {
 
   friend class CPluginTab;
-
-private:
-
-  CPluginTab* m_tab;
 
 public:
 
@@ -70,7 +66,6 @@ public:
   BEGIN_SINK_MAP(CPluginClass)
     SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2, OnBeforeNavigate2)
     SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_DOWNLOADCOMPLETE, OnDownloadComplete)
-    SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE, OnDocumentComplete)
     SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_WINDOWSTATECHANGED, OnWindowStateChanged)
     SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_COMMANDSTATECHANGE, OnCommandStateChange)
     SINK_ENTRY_EX(1, DIID_DWebBrowserEvents2, DISPID_ONQUIT, OnOnQuit)
@@ -129,21 +124,15 @@ private:
                                            VARIANT* Headers /**< [in] */,
                                            VARIANT_BOOL* Cancel /* [in, out] */);
   void STDMETHODCALLTYPE OnDownloadComplete();
-  void STDMETHODCALLTYPE OnDocumentComplete(IDispatch* frameBrowserDisp, VARIANT* /*urlOrPidl*/);
   void STDMETHODCALLTYPE OnWindowStateChanged(unsigned long flags, unsigned long validFlagsMask);
   void STDMETHODCALLTYPE OnCommandStateChange(long command, VARIANT_BOOL enable);
   void STDMETHODCALLTYPE OnOnQuit();
   void Unadvise();
+  void EnsureWebBrowserConnected(const ATL::CComPtr<IWebBrowser2>& webBrowser);
 
   void ShowStatusBar();
   bool IsStatusBarEnabled();
 
-  /**
-   * A browser interface pointer to our site object
-   *
-   * It's values are set and reset solely in SetSite().
-   */
-  CComPtr<IWebBrowser2> m_webBrowser2;
   HWND m_hBrowserWnd;
   HWND m_hTabWnd;
   HWND m_hStatusBarWnd;
@@ -152,6 +141,15 @@ private:
   WNDPROC m_pWndProcStatus;
   int m_nPaneWidth;
   HANDLE m_hTheme;
+  struct Data
+  {
+    std::map<IWebBrowser2*, WebBrowserEventsListener*> connectedWebBrowsersCache;
+    std::unique_ptr<CPluginTab> tab;
+    ATL::CComPtr<IWebBrowser2> webBrowser2;
+  };
+  // we need to have it as a shared pointer to get weak pointer to it to avoid
+  // wrong usage after destroying of this class.
+  std::shared_ptr<Data> m_data;
 
   CriticalSection m_csStatusBar;
 

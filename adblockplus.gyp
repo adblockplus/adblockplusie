@@ -160,6 +160,8 @@
       'src/plugin/PluginWbPassThrough.cpp',
       'src/plugin/PluginWbPassThrough.h',
       'src/plugin/Resource.h',
+      'src/plugin/WebBrowserEventsListener.h',
+      'src/plugin/WebBrowserEventsListener.cpp',
       'src/plugin/passthroughapp/PassthroughObject.h',
       'src/plugin/passthroughapp/ProtocolCF.h',
       'src/plugin/passthroughapp/ProtocolCF.inl',
@@ -260,6 +262,8 @@
       'src/plugin/PluginTabBase.cpp',
       'src/plugin/PluginUtil.cpp',
       'src/plugin/PluginWbPassthrough.cpp',
+      'src/plugin/WebBrowserEventsListener.h',
+      'src/plugin/WebBrowserEventsListener.cpp',
     ],
     'include_dirs': [
       '$(ADBLOCKPLUS_ATL)/include',

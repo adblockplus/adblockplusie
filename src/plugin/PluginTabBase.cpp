@@ -238,6 +238,119 @@ void CPluginTab::InjectABP(IWebBrowser2* browser)
   }
 }
 
+bool CPluginTab::IsTraverserEnabled()
+{
+  return !IsCSSInjectionEnabled();
+}
+
+bool CPluginTab::IsCSSInjectionEnabled()
+{
+  return IsWindowsVistaOrLater() && AdblockPlus::IE::InstalledMajorVersion() >= 10;
+}
+
+namespace
+{
+  void InjectABPCSS(IHTMLDocument2& htmlDocument2, const std::vector<std::wstring>& hideFilters)
+  {
+    // pseudocode: styleHtmlElement = htmlDocument2.createElement("style");
+    ATL::CComQIPtr<IHTMLStyleElement> styleHtmlElement;
+    {
+      ATL::CComPtr<IHTMLElement> stylePureHtmlElement;
+      if (FAILED(htmlDocument2.createElement(ATL::CComBSTR(L"style"), &stylePureHtmlElement)))
+      {
+        DEBUG_GENERAL(L"Cannot create style element");
+        return;
+      }
+      if (!(styleHtmlElement = stylePureHtmlElement))
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLStyleElement from IHTMLElement");
+        return;
+      }
+    }
+    // pseudocode: styleHtmlElement.type = "text/css";
+    if (FAILED(styleHtmlElement->put_type(ATL::CComBSTR("text/css"))))
+    {
+      DEBUG_GENERAL(L"Cannot set type text/css");
+      return;
+    }
+    // pseudocode: styleSheet4 = styleHtmlElement.sheet;
+    ATL::CComQIPtr<IHTMLStyleSheet4> styleSheet4;
+    {
+      // IHTMLStyleElement2 is availabe starting from IE9, Vista
+      ATL::CComQIPtr<IHTMLStyleElement2> styleHtmlElement2 = styleHtmlElement;
+      if (!styleHtmlElement2)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLStyleElement2 from IHTMLStyleElement");
+        return;
+      }
+      ATL::CComQIPtr<IHTMLStyleSheet> styleSheet;
+      if (FAILED(styleHtmlElement2->get_sheet(&styleSheet)) || !styleSheet)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLStyleSheet");
+        return;
+      }
+      // IHTMLStyleSheet4 is availabe starting from IE9, Vista
+      styleSheet4 = styleSheet;
+      if (!styleSheet4)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLStyleSheet4");
+        return;
+      }
+    }
+    // pseudocode: for (auto i = 0; i < hideFilters.length; ++i) {
+    // pseudocode:   i = styleSheet4.insertRule(hideFilters + cssValue, i);
+    // pseudocode: }
+    long newIndex = 0;
+    std::wstring cssValue = L"{ display: none !important; }";
+    for (const auto& selector : hideFilters)
+    {
+      auto cssRule = selector + cssValue;
+      ATL::CComBSTR selector(cssRule.size(), cssRule.c_str());
+      if (SUCCEEDED(styleSheet4->insertRule(selector, newIndex, &newIndex)))
+      {
+        ++newIndex;
+      }
+      else
+      {
+        DEBUG_GENERAL(L"Cannot add rule for selector " + cssRule);
+      }
+    }
+
+    // pseudocode: htmlDocument2.head.appendChild(styleHtmlElement);
+    {
+      // IHTMLDocument7 is availabe starting from IE9, Vista
+      ATL::CComQIPtr<IHTMLDocument7> htmlDocument7 = &htmlDocument2;
+      if (!htmlDocument7)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLDocument7 from htmlDocument2");
+        return;
+      }
+      ATL::CComPtr<IHTMLElement> headHtmlElement;
+      if (FAILED(htmlDocument7->get_head(&headHtmlElement)))
+      {
+        DEBUG_GENERAL(L"Cannot obtain head from pDoc7");
+        return;
+      }
+      ATL::CComQIPtr<IHTMLDOMNode> headNode = headHtmlElement;
+      if (!headNode)
+      {
+        DEBUG_GENERAL(L"Cannot obtain headNode from headHtmlElement");
+        return;
+      }
+      ATL::CComQIPtr<IHTMLDOMNode> styleNode = styleHtmlElement;
+      if (!styleNode)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLDOMNode from stylePureHtmlElement");
+        return;
+      }
+      if (FAILED(headNode->appendChild(styleNode, nullptr)))
+      {
+        DEBUG_GENERAL(L"Cannot append blocking style");
+      }
+    }
+  }
+}
+
 namespace
 {
   ATL::CComPtr<IWebBrowser2> GetParent(IWebBrowser2& browser)
@@ -286,24 +399,27 @@ namespace
 
 void CPluginTab::OnDownloadComplete(IWebBrowser2* browser)
 {
-  CPluginClient* client = CPluginClient::GetInstance();
-  std::wstring url = GetDocumentUrl();
-  if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
+  if (IsTraverserEnabled())
   {
-    if (!m_traverser)
+    CPluginClient* client = CPluginClient::GetInstance();
+    std::wstring url = GetDocumentUrl();
+    if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
     {
-      assert(m_asyncPluginFilter && "Filter initialization should be already at least started");
-      if (m_asyncPluginFilter)
+      if (!m_traverser)
       {
-        auto pluginFilter = m_asyncPluginFilter->GetFilter();
-        assert(pluginFilter && "Plugin filter should be a valid object");
-        if (pluginFilter)
-          m_traverser.reset(new CPluginDomTraverser(pluginFilter));
+        assert(m_asyncPluginFilter && "Filter initialization should be already at least started");
+        if (m_asyncPluginFilter)
+        {
+          auto pluginFilter = m_asyncPluginFilter->GetFilter();
+          assert(pluginFilter && "Plugin filter should be a valid object");
+          if (pluginFilter)
+            m_traverser.reset(new CPluginDomTraverser(pluginFilter));
+        }
       }
+      assert(m_traverser && "Traverser should be a valid object");
+      if (m_traverser)
+        m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
     }
-    assert(m_traverser && "Traverser should be a valid object");
-    if (m_traverser)
-      m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
   }
   InjectABP(browser);
 }
@@ -336,6 +452,24 @@ void CPluginTab::OnDocumentComplete(IWebBrowser2* browser, const std::wstring& u
   if (!pDoc)
   {
     return;
+  }
+
+  if (IsCSSInjectionEnabled() && CPluginSettings::GetInstance()->GetPluginEnabled())
+  {
+    if (!IsFrameWhiteListed(browser))
+    {
+      DEBUG_GENERAL(L"Inject CSS into " + url);
+      assert(m_asyncPluginFilter && "Filter initialization should be already at least started");
+      if (m_asyncPluginFilter)
+      {
+        auto pluginFilter = m_asyncPluginFilter->GetFilter();
+        assert(pluginFilter && "Plugin filter should be a valid object");
+        if (pluginFilter)
+        {
+          InjectABPCSS(*pDoc, pluginFilter->GetHideFilters());
+        }
+      }
+    }
   }
 
   CComPtr<IOleObject> pOleObj;
