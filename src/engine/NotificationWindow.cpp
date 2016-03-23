@@ -126,14 +126,14 @@ NotificationWindow::NotificationWindow(const AdblockPlus::Notification& notifica
   m_htmlPage.assign((std::istreambuf_iterator<wchar_t>(ifs)), std::istreambuf_iterator<wchar_t>());
 
   m_links = ToUtf16Strings(notification.GetLinks());
-  auto body = ToUtf16String(notification.GetMessageString());
+  auto body = ToUtf16String(notification.GetTexts().message);
   uint32_t linkIDCounter = 0;
   body = ReplaceMulti(body, L"<a>", [this, &linkIDCounter]()->std::wstring
   {
     return L"<a href=\"#\" data-linkID=\"" + std::to_wstring(linkIDCounter++) + L"\">";
   });
   assert(linkIDCounter == m_links.size() && "The amount of links in the text is different from the amount of provided links");
-  m_htmlPage = ReplaceMulti(m_htmlPage, L"<!--Title-->", ToUtf16String(notification.GetTitle()));
+  m_htmlPage = ReplaceMulti(m_htmlPage, L"<!--Title-->", ToUtf16String(notification.GetTexts().title));
   m_htmlPage = ReplaceMulti(m_htmlPage, L"<!--Body-->", body);
 }
 
