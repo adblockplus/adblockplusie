@@ -529,7 +529,15 @@ namespace
     }
     catch (const std::runtime_error&)
     {
-      return L"";
+      try
+      {
+        AdblockPlus::RegistryKey regKey(HKEY_LOCAL_MACHINE, L"Software\\AdblockPlus");
+        return regKey.value_wstring(preconfigName);
+      }
+      catch (const std::runtime_error&)
+      {
+        return L"";
+      }
     }
   }
 
