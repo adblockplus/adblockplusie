@@ -18,6 +18,8 @@
 #ifndef _PLUGIN_DEBUG_H_
 #define _PLUGIN_DEBUG_H_
 
+#include <string>
+
 class CPluginDebug
 {
 

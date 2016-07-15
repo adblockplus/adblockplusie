@@ -120,7 +120,6 @@
       'src/plugin/AdblockPlusDomTraverser.cpp',
       'src/plugin/AdblockPlusDomTraverser.h',
       'src/plugin/AdblockPlusGuids.h',
-      'src/plugin/ATL_Deprecate.cpp',
       'src/plugin/ATL_Deprecate.h',
       'src/plugin/Config.h',
       'src/plugin/Instances.h',
@@ -247,7 +246,6 @@
       #
       'src/plugin/AdblockPlusClient.cpp',
       'src/plugin/AdblockPlusDomTraverser.cpp',
-      'src/plugin/ATL_Deprecate.cpp',
       'src/plugin/NotificationMessage.cpp',
       'src/plugin/Plugin.cpp',
       'src/plugin/PluginClientBase.cpp',

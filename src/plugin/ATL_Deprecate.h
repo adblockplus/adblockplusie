@@ -156,35 +156,3 @@ namespace OLD_ATL {
  *   ATLTRACE resolves to a ATL::CTraceFileAndLineInfo.
  *   These will need to be replaced or removed.
  */
-
-
-/*
- * Transient functions used during the ATL removal process.
- *
- * Trying to convert all the string instances at once leads to massive change sets.
- * In order to be able to convert incrementally, we'll need to undergo a period where we're mixing types.
- * The functions below are explicit conversion functions.
- * While it's possible to convert them by direct calls to member functions,
- *   using explicit conversion functions will allow us to ensure we've removed all the conversions when we're done.
- *
- * These are declared in ATL_Deprecate.h to ensure that they're all removed before we ATL removal is complete.
- *
- * Reference:
- *   MSDN CString http://msdn.microsoft.com/en-us/library/aa300688%28v=vs.60%29.aspx
- */
-
-#include <string>
-/**
- * Conversion function from ATL:CString to std::wstring
- *
- * The argument cannot be declared 'const' because of the CString API.
- * Reference argument usually does not require explicit temporaries.
- */
-std::wstring ToWstring(const ATL::CString& s);
-std::wstring to_wstring(const ATL::CString& s);
-
-/**
- * Conversion function from std::wstring to ATL::CString
- */
-ATL::CString ToCString(const std::wstring& s);
-ATL::CString to_CString(const std::wstring& s);

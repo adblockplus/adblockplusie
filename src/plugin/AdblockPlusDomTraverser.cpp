@@ -146,7 +146,7 @@ void CPluginDomTraverser::HideElement(IHTMLElement* pEl, const std::wstring& typ
     static const CComBSTR sbstrNone(L"none");
     if (SUCCEEDED(pStyle->put_display(sbstrNone)))
     {
-      DEBUG_HIDE_EL(ToWstring(indent) + L"HideEl::Hiding " + ToWstring(type) + L" url:" + url)
+      DEBUG_HIDE_EL(indent + L"HideEl::Hiding " + type + L" url:" + url)
 #ifdef ENABLE_DEBUG_RESULT
         if (isDebug)
         {
