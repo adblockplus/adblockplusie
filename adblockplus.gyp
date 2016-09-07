@@ -217,7 +217,7 @@
     ],
     'defines': ['WINVER=0x0501'],
     'link_settings': {
-      'libraries': ['-ladvapi32', '-lshell32', '-lole32', '-loleaut32'],
+      'libraries': ['-ladvapi32', '-lshell32', '-lole32', '-loleaut32', '-lshlwapi'],
     },
     'msvs_settings': {
       'VCLinkerTool': {

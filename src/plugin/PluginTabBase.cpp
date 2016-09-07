@@ -157,9 +157,12 @@ namespace
     // Declared static because the value is derived from an installation directory, which won't change during run-time.
     static auto dir = FileUrl(HtmlFolderPath());
 
+    dir = EscapeUrl(CanonicalizeUrl(dir));
+    std::wstring urlCanonicalized = EscapeUrl(CanonicalizeUrl(url));
+
     DEBUG_GENERAL([&]() -> std::wstring {
       std::wstring log = L"InjectABP. Current URL: ";
-      log += url;
+      log += urlCanonicalized;
       log += L", template directory URL: ";
       log += dir;
       return log;
@@ -168,14 +171,15 @@ namespace
     /*
      * The length check here is defensive, in case the document URL is truncated for some reason.
      */
-    if (url.length() < 5)
+    if (urlCanonicalized.length() < 5)
     {
       // We can't match ".html" at the end of the URL if it's too short.
       return false;
     }
-    auto urlCstr = url.c_str();
+    auto urlCstr = urlCanonicalized.c_str();
     // Check the prefix to match our directory
     // Check the suffix to be an HTML file
+    // Compare escaped version and return
     return (_wcsnicmp(urlCstr, dir.c_str(), dir.length()) == 0) &&
       (_wcsnicmp(urlCstr + url.length() - 5, L".html", 5) == 0);
   }

@@ -80,4 +80,7 @@ T TrimString(T text)
   return trimmed;
 }
 
+std::wstring CanonicalizeUrl(const std::wstring& url);
+std::wstring EscapeUrl(const std::wstring& url);
+
 #endif // UTILS_H
