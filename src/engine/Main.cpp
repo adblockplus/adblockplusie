@@ -109,7 +109,7 @@ namespace
   {
     if (frameHierarchy.empty())
     {
-      return GetWhitelistingFilter(urlArg, "", type);
+      return GetWhitelistingFilter(urlArg, urlArg, type);
     }
     auto frameIterator = frameHierarchy.begin();
     std::string url = urlArg;
