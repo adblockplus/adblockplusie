@@ -298,6 +298,7 @@ STDMETHODIMP CPluginClass::SetSite(IUnknown* unknownSite)
       }());
 
       Unadvise();
+      assert(m_data->connectedWebBrowsersCache.empty() && "Connected web browser cache should be already empty");
 
       // Destroy window
       if (m_pWndProcStatus)

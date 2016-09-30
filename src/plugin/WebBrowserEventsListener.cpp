@@ -26,10 +26,6 @@ WebBrowserEventsListener::WebBrowserEventsListener()
 
 WebBrowserEventsListener::~WebBrowserEventsListener()
 {
-  if (!!m_onDestroy)
-  {
-    m_onDestroy();
-  }
 }
 
 HRESULT STDMETHODCALLTYPE WebBrowserEventsListener::OnDocumentComplete(IDispatch* dispFrameBrowser, VARIANT* /*variantUrl*/)
@@ -61,6 +57,20 @@ HRESULT STDMETHODCALLTYPE WebBrowserEventsListener::OnDocumentComplete(IDispatch
     emitReloaded();
   }
   return S_OK;
+}
+
+void STDMETHODCALLTYPE WebBrowserEventsListener::OnQuit()
+{
+  if (m_isDocumentEvents2Connected)
+  {
+    ATL::CComPtr<IDispatch> dispDocument;
+    ATL::CComQIPtr<IHTMLDocument2> htmlDocument2;
+    if (SUCCEEDED(m_browser->get_Document(&dispDocument)) && (htmlDocument2 = dispDocument))
+    {
+      HTMLDocumentEvents2Listener::DispEventUnadvise(htmlDocument2);
+    }
+  }
+  WebBrowserEvents2Listener::DispEventUnadvise(m_browser);
 }
 
 void STDMETHODCALLTYPE WebBrowserEventsListener::OnReadyStateChange(IHTMLEventObj* /*pEvtObj*/)
@@ -119,6 +129,14 @@ void STDMETHODCALLTYPE WebBrowserEventsListener::OnReadyStateChange(IHTMLEventOb
   else
   {
     assert(false);
+  }
+}
+
+void WebBrowserEventsListener::FinalRelease()
+{
+  if (!!m_onDestroy)
+  {
+    m_onDestroy();
   }
 }
 

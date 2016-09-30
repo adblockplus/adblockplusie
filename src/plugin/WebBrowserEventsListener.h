@@ -50,16 +50,18 @@ public:
   DECLARE_NOT_AGGREGATABLE(WebBrowserEventsListener)
   BEGIN_SINK_MAP(WebBrowserEventsListener)
     SINK_ENTRY_EX(1, __uuidof(DWebBrowserEvents2), DISPID_DOCUMENTCOMPLETE, OnDocumentComplete)
+    SINK_ENTRY_EX(1, __uuidof(DWebBrowserEvents2), DISPID_ONQUIT, OnQuit)
     SINK_ENTRY_EX(2, __uuidof(HTMLDocumentEvents2), DISPID_HTMLDOCUMENTEVENTS2_ONREADYSTATECHANGE, OnReadyStateChange)
   END_SINK_MAP()
 
   STDMETHOD(OnDocumentComplete)(IDispatch* pDisp, VARIANT* urlVariant);
+  STDMETHOD_(void, OnQuit)();
   STDMETHOD_(void, OnReadyStateChange)(IHTMLEventObj* pEvtObj);
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
   HRESULT FinalConstruct(){ return S_OK; }
-  void FinalRelease(){}
+  void FinalRelease();
   HRESULT Init(IWebBrowser2* webBrowser, const OnDestroy& onDestroy, const OnReloaded& onReloaded);
 
 private:
