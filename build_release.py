@@ -25,7 +25,7 @@ def sign_command(*argv):
     "/d", "Adblock Plus",
     "/du", "https://adblockplus.org/",
     "/f", key,
-    "/tr", "http://www.startssl.com/timestamp"
+    "/tr", "http://timestamp.comodoca.com"
   ] + list(argv)
 
 def sign(*argv):
