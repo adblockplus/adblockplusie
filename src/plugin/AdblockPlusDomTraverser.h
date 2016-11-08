@@ -42,7 +42,7 @@ class CPluginDomTraverser : public CPluginDomTraverserBase<CPluginDomTraverserCa
 
 public:
 
-  CPluginDomTraverser(CPluginTab* tab);
+  explicit CPluginDomTraverser(const PluginFilterPtr& pluginFilter);
 
 protected:
 

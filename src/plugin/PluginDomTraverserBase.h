@@ -37,7 +37,7 @@ class CPluginDomTraverserBase
 
 public:
 
-  CPluginDomTraverserBase(CPluginTab* tab);
+  explicit CPluginDomTraverserBase(const PluginFilterPtr& pluginFilter);
   ~CPluginDomTraverserBase();
 
   void TraverseHeader(bool isHeaderTraversed);
@@ -66,9 +66,6 @@ protected:
 
   bool m_isHeaderTraversed;
 
-  // Caching	
-  long m_cacheDomElementCount;
-
   int m_cacheIndexLast;
   int m_cacheElementsMax;
   std::set<std::wstring> m_cacheDocumentHasFrames;
@@ -76,13 +73,12 @@ protected:
 
   T* m_cacheElements;
 
-  CPluginTab* m_tab;
-  CComPtr<IWebBrowser2> m_pBrowser;
+  std::shared_ptr<const CPluginFilter> m_pluginFilter;
 };
 
 template <class T>
-CPluginDomTraverserBase<T>::CPluginDomTraverserBase(CPluginTab* tab) : 
-  m_tab(tab), m_isHeaderTraversed(false), m_cacheDomElementCount(0), m_cacheIndexLast(0), m_cacheElementsMax(5000)
+CPluginDomTraverserBase<T>::CPluginDomTraverserBase(const PluginFilterPtr& pluginFilter)
+  : m_pluginFilter(pluginFilter), m_isHeaderTraversed(false), m_cacheIndexLast(0), m_cacheElementsMax(5000)
 {
   m_cacheElements = new T[m_cacheElementsMax];
 }
@@ -128,7 +124,6 @@ bool CPluginDomTraverserBase<T>::IsEnabled()
 template <class T>
 void CPluginDomTraverserBase<T>::TraverseDocument(IWebBrowser2* pBrowser, bool isMainDoc, const std::wstring& indent)
 {
-  DWORD res = WaitForSingleObject(m_tab->m_filter.hideFiltersLoadedEvent, ENGINE_STARTUP_TIMEOUT);
   if (!IsEnabled()) return;
 
   VARIANT_BOOL isBusy;

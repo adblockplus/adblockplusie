@@ -448,12 +448,6 @@ bool CFilterElementHide::IsMatchFilterElementHide(IHTMLElement* pEl) const
 // CPluginFilter
 // ============================================================================
 
-CPluginFilter::CPluginFilter(const std::wstring& dataPath)
-  : m_dataPath(dataPath)
-{
-  ClearFilters();
-}
-
 
 bool CPluginFilter::AddFilterElementHide(std::wstring filterText)
 {
@@ -616,10 +610,9 @@ bool CPluginFilter::IsElementHidden(const std::wstring& tag, IHTMLElement* pEl, 
   return false;
 }
 
-bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
+CPluginFilter::CPluginFilter(const std::vector<std::wstring>& filters)
 {
-  ClearFilters();
-  bool isRead = false;
+  m_hideFilters = filters;
   CPluginClient* client = CPluginClient::GetInstance();
 
   // Parse hide string
@@ -649,16 +642,4 @@ bool CPluginFilter::LoadHideFilters(std::vector<std::wstring> filters)
       }
     }
   }
-
-  return isRead;
 }
-
-void CPluginFilter::ClearFilters()
-{
-  // Clear filter maps
-  CriticalSection::Lock filterEngineLock(s_criticalSectionFilterMap);
-  m_elementHideTags.clear();
-  m_elementHideTagsId.clear();
-  m_elementHideTagsClass.clear();
-}
-

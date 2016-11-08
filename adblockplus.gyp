@@ -47,6 +47,8 @@
       'src/shared/CriticalSection.h',
       'src/shared/Dictionary.cpp',
       'src/shared/Dictionary.h',
+      'src/shared/EventWithSetter.cpp',
+      'src/shared/EventWithSetter.h',
       'src/shared/Utils.cpp',
       'src/shared/Utils.h',
       'src/shared/Version.h',
@@ -158,6 +160,8 @@
       'src/plugin/PluginWbPassThrough.cpp',
       'src/plugin/PluginWbPassThrough.h',
       'src/plugin/Resource.h',
+      'src/plugin/WebBrowserEventsListener.h',
+      'src/plugin/WebBrowserEventsListener.cpp',
       'src/plugin/passthroughapp/PassthroughObject.h',
       'src/plugin/passthroughapp/ProtocolCF.h',
       'src/plugin/passthroughapp/ProtocolCF.inl',
@@ -213,7 +217,7 @@
     ],
     'defines': ['WINVER=0x0501'],
     'link_settings': {
-      'libraries': ['-ladvapi32', '-lshell32', '-lole32', '-loleaut32'],
+      'libraries': ['-ladvapi32', '-lshell32', '-lole32', '-loleaut32', '-lshlwapi'],
     },
     'msvs_settings': {
       'VCLinkerTool': {
@@ -259,6 +263,8 @@
       'src/plugin/PluginTabBase.cpp',
       'src/plugin/PluginUtil.cpp',
       'src/plugin/PluginWbPassthrough.cpp',
+      'src/plugin/WebBrowserEventsListener.h',
+      'src/plugin/WebBrowserEventsListener.cpp',
     ],
     'include_dirs': [
       '$(ADBLOCKPLUS_ATL)/include',

@@ -38,15 +38,18 @@ class CPluginTab
 
   std::thread m_thread;
   std::atomic<bool> m_continueThreadRunning;
-  CPluginDomTraverser* m_traverser;
+  std::unique_ptr<CPluginDomTraverser> m_traverser;
 public:
-  CPluginFilter m_filter;
+  class AsyncPluginFilter;
+  std::shared_ptr<AsyncPluginFilter> m_asyncPluginFilter;
 private:
   void ThreadProc();
   CComAutoCriticalSection m_criticalSectionCache;
   std::set<std::wstring> m_cacheFrames;
   std::wstring m_cacheDomain;
   void InjectABP(IWebBrowser2* browser);
+  bool IsTraverserEnabled();
+  bool IsCSSInjectionEnabled();
 public:
 
   CPluginTab();

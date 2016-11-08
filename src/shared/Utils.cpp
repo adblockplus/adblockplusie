@@ -21,6 +21,7 @@
 
 #include <Windows.h>
 #include <ShlObj.h>
+#include <Shlwapi.h>
 
 #include "Utils.h"
 
@@ -204,3 +205,24 @@ std::wstring GetQueryString(const std::wstring& url)
   }
   return url.substr(queryStringBeginsAt, endQueryStringPos - queryStringBeginsAt);
 }
+
+std::wstring CanonicalizeUrl(const std::wstring& url)
+{
+  std::wstring urlCanonicalized;
+  urlCanonicalized.resize(url.length() * 2);
+  DWORD urlSize = urlCanonicalized.length();
+  UrlCanonicalizeW(url.c_str(), &urlCanonicalized[0], &urlSize, 0); 
+  urlCanonicalized.resize(urlSize);
+  return urlCanonicalized;
+}
+
+std::wstring EscapeUrl(const std::wstring& url)
+{
+  std::wstring urlEscaped;
+  urlEscaped.resize(url.length() * 2);
+  DWORD urlSize = urlEscaped.length();
+  UrlEscapeW(url.c_str(), &urlEscaped[0], &urlSize, 0); 
+  urlEscaped.resize(urlSize);
+  return urlEscaped;
+}
+

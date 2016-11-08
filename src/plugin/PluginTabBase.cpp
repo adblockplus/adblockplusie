@@ -23,14 +23,69 @@
 #include "PluginTabBase.h"
 #include "IeVersion.h"
 #include "../shared/Utils.h"
+#include "../shared/EventWithSetter.h"
 #include <Mshtmhst.h>
+#include <mutex>
+
+class CPluginTab::AsyncPluginFilter
+{
+public:
+  static std::shared_ptr<AsyncPluginFilter> CreateAsync(const std::wstring& domain)
+  {
+    std::shared_ptr<AsyncPluginFilter> asyncFilter = std::make_shared<AsyncPluginFilter>();
+    std::weak_ptr<AsyncPluginFilter> weakAsyncData = asyncFilter;
+    auto eventSetter = asyncFilter->event.CreateSetter();
+    try
+    {
+      std::thread([domain, weakAsyncData, eventSetter]
+      {
+        try
+        {
+          CreateAsyncImpl(domain, weakAsyncData, eventSetter);
+        }
+	catch (...)
+        {
+          // As a thread-main function, we truncate any C++ exception.
+        }
+      }).detach();
+      // TODO: we should do something with that `detach` above.
+    }
+    catch (const std::system_error& ex)
+    {
+      DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS,
+        "Class::Thread - Failed to start filter loader thread");
+    }
+    return asyncFilter;
+  }
+  PluginFilterPtr GetFilter()
+  {
+    if (!event.Wait())
+      return PluginFilterPtr();
+    std::lock_guard<std::mutex> lock(mutex);
+    return filter;
+  }
+private:
+  static void CreateAsyncImpl(const std::wstring& domain, std::weak_ptr<AsyncPluginFilter> weakAsyncData, const std::shared_ptr<EventWithSetter::Setter>& setter)
+  {
+    std::unique_ptr<CPluginFilter> pluginFilter(new CPluginFilter(CPluginClient::GetInstance()->GetElementHidingSelectors(domain)));
+    if (auto asyncData = weakAsyncData.lock())
+    {
+      {
+        std::lock_guard<std::mutex> lock(asyncData->mutex);
+        asyncData->filter = move(pluginFilter);
+      }
+      setter->Set();
+    }
+  }
+  EventWithSetter event;
+  std::mutex mutex;
+  PluginFilterPtr filter;
+};
 
 CPluginTab::CPluginTab()
   : m_isActivated(false)
   , m_continueThreadRunning(true)
 {
-  m_filter.hideFiltersLoadedEvent = CreateEvent(NULL, true, false, NULL);
-
   CPluginClient* client = CPluginClient::GetInstance();
   if (AdblockPlus::IE::InstalledMajorVersion() < 10)
   {
@@ -46,14 +101,11 @@ CPluginTab::CPluginTab()
     DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_TAB_THREAD_CREATE_PROCESS,
       "Tab::Thread - Failed to create tab thread");
   }
-  m_traverser = new CPluginDomTraverser(static_cast<CPluginTab*>(this));
 }
 
 
 CPluginTab::~CPluginTab()
 {
-  delete m_traverser;
-  m_traverser = NULL;
   m_continueThreadRunning = false;
   if (m_thread.joinable()) {
     m_thread.join();
@@ -82,40 +134,13 @@ void CPluginTab::OnUpdate()
   m_isActivated = true;
 }
 
-namespace
-{
-  // Entry Point
-  void FilterLoader(CPluginFilter* filter, const std::wstring& domain)
-  {
-    try
-    {
-      filter->LoadHideFilters(CPluginClient::GetInstance()->GetElementHidingSelectors(domain));
-      SetEvent(filter->hideFiltersLoadedEvent);
-    }
-    catch (...)
-    {
-      // As a thread-main function, we truncate any C++ exception.
-    }
-  }
-}
-
 void CPluginTab::OnNavigate(const std::wstring& url)
 {
   SetDocumentUrl(url);
-  ClearFrameCache(GetDocumentDomain());
-  std::wstring domainString = GetDocumentDomain();
-  ResetEvent(m_filter.hideFiltersLoadedEvent);
-  try
-  {
-    std::thread filterLoaderThread(&FilterLoader, &m_filter, GetDocumentDomain());
-    filterLoaderThread.detach(); // TODO: but actually we should wait for the thread in the dtr.
-  }
-  catch (const std::system_error& ex)
-  {
-    DEBUG_SYSTEM_EXCEPTION(ex, PLUGIN_ERROR_THREAD, PLUGIN_ERROR_MAIN_THREAD_CREATE_PROCESS,
-      "Class::Thread - Failed to start filter loader thread");
-  }
-  m_traverser->ClearCache();
+  std::wstring domain = GetDocumentDomain();
+  ClearFrameCache(domain);
+  m_asyncPluginFilter = AsyncPluginFilter::CreateAsync(domain);
+  m_traverser.reset();
 }
 
 namespace
@@ -132,9 +157,12 @@ namespace
     // Declared static because the value is derived from an installation directory, which won't change during run-time.
     static auto dir = FileUrl(HtmlFolderPath());
 
+    dir = EscapeUrl(CanonicalizeUrl(dir));
+    std::wstring urlCanonicalized = EscapeUrl(CanonicalizeUrl(url));
+
     DEBUG_GENERAL([&]() -> std::wstring {
       std::wstring log = L"InjectABP. Current URL: ";
-      log += url;
+      log += urlCanonicalized;
       log += L", template directory URL: ";
       log += dir;
       return log;
@@ -143,14 +171,15 @@ namespace
     /*
      * The length check here is defensive, in case the document URL is truncated for some reason.
      */
-    if (url.length() < 5)
+    if (urlCanonicalized.length() < 5)
     {
       // We can't match ".html" at the end of the URL if it's too short.
       return false;
     }
-    auto urlCstr = url.c_str();
+    auto urlCstr = urlCanonicalized.c_str();
     // Check the prefix to match our directory
     // Check the suffix to be an HTML file
+    // Compare escaped version and return
     return (_wcsnicmp(urlCstr, dir.c_str(), dir.length()) == 0) &&
       (_wcsnicmp(urlCstr + url.length() - 5, L".html", 5) == 0);
   }
@@ -213,6 +242,119 @@ void CPluginTab::InjectABP(IWebBrowser2* browser)
   }
 }
 
+bool CPluginTab::IsTraverserEnabled()
+{
+  return !IsCSSInjectionEnabled();
+}
+
+bool CPluginTab::IsCSSInjectionEnabled()
+{
+  return IsWindowsVistaOrLater() && AdblockPlus::IE::InstalledMajorVersion() >= 10;
+}
+
+namespace
+{
+  void InjectABPCSS(IHTMLDocument2& htmlDocument2, const std::vector<std::wstring>& hideFilters)
+  {
+    // pseudocode: styleHtmlElement = htmlDocument2.createElement("style");
+    ATL::CComQIPtr<IHTMLStyleElement> styleHtmlElement;
+    {
+      ATL::CComPtr<IHTMLElement> stylePureHtmlElement;
+      if (FAILED(htmlDocument2.createElement(ATL::CComBSTR(L"style"), &stylePureHtmlElement)))
+      {
+        DEBUG_GENERAL(L"Cannot create style element");
+        return;
+      }
+      if (!(styleHtmlElement = stylePureHtmlElement))
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLStyleElement from IHTMLElement");
+        return;
+      }
+    }
+    // pseudocode: styleHtmlElement.type = "text/css";
+    if (FAILED(styleHtmlElement->put_type(ATL::CComBSTR("text/css"))))
+    {
+      DEBUG_GENERAL(L"Cannot set type text/css");
+      return;
+    }
+    // pseudocode: styleSheet4 = styleHtmlElement.sheet;
+    ATL::CComQIPtr<IHTMLStyleSheet4> styleSheet4;
+    {
+      // IHTMLStyleElement2 is availabe starting from IE9, Vista
+      ATL::CComQIPtr<IHTMLStyleElement2> styleHtmlElement2 = styleHtmlElement;
+      if (!styleHtmlElement2)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLStyleElement2 from IHTMLStyleElement");
+        return;
+      }
+      ATL::CComQIPtr<IHTMLStyleSheet> styleSheet;
+      if (FAILED(styleHtmlElement2->get_sheet(&styleSheet)) || !styleSheet)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLStyleSheet");
+        return;
+      }
+      // IHTMLStyleSheet4 is availabe starting from IE9, Vista
+      styleSheet4 = styleSheet;
+      if (!styleSheet4)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLStyleSheet4");
+        return;
+      }
+    }
+    // pseudocode: for (auto i = 0; i < hideFilters.length; ++i) {
+    // pseudocode:   i = styleSheet4.insertRule(hideFilters + cssValue, i);
+    // pseudocode: }
+    long newIndex = 0;
+    std::wstring cssValue = L"{ display: none !important; }";
+    for (const auto& selector : hideFilters)
+    {
+      auto cssRule = selector + cssValue;
+      ATL::CComBSTR selector(cssRule.size(), cssRule.c_str());
+      if (SUCCEEDED(styleSheet4->insertRule(selector, newIndex, &newIndex)))
+      {
+        ++newIndex;
+      }
+      else
+      {
+        DEBUG_GENERAL(L"Cannot add rule for selector " + cssRule);
+      }
+    }
+
+    // pseudocode: htmlDocument2.head.appendChild(styleHtmlElement);
+    {
+      // IHTMLDocument7 is availabe starting from IE9, Vista
+      ATL::CComQIPtr<IHTMLDocument7> htmlDocument7 = &htmlDocument2;
+      if (!htmlDocument7)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLDocument7 from htmlDocument2");
+        return;
+      }
+      ATL::CComPtr<IHTMLElement> headHtmlElement;
+      if (FAILED(htmlDocument7->get_head(&headHtmlElement)))
+      {
+        DEBUG_GENERAL(L"Cannot obtain head from pDoc7");
+        return;
+      }
+      ATL::CComQIPtr<IHTMLDOMNode> headNode = headHtmlElement;
+      if (!headNode)
+      {
+        DEBUG_GENERAL(L"Cannot obtain headNode from headHtmlElement");
+        return;
+      }
+      ATL::CComQIPtr<IHTMLDOMNode> styleNode = styleHtmlElement;
+      if (!styleNode)
+      {
+        DEBUG_GENERAL(L"Cannot obtain IHTMLDOMNode from stylePureHtmlElement");
+        return;
+      }
+      if (FAILED(headNode->appendChild(styleNode, nullptr)))
+      {
+        DEBUG_GENERAL(L"Cannot append blocking style");
+      }
+    }
+  }
+}
+
 namespace
 {
   ATL::CComPtr<IWebBrowser2> GetParent(IWebBrowser2& browser)
@@ -261,11 +403,27 @@ namespace
 
 void CPluginTab::OnDownloadComplete(IWebBrowser2* browser)
 {
-  CPluginClient* client = CPluginClient::GetInstance();
-  std::wstring url = GetDocumentUrl();
-  if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
+  if (IsTraverserEnabled())
   {
-    m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
+    CPluginClient* client = CPluginClient::GetInstance();
+    std::wstring url = GetDocumentUrl();
+    if (!client->IsWhitelistedUrl(url) && !client->IsElemhideWhitelistedOnDomain(url))
+    {
+      if (!m_traverser)
+      {
+        assert(m_asyncPluginFilter && "Filter initialization should be already at least started");
+        if (m_asyncPluginFilter)
+        {
+          auto pluginFilter = m_asyncPluginFilter->GetFilter();
+          assert(pluginFilter && "Plugin filter should be a valid object");
+          if (pluginFilter)
+            m_traverser.reset(new CPluginDomTraverser(pluginFilter));
+        }
+      }
+      assert(m_traverser && "Traverser should be a valid object");
+      if (m_traverser)
+        m_traverser->TraverseDocument(browser, GetDocumentDomain(), GetDocumentUrl());
+    }
   }
   InjectABP(browser);
 }
@@ -298,6 +456,24 @@ void CPluginTab::OnDocumentComplete(IWebBrowser2* browser, const std::wstring& u
   if (!pDoc)
   {
     return;
+  }
+
+  if (IsCSSInjectionEnabled() && CPluginSettings::GetInstance()->GetPluginEnabled())
+  {
+    if (!IsFrameWhiteListed(browser))
+    {
+      DEBUG_GENERAL(L"Inject CSS into " + url);
+      assert(m_asyncPluginFilter && "Filter initialization should be already at least started");
+      if (m_asyncPluginFilter)
+      {
+        auto pluginFilter = m_asyncPluginFilter->GetFilter();
+        assert(pluginFilter && "Plugin filter should be a valid object");
+        if (pluginFilter)
+        {
+          InjectABPCSS(*pDoc, pluginFilter->GetHideFilters());
+        }
+      }
+    }
   }
 
   CComPtr<IOleObject> pOleObj;
