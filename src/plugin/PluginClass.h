@@ -147,8 +147,8 @@ private:
     std::unique_ptr<CPluginTab> tab;
     ATL::CComPtr<IWebBrowser2> webBrowser2;
   };
-  // we need to have it as a shared pointer to get weak pointer to it to avoid
-  // wrong usage after destroying of this class.
+  // To avoid wrong usage after destroying of this class, we need to have
+  // m_data as a shared pointer to be able to get a weak pointer to it.
   std::shared_ptr<Data> m_data;
 
   CriticalSection m_csStatusBar;
