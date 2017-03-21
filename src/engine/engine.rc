@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2016 Eyeo GmbH
+ * Copyright (C) 2006-2017 eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -39,7 +39,7 @@ BEGIN
             VALUE "FileDescription", "Adblock Plus Engine for Internet Explorer"
             VALUE "FileVersion", VERSIONINFO_VERSION_STR
             VALUE "InternalName", "Adblock Plus Engine"
-            VALUE "LegalCopyright", "Copyright (C) 2006-2016 Eyeo GmbH"
+            VALUE "LegalCopyright", "Copyright (C) 2006-2017 eyeo GmbH"
             VALUE "OriginalFilename", "AdblockPlusEngine.exe"
             VALUE "ProductName", "Adblock Plus"
             VALUE "ProductVersion", VERSIONINFO_VERSION_STR
